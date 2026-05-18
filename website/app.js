@@ -286,6 +286,59 @@ function statBlock(label, value) {
   `;
 }
 
+function buildHrMatchupRead(row, hitter, pitcher) {
+  const park = getParkForVenue(row.venue);
+  const weather = getWeatherForVenue(row.venue);
+
+  const bullets = [];
+
+  if (Number(hitter.hr) >= 15) {
+    bullets.push("Power profile is already showing real HR production.");
+  }
+
+  if (Number(hitter.slg) >= 0.500) {
+    bullets.push("Slugging profile supports extra base and HR upside.");
+  }
+
+  if (Number(hitter.ops) >= 0.850) {
+    bullets.push("OPS shows the bat is not just power only. He is getting on base and doing damage.");
+  }
+
+  if (Number(pitcher.era) >= 4.50) {
+    bullets.push("Opposing pitcher ERA points to run prevention issues.");
+  }
+
+  if (Number(pitcher.whip) >= 1.30) {
+    bullets.push("Pitcher WHIP suggests traffic on the bases and more damage chances.");
+  }
+
+  if (Number(pitcher.homeRuns) >= 3) {
+    bullets.push("Pitcher has already allowed HR damage this season.");
+  }
+
+  if (park?.hrFactor >= 105) {
+    bullets.push(`${park.venue} grades as a favorable HR park in this build.`);
+  }
+
+  if (park?.summary) {
+    bullets.push(park.summary);
+  }
+
+  if (weather && Number(weather.temp) >= 80) {
+    bullets.push("Warm temperature can help ball carry.");
+  }
+
+  if (weather && Number(weather.windSpeed) >= 10 && !String(park?.roof || "").toLowerCase().includes("dome")) {
+    bullets.push(`Wind is active at ${weather.windSpeed} MPH ${weather.windCompass || ""}, which matters for carry and pull side flight.`);
+  }
+
+  if (!bullets.length) {
+    bullets.push("Model ranking is being driven by the combined power score, pitcher profile, game context, and park setup.");
+  }
+
+  return bullets;
+}
+
 function openPlayerProfile(index) {
   const row = state.rows[index];
 
@@ -360,7 +413,9 @@ function openPlayerProfile(index) {
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
-      ${clean(row.player)} is ranking here because the model is combining current power production, slugging strength, matchup context, venue, and the opposing pitcher profile. This is not an odds board. This is a matchup board.
+      <ul class="matchup-read-list">
+        ${buildHrMatchupRead(row, hitter, pitcher).map(item => `<li>${item}</li>`).join("")}
+      </ul>
     </div>
   `;
 
