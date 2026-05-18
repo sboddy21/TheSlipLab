@@ -406,6 +406,7 @@ async function render() {
       <div>
         <div class="player">${row.player || "Unknown Player"}</div>
         <div class="meta">${row.team || ""} • ${row.game || ""}</div>
+        ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
       </div>
 
       <div class="stat">
