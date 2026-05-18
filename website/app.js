@@ -17,6 +17,39 @@ function titleCase(text) {
   return text.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function gameStatusLabel(row) {
+  const status = String(row.status || "").toLowerCase();
+  const abstractStatus = String(row.abstractStatus || "").toLowerCase();
+
+  if (status.includes("final") || abstractStatus.includes("final")) {
+    return "FINAL";
+  }
+
+  if (status.includes("delay") || status.includes("postponed")) {
+    return "DELAYED";
+  }
+
+  if (abstractStatus.includes("live") || status.includes("progress")) {
+    return "LIVE";
+  }
+
+  if (abstractStatus.includes("preview") || status.includes("scheduled")) {
+    return "PRE GAME";
+  }
+
+  return String(row.status || "GAME").toUpperCase();
+}
+
+function gameStatusClass(row) {
+  const label = gameStatusLabel(row);
+
+  if (label === "LIVE") return "status-pill live";
+  if (label === "FINAL") return "status-pill final";
+  if (label === "DELAYED") return "status-pill delayed";
+
+  return "status-pill";
+}
+
 async function loadRows() {
   const file = marketFiles[state.sport]?.[state.market];
 
@@ -98,9 +131,10 @@ async function render() {
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
   boardMeta.textContent =
-    `${rows.length} players loaded • Last Updated ${updated}`;
+    `${rows.length} rows loaded • Last Updated ${updated}`;
 
   const topUpdated = document.getElementById("top-updated");
+
   if (topUpdated) {
     topUpdated.textContent = `Last Updated: ${updated}`;
   }
@@ -113,12 +147,13 @@ async function render() {
 
   if (state.market === "games") {
     board.innerHTML = rows.map((row, index) => `
-      <article class="card">
+      <article class="card game-card">
         <div class="rank">#${index + 1}</div>
 
         <div>
           <div class="player">${row.matchup || "MLB Game"}</div>
-          <div class="meta">${row.venue || ""} • ${row.status || ""}</div>
+          <div class="meta">${row.venue || ""}</div>
+          <div class="${gameStatusClass(row)}">${gameStatusLabel(row)}</div>
         </div>
 
         <div class="stat">
