@@ -1,7 +1,8 @@
 const state = {
   sport: "mlb",
   market: "home_runs",
-  rows: []
+  rows: [],
+  weather: []
 };
 
 const marketFiles = {
@@ -69,6 +70,102 @@ async function loadRows() {
   } catch {
     return [];
   }
+}
+
+async function loadWeather() {
+  try {
+    const res = await fetch("data/mlb_weather.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return Array.isArray(data.weather) ? data.weather : [];
+  } catch {
+    return [];
+  }
+}
+
+function getWeatherForVenue(venue) {
+  return state.weather.find(item => item.venue === venue) || null;
+}
+
+function renderWeatherMini(venue) {
+  const weather = getWeatherForVenue(venue);
+
+  if (!weather) {
+    return `<div class="weather-mini weather-missing">Weather loading</div>`;
+  }
+
+  return `
+    <div class="weather-mini">
+      <span>${weather.temp ?? "--"}°F</span>
+      <span>${weather.humidity ?? "--"}% Hum</span>
+      <span>${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}</span>
+    </div>
+  `;
+}
+
+function renderBallparkWeather(venue) {
+  const weather = getWeatherForVenue(venue);
+
+  if (!weather) {
+    return `
+      <div class="park-weather-card">
+        <h3>Ballpark Weather</h3>
+        <div class="weather-empty">Weather data loading for this park.</div>
+      </div>
+    `;
+  }
+
+  const arrow = Number.isFinite(Number(weather.arrowDegrees)) ? Number(weather.arrowDegrees) : 0;
+
+  return `
+    <div class="park-weather-card">
+      <div class="park-weather-head">
+        <div>
+          <h3>Ballpark Weather</h3>
+          <p>${weather.venue} • ${weather.city || ""}</p>
+        </div>
+        <div class="weather-live-pill">LIVE</div>
+      </div>
+
+      <div class="weather-grid">
+        <div class="weather-stat">
+          <span>Temp</span>
+          <strong>${weather.temp ?? "--"}°F</strong>
+        </div>
+        <div class="weather-stat">
+          <span>Humidity</span>
+          <strong>${weather.humidity ?? "--"}%</strong>
+        </div>
+        <div class="weather-stat">
+          <span>Wind</span>
+          <strong>${weather.windSpeed ?? "--"} MPH</strong>
+        </div>
+        <div class="weather-stat">
+          <span>Direction</span>
+          <strong>${weather.windCompass || "--"}</strong>
+        </div>
+      </div>
+
+      <div class="ballpark-diagram">
+        <div class="outfield-arc"></div>
+        <div class="infield-diamond"></div>
+        <div class="home-plate"></div>
+        <div class="base base-first"></div>
+        <div class="base base-second"></div>
+        <div class="base base-third"></div>
+        <div class="wind-arrow" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>
+      </div>
+
+      <div class="wind-read">
+        Wind ${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}. Arrow shows live wind flow across the field.
+      </div>
+    </div>
+  `;
 }
 
 async function loadLastUpdated() {
@@ -154,6 +251,8 @@ function openPlayerProfile(index) {
       ${clean(row.note, "No matchup note available yet.")}
     </div>
 
+    ${renderBallparkWeather(row.venue)}
+
     <h3>Why This Bat Fits</h3>
     <div class="profile-grid">
       ${statBlock("HR", hitter.hr)}
@@ -220,9 +319,10 @@ async function render() {
   board.innerHTML =
     `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo] = await Promise.all([
+  const [raw, updatedInfo, weatherRows] = await Promise.all([
     loadRows(),
-    loadLastUpdated()
+    loadLastUpdated(),
+    loadWeather()
   ]);
 
   const rows = state.market === "games"
@@ -230,6 +330,7 @@ async function render() {
     : raw;
 
   state.rows = rows;
+  state.weather = weatherRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
@@ -257,6 +358,7 @@ async function render() {
           <div class="player">${row.matchup || "MLB Game"}</div>
           <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
           <div class="${gameStatusClass(row)}">${gameStatusLabel(row)}</div>
+          ${renderWeatherMini(row.venue)}
         </div>
 
         <div class="stat">

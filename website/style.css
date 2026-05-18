@@ -427,3 +427,188 @@ main {
     margin-bottom: 16px;
   }
 }
+
+.weather-mini {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.weather-mini span {
+  border: 1px solid #25573a;
+  background: rgba(16, 26, 20, .9);
+  color: #d8ffe2;
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weather-missing {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.park-weather-card {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top right, rgba(51, 255, 119, .11), transparent 30%),
+    rgba(11, 18, 14, .88);
+  margin: 22px 0;
+}
+
+.park-weather-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+
+.park-weather-head h3 {
+  margin: 0 0 6px;
+}
+
+.park-weather-head p {
+  color: var(--muted);
+}
+
+.weather-live-pill {
+  color: #031007;
+  background: var(--green);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.weather-stat {
+  border: 1px solid #25573a;
+  border-radius: 16px;
+  padding: 12px;
+  background: rgba(16, 26, 20, .8);
+}
+
+.weather-stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.weather-stat strong {
+  font-size: 20px;
+}
+
+.ballpark-diagram {
+  height: 260px;
+  margin-top: 18px;
+  border: 1px solid #25573a;
+  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(51, 255, 119, .14), transparent 38%),
+    linear-gradient(180deg, rgba(16, 55, 29, .55), rgba(8, 31, 17, .9));
+}
+
+.outfield-arc {
+  position: absolute;
+  width: 390px;
+  height: 250px;
+  left: 50%;
+  top: 18px;
+  transform: translateX(-50%);
+  border: 2px solid rgba(216, 255, 226, .35);
+  border-bottom: 0;
+  border-radius: 390px 390px 0 0;
+}
+
+.infield-diamond {
+  position: absolute;
+  width: 86px;
+  height: 86px;
+  left: 50%;
+  bottom: 44px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 2px solid rgba(216, 255, 226, .45);
+  background: rgba(141, 102, 49, .35);
+}
+
+.home-plate {
+  position: absolute;
+  left: 50%;
+  bottom: 34px;
+  width: 14px;
+  height: 14px;
+  background: #f4fff7;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.base {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #f4fff7;
+  transform: rotate(45deg);
+}
+
+.base-first {
+  left: calc(50% + 43px);
+  bottom: 83px;
+}
+
+.base-second {
+  left: calc(50% - 5px);
+  bottom: 126px;
+}
+
+.base-third {
+  left: calc(50% - 53px);
+  bottom: 83px;
+}
+
+.wind-arrow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  color: var(--green);
+  font-size: 72px;
+  font-weight: 900;
+  text-shadow: 0 0 18px rgba(51, 255, 119, .55);
+  transform-origin: center;
+}
+
+.wind-read {
+  margin-top: 12px;
+  color: #d8ffe2;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.weather-empty {
+  color: var(--muted);
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .weather-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ballpark-diagram {
+    height: 220px;
+  }
+}
