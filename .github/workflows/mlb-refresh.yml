@@ -34,13 +34,20 @@ jobs:
       - name: Build MLB Home Run Board
         run: node scripts/mlb/build_home_run_board.js
 
+      - name: Stamp Site Update Time
+        if: always()
+        run: |
+          mkdir -p website/data
+          node -e "const fs=require('fs');fs.writeFileSync('website/data/site_last_updated.json', JSON.stringify({ updated_at:new Date().toISOString(), source:'github_actions', workflow:'mlb-refresh' }, null, 2));"
+
       - name: Commit Updated Data
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add website/data/*.json
 
-          git diff --quiet && git diff --staged --quiet || git commit -m "Auto refresh MLB data"
+          git diff --cached --quiet || git commit -m "Auto refresh MLB data"
 
           git push
