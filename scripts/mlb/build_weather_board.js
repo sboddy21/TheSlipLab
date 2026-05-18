@@ -32,6 +32,7 @@ const PARKS = {
   "Rogers Centre": { city: "Toronto", lat: 43.6414, lon: -79.3894 },
   "T-Mobile Park": { city: "Seattle", lat: 47.5914, lon: -122.3325 },
   "Target Field": { city: "Minneapolis", lat: 44.9817, lon: -93.2776 },
+  "Tropicana Field": { city: "St. Petersburg", lat: 27.7682, lon: -82.6534 },
   "Truist Park": { city: "Atlanta", lat: 33.8907, lon: -84.4677 },
   "Wrigley Field": { city: "Chicago", lat: 41.9484, lon: -87.6553 },
   "Yankee Stadium": { city: "New York", lat: 40.8296, lon: -73.9262 }
