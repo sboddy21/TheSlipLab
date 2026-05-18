@@ -1,0 +1,43 @@
+name: MLB Auto Refresh
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Fetch MLB Games
+        run: node scripts/mlb/fetch_mlb_today.js
+
+      - name: Build MLB Player Pool
+        run: node scripts/mlb/build_mlb_player_pool.js
+
+      - name: Commit Updated Data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add website/data/*.json
+
+          git diff --quiet && git diff --staged --quiet || git commit -m "Auto refresh MLB data"
+
+          git push
