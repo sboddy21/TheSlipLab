@@ -205,11 +205,6 @@ async function render() {
         <div class="stat-label">Score</div>
         <div class="stat-value">${row.score ?? "--"}</div>
       </div>
-
-      <div class="stat">
-        <div class="stat-label">Odds</div>
-        <div class="stat-value">${row.odds || "--"}</div>
-      </div>
     </article>
   `).join("");
 }
