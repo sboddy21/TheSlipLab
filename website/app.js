@@ -1,6 +1,7 @@
 const state = {
   sport: "mlb",
-  market: "home_runs"
+  market: "home_runs",
+  rows: []
 };
 
 const marketFiles = {
@@ -17,25 +18,18 @@ function titleCase(text) {
   return text.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function clean(value, fallback = "--") {
+  return value === null || value === undefined || value === "" ? fallback : value;
+}
+
 function gameStatusLabel(row) {
   const status = String(row.status || "").toLowerCase();
   const abstractStatus = String(row.abstractStatus || "").toLowerCase();
 
-  if (status.includes("final") || abstractStatus.includes("final")) {
-    return "FINAL";
-  }
-
-  if (status.includes("delay") || status.includes("postponed")) {
-    return "DELAYED";
-  }
-
-  if (abstractStatus.includes("live") || status.includes("progress")) {
-    return "LIVE";
-  }
-
-  if (abstractStatus.includes("preview") || status.includes("scheduled")) {
-    return "PRE GAME";
-  }
+  if (status.includes("final") || abstractStatus.includes("final")) return "FINAL";
+  if (status.includes("delay") || status.includes("postponed")) return "DELAYED";
+  if (abstractStatus.includes("live") || status.includes("progress")) return "LIVE";
+  if (abstractStatus.includes("preview") || status.includes("scheduled")) return "PRE GAME";
 
   return String(row.status || "GAME").toUpperCase();
 }
@@ -104,6 +98,102 @@ function formatUpdatedTime(iso) {
   });
 }
 
+function statBlock(label, value) {
+  return `
+    <div class="profile-stat">
+      <div class="profile-stat-label">${label}</div>
+      <div class="profile-stat-value">${clean(value)}</div>
+    </div>
+  `;
+}
+
+function openPlayerProfile(index) {
+  const row = state.rows[index];
+
+  if (!row) return;
+
+  const hitter = row.stats?.hitter || {};
+  const pitcher = row.stats?.pitcher || {};
+
+  const modal = document.getElementById("profile-modal");
+  const body = document.getElementById("profile-body");
+
+  body.innerHTML = `
+    <div class="profile-top">
+      <div>
+        <div class="profile-rank">#${clean(row.rank)}</div>
+        <h2>${clean(row.player, "Unknown Player")}</h2>
+        <p>${clean(row.team)} vs ${clean(row.opponent)}</p>
+      </div>
+      <div class="profile-score">
+        <span>${clean(row.score)}</span>
+        <small>HR Match Score</small>
+      </div>
+    </div>
+
+    <div class="profile-summary">
+      <div>
+        <span class="profile-label">Game</span>
+        <strong>${clean(row.game)}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Venue</span>
+        <strong>${clean(row.venue)}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Opposing Pitcher</span>
+        <strong>${clean(row.opposingPitcher)}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Model Read</span>
+        <strong>${clean(row.edge)}</strong>
+      </div>
+    </div>
+
+    <div class="profile-note">
+      ${clean(row.note, "No matchup note available yet.")}
+    </div>
+
+    <h3>Why This Bat Fits</h3>
+    <div class="profile-grid">
+      ${statBlock("HR", hitter.hr)}
+      ${statBlock("SLG", hitter.slg)}
+      ${statBlock("OPS", hitter.ops)}
+      ${statBlock("AVG", hitter.avg)}
+      ${statBlock("OBP", hitter.obp)}
+      ${statBlock("RBI", hitter.rbi)}
+      ${statBlock("Doubles", hitter.doubles)}
+      ${statBlock("Strikeouts", hitter.strikeOuts)}
+    </div>
+
+    <h3>Pitcher Vulnerability</h3>
+    <div class="profile-grid">
+      ${statBlock("ERA", pitcher.era)}
+      ${statBlock("WHIP", pitcher.whip)}
+      ${statBlock("HR Allowed", pitcher.homeRuns)}
+      ${statBlock("IP", pitcher.inningsPitched)}
+      ${statBlock("Hits Allowed", pitcher.hits)}
+      ${statBlock("Walks", pitcher.baseOnBalls)}
+      ${statBlock("Strikeouts", pitcher.strikeOuts)}
+    </div>
+
+    <div class="profile-explainer">
+      <strong>Slip Lab Read:</strong>
+      ${clean(row.player)} is ranking here because the model is combining current power production, slugging strength, matchup context, venue, and the opposing pitcher profile. This is not an odds board. This is a matchup board.
+    </div>
+  `;
+
+  modal.classList.add("show");
+}
+
+function closePlayerProfile() {
+  const modal = document.getElementById("profile-modal");
+
+  if (modal) {
+    modal.classList.remove("show");
+  }
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -138,6 +228,8 @@ async function render() {
   const rows = state.market === "games"
     ? raw.games || []
     : raw;
+
+  state.rows = rows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
@@ -193,7 +285,7 @@ async function render() {
   }
 
   board.innerHTML = rows.map((row, index) => `
-    <article class="card">
+    <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
       <div class="rank">#${row.rank || index + 1}</div>
 
       <div>
@@ -205,8 +297,21 @@ async function render() {
         <div class="stat-label">Score</div>
         <div class="stat-value">${row.score ?? "--"}</div>
       </div>
+
+      ${state.market === "home_runs" ? `
+        <div class="stat">
+          <div class="stat-label">Profile</div>
+          <div class="stat-value">Open</div>
+        </div>
+      ` : ""}
     </article>
   `).join("");
+
+  document.querySelectorAll("[data-profile-index]").forEach(card => {
+    card.addEventListener("click", () => {
+      openPlayerProfile(Number(card.dataset.profileIndex));
+    });
+  });
 }
 
 document.querySelectorAll("nav button").forEach(btn => {
@@ -221,6 +326,22 @@ document.querySelectorAll(".tabs button").forEach(btn => {
     state.market = btn.dataset.market;
     render();
   });
+});
+
+document.addEventListener("click", event => {
+  if (event.target.matches("[data-close-profile]")) {
+    closePlayerProfile();
+  }
+
+  if (event.target.id === "profile-modal") {
+    closePlayerProfile();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    closePlayerProfile();
+  }
 });
 
 render();
