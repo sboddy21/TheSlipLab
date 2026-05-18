@@ -11,7 +11,8 @@ const marketFiles = {
     hits: "data/mlb_hits.json",
     total_bases: "data/mlb_total_bases.json",
     rbis: "data/mlb_rbis.json",
-    games: "data/mlb_games_today.json"
+    games: "data/mlb_games_today.json",
+    weather: "data/mlb_weather.json"
   }
 };
 
@@ -327,7 +328,9 @@ async function render() {
 
   const rows = state.market === "games"
     ? raw.games || []
-    : raw;
+    : state.market === "weather"
+      ? raw.weather || []
+      : raw;
 
   state.rows = rows;
   state.weather = weatherRows;
@@ -346,6 +349,16 @@ async function render() {
   if (!rows.length) {
     board.innerHTML =
       `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
+    return;
+  }
+
+  if (state.market === "weather") {
+    board.innerHTML = rows.map(row => `
+      <article class="weather-board-card">
+        ${renderBallparkWeather(row.venue)}
+      </article>
+    `).join("");
+
     return;
   }
 
