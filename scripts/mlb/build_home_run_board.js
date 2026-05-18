@@ -25,6 +25,19 @@ function scale(value, min, max) {
   return Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100));
 }
 
+async function getPlayerBio(playerId) {
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}`;
+  const data = await getJson(url);
+  const person = data?.people?.[0] || {};
+
+  return {
+    batSide: person?.batSide?.code || null,
+    batSideDescription: person?.batSide?.description || null,
+    pitchHand: person?.pitchHand?.code || null,
+    pitchHandDescription: person?.pitchHand?.description || null
+  };
+}
+
 async function getHitterStats(playerId) {
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
   const data = await getJson(url);
@@ -116,6 +129,7 @@ async function main() {
 
     console.log(`Scoring ${player.player}`);
 
+    const bio = await getPlayerBio(player.playerId);
     const hitter = await getHitterStats(player.playerId);
 
     const pitcherId = player.opposingProbablePitcherId;
@@ -133,6 +147,8 @@ async function main() {
     rows.push({
       rank: 0,
       player: player.player,
+      batSide: bio.batSide,
+      batSideDescription: bio.batSideDescription,
       playerId: player.playerId,
       team: player.team,
       opponent: player.opponent,
