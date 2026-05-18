@@ -100,6 +100,11 @@ async function render() {
   boardMeta.textContent =
     `${rows.length} players loaded • Last Updated ${updated}`;
 
+  const topUpdated = document.getElementById("top-updated");
+  if (topUpdated) {
+    topUpdated.textContent = `Last Updated: ${updated}`;
+  }
+
   if (!rows.length) {
     board.innerHTML =
       `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
