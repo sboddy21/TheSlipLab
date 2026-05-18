@@ -50,6 +50,17 @@ function gameStatusClass(row) {
   return "status-pill";
 }
 
+function formatGameTime(iso) {
+  if (!iso) return "TBD";
+
+  const date = new Date(iso);
+
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
 async function loadRows() {
   const file = marketFiles[state.sport]?.[state.market];
 
@@ -152,7 +163,7 @@ async function render() {
 
         <div>
           <div class="player">${row.matchup || "MLB Game"}</div>
-          <div class="meta">${row.venue || ""}</div>
+          <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
           <div class="${gameStatusClass(row)}">${gameStatusLabel(row)}</div>
         </div>
 
