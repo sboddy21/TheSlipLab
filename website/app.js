@@ -24,11 +24,40 @@ async function loadRows() {
 
   try {
     const res = await fetch(file, { cache: "no-store" });
+
     if (!res.ok) return [];
+
     return await res.json();
   } catch {
     return [];
   }
+}
+
+async function loadLastUpdated() {
+  try {
+    const res = await fetch("data/site_last_updated.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function formatUpdatedTime(iso) {
+  if (!iso) return "Unknown";
+
+  const date = new Date(iso);
+
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
 }
 
 async function render() {
@@ -40,38 +69,40 @@ async function render() {
     btn.classList.toggle("active", btn.dataset.market === state.market);
   });
 
-  document.getElementById("page-title").textContent = `${state.sport.toUpperCase()} Lab`;
+  document.getElementById("page-title").textContent =
+    `${state.sport.toUpperCase()} Lab`;
 
   document.getElementById("page-subtitle").textContent =
     state.sport === "mlb"
       ? "Home Runs, Hits, Total Bases, and RBIs."
       : "Coming soon.";
 
-  
   const board = document.getElementById("board");
   const boardTitle = document.getElementById("board-title");
   const boardMeta = document.getElementById("board-meta");
 
   boardTitle.textContent = titleCase(state.market);
-  
-  board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  
-  const raw = await loadRows();
-  const rows = state.market === "games" ? raw.games || [] : raw;
+  board.innerHTML =
+    `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const updated = new Date().toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
+  const [raw, updatedInfo] = await Promise.all([
+    loadRows(),
+    loadLastUpdated()
+  ]);
 
-  boardMeta.textContent = `${rows.length} players loaded • Updated ${updated}`;
-  
+  const rows = state.market === "games"
+    ? raw.games || []
+    : raw;
+
+  const updated = formatUpdatedTime(updatedInfo?.updated_at);
+
+  boardMeta.textContent =
+    `${rows.length} players loaded • Last Updated ${updated}`;
 
   if (!rows.length) {
-    board.innerHTML = `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
+    board.innerHTML =
+      `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
     return;
   }
 
@@ -106,6 +137,7 @@ async function render() {
         </div>
       </article>
     `).join("");
+
     return;
   }
 
@@ -126,16 +158,6 @@ async function render() {
       <div class="stat">
         <div class="stat-label">Odds</div>
         <div class="stat-value">${row.odds || "--"}</div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-label">Edge</div>
-        <div class="stat-value">${row.edge || "--"}</div>
-      </div>
-
-      <div class="stat">
-        <div class="stat-label">Note</div>
-        <div class="stat-value">${row.note || "--"}</div>
       </div>
     </article>
   `).join("");
