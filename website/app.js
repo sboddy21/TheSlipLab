@@ -112,6 +112,8 @@ function renderWeatherMini(venue) {
 
 function renderBallparkWeather(venue) {
   const weather = getWeatherForVenue(venue);
+  const park = getParkForVenue(venue);
+  const isDome = String(park?.roof || "").toLowerCase().includes("dome");
 
   if (!weather) {
     return `
@@ -123,6 +125,9 @@ function renderBallparkWeather(venue) {
   }
 
   const arrow = Number.isFinite(Number(weather.arrowDegrees)) ? Number(weather.arrowDegrees) : 0;
+  const windText = isDome
+    ? "Fixed dome. Wind is not active inside the park."
+    : `Wind ${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}. Arrow shows live wind flow across the field.`;
 
   return `
     <div class="park-weather-card">
@@ -145,11 +150,11 @@ function renderBallparkWeather(venue) {
         </div>
         <div class="weather-stat">
           <span>Wind</span>
-          <strong>${weather.windSpeed ?? "--"} MPH</strong>
+          <strong>${isDome ? "Dome" : `${weather.windSpeed ?? "--"} MPH`}</strong>
         </div>
         <div class="weather-stat">
           <span>Direction</span>
-          <strong>${weather.windCompass || "--"}</strong>
+          <strong>${isDome ? "Indoor" : weather.windCompass || "--"}</strong>
         </div>
       </div>
 
@@ -160,13 +165,13 @@ function renderBallparkWeather(venue) {
         <div class="base base-first"></div>
         <div class="base base-second"></div>
         <div class="base base-third"></div>
-        <div class="wind-arrow" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>
+        ${isDome ? `<div class="dome-label">DOME</div>` : `<div class="wind-arrow" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>`}
       </div>
 
       ${renderParkFactors(venue)}
 
       <div class="wind-read">
-        Wind ${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}. Arrow shows live wind flow across the field.
+        ${windText}
       </div>
     </div>
   `;
