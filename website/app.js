@@ -8,7 +8,8 @@ const marketFiles = {
     home_runs: "data/mlb_home_runs.json",
     hits: "data/mlb_hits.json",
     total_bases: "data/mlb_total_bases.json",
-    rbis: "data/mlb_rbis.json"
+    rbis: "data/mlb_rbis.json",
+    games: "data/mlb_games_today.json"
   }
 };
 
@@ -56,7 +57,8 @@ async function render() {
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
   
-  const rows = await loadRows();
+  const raw = await loadRows();
+  const rows = state.market === "games" ? raw.games || [] : raw;
 
   const updated = new Date().toLocaleString([], {
     month: "short",
@@ -70,6 +72,40 @@ async function render() {
 
   if (!rows.length) {
     board.innerHTML = `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
+    return;
+  }
+
+  if (state.market === "games") {
+    board.innerHTML = rows.map((row, index) => `
+      <article class="card">
+        <div class="rank">#${index + 1}</div>
+
+        <div>
+          <div class="player">${row.matchup || "MLB Game"}</div>
+          <div class="meta">${row.venue || ""} • ${row.status || ""}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Away SP</div>
+          <div class="stat-value">${row.awayProbablePitcher || "TBD"}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Home SP</div>
+          <div class="stat-value">${row.homeProbablePitcher || "TBD"}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Score</div>
+          <div class="stat-value">${row.awayScore ?? "--"} • ${row.homeScore ?? "--"}</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Game ID</div>
+          <div class="stat-value">${row.gamePk || "--"}</div>
+        </div>
+      </article>
+    `).join("");
     return;
   }
 
