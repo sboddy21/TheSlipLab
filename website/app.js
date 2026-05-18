@@ -2,7 +2,8 @@ const state = {
   sport: "mlb",
   market: "home_runs",
   rows: [],
-  weather: []
+  weather: [],
+  parks: []
 };
 
 const marketFiles = {
@@ -162,11 +163,86 @@ function renderBallparkWeather(venue) {
         <div class="wind-arrow" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>
       </div>
 
+      ${renderParkFactors(venue)}
+
       <div class="wind-read">
         Wind ${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}. Arrow shows live wind flow across the field.
       </div>
     </div>
   `;
+}
+
+function renderParkFactors(venue) {
+  const park = getParkForVenue(venue);
+
+  if (!park) {
+    return `
+      <div class="park-factor-missing">
+        Park dimensions coming soon for this venue.
+      </div>
+    `;
+  }
+
+  return `
+    <div class="park-factor-grid">
+      <div class="weather-stat">
+        <span>LF</span>
+        <strong>${park.lf} FT</strong>
+      </div>
+      <div class="weather-stat">
+        <span>LCF</span>
+        <strong>${park.lcf} FT</strong>
+      </div>
+      <div class="weather-stat">
+        <span>CF</span>
+        <strong>${park.cf} FT</strong>
+      </div>
+      <div class="weather-stat">
+        <span>RCF</span>
+        <strong>${park.rcf} FT</strong>
+      </div>
+      <div class="weather-stat">
+        <span>RF</span>
+        <strong>${park.rf} FT</strong>
+      </div>
+      <div class="weather-stat">
+        <span>HR Factor</span>
+        <strong>${park.hrFactor}</strong>
+      </div>
+      <div class="weather-stat">
+        <span>LHB Boost</span>
+        <strong>${park.leftyBoost}</strong>
+      </div>
+      <div class="weather-stat">
+        <span>RHB Boost</span>
+        <strong>${park.rightyBoost}</strong>
+      </div>
+    </div>
+
+    <div class="park-summary">
+      <strong>${park.roof}</strong> • ${park.summary}
+    </div>
+  `;
+}
+
+async function loadParkFactors() {
+  try {
+    const res = await fetch("data/mlb_park_factors.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return Array.isArray(data.parks) ? data.parks : [];
+  } catch {
+    return [];
+  }
+}
+
+function getParkForVenue(venue) {
+  return state.parks.find(item => item.venue === venue) || null;
 }
 
 async function loadLastUpdated() {
@@ -320,10 +396,11 @@ async function render() {
   board.innerHTML =
     `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
-    loadWeather()
+    loadWeather(),
+    loadParkFactors()
   ]);
 
   const rows = state.market === "games"
@@ -334,6 +411,7 @@ async function render() {
 
   state.rows = rows;
   state.weather = weatherRows;
+  state.parks = parkRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
