@@ -46,10 +46,27 @@ async function render() {
       ? "Home Runs, Hits, Total Bases, and RBIs."
       : "Coming soon.";
 
+  
   const board = document.getElementById("board");
+  const boardTitle = document.getElementById("board-title");
+  const boardMeta = document.getElementById("board-meta");
+
+  boardTitle.textContent = titleCase(state.market);
+  
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
+  
   const rows = await loadRows();
+
+  const updated = new Date().toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+
+  boardMeta.textContent = `${rows.length} players loaded • Updated ${updated}`;
+  
 
   if (!rows.length) {
     board.innerHTML = `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
