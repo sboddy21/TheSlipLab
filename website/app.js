@@ -3,35 +3,34 @@ const state = {
   market: "home_runs"
 };
 
-const sampleData = {
+const marketFiles = {
   mlb: {
-    home_runs: [
-      { player: "Aaron Judge", team: "NYY", game: "NYY at TEX", score: 91, odds: "+310", edge: "Strong", note: "Power profile plus matchup" },
-      { player: "Kyle Schwarber", team: "PHI", game: "CIN at PHI", score: 87, odds: "+360", edge: "Strong", note: "Pull power spot" },
-      { player: "Shohei Ohtani", team: "LAD", game: "LAD at SD", score: 84, odds: "+330", edge: "Live", note: "Elite barrel profile" }
-    ],
-    hits: [
-      { player: "Luis Arraez", team: "SD", game: "LAD at SD", score: 93, odds: "-220", edge: "Safe", note: "Contact profile" },
-      { player: "Bobby Witt Jr.", team: "KC", game: "BOS at KC", score: 89, odds: "-175", edge: "Safe", note: "Speed plus contact" }
-    ],
-    total_bases: [
-      { player: "Juan Soto", team: "NYM", game: "NYM at WAS", score: 88, odds: "+115", edge: "Value", note: "OBP and power lane" },
-      { player: "Pete Alonso", team: "BAL", game: "BAL at TB", score: 85, odds: "+135", edge: "Value", note: "Extra base upside" }
-    ],
-    rbis: [
-      { player: "Rafael Devers", team: "SF", game: "SF at ARI", score: 82, odds: "+150", edge: "Live", note: "Run production spot" }
-    ]
-  },
-  nba: {},
-  nhl: {},
-  nfl: {}
+    home_runs: "data/mlb_home_runs.json",
+    hits: "data/mlb_hits.json",
+    total_bases: "data/mlb_total_bases.json",
+    rbis: "data/mlb_rbis.json"
+  }
 };
 
 function titleCase(text) {
   return text.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
-function render() {
+async function loadRows() {
+  const file = marketFiles[state.sport]?.[state.market];
+
+  if (!file) return [];
+
+  try {
+    const res = await fetch(file, { cache: "no-store" });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch {
+    return [];
+  }
+}
+
+async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
   });
@@ -42,14 +41,15 @@ function render() {
 
   document.getElementById("page-title").textContent = `${state.sport.toUpperCase()} Lab`;
 
-  const subtitle = state.sport === "mlb"
-    ? "Home Runs, Hits, Total Bases, and RBIs."
-    : "Coming soon.";
-
-  document.getElementById("page-subtitle").textContent = subtitle;
+  document.getElementById("page-subtitle").textContent =
+    state.sport === "mlb"
+      ? "Home Runs, Hits, Total Bases, and RBIs."
+      : "Coming soon.";
 
   const board = document.getElementById("board");
-  const rows = sampleData[state.sport]?.[state.market] || [];
+  board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
+
+  const rows = await loadRows();
 
   if (!rows.length) {
     board.innerHTML = `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
@@ -58,31 +58,31 @@ function render() {
 
   board.innerHTML = rows.map((row, index) => `
     <article class="card">
-      <div class="rank">#${index + 1}</div>
+      <div class="rank">#${row.rank || index + 1}</div>
 
       <div>
-        <div class="player">${row.player}</div>
-        <div class="meta">${row.team} • ${row.game}</div>
+        <div class="player">${row.player || "Unknown Player"}</div>
+        <div class="meta">${row.team || ""} • ${row.game || ""}</div>
       </div>
 
       <div class="stat">
         <div class="stat-label">Score</div>
-        <div class="stat-value">${row.score}</div>
+        <div class="stat-value">${row.score ?? "--"}</div>
       </div>
 
       <div class="stat">
         <div class="stat-label">Odds</div>
-        <div class="stat-value">${row.odds}</div>
+        <div class="stat-value">${row.odds || "--"}</div>
       </div>
 
       <div class="stat">
         <div class="stat-label">Edge</div>
-        <div class="stat-value">${row.edge}</div>
+        <div class="stat-value">${row.edge || "--"}</div>
       </div>
 
       <div class="stat">
         <div class="stat-label">Note</div>
-        <div class="stat-value">${row.note}</div>
+        <div class="stat-value">${row.note || "--"}</div>
       </div>
     </article>
   `).join("");
