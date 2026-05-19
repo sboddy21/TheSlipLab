@@ -2,7 +2,6 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-
 const DATA_DIR = path.join(ROOT, "data");
 const WEBSITE_DATA_DIR = path.join(ROOT, "website", "data");
 
@@ -10,15 +9,11 @@ const OUT_DATA = path.join(DATA_DIR, "statcast_zones.json");
 const OUT_WEB = path.join(WEBSITE_DATA_DIR, "statcast_zones.json");
 
 const SEASON = new Date().getFullYear();
+const START_DATE = `${SEASON}-03-01`;
+const END_DATE = `${SEASON}-11-30`;
 
-const SOURCE_FILES = [
-  path.join(WEBSITE_DATA_DIR, "mlb_home_runs.json"),
-  path.join(WEBSITE_DATA_DIR, "hr_board.json"),
-  path.join(WEBSITE_DATA_DIR, "home_run_board.json"),
-  path.join(WEBSITE_DATA_DIR, "top_hr_plays.json"),
-  path.join(DATA_DIR, "hr_board.json"),
-  path.join(DATA_DIR, "master_hr_model.json")
-];
+const PLAYER_POOL_FILE = path.join(WEBSITE_DATA_DIR, "mlb_player_pool.json");
+const HR_FILE = path.join(WEBSITE_DATA_DIR, "mlb_home_runs.json");
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -26,7 +21,6 @@ function ensureDir(dir) {
 
 function readJson(file) {
   if (!fs.existsSync(file)) return null;
-
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
   } catch {
@@ -34,45 +28,43 @@ function readJson(file) {
   }
 }
 
-function pickRows() {
-  for (const file of SOURCE_FILES) {
-    const raw = readJson(file);
+function cleanName(value = "") {
+  return String(value).replace(/\s+/g, " ").trim();
+}
 
-    if (!raw) continue;
-
-    const rows = Array.isArray(raw) ? raw : raw.rows || raw.players || raw.data || raw.plays || [];
-
-    if (Array.isArray(rows) && rows.length) {
-      return rows.slice(0, 40);
-    }
-  }
-
+function getArray(raw) {
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.players)) return raw.players;
+  if (Array.isArray(raw?.rows)) return raw.rows;
+  if (Array.isArray(raw?.data)) return raw.data;
   return [];
 }
 
-function cleanName(value = "") {
-  return String(value)
-    .replace(/\s+/g, " ")
-    .trim();
-}
+function collectPlayers() {
+  const seen = new Map();
 
-async function getMlbPlayerId(name) {
-  const q = encodeURIComponent(cleanName(name));
-  const url = `https://statsapi.mlb.com/api/v1/people/search?names=${q}`;
+  const sources = [
+    getArray(readJson(PLAYER_POOL_FILE)),
+    getArray(readJson(HR_FILE))
+  ];
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return null;
+  for (const rows of sources) {
+    for (const row of rows) {
+      const name = cleanName(row.player || row.name || row.fullName || row.batter || "");
+      const id = row.playerId || row.id || row.personId || row.mlbId || row.mlb_id;
 
-    const json = await res.json();
-    const people = json.people || [];
+      if (!name || !id) continue;
 
-    const exact = people.find(p => cleanName(p.fullName).toLowerCase() === cleanName(name).toLowerCase());
-
-    return exact?.id || people[0]?.id || null;
-  } catch {
-    return null;
+      seen.set(String(id), {
+        player: name,
+        playerId: Number(id),
+        team: row.team || row.teamName || row.currentTeam || "",
+        batSide: row.batSide || row.bats || ""
+      });
+    }
   }
+
+  return [...seen.values()].sort((a, b) => a.player.localeCompare(b.player));
 }
 
 function csvSplit(line) {
@@ -126,67 +118,73 @@ function parseCsv(text) {
 }
 
 async function fetchBatterStatcast(playerId) {
-  const start = `${SEASON}-03-01`;
-  const end = `${SEASON}-11-30`;
+  const params = new URLSearchParams();
 
-  const params = new URLSearchParams({
-    all: "true",
-    hfPT: "",
-    hfAB: "",
-    hfGT: "R|",
-    hfPR: "",
-    hfZ: "",
-    stadium: "",
-    hfBBL: "",
-    hfNewZones: "",
-    hfPull: "",
-    hfC: "",
-    hfSea: `${SEASON}|`,
-    hfSit: "",
-    player_type: "batter",
-    hfOuts: "",
-    opponent: "",
-    pitcher_throws: "",
-    batter_stands: "",
-    hfSA: "",
-    game_date_gt: start,
-    game_date_lt: end,
-    hfInfield: "",
-    team: "",
-    position: "",
-    hfOutfield: "",
-    hfRO: "",
-    home_road: "",
-    batters_lookup: String(playerId),
-    hfFlag: "",
-    metric_1: "",
-    hfInn: "",
-    min_pitches: "0",
-    min_results: "0",
-    group_by: "name",
-    sort_col: "pitches",
-    player_event_sort: "h_launch_speed",
-    sort_order: "desc",
-    min_abs: "0",
-    type: "details"
-  });
+  params.set("all", "true");
+  params.set("hfPT", "");
+  params.set("hfAB", "");
+  params.set("hfGT", "R|");
+  params.set("hfPR", "");
+  params.set("hfZ", "");
+  params.set("stadium", "");
+  params.set("hfBBL", "");
+  params.set("hfNewZones", "");
+  params.set("hfPull", "");
+  params.set("hfC", "");
+  params.set("hfSea", `${SEASON}|`);
+  params.set("hfSit", "");
+  params.set("player_type", "batter");
+  params.set("hfOuts", "");
+  params.set("opponent", "");
+  params.set("pitcher_throws", "");
+  params.set("batter_stands", "");
+  params.set("hfSA", "");
+  params.set("game_date_gt", START_DATE);
+  params.set("game_date_lt", END_DATE);
+  params.set("hfInfield", "");
+  params.set("team", "");
+  params.set("position", "");
+  params.set("hfOutfield", "");
+  params.set("hfRO", "");
+  params.set("home_road", "");
+  params.set("batters_lookup[]", String(playerId));
+  params.set("hfFlag", "");
+  params.set("metric_1", "");
+  params.set("hfInn", "");
+  params.set("min_pitches", "0");
+  params.set("min_results", "0");
+  params.set("group_by", "name");
+  params.set("sort_col", "pitches");
+  params.set("player_event_sort", "api_p_release_speed");
+  params.set("sort_order", "desc");
+  params.set("min_pas", "0");
+  params.set("type", "details");
 
-  const url = `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`;
+  const urls = [
+    `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`,
+    `https://baseballsavant.mlb.com/statcast_search/csv-docs?${params.toString()}`
+  ];
 
-  try {
-    const res = await fetch(url, {
-      headers: {
-        "user-agent": "TheSlipLab/1.0"
-      }
-    });
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "accept": "text/csv,*/*",
+          "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
+        }
+      });
 
-    if (!res.ok) return [];
+      if (!res.ok) continue;
 
-    const text = await res.text();
-    return parseCsv(text);
-  } catch {
-    return [];
+      const text = await res.text();
+
+      if (!text || !text.includes("pitch_type")) continue;
+
+      return parseCsv(text);
+    } catch {}
   }
+
+  return [];
 }
 
 function number(value) {
@@ -197,11 +195,11 @@ function number(value) {
 function zoneIndex(px, pz) {
   if (px === null || pz === null) return null;
 
-  if (px < -1.5 || px > 1.5) return null;
-  if (pz < 1.0 || pz > 4.0) return null;
+  if (px < -1.75 || px > 1.75) return null;
+  if (pz < 0.75 || pz > 4.25) return null;
 
-  const col = Math.min(4, Math.max(0, Math.floor(((px + 1.5) / 3.0) * 5)));
-  const row = Math.min(4, Math.max(0, Math.floor(((4.0 - pz) / 3.0) * 5)));
+  const col = Math.min(4, Math.max(0, Math.floor(((px + 1.75) / 3.5) * 5)));
+  const row = Math.min(4, Math.max(0, Math.floor(((4.25 - pz) / 3.5) * 5)));
 
   return row * 5 + col;
 }
@@ -309,43 +307,39 @@ async function main() {
   ensureDir(DATA_DIR);
   ensureDir(WEBSITE_DATA_DIR);
 
-  const rows = pickRows();
+  const players = collectPlayers();
 
   const output = {
     generatedAt: new Date().toISOString(),
     season: SEASON,
-    source: "Baseball Savant Statcast CSV plus MLB Stats API player search",
+    playerCount: players.length,
+    source: "Baseball Savant Statcast CSV plus MLB player pool",
     players: {}
   };
 
   console.log("STATCAST ZONE ENGINE");
-  console.log("Players queued:", rows.length);
+  console.log("Players queued:", players.length);
 
-  for (const row of rows) {
-    const player = cleanName(row.player || row.name || row.batter || "");
+  let done = 0;
 
-    if (!player) continue;
+  for (const player of players) {
+    done++;
 
-    const id = row.playerId || row.player_id || row.mlbId || row.mlb_id || await getMlbPlayerId(player);
+    console.log(`[${done}/${players.length}] Fetching: ${player.player} ${player.playerId}`);
 
-    if (!id) {
-      console.log("NO MLB ID:", player);
-      continue;
-    }
-
-    console.log("Fetching:", player, id);
-
-    const statcastRows = await fetchBatterStatcast(id);
+    const statcastRows = await fetchBatterStatcast(player.playerId);
     const zones = buildMetricZones(statcastRows);
 
-    output.players[player] = {
-      player,
-      mlbId: id,
+    output.players[player.player] = {
+      player: player.player,
+      mlbId: player.playerId,
+      team: player.team,
+      batSide: player.batSide,
       rows: statcastRows.length,
       zones
     };
 
-    await new Promise(resolve => setTimeout(resolve, 350));
+    await new Promise(resolve => setTimeout(resolve, 250));
   }
 
   fs.writeFileSync(OUT_DATA, JSON.stringify(output, null, 2));
