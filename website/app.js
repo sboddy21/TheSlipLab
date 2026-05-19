@@ -817,6 +817,48 @@ function openPitcherVulnerabilityProfile(pitcherName) {
 }
 
 
+
+function liveStatusText(row) {
+  const raw = String(
+    row.status ||
+    row.gameStatus ||
+    row.detailedState ||
+    row.abstractGameState ||
+    row.statusCode ||
+    ""
+  ).trim();
+
+  const inning = row.currentInning || row.inning || "";
+  const inningState = row.inningState || row.halfInning || "";
+
+  if (/final/i.test(raw)) return "FINAL";
+  if (/delay|postponed|suspended/i.test(raw)) return raw.toUpperCase();
+  if (/live|in progress|progress/i.test(raw)) {
+    if (inning) {
+      const half = String(inningState || "").toUpperCase();
+      return `${half ? half + " " : ""}${inning}`;
+    }
+    return "LIVE";
+  }
+  if (/preview|scheduled|pre-game|warmup/i.test(raw)) return "SCHEDULED";
+  if (row.awayScore != null || row.homeScore != null) return "LIVE";
+
+  return raw ? raw.toUpperCase() : "SCHEDULED";
+}
+
+function liveStatusClass(row) {
+  const text = liveStatusText(row);
+
+  if (/FINAL/.test(text)) return "status-pill final";
+  if (/DELAY|POSTPONED|SUSPENDED/.test(text)) return "status-pill delayed";
+  if (/LIVE|TOP|BOT|MID|END|^[0-9]+$/.test(text)) return "status-pill live";
+  return "status-pill scheduled";
+}
+
+function renderLiveStatusPill(row) {
+  return `<span class="${liveStatusClass(row)}">${liveStatusText(row)}</span>`;
+}
+
 function groupRowsByGame(rows) {
   const map = new Map();
 
@@ -882,7 +924,7 @@ function renderGroupedHomeRunBoard(rows) {
             <div>
               <span>GAME STACK</span>
               <h3>${clean(group.game)}</h3>
-              <p>${clean(group.venue || "Venue TBD")}</p>
+              <p>${clean(group.venue || "Venue TBD")} ${renderLiveStatusPill(group.rows[0])}</p>
             </div>
 
             <div class="game-group-meta">
@@ -985,7 +1027,7 @@ async function render() {
         <div>
           <div class="player">${row.matchup || "MLB Game"}</div>
           <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
-          <div class="${gameStatusClass(row)}">${gameStatusLabel(row)}</div>
+          ${renderLiveStatusPill(row)}
           ${renderWeatherMini(row.venue)}
         </div>
 
