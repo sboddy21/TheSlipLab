@@ -287,38 +287,23 @@ function statBlock(label, value) {
 }
 
 function buildZoneCell(row, hitter, pitcher, index) {
-  const score = Number(row.score || 0);
-  const hr = Number(hitter.hr || 0);
-  const slg = Number(hitter.slg || 0);
-  const ops = Number(hitter.ops || 0);
-  const pitcherHr = Number(pitcher.homeRuns || 0);
-  const era = Number(pitcher.era || 0);
+  const layout = [
+    { type: "warm", label: "Match" },
+    { type: "hot", label: "Attack" },
+    { type: "neutral", label: "Neutral" },
+    { type: "neutral", label: "Neutral" },
+    { type: "hot", label: "Attack" },
+    { type: "warm", label: "Match" },
+    { type: "neutral", label: "Neutral" },
+    { type: "warm", label: "Match" },
+    { type: "neutral", label: "Neutral" }
+  ];
 
-  const base =
-    score * 0.31 +
-    hr * 1.4 +
-    slg * 18 +
-    ops * 6 +
-    pitcherHr * 0.8 +
-    era * 0.7;
-
-  const zoneOffsets = [-18, 6, -11, 2, 13, -7, -13, 4, -16];
-  const zoneScore = base + zoneOffsets[index];
-
-  let type = "neutral";
-  let label = "Neutral";
-
-  if (zoneScore >= 48) {
-    type = "hot";
-    label = "Attack";
-  } else if (zoneScore >= 34) {
-    type = "warm";
-    label = "Match";
-  }
+  const zone = layout[index] || { type: "neutral", label: "Neutral" };
 
   return `
-    <div class="zone-lab-cell ${type}">
-      <span>${label}</span>
+    <div class="zone-lab-cell ${zone.type}">
+      <span>${zone.label}</span>
     </div>
   `;
 }
