@@ -294,25 +294,24 @@ function buildZoneCell(row, hitter, pitcher, index) {
   const pitcherHr = Number(pitcher.homeRuns || 0);
   const era = Number(pitcher.era || 0);
 
-  const zoneWeights = [0.72, 0.9, 0.66, 0.82, 1.0, 0.74, 0.68, 0.86, 0.7];
+  const base =
+    score * 0.31 +
+    hr * 1.4 +
+    slg * 18 +
+    ops * 6 +
+    pitcherHr * 0.8 +
+    era * 0.7;
 
-  const raw =
-    score * 0.48 +
-    hr * 2.4 +
-    slg * 28 +
-    ops * 9 +
-    pitcherHr * 1.3 +
-    era * 1.4;
-
-  const zoneScore = raw * zoneWeights[index];
+  const zoneOffsets = [-18, 6, -11, 2, 13, -7, -13, 4, -16];
+  const zoneScore = base + zoneOffsets[index];
 
   let type = "neutral";
   let label = "Neutral";
 
-  if (zoneScore >= 58) {
+  if (zoneScore >= 48) {
     type = "hot";
     label = "Attack";
-  } else if (zoneScore >= 42) {
+  } else if (zoneScore >= 34) {
     type = "warm";
     label = "Match";
   }
