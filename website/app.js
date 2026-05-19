@@ -539,12 +539,38 @@ function closePlayerProfile() {
 }
 
 
+function pitcherKey(row) {
+  return String(row.opposingPitcher || row.pitcher || "Unknown Pitcher").trim();
+}
+
 function renderTopVulnerabilities(rows) {
   if (!rows || !rows.length || state.market !== "home_runs") return "";
 
-  const vulnRows = [...rows]
+  const pitcherMap = new Map();
+
+  rows.forEach(row => {
+    const key = pitcherKey(row);
+    if (!pitcherMap.has(key)) {
+      pitcherMap.set(key, {
+        pitcher: key,
+        rows: [],
+        score: Number(row.score || 0),
+        era: row.stats?.pitcher?.era || "--",
+        game: row.game || "",
+        venue: row.venue || "",
+        opponent: row.opponent || "",
+        team: row.team || ""
+      });
+    }
+
+    const item = pitcherMap.get(key);
+    item.rows.push(row);
+    item.score = Math.max(item.score, Number(row.score || 0));
+  });
+
+  const vulnRows = [...pitcherMap.values()]
     .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
-    .slice(0, 8);
+    .slice(0, 6);
 
   return `
     <section class="top-vuln-strip">
@@ -558,20 +584,105 @@ function renderTopVulnerabilities(rows) {
           <button class="top-vuln-toggle">PARK</button>
         </div>
       </div>
+
       <div class="top-vuln-row">
-        ${vulnRows.map((row, index) => `
-          <article class="top-vuln-card">
+        ${vulnRows.map((item, index) => `
+          <article class="top-vuln-card" data-pitcher-profile="${encodeURIComponent(item.pitcher)}">
             <div class="top-vuln-rank">#${index + 1}</div>
-            <div class="top-vuln-score">${clean(row.score || "--")}</div>
-            <div class="top-vuln-label">${clean(row.edge || "ATTACK")}</div>
-            <div class="top-vuln-pitcher">${clean(row.opposingPitcher || "Unknown Pitcher")}</div>
-            <div class="top-vuln-matchup">${clean(row.team || "")} vs ${clean(row.opponent || "")}</div>
-            <div class="top-vuln-era">ERA ${clean(row.stats?.pitcher?.era || "--")}</div>
+            <div class="top-vuln-score">${clean(item.score || "--")}</div>
+            <div class="top-vuln-label">${item.rows.length} BATS</div>
+            <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
+            <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
+            <div class="top-vuln-era">ERA ${clean(item.era)}</div>
           </article>
         `).join("")}
       </div>
     </section>
   `;
+}
+
+function openPitcherVulnerabilityProfile(pitcherName) {
+  const rows = state.rows
+    .filter(row => pitcherKey(row) === pitcherName)
+    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+
+  if (!rows.length) return;
+
+  const pitcher = rows[0].stats?.pitcher || {};
+  const modal = document.getElementById("profile-modal");
+  const body = document.getElementById("profile-body");
+
+  body.innerHTML = `
+    <div class="profile-top">
+      <div>
+        <div class="profile-rank">PITCHER VULNERABILITY</div>
+        <h2>${clean(pitcherName)}</h2>
+        <p>${clean(rows[0].game || "")}</p>
+      </div>
+      <div class="profile-score">
+        <span>${clean(rows[0].score || "--")}</span>
+        <small>Top Bat Score</small>
+      </div>
+    </div>
+
+    <div class="profile-summary">
+      <div>
+        <span class="profile-label">ERA</span>
+        <strong>${clean(pitcher.era || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">WHIP</span>
+        <strong>${clean(pitcher.whip || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">HR Allowed</span>
+        <strong>${clean(pitcher.homeRuns || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Attack Pool</span>
+        <strong>${rows.length} bats</strong>
+      </div>
+    </div>
+
+    ${renderBallparkWeather(rows[0].venue)}
+
+    <h3>Batters Against This Pitcher</h3>
+
+    <div class="pitcher-batter-board">
+      ${rows.map((row, index) => {
+        const hitter = row.stats?.hitter || {};
+        return `
+          <article class="pitcher-batter-card" data-profile-index="${state.rows.indexOf(row)}">
+            <div class="pitcher-batter-rank">#${index + 1}</div>
+
+            <div class="pitcher-batter-main">
+              <strong>${clean(row.player || "Unknown Player")}</strong>
+              <span>${clean(row.team || "")} • ${clean(row.edge || "HR target")}</span>
+            </div>
+
+            <div class="pitcher-batter-tags">
+              <span>Score ${clean(row.score || "--")}</span>
+              <span>HR ${clean(hitter.hr || "--")}</span>
+              <span>SLG ${clean(hitter.slg || "--")}</span>
+              <span>OPS ${clean(hitter.ops || "--")}</span>
+              <span>ISO ${clean(row.iso || hitter.iso || "--")}</span>
+            </div>
+
+            <p>${clean(row.note || "Model likes this bat based on power profile, matchup context, and pitcher vulnerability.")}</p>
+          </article>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  modal.classList.add("show");
+
+  body.querySelectorAll("[data-profile-index]").forEach(card => {
+    card.addEventListener("click", event => {
+      event.stopPropagation();
+      openPlayerProfile(Number(card.dataset.profileIndex));
+    });
+  });
 }
 
 async function render() {
@@ -715,6 +826,12 @@ async function render() {
   document.querySelectorAll("[data-profile-index]").forEach(card => {
     card.addEventListener("click", () => {
       openPlayerProfile(Number(card.dataset.profileIndex));
+    });
+  });
+
+  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
+    card.addEventListener("click", () => {
+      openPitcherVulnerabilityProfile(decodeURIComponent(card.dataset.pitcherProfile));
     });
   });
 }
