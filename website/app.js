@@ -594,10 +594,105 @@ function renderTopVulnerabilities(rows) {
             <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
             <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
             <div class="top-vuln-era">ERA ${clean(item.era)}</div>
+            <div class="top-vuln-attack">${pitcherAttackGrade(item.rows[0]?.stats?.pitcher || {}).label}</div>
           </article>
         `).join("")}
       </div>
     </section>
+  `;
+}
+
+
+function pitcherAttackGrade(pitcher) {
+  const era = Number(pitcher?.era || 0);
+  const whip = Number(pitcher?.whip || 0);
+  const hr = Number(pitcher?.homeRuns || 0);
+  const hits = Number(pitcher?.hits || 0);
+  const walks = Number(pitcher?.baseOnBalls || 0);
+  const innings = Number(pitcher?.inningsPitched || 0);
+
+  let score = 0;
+
+  if (era >= 6) score += 30;
+  else if (era >= 4.5) score += 20;
+  else if (era >= 3.8) score += 10;
+
+  if (whip >= 1.6) score += 25;
+  else if (whip >= 1.35) score += 16;
+  else if (whip >= 1.2) score += 8;
+
+  if (hr >= 10) score += 18;
+  else if (hr >= 5) score += 12;
+  else if (hr >= 1) score += 6;
+
+  if (innings > 0 && hits / innings >= 1.15) score += 12;
+  if (innings > 0 && walks / innings >= 0.45) score += 10;
+
+  if (score >= 70) return { label: "GREEN ATTACK", className: "green", score };
+  if (score >= 45) return { label: "PLAYABLE ATTACK", className: "yellow", score };
+  if (score >= 25) return { label: "WATCH ONLY", className: "gray", score };
+  return { label: "RED AVOID", className: "red", score };
+}
+
+function pitcherAttackFactors(pitcher) {
+  const good = [];
+  const bad = [];
+
+  const era = Number(pitcher?.era || 0);
+  const whip = Number(pitcher?.whip || 0);
+  const hr = Number(pitcher?.homeRuns || 0);
+  const hits = Number(pitcher?.hits || 0);
+  const walks = Number(pitcher?.baseOnBalls || 0);
+  const innings = Number(pitcher?.inningsPitched || 0);
+  const strikeouts = Number(pitcher?.strikeOuts || 0);
+
+  if (era >= 4.5) good.push(`ERA leak at ${era}`);
+  else if (era > 0) bad.push(`ERA is not a major attack point at ${era}`);
+
+  if (whip >= 1.35) good.push(`Traffic risk with ${whip} WHIP`);
+  else if (whip > 0) bad.push(`WHIP is controlled at ${whip}`);
+
+  if (hr >= 5) good.push(`${hr} HR allowed`);
+  else bad.push("Limited HR leak in current sample");
+
+  if (innings > 0 && hits / innings >= 1.15) good.push("Hit rate allowed is elevated");
+  else if (innings > 0) bad.push("Hit rate allowed is not extreme");
+
+  if (innings > 0 && walks / innings >= 0.45) good.push("Walks create extra damage paths");
+  else if (innings > 0) bad.push("Walk rate is not a clear boost");
+
+  if (innings > 0 && strikeouts / innings >= 1.1) bad.push("Strikeout profile can erase HR chances");
+
+  if (!good.length) good.push("No major pitcher leak detected from current box profile");
+  if (!bad.length) bad.push("No strong avoid signal detected from current box profile");
+
+  return { good, bad };
+}
+
+function renderPitcherAttackPanel(pitcher) {
+  const grade = pitcherAttackGrade(pitcher);
+  const factors = pitcherAttackFactors(pitcher);
+
+  return `
+    <div class="pitcher-attack-panel">
+      <div class="pitcher-attack-grade ${grade.className}">
+        <span>Pitcher Attack Grade</span>
+        <strong>${grade.label}</strong>
+        <small>${grade.score}/95 attack score</small>
+      </div>
+
+      <div class="pitcher-attack-columns">
+        <div class="pitcher-attack-list good">
+          <h4>Green Attack Spots</h4>
+          ${factors.good.map(item => `<div>${item}</div>`).join("")}
+        </div>
+
+        <div class="pitcher-attack-list bad">
+          <h4>Red Avoid Spots</h4>
+          ${factors.bad.map(item => `<div>${item}</div>`).join("")}
+        </div>
+      </div>
+    </div>
   `;
 }
 
@@ -751,6 +846,8 @@ function openPitcherVulnerabilityProfile(pitcherName) {
     </div>
 
     ${renderPitcherDangerMeter(pitcher)}
+
+    ${renderPitcherAttackPanel(pitcher)}
 
     ${renderBallparkWeather(rows[0].venue)}
 
