@@ -538,61 +538,6 @@ function closePlayerProfile() {
   }
 }
 
-
-function renderTopVulnerabilities(rows) {
-  if (!rows || !rows.length || state.market !== "home_runs") {
-    return "";
-  }
-
-  const vulnRows = [...rows]
-    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
-    .slice(0, 8);
-
-  return `
-    <section class="top-vuln-strip">
-      <div class="top-vuln-header">
-        <div>
-          <div class="top-vuln-kicker">PROJECTED HRs • HIGH VALUE GAMES</div>
-          <h2>TOP VULNERABILITIES</h2>
-        </div>
-
-        <div class="top-vuln-toggles">
-          <button class="top-vuln-toggle active">VULN</button>
-          <button class="top-vuln-toggle">PARK</button>
-        </div>
-      </div>
-
-      <div class="top-vuln-row">
-        ${vulnRows.map((row, index) => `
-          <article class="top-vuln-card">
-            <div class="top-vuln-rank">#${index + 1}</div>
-
-            <div class="top-vuln-score">
-              ${clean(row.score || "--")}
-            </div>
-
-            <div class="top-vuln-label">
-              ${clean(row.edge || "ATTACK")}
-            </div>
-
-            <div class="top-vuln-pitcher">
-              ${clean(row.opposingPitcher || "Unknown Pitcher")}
-            </div>
-
-            <div class="top-vuln-matchup">
-              ${clean(row.team || "")} vs ${clean(row.opponent || "")}
-            </div>
-
-            <div class="top-vuln-era">
-              ERA ${clean(row.stats?.pitcher?.era || "--")}
-            </div>
-          </article>
-        `).join("")}
-      </div>
-    </section>
-  `;
-}
-
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -666,11 +611,7 @@ async function render() {
   }
 
   if (state.market === "games") {
-    board.innerHTML = `
-    ${renderTopVulnerabilities(rows)}
-
-    <div class="main-board-grid">
-      ${rows.map((row, index) => `
+    board.innerHTML = rows.map((row, index) => `
       <article class="card game-card">
         <div class="rank">#${index + 1}</div>
 
@@ -706,11 +647,7 @@ async function render() {
     return;
   }
 
-  board.innerHTML = `
-    ${renderTopVulnerabilities(rows)}
-
-    <div class="main-board-grid">
-      ${rows.map((row, index) => `
+  board.innerHTML = rows.map((row, index) => `
     <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
       <div class="rank">#${row.rank || index + 1}</div>
 
@@ -732,9 +669,7 @@ async function render() {
         </div>
       ` : ""}
     </article>
-  `).join("")}
-    </div>
-  `;
+  `).join("");
 
   document.querySelectorAll("[data-profile-index]").forEach(card => {
     card.addEventListener("click", () => {
