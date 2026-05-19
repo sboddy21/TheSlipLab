@@ -352,6 +352,111 @@ function renderZoneMetricGrid(title, metric, playerZones) {
   `;
 }
 
+
+function zoneIndexToGrid(index) {
+  const row = Math.floor(index / 5);
+  const col = index % 5;
+  return { row, col };
+}
+
+function strongestZones(values, count = 3) {
+  return values
+    .map((value, index) => ({ value: Number(value || 0), index }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, count);
+}
+
+function sprayDirectionSummary(playerZones) {
+  const hr = playerZones?.zones?.hr || [];
+  const barrel = playerZones?.zones?.barrel || [];
+  const iso = playerZones?.zones?.iso || [];
+
+  let pull = 0;
+  let middle = 0;
+  let oppo = 0;
+
+  hr.forEach((v, i) => {
+    const col = i % 5;
+    const total = Number(v || 0) + Number(barrel[i] || 0) + Number(iso[i] || 0);
+
+    if (col <= 1) pull += total;
+    else if (col === 2) middle += total;
+    else oppo += total;
+  });
+
+  if (pull >= middle && pull >= oppo) return "PULL SIDE DAMAGE";
+  if (middle >= pull && middle >= oppo) return "MIDDLE LANE POWER";
+  return "OPPO POWER";
+}
+
+function renderSprayOverlay(playerZones) {
+  const hr = playerZones?.zones?.hr || [];
+  const barrel = playerZones?.zones?.barrel || [];
+  const hardHit = playerZones?.zones?.hardHit || [];
+  const iso = playerZones?.zones?.iso || [];
+
+  const topHr = strongestZones(hr, 4);
+  const topBarrel = strongestZones(barrel, 4);
+
+  return `
+    <div class="spray-overlay-card">
+      <div class="spray-overlay-header">
+        <div>
+          <strong>Power Spray Overlay</strong>
+          <span>${sprayDirectionSummary(playerZones)}</span>
+        </div>
+
+        <div class="spray-overlay-legend">
+          <div><i class="hr"></i> HR</div>
+          <div><i class="barrel"></i> Barrel</div>
+          <div><i class="hard"></i> Hard Hit</div>
+        </div>
+      </div>
+
+      <div class="spray-overlay-grid">
+        ${Array.from({ length: 25 }).map((_, index) => {
+          const hrVal = Number(hr[index] || 0);
+          const barrelVal = Number(barrel[index] || 0);
+          const hhVal = Number(hardHit[index] || 0);
+          const isoVal = Number(iso[index] || 0);
+
+          const isHrHot = topHr.some(z => z.index == index && z.value > 0);
+          const isBarrelHot = topBarrel.some(z => z.index == index && z.value > 0);
+
+          let cls = "neutral";
+
+          if (isHrHot) cls = "hr-hot";
+          else if (isBarrelHot) cls = "barrel-hot";
+          else if (hhVal >= 0.35 || isoVal >= 0.35) cls = "hard-hot";
+
+          return `
+            <div class="spray-zone ${cls}">
+              <span>${hrVal > 0 ? Math.round(hrVal) : ""}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+
+      <div class="spray-overlay-summary">
+        <div>
+          <strong>${topHr.filter(z => z.value > 0).length}</strong>
+          <span>HR Lanes</span>
+        </div>
+
+        <div>
+          <strong>${topBarrel.filter(z => z.value > 0).length}</strong>
+          <span>Barrel Lanes</span>
+        </div>
+
+        <div>
+          <strong>${playerZones.rows}</strong>
+          <span>Tracked Pitches</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 function renderStatcastZoneLab(row) {
   const playerZones = getPlayerZoneData(row.player);
 
@@ -375,6 +480,8 @@ function renderStatcastZoneLab(row) {
           <strong>Statcast Zone Lab</strong>
           <span>${playerZones.rows} tracked pitches from Baseball Savant</span>
         </div>
+
+        ${renderSprayOverlay(playerZones)}
 
         <div class="metric-zone-board">
           ${renderZoneMetricGrid("AVG", "avg", playerZones)}
