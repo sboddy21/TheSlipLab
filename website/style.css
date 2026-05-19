@@ -1403,3 +1403,322 @@ body {
   }
 }
 
+
+/* Premium terminal compact pass */
+:root {
+  --terminal-green: #29ff81;
+  --terminal-bg: #07090c;
+  --terminal-panel: rgba(14, 17, 22, 0.96);
+  --terminal-line: rgba(255,255,255,0.065);
+}
+
+html {
+  background: var(--terminal-bg);
+}
+
+body {
+  zoom: 0.86;
+  background:
+    radial-gradient(circle at top left, rgba(41,255,129,0.075), transparent 26%),
+    radial-gradient(circle at top right, rgba(67,85,255,0.045), transparent 24%),
+    #07090c;
+}
+
+header,
+.topbar,
+.hero,
+.board-header,
+.card,
+.game-card,
+.weather-board-card,
+.park-weather-card,
+.profile-panel,
+.top-vuln-strip,
+.zone-lab-card {
+  box-shadow:
+    0 14px 42px rgba(0,0,0,0.32),
+    inset 0 1px 0 rgba(255,255,255,0.035);
+}
+
+header,
+.topbar,
+.hero,
+.board-header {
+  border-bottom: 1px solid var(--terminal-line);
+}
+
+.shell,
+.app-shell,
+main {
+  max-width: 1340px;
+}
+
+.hero {
+  padding: 18px 20px;
+  border-radius: 18px;
+}
+
+.hero h1,
+#page-title {
+  font-size: clamp(24px, 3vw, 38px);
+  letter-spacing: 0.01em;
+}
+
+.hero p,
+#page-subtitle {
+  font-size: 12px;
+  color: #9aa6b2;
+}
+
+nav,
+.tabs {
+  gap: 7px;
+}
+
+nav button,
+.tabs button {
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+nav button.active,
+.tabs button.active {
+  background: rgba(41,255,129,0.14);
+  border-color: rgba(41,255,129,0.45);
+  color: var(--terminal-green);
+}
+
+.board-header {
+  padding: 12px 14px;
+  border-radius: 16px;
+  margin-bottom: 12px;
+  background: rgba(10,13,18,0.78);
+}
+
+#board-title {
+  font-size: 16px;
+  letter-spacing: 0.06em;
+}
+
+#board-meta,
+#top-updated {
+  font-size: 10px;
+  color: #7f8b96;
+}
+
+.main-board-grid {
+  gap: 8px;
+}
+
+.card,
+.game-card,
+.weather-board-card,
+.park-weather-card {
+  padding: 10px 12px;
+  border-radius: 13px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,0.034),
+      rgba(255,255,255,0.018)
+    );
+  border: 1px solid rgba(255,255,255,0.062);
+}
+
+.card:hover,
+.game-card:hover {
+  border-color: rgba(41,255,129,0.28);
+  transform: translateY(-1px);
+}
+
+.rank {
+  font-size: 10px;
+  color: var(--terminal-green);
+}
+
+.player {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.meta {
+  font-size: 10px;
+  color: #8994a0;
+}
+
+.stat-label,
+.profile-label {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: #7f8b96;
+}
+
+.stat-value {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.top-vuln-strip {
+  max-width: 1240px;
+  margin: 0 auto 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(16,19,25,0.98),
+      rgba(8,10,14,0.98)
+    );
+}
+
+.top-vuln-header {
+  margin-bottom: 10px;
+}
+
+.top-vuln-header h2 {
+  font-size: 15px;
+}
+
+.top-vuln-kicker {
+  font-size: 9px;
+}
+
+.top-vuln-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  overflow: visible;
+}
+
+.top-vuln-card {
+  padding: 10px;
+  border-radius: 13px;
+  min-width: 0;
+}
+
+.top-vuln-score {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.top-vuln-label {
+  font-size: 8px;
+  padding: 3px 7px;
+  margin-bottom: 8px;
+}
+
+.top-vuln-pitcher {
+  font-size: 12px;
+}
+
+.top-vuln-matchup,
+.top-vuln-era {
+  font-size: 10px;
+}
+
+.profile-panel {
+  max-width: 820px;
+  border-radius: 18px;
+}
+
+.profile-top {
+  gap: 12px;
+}
+
+.profile-top h2 {
+  font-size: 22px;
+}
+
+.profile-score span {
+  font-size: 26px;
+}
+
+.profile-summary {
+  gap: 8px;
+}
+
+.profile-grid {
+  gap: 8px;
+}
+
+.profile-note,
+.profile-explainer,
+.pitcher-risk-banner,
+.pitcher-danger-meter,
+.pitcher-batter-card {
+  border-radius: 13px;
+}
+
+.metric-zone-board {
+  gap: 7px;
+}
+
+.metric-zone-card {
+  border-radius: 10px;
+  padding: 6px;
+}
+
+.metric-zone-title {
+  font-size: 9px;
+  margin-bottom: 6px;
+}
+
+.metric-zone-cell {
+  border-radius: 3px;
+  font-size: 6.5px;
+}
+
+.pitcher-risk-banner {
+  padding: 12px;
+}
+
+.pitcher-risk-banner strong {
+  font-size: 20px;
+}
+
+.pitcher-batter-card {
+  padding: 10px;
+}
+
+.pitcher-batter-main strong {
+  font-size: 13px;
+}
+
+.pitcher-batter-tags span {
+  font-size: 9px;
+  padding: 3px 7px;
+}
+
+.pitcher-batter-card p {
+  font-size: 10px;
+}
+
+@media (max-width: 1200px) {
+  body {
+    zoom: 0.9;
+  }
+
+  .top-vuln-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  body {
+    zoom: 1;
+  }
+
+  .top-vuln-row {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    padding: 14px;
+  }
+}
+
