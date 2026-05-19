@@ -601,6 +601,85 @@ function renderTopVulnerabilities(rows) {
   `;
 }
 
+function pitcherRiskLabel(pitcher) {
+  const era = Number(pitcher?.era || 0);
+  const whip = Number(pitcher?.whip || 0);
+  const walks = Number(pitcher?.baseOnBalls || 0);
+  const innings = Number(pitcher?.inningsPitched || 0);
+  const hr = Number(pitcher?.homeRuns || 0);
+
+  if (era >= 6 || whip >= 1.6) return "HIGH LEAK";
+  if (era >= 4.5 || whip >= 1.35 || hr >= 8) return "ATTACKABLE";
+  if (walks >= 10 && innings <= 25) return "TRAFFIC RISK";
+  return "WATCH";
+}
+
+function pitcherRiskBullets(pitcher, rows) {
+  const bullets = [];
+  const topBat = rows[0];
+  const era = Number(pitcher?.era || 0);
+  const whip = Number(pitcher?.whip || 0);
+  const hr = Number(pitcher?.homeRuns || 0);
+  const hits = Number(pitcher?.hits || 0);
+  const walks = Number(pitcher?.baseOnBalls || 0);
+  const innings = Number(pitcher?.inningsPitched || 0);
+
+  if (era >= 6) bullets.push(`ERA is sitting at ${era}, which puts this pitcher in a danger profile.`);
+  if (whip >= 1.5) bullets.push(`WHIP is elevated at ${whip}, creating extra traffic before power contact.`);
+  if (hr > 0) bullets.push(`${hr} HR allowed already, so the long ball risk is live.`);
+  if (hits >= 20) bullets.push(`${hits} hits allowed shows contact leakage.`);
+  if (walks >= 8) bullets.push(`${walks} walks allowed means free runners can turn one swing into damage.`);
+  if (topBat) bullets.push(`${topBat.player} is the top ranked bat against this pitcher with a ${topBat.score} HR Match Score.`);
+
+  if (!bullets.length) {
+    bullets.push("This pitcher is showing up because the board has multiple bats with playable power scores in the same matchup.");
+  }
+
+  return bullets;
+}
+
+function hitterPowerLabel(row) {
+  const hitter = row.stats?.hitter || {};
+  const hr = Number(hitter.hr || 0);
+  const slg = Number(hitter.slg || 0);
+  const ops = Number(hitter.ops || 0);
+  const score = Number(row.score || 0);
+
+  if (score >= 70 || hr >= 15 || slg >= 0.55 || ops >= 0.9) return "CORE DANGER";
+  if (score >= 58 || hr >= 10 || slg >= 0.48 || ops >= 0.8) return "LIVE POWER";
+  return "WATCH BAT";
+}
+
+function renderPitcherDangerMeter(pitcher) {
+  const era = Number(pitcher?.era || 0);
+  const whip = Number(pitcher?.whip || 0);
+  const hr = Number(pitcher?.homeRuns || 0);
+
+  const eraScore = Math.min(100, Math.round((era / 8) * 100));
+  const whipScore = Math.min(100, Math.round((whip / 2) * 100));
+  const hrScore = Math.min(100, Math.round((hr / 15) * 100));
+
+  return `
+    <div class="pitcher-danger-meter">
+      <div class="danger-meter-row">
+        <span>ERA Risk</span>
+        <div><i style="width:${eraScore}%"></i></div>
+        <strong>${clean(pitcher?.era || "--")}</strong>
+      </div>
+      <div class="danger-meter-row">
+        <span>Traffic</span>
+        <div><i style="width:${whipScore}%"></i></div>
+        <strong>${clean(pitcher?.whip || "--")}</strong>
+      </div>
+      <div class="danger-meter-row">
+        <span>HR Leak</span>
+        <div><i style="width:${hrScore}%"></i></div>
+        <strong>${clean(pitcher?.homeRuns || "--")}</strong>
+      </div>
+    </div>
+  `;
+}
+
 function openPitcherVulnerabilityProfile(pitcherName) {
   const rows = state.rows
     .filter(row => pitcherKey(row) === pitcherName)
@@ -609,11 +688,14 @@ function openPitcherVulnerabilityProfile(pitcherName) {
   if (!rows.length) return;
 
   const pitcher = rows[0].stats?.pitcher || {};
+  const topRows = rows.slice(0, 5);
+  const riskLabel = pitcherRiskLabel(pitcher);
+
   const modal = document.getElementById("profile-modal");
   const body = document.getElementById("profile-body");
 
   body.innerHTML = `
-    <div class="profile-top">
+    <div class="profile-top pitcher-profile-top">
       <div>
         <div class="profile-rank">PITCHER VULNERABILITY</div>
         <h2>${clean(pitcherName)}</h2>
@@ -623,6 +705,14 @@ function openPitcherVulnerabilityProfile(pitcherName) {
         <span>${clean(rows[0].score || "--")}</span>
         <small>Top Bat Score</small>
       </div>
+    </div>
+
+    <div class="pitcher-risk-banner">
+      <div>
+        <span>Risk Grade</span>
+        <strong>${riskLabel}</strong>
+      </div>
+      <p>${rows.length} bats from this matchup are currently showing on the HR board.</p>
     </div>
 
     <div class="profile-summary">
@@ -642,18 +732,46 @@ function openPitcherVulnerabilityProfile(pitcherName) {
         <span class="profile-label">Attack Pool</span>
         <strong>${rows.length} bats</strong>
       </div>
+      <div>
+        <span class="profile-label">Hits Allowed</span>
+        <strong>${clean(pitcher.hits || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Walks</span>
+        <strong>${clean(pitcher.baseOnBalls || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">Strikeouts</span>
+        <strong>${clean(pitcher.strikeOuts || "--")}</strong>
+      </div>
+      <div>
+        <span class="profile-label">IP</span>
+        <strong>${clean(pitcher.inningsPitched || "--")}</strong>
+      </div>
     </div>
+
+    ${renderPitcherDangerMeter(pitcher)}
 
     ${renderBallparkWeather(rows[0].venue)}
 
-    <h3>Batters Against This Pitcher</h3>
+    <h3>Why This Pitcher Is Vulnerable</h3>
+    <div class="profile-explainer">
+      <ul class="matchup-read-list">
+        ${pitcherRiskBullets(pitcher, rows).map(item => `<li>${item}</li>`).join("")}
+      </ul>
+    </div>
+
+    <h3>Top Danger Bats</h3>
 
     <div class="pitcher-batter-board">
-      ${rows.map((row, index) => {
+      ${topRows.map((row, index) => {
         const hitter = row.stats?.hitter || {};
         return `
           <article class="pitcher-batter-card" data-profile-index="${state.rows.indexOf(row)}">
-            <div class="pitcher-batter-rank">#${index + 1}</div>
+            <div class="pitcher-batter-topline">
+              <div class="pitcher-batter-rank">#${index + 1}</div>
+              <div class="pitcher-batter-chip">${hitterPowerLabel(row)}</div>
+            </div>
 
             <div class="pitcher-batter-main">
               <strong>${clean(row.player || "Unknown Player")}</strong>
@@ -662,10 +780,11 @@ function openPitcherVulnerabilityProfile(pitcherName) {
 
             <div class="pitcher-batter-tags">
               <span>Score ${clean(row.score || "--")}</span>
+              <span>Side ${clean(row.batSide || "--")}</span>
               <span>HR ${clean(hitter.hr || "--")}</span>
               <span>SLG ${clean(hitter.slg || "--")}</span>
               <span>OPS ${clean(hitter.ops || "--")}</span>
-              <span>ISO ${clean(row.iso || hitter.iso || "--")}</span>
+              <span>AVG ${clean(hitter.avg || "--")}</span>
             </div>
 
             <p>${clean(row.note || "Model likes this bat based on power profile, matchup context, and pitcher vulnerability.")}</p>
@@ -673,6 +792,18 @@ function openPitcherVulnerabilityProfile(pitcherName) {
         `;
       }).join("")}
     </div>
+
+    ${rows.length > 5 ? `
+      <h3>Other Bats In This Pool</h3>
+      <div class="pitcher-mini-list">
+        ${rows.slice(5).map(row => `
+          <button data-profile-index="${state.rows.indexOf(row)}">
+            <strong>${clean(row.player)}</strong>
+            <span>${clean(row.score)} score • ${clean(row.edge || "Watch")}</span>
+          </button>
+        `).join("")}
+      </div>
+    ` : ""}
   `;
 
   modal.classList.add("show");
