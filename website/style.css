@@ -783,3 +783,60 @@ main {
 .zone-cold-dot {
   background: #5c6670;
 }
+
+.zone-lab-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.zone-lab-cell {
+  height: 92px;
+  min-height: 92px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  position: relative;
+  overflow: hidden;
+}
+
+.zone-lab-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.25;
+}
+
+.zone-lab-cell.hot::before {
+  background:
+    radial-gradient(circle at center,
+    rgba(41,255,129,0.95),
+    rgba(41,255,129,0.15));
+}
+
+.zone-lab-cell.warm::before {
+  background:
+    radial-gradient(circle at center,
+    rgba(255,209,102,0.95),
+    rgba(255,209,102,0.12));
+}
+
+.zone-lab-cell.neutral::before {
+  background:
+    radial-gradient(circle at center,
+    rgba(120,130,145,0.45),
+    rgba(120,130,145,0.05));
+}
+
+.zone-lab-cell span {
+  position: relative;
+  z-index: 2;
+}
+
