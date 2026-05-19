@@ -816,6 +816,95 @@ function openPitcherVulnerabilityProfile(pitcherName) {
   });
 }
 
+
+function groupRowsByGame(rows) {
+  const map = new Map();
+
+  rows.forEach(row => {
+    const key = row.game || `${row.team || "Unknown"} vs ${row.opponent || "Unknown"}`;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        game: key,
+        venue: row.venue || "",
+        rows: []
+      });
+    }
+
+    map.get(key).rows.push(row);
+  });
+
+  return [...map.values()]
+    .map(group => ({
+      ...group,
+      rows: group.rows.sort((a, b) => Number(b.score || 0) - Number(a.score || 0)),
+      topScore: Math.max(...group.rows.map(row => Number(row.score || 0)))
+    }))
+    .sort((a, b) => b.topScore - a.topScore);
+}
+
+function renderPlayerBoardCard(row, index) {
+  return `
+    <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
+      <div class="rank">#${row.rank || index + 1}</div>
+
+      <div>
+        <div class="player">${row.player || "Unknown Player"}</div>
+        <div class="meta">${row.team || ""} • ${row.game || ""}</div>
+        ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">Score</div>
+        <div class="stat-value">${row.score ?? "--"}</div>
+      </div>
+
+      ${state.market === "home_runs" ? `
+        <div class="stat">
+          <div class="stat-label">Profile</div>
+          <div class="stat-value">Open</div>
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function renderGroupedHomeRunBoard(rows) {
+  const groups = groupRowsByGame(rows);
+
+  return `
+    ${renderTopVulnerabilities(rows)}
+
+    <div class="game-group-board">
+      ${groups.map(group => `
+        <section class="game-group">
+          <div class="game-group-header">
+            <div>
+              <span>GAME STACK</span>
+              <h3>${clean(group.game)}</h3>
+              <p>${clean(group.venue || "Venue TBD")}</p>
+            </div>
+
+            <div class="game-group-meta">
+              <strong>${group.rows.length}</strong>
+              <span>Bats</span>
+            </div>
+
+            <div class="game-group-meta">
+              <strong>${clean(group.topScore)}</strong>
+              <span>Top Score</span>
+            </div>
+          </div>
+
+          <div class="game-group-grid">
+            ${group.rows.map(row => renderPlayerBoardCard(row, state.rows.indexOf(row))).join("")}
+          </div>
+        </section>
+      `).join("")}
+    </div>
+  `;
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -925,34 +1014,13 @@ async function render() {
     return;
   }
 
-  board.innerHTML = `
-    ${renderTopVulnerabilities(rows)}
-    <div class="main-board-grid">
-      ${rows.map((row, index) => `
-        <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
-          <div class="rank">#${row.rank || index + 1}</div>
-
-          <div>
-            <div class="player">${row.player || "Unknown Player"}</div>
-            <div class="meta">${row.team || ""} • ${row.game || ""}</div>
-            ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
-          </div>
-
-          <div class="stat">
-            <div class="stat-label">Score</div>
-            <div class="stat-value">${row.score ?? "--"}</div>
-          </div>
-
-          ${state.market === "home_runs" ? `
-            <div class="stat">
-              <div class="stat-label">Profile</div>
-              <div class="stat-value">Open</div>
-            </div>
-          ` : ""}
-        </article>
-      `).join("")}
-    </div>
-  `;
+  board.innerHTML = state.market === "home_runs"
+    ? renderGroupedHomeRunBoard(rows)
+    : `
+      <div class="main-board-grid">
+        ${rows.map((row, index) => renderPlayerBoardCard(row, index)).join("")}
+      </div>
+    `;
 
   document.querySelectorAll("[data-profile-index]").forEach(card => {
     card.addEventListener("click", () => {
