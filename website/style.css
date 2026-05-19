@@ -840,3 +840,68 @@ main {
   z-index: 2;
 }
 
+
+.metric-zone-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.metric-zone-card {
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  background: rgba(255,255,255,0.035);
+  padding: 12px;
+}
+
+.metric-zone-title {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.metric-zone-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.metric-zone-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+  color: #d8e0e8;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.metric-zone-cell.hot {
+  background: radial-gradient(circle, rgba(41,255,129,0.7), rgba(41,255,129,0.14));
+  border-color: rgba(41,255,129,0.65);
+  color: #effff6;
+}
+
+.metric-zone-cell.warm {
+  background: radial-gradient(circle, rgba(255,209,102,0.65), rgba(255,209,102,0.12));
+  border-color: rgba(255,209,102,0.55);
+  color: #fff7da;
+}
+
+.metric-zone-cell.neutral {
+  background: rgba(100,110,125,0.16);
+  color: #8f9aa6;
+}
+
+@media (max-width: 720px) {
+  .metric-zone-board {
+    grid-template-columns: 1fr;
+  }
+}

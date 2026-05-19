@@ -3,7 +3,8 @@ const state = {
   market: "home_runs",
   rows: [],
   weather: [],
-  parks: []
+  parks: [],
+  statcastZones: null
 };
 
 const marketFiles = {
@@ -246,6 +247,20 @@ async function loadParkFactors() {
   }
 }
 
+async function loadStatcastZones() {
+  try {
+    const res = await fetch("data/statcast_zones.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
 function getParkForVenue(venue) {
   return state.parks.find(item => item.venue === venue) || null;
 }
@@ -286,24 +301,92 @@ function statBlock(label, value) {
   `;
 }
 
-function buildZoneCell(row, hitter, pitcher, index) {
-  const layout = [
-    { type: "warm", label: "Match" },
-    { type: "hot", label: "Attack" },
-    { type: "neutral", label: "Neutral" },
-    { type: "neutral", label: "Neutral" },
-    { type: "hot", label: "Attack" },
-    { type: "warm", label: "Match" },
-    { type: "neutral", label: "Neutral" },
-    { type: "warm", label: "Match" },
-    { type: "neutral", label: "Neutral" }
-  ];
+function getPlayerZoneData(player) {
+  const zones = state.statcastZones?.players || {};
+  return zones[player] || null;
+}
 
-  const zone = layout[index] || { type: "neutral", label: "Neutral" };
+function zoneClass(value, metric) {
+  const n = Number(value || 0);
+
+  if (metric === "k") {
+    if (n >= 0.30) return "hot";
+    if (n >= 0.20) return "warm";
+    return "neutral";
+  }
+
+  if (metric === "hr") {
+    if (n >= 2) return "hot";
+    if (n >= 1) return "warm";
+    return "neutral";
+  }
+
+  if (n >= 0.500) return "hot";
+  if (n >= 0.300) return "warm";
+  return "neutral";
+}
+
+function formatZoneValue(value, metric) {
+  const n = Number(value || 0);
+
+  if (metric === "hr") return String(Math.round(n));
+  if (metric === "k" || metric === "hardHit" || metric === "barrel") return `${Math.round(n * 100)}%`;
+
+  return n.toFixed(3).replace(/^0/, "");
+}
+
+function renderZoneMetricGrid(title, metric, playerZones) {
+  const values = playerZones?.zones?.[metric] || Array.from({ length: 25 }, () => 0);
 
   return `
-    <div class="zone-lab-cell ${zone.type}">
-      <span>${zone.label}</span>
+    <div class="metric-zone-card">
+      <div class="metric-zone-title">${title}</div>
+      <div class="metric-zone-grid">
+        ${values.map(value => `
+          <div class="metric-zone-cell ${zoneClass(value, metric)}">
+            ${formatZoneValue(value, metric)}
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderStatcastZoneLab(row) {
+  const playerZones = getPlayerZoneData(row.player);
+
+  if (!playerZones || !playerZones.rows) {
+    return `
+      <div class="zone-lab-wrap">
+        <div class="zone-lab-card">
+          <div class="zone-lab-head">
+            <strong>Statcast Zone Lab</strong>
+            <span>No Baseball Savant zone data loaded for this player yet</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="zone-lab-wrap">
+      <div class="zone-lab-card">
+        <div class="zone-lab-head">
+          <strong>Statcast Zone Lab</strong>
+          <span>${playerZones.rows} tracked pitches from Baseball Savant</span>
+        </div>
+
+        <div class="metric-zone-board">
+          ${renderZoneMetricGrid("AVG", "avg", playerZones)}
+          ${renderZoneMetricGrid("ISO", "iso", playerZones)}
+          ${renderZoneMetricGrid("SLG", "slg", playerZones)}
+          ${renderZoneMetricGrid("xwOBA", "xwoba", playerZones)}
+          ${renderZoneMetricGrid("HR", "hr", playerZones)}
+          ${renderZoneMetricGrid("K%", "k", playerZones)}
+          ${renderZoneMetricGrid("Hard Hit", "hardHit", playerZones)}
+          ${renderZoneMetricGrid("Barrel", "barrel", playerZones)}
+        </div>
+      </div>
     </div>
   `;
 }
@@ -434,32 +517,7 @@ function openPlayerProfile(index) {
     </div>
 
     <h3>Power Zone Map</h3>
-    <div class="zone-lab-wrap">
-      <div class="zone-lab-card">
-        <div class="zone-lab-head">
-          <strong>Simulated Power Zones</strong>
-          <span>Built from HR score, hitter profile, pitcher risk, venue and weather</span>
-        </div>
-
-        <div class="zone-lab-grid">
-          ${buildZoneCell(row, hitter, pitcher, 0)}
-          ${buildZoneCell(row, hitter, pitcher, 1)}
-          ${buildZoneCell(row, hitter, pitcher, 2)}
-          ${buildZoneCell(row, hitter, pitcher, 3)}
-          ${buildZoneCell(row, hitter, pitcher, 4)}
-          ${buildZoneCell(row, hitter, pitcher, 5)}
-          ${buildZoneCell(row, hitter, pitcher, 6)}
-          ${buildZoneCell(row, hitter, pitcher, 7)}
-          ${buildZoneCell(row, hitter, pitcher, 8)}
-        </div>
-
-        <div class="zone-lab-legend">
-          <span><i class="zone-hot-dot"></i> Attack Zone</span>
-          <span><i class="zone-warm-dot"></i> Match Zone</span>
-          <span><i class="zone-cold-dot"></i> Neutral Zone</span>
-        </div>
-      </div>
-    </div>
+    ${renderStatcastZoneLab(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -506,11 +564,12 @@ async function render() {
   board.innerHTML =
     `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
-    loadParkFactors()
+    loadParkFactors(),
+    loadStatcastZones()
   ]);
 
   const rows = state.market === "games"
@@ -522,6 +581,7 @@ async function render() {
   state.rows = rows;
   state.weather = weatherRows;
   state.parks = parkRows;
+  state.statcastZones = statcastZones;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
