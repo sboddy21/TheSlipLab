@@ -286,6 +286,37 @@ function statBlock(label, value) {
   `;
 }
 
+function buildZoneCell(row, hitter, pitcher, index) {
+  const score = Number(row.score || 0);
+  const hr = Number(hitter.hr || 0);
+  const slg = Number(hitter.slg || 0);
+  const ops = Number(hitter.ops || 0);
+  const pitcherHr = Number(pitcher.homeRuns || 0);
+  const era = Number(pitcher.era || 0);
+
+  const seed = score + hr * 2 + slg * 100 + ops * 30 + pitcherHr * 2 + era * 4 + index * 7;
+
+  const hotSpots = [1, 4, 6];
+  const warmSpots = [0, 2, 5, 8];
+
+  let type = "neutral";
+  let label = "Stable";
+
+  if (seed >= 88 || hotSpots.includes(index)) {
+    type = "hot";
+    label = "Attack";
+  } else if (seed >= 70 || warmSpots.includes(index)) {
+    type = "warm";
+    label = "Match";
+  }
+
+  return `
+    <div class="zone-lab-cell ${type}">
+      <span>${label}</span>
+    </div>
+  `;
+}
+
 function buildHrMatchupRead(row, hitter, pitcher) {
   const park = getParkForVenue(row.venue);
   const weather = getWeatherForVenue(row.venue);
@@ -409,6 +440,34 @@ function openPlayerProfile(index) {
       ${statBlock("Hits Allowed", pitcher.hits)}
       ${statBlock("Walks", pitcher.baseOnBalls)}
       ${statBlock("Strikeouts", pitcher.strikeOuts)}
+    </div>
+
+    <h3>Power Zone Map</h3>
+    <div class="zone-lab-wrap">
+      <div class="zone-lab-card">
+        <div class="zone-lab-head">
+          <strong>Simulated Power Zones</strong>
+          <span>Built from HR score, hitter profile, pitcher risk, venue and weather</span>
+        </div>
+
+        <div class="zone-lab-grid">
+          ${buildZoneCell(row, hitter, pitcher, 0)}
+          ${buildZoneCell(row, hitter, pitcher, 1)}
+          ${buildZoneCell(row, hitter, pitcher, 2)}
+          ${buildZoneCell(row, hitter, pitcher, 3)}
+          ${buildZoneCell(row, hitter, pitcher, 4)}
+          ${buildZoneCell(row, hitter, pitcher, 5)}
+          ${buildZoneCell(row, hitter, pitcher, 6)}
+          ${buildZoneCell(row, hitter, pitcher, 7)}
+          ${buildZoneCell(row, hitter, pitcher, 8)}
+        </div>
+
+        <div class="zone-lab-legend">
+          <span><i class="zone-hot-dot"></i> Attack Zone</span>
+          <span><i class="zone-warm-dot"></i> Match Zone</span>
+          <span><i class="zone-cold-dot"></i> Neutral Zone</span>
+        </div>
+      </div>
     </div>
 
     <div class="profile-explainer">
