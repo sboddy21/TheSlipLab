@@ -540,9 +540,7 @@ function closePlayerProfile() {
 
 
 function renderTopVulnerabilities(rows) {
-  if (!rows || !rows.length || state.market !== "home_runs") {
-    return "";
-  }
+  if (!rows || !rows.length || state.market !== "home_runs") return "";
 
   const vulnRows = [...rows]
     .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
@@ -555,13 +553,11 @@ function renderTopVulnerabilities(rows) {
           <div class="top-vuln-kicker">PROJECTED HRs • HIGH VALUE GAMES</div>
           <h2>TOP VULNERABILITIES</h2>
         </div>
-
         <div class="top-vuln-toggles">
           <button class="top-vuln-toggle active">VULN</button>
           <button class="top-vuln-toggle">PARK</button>
         </div>
       </div>
-
       <div class="top-vuln-row">
         ${vulnRows.map((row, index) => `
           <article class="top-vuln-card">
@@ -689,7 +685,6 @@ async function render() {
 
   board.innerHTML = `
     ${renderTopVulnerabilities(rows)}
-
     <div class="main-board-grid">
       ${rows.map((row, index) => `
         <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
@@ -716,145 +711,6 @@ async function render() {
       `).join("")}
     </div>
   `;
-
-  document.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.addEventListener("click", () => {
-      openPlayerProfile(Number(card.dataset.profileIndex));
-    });
-  });
-}
-
-document.querySelectorAll("nav button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.sport === state.sport);
-  });
-
-  document.querySelectorAll(".tabs button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.market === state.market);
-  });
-
-  document.getElementById("page-title").textContent =
-    `${state.sport.toUpperCase()} Lab`;
-
-  document.getElementById("page-subtitle").textContent =
-    state.sport === "mlb"
-      ? "Home Runs, Hits, Total Bases, and RBIs."
-      : "Coming soon.";
-
-  const board = document.getElementById("board");
-  const boardTitle = document.getElementById("board-title");
-  const boardMeta = document.getElementById("board-meta");
-
-  boardTitle.textContent = titleCase(state.market);
-
-  board.innerHTML =
-    `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
-
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones] = await Promise.all([
-    loadRows(),
-    loadLastUpdated(),
-    loadWeather(),
-    loadParkFactors(),
-    loadStatcastZones()
-  ]);
-
-  const rows = state.market === "games"
-    ? raw.games || []
-    : state.market === "weather"
-      ? raw.weather || []
-      : raw;
-
-  state.rows = rows;
-  state.weather = weatherRows;
-  state.parks = parkRows;
-  state.statcastZones = statcastZones;
-
-  const updated = formatUpdatedTime(updatedInfo?.updated_at);
-
-  boardMeta.textContent =
-    `${rows.length} rows loaded • Last Updated ${updated}`;
-
-  const topUpdated = document.getElementById("top-updated");
-
-  if (topUpdated) {
-    topUpdated.textContent = `Last Updated: ${updated}`;
-  }
-
-  if (!rows.length) {
-    board.innerHTML =
-      `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
-    return;
-  }
-
-  if (state.market === "weather") {
-    board.innerHTML = rows.map(row => `
-      <article class="weather-board-card">
-        ${renderBallparkWeather(row.venue)}
-      </article>
-    `).join("");
-
-    return;
-  }
-
-  if (state.market === "games") {
-    board.innerHTML = rows.map((row, index) => `
-      <article class="card game-card">
-        <div class="rank">#${index + 1}</div>
-
-        <div>
-          <div class="player">${row.matchup || "MLB Game"}</div>
-          <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
-          <div class="${gameStatusClass(row)}">${gameStatusLabel(row)}</div>
-          ${renderWeatherMini(row.venue)}
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Away SP</div>
-          <div class="stat-value">${row.awayProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Home SP</div>
-          <div class="stat-value">${row.homeProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Score</div>
-          <div class="stat-value">${row.awayScore ?? "--"} • ${row.homeScore ?? "--"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Game ID</div>
-          <div class="stat-value">${row.gamePk || "--"}</div>
-        </div>
-      </article>
-    `).join("");
-
-    return;
-  }
-
-  board.innerHTML = rows.map((row, index) => `
-    <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
-      <div class="rank">#${row.rank || index + 1}</div>
-
-      <div>
-        <div class="player">${row.player || "Unknown Player"}</div>
-        <div class="meta">${row.team || ""} • ${row.game || ""}</div>
-        ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
-      </div>
-
-      <div class="stat">
-        <div class="stat-label">Score</div>
-        <div class="stat-value">${row.score ?? "--"}</div>
-      </div>
-
-      ${state.market === "home_runs" ? `
-        <div class="stat">
-          <div class="stat-label">Profile</div>
-          <div class="stat-value">Open</div>
-        </div>
-      ` : ""}
-    </article>
-  `).join("");
 
   document.querySelectorAll("[data-profile-index]").forEach(card => {
     card.addEventListener("click", () => {
