@@ -1039,6 +1039,22 @@ async function loadStatcastZones() {
   }
 }
 
+
+function formatUpdatedTime(iso) {
+  if (!iso) return "Loading...";
+
+  const date = new Date(iso);
+
+  if (Number.isNaN(date.getTime())) return "Loading...";
+
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
