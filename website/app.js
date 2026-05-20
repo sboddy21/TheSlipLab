@@ -22,6 +22,28 @@ function titleCase(text) {
   return text.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
+function showAppError(error) {
+  const board = document.getElementById("board");
+  const meta = document.getElementById("board-meta");
+
+  if (meta) {
+    meta.textContent = "App error detected";
+  }
+
+  if (board) {
+    board.innerHTML = `
+      <div class="empty">
+        <strong>Site error:</strong>
+        <br>
+        ${error?.message || error}
+      </div>
+    `;
+  }
+
+  console.error(error);
+}
+
+
 function clean(value, fallback = "--") {
   return value === null || value === undefined || value === "" ? fallback : value;
 }
@@ -1059,14 +1081,14 @@ async function render() {
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.sport = btn.dataset.sport;
-    render();
+    render().catch(showAppError);
   });
 });
 
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.market = btn.dataset.market;
-    render();
+    render().catch(showAppError);
   });
 });
 
@@ -1086,4 +1108,4 @@ document.addEventListener("keydown", event => {
   }
 });
 
-render();
+render().catch(showAppError);
