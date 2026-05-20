@@ -98,7 +98,7 @@ async function loadRows() {
 }
 
 
-async function loadLastUpdated() {
+async function OLD_REMOVED_loadLastUpdated() {
   try {
     const res = await fetch("data/site_last_updated.json", {
       cache: "no-store"
@@ -974,6 +974,39 @@ function renderGameLineups(row) {
 }
 
 
+async function OLD_REMOVED_loadParkFactors() {
+  try {
+    const res = await fetch("data/mlb_park_factors.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return data.parks || data.rows || [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
+
+async function loadLastUpdated() {
+  try {
+    const res = await fetch("data/site_last_updated.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
 async function loadParkFactors() {
   try {
     const res = await fetch("data/mlb_park_factors.json", {
@@ -988,6 +1021,21 @@ async function loadParkFactors() {
   } catch (err) {
     console.error(err);
     return [];
+  }
+}
+
+async function loadStatcastZones() {
+  try {
+    const res = await fetch("data/statcast_zones.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    return null;
   }
 }
 
