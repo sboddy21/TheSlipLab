@@ -14,7 +14,8 @@ const marketFiles = {
     total_bases: "data/mlb_total_bases.json",
     rbis: "data/mlb_rbis.json",
     games: "data/mlb_games_today.json",
-    weather: "data/mlb_weather.json"
+    weather: "data/mlb_weather.json",
+    results: "data/mlb_results.json"
   }
 };
 
@@ -1072,6 +1073,80 @@ function formatUpdatedTime(iso) {
   });
 }
 
+
+function renderResultsBoard(data) {
+  const rows = data?.results || [];
+  const total = data?.totalHomeRuns || rows.length || 0;
+  const flagged = data?.modelFlaggedHomeRuns || 0;
+  const rate = data?.modelFlagRate || 0;
+
+  return `
+    <section class="results-lab">
+      <div class="results-hero">
+        <div>
+          <span>MODEL VALIDATION</span>
+          <h2>HR Results</h2>
+          <p>Every home run from the live MLB feed matched against The Slip Lab board.</p>
+        </div>
+
+        <div class="results-scorebox">
+          <strong>${flagged}/${total}</strong>
+          <span>Model flagged HRs</span>
+        </div>
+
+        <div class="results-scorebox">
+          <strong>${rate}%</strong>
+          <span>Flag rate</span>
+        </div>
+      </div>
+
+      <div class="results-table">
+        <div class="results-row results-head">
+          <div>#</div>
+          <div>Batter</div>
+          <div>Team</div>
+          <div>Pitcher</div>
+          <div>Score</div>
+          <div>Model</div>
+          <div>Tags</div>
+        </div>
+
+        ${rows.length ? rows.map(row => `
+          <div class="results-row">
+            <div>${clean(row.rank)}</div>
+
+            <div>
+              <strong>${clean(row.player)}</strong>
+              <span>${clean(row.description || "Home run")}</span>
+            </div>
+
+            <div>${clean(row.team)}</div>
+
+            <div>
+              <strong>${clean(row.pitcher || "Unknown")}</strong>
+              <span>ERA ${clean(row.opposingPitcherEra || "--")}</span>
+            </div>
+
+            <div class="result-score">${clean(row.modelScore || "--")}</div>
+
+            <div>
+              <span class="${row.wasOnBoard ? "result-flag yes" : "result-flag no"}">
+                ${row.wasOnBoard ? "FLAGGED" : "NOT FLAGGED"}
+              </span>
+            </div>
+
+            <div class="result-tags">
+              ${(row.tags || []).map(tag => `<span>${clean(tag)}</span>`).join("")}
+            </div>
+          </div>
+        `).join("") : `
+          <div class="results-empty">No HR results found yet.</div>
+        `}
+      </div>
+    </section>
+  `;
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -1110,7 +1185,9 @@ async function render() {
     ? raw.games || []
     : state.market === "weather"
       ? raw.weather || []
-      : raw;
+      : state.market === "results"
+        ? raw.results || []
+        : raw;
 
   state.rows = rows;
   state.weather = weatherRows;
@@ -1141,6 +1218,11 @@ async function render() {
       </article>
     `).join("");
 
+    return;
+  }
+
+  if (state.market === "results") {
+    board.innerHTML = renderResultsBoard(raw);
     return;
   }
 
