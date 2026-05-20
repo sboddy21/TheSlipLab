@@ -1151,6 +1151,59 @@ function renderGroupedHomeRunBoard(rows) {
   `;
 }
 
+
+function lineupStatusClass(status) {
+  const value = String(status || "").toUpperCase();
+
+  if (value.includes("BOTH CONFIRMED") || value === "CONFIRMED") return "lineup-pill confirmed";
+  if (value.includes("PARTIAL")) return "lineup-pill partial";
+  return "lineup-pill pending";
+}
+
+function renderLineupStatus(row) {
+  return `
+    <div class="lineup-lock-row">
+      <span class="${lineupStatusClass(row.lineupLockStatus)}">${clean(row.lineupLockStatus || "NOT POSTED")}</span>
+      <span>${clean(row.awayLineupCount || 0)}/9 ${clean(row.awayTeam || "Away")}</span>
+      <span>${clean(row.homeLineupCount || 0)}/9 ${clean(row.homeTeam || "Home")}</span>
+    </div>
+  `;
+}
+
+function renderTeamLineup(teamName, status, lineup) {
+  const rows = Array.isArray(lineup) ? lineup : [];
+
+  return `
+    <div class="team-lineup-block">
+      <div class="team-lineup-head">
+        <strong>${clean(teamName)}</strong>
+        <span class="${lineupStatusClass(status)}">${clean(status || "NOT POSTED")}</span>
+      </div>
+
+      <div class="lineup-order-list">
+        ${rows.length ? rows.map(player => `
+          <div class="lineup-order-row">
+            <span>${clean(player.order)}</span>
+            <strong>${clean(player.player)}</strong>
+            <em>${clean(player.position || "--")}</em>
+          </div>
+        `).join("") : `
+          <div class="lineup-empty">Lineup has not been posted yet.</div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function renderGameLineups(row) {
+  return `
+    <div class="game-lineup-panel">
+      ${renderTeamLineup(row.awayTeam, row.awayLineupStatus, row.awayBattingOrder)}
+      ${renderTeamLineup(row.homeTeam, row.homeLineupStatus, row.homeBattingOrder)}
+    </div>
+  `;
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -1232,6 +1285,7 @@ async function render() {
           <div class="player">${row.matchup || "MLB Game"}</div>
           <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
           ${renderLiveStatusPill(row)}
+          ${renderLineupStatus(row)}
           ${renderWeatherMini(row.venue)}
         </div>
 
@@ -1254,6 +1308,8 @@ async function render() {
           <div class="stat-label">Game ID</div>
           <div class="stat-value">${row.gamePk || "--"}</div>
         </div>
+
+        ${renderGameLineups(row)}
       </article>
     `).join("");
 
