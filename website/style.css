@@ -2261,3 +2261,275 @@ nav button.active,
   }
 }
 
+
+.park-dimension-diagram {
+  position: relative;
+  height: 250px;
+  margin: 14px 0;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  background:
+    radial-gradient(circle at 50% 72%, rgba(41,255,129,0.16), transparent 36%),
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.015));
+}
+
+.field-arc {
+  position: absolute;
+  left: 50%;
+  top: 22px;
+  width: 78%;
+  height: 74%;
+  transform: translateX(-50%);
+  border-top: 3px solid rgba(41,255,129,0.55);
+  border-left: 2px solid rgba(41,255,129,0.16);
+  border-right: 2px solid rgba(41,255,129,0.16);
+  border-radius: 50% 50% 8px 8px;
+}
+
+.field-grass {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  width: 58%;
+  height: 58%;
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 18px;
+  border: 1px solid rgba(41,255,129,0.14);
+  background: rgba(41,255,129,0.045);
+}
+
+.field-diamond {
+  position: absolute;
+  left: 50%;
+  bottom: 38px;
+  width: 72px;
+  height: 72px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.035);
+}
+
+.field-home {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 10px;
+  height: 10px;
+  transform: translateX(-50%) rotate(45deg);
+  background: rgba(255,255,255,0.7);
+  border-radius: 2px;
+}
+
+.park-wall {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  gap: 2px;
+  min-width: 44px;
+  text-align: center;
+  border-radius: 10px;
+  padding: 6px 7px;
+  background: rgba(0,0,0,0.42);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.park-wall span {
+  color: #8f9aa6;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: 0.1em;
+}
+
+.park-wall strong {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 950;
+}
+
+.park-wall-lf {
+  left: 8%;
+  top: 122px;
+}
+
+.park-wall-lcf {
+  left: 22%;
+  top: 48px;
+}
+
+.park-wall-cf {
+  left: 50%;
+  top: 24px;
+  transform: translateX(-50%);
+}
+
+.park-wall-rcf {
+  right: 22%;
+  top: 48px;
+}
+
+.park-wall-rf {
+  right: 8%;
+  top: 122px;
+}
+
+.field-center-badge {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: #dfe6ee;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+}
+
+.wind-arrow-park {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  z-index: 4;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  color: #29ff81;
+  background: rgba(41,255,129,0.12);
+  border: 1px solid rgba(41,255,129,0.32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 0 20px rgba(41,255,129,0.18);
+}
+
+.park-attack-panel {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.park-attack-grade {
+  border-radius: 14px;
+  padding: 11px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.025);
+}
+
+.park-attack-grade span,
+.park-fit-grid span,
+.park-hr-meter span {
+  display: block;
+  color: #8f9aa6;
+  font-size: 9px;
+  font-weight: 950;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.park-attack-grade strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 950;
+}
+
+.park-attack-grade small {
+  display: block;
+  color: #9aa6b2;
+  font-size: 10px;
+  margin-top: 3px;
+}
+
+.park-attack-grade.elite strong,
+.park-attack-grade.good strong {
+  color: #29ff81;
+}
+
+.park-attack-grade.neutral strong {
+  color: #dfe6ee;
+}
+
+.park-attack-grade.cold strong {
+  color: #8f9aa6;
+}
+
+.park-hr-meter {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.park-hr-meter strong {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 950;
+}
+
+.park-hr-meter i {
+  display: block;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.park-hr-meter b {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255,103,103,0.58), rgba(41,255,129,0.9));
+}
+
+.park-fit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.park-fit-grid div {
+  border-radius: 12px;
+  padding: 9px;
+  background: rgba(255,255,255,0.026);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.park-fit-grid strong {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.park-summary,
+.park-attack-empty {
+  border-radius: 12px;
+  padding: 10px;
+  color: #cfd6dd;
+  font-size: 11px;
+  line-height: 1.45;
+  background: rgba(255,255,255,0.026);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+@media (max-width: 720px) {
+  .park-dimension-diagram {
+    height: 220px;
+  }
+
+  .park-fit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .park-wall-lf {
+    left: 5%;
+  }
+
+  .park-wall-rf {
+    right: 5%;
+  }
+}
+

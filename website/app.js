@@ -111,6 +111,106 @@ function renderWeatherMini(venue) {
   `;
 }
 
+function parkHrGrade(park) {
+  const factor = Number(park?.hrFactor || 100);
+
+  if (factor >= 112) return { label: "ELITE HR PARK", className: "elite" };
+  if (factor >= 104) return { label: "HR FRIENDLY", className: "good" };
+  if (factor >= 96) return { label: "NEUTRAL", className: "neutral" };
+  return { label: "SUPPRESSED", className: "cold" };
+}
+
+function renderParkDimensionDiagram(park, weather, isDome) {
+  const arrow = Number.isFinite(Number(weather?.arrowDegrees)) ? Number(weather.arrowDegrees) : 0;
+
+  return `
+    <div class="park-dimension-diagram">
+      <div class="park-wall park-wall-lf">
+        <span>LF</span>
+        <strong>${clean(park?.lf || "--")}</strong>
+      </div>
+
+      <div class="park-wall park-wall-lcf">
+        <span>LCF</span>
+        <strong>${clean(park?.lcf || "--")}</strong>
+      </div>
+
+      <div class="park-wall park-wall-cf">
+        <span>CF</span>
+        <strong>${clean(park?.cf || "--")}</strong>
+      </div>
+
+      <div class="park-wall park-wall-rcf">
+        <span>RCF</span>
+        <strong>${clean(park?.rcf || "--")}</strong>
+      </div>
+
+      <div class="park-wall park-wall-rf">
+        <span>RF</span>
+        <strong>${clean(park?.rf || "--")}</strong>
+      </div>
+
+      <div class="field-arc"></div>
+      <div class="field-grass"></div>
+      <div class="field-diamond"></div>
+      <div class="field-home"></div>
+
+      ${isDome ? `<div class="field-center-badge">ROOF</div>` : `<div class="wind-arrow wind-arrow-park" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>`}
+    </div>
+  `;
+}
+
+function renderParkAttackPanel(park) {
+  if (!park) {
+    return `
+      <div class="park-attack-panel">
+        <div class="park-attack-empty">Park dimension data is not loaded for this venue yet.</div>
+      </div>
+    `;
+  }
+
+  const grade = parkHrGrade(park);
+  const factor = Number(park.hrFactor || 100);
+  const meter = Math.max(0, Math.min(100, Math.round((factor / 125) * 100)));
+
+  return `
+    <div class="park-attack-panel">
+      <div class="park-attack-grade ${grade.className}">
+        <span>HR Park Grade</span>
+        <strong>${grade.label}</strong>
+        <small>${clean(park.hrFactor)} HR factor</small>
+      </div>
+
+      <div class="park-hr-meter">
+        <div>
+          <span>HR Carry</span>
+          <strong>${clean(park.hrFactor)}</strong>
+        </div>
+        <i><b style="width:${meter}%"></b></i>
+      </div>
+
+      <div class="park-fit-grid">
+        <div>
+          <span>Lefty Pull Fit</span>
+          <strong>${clean(park.leftyBoost || "Neutral")}</strong>
+        </div>
+        <div>
+          <span>Righty Pull Fit</span>
+          <strong>${clean(park.rightyBoost || "Neutral")}</strong>
+        </div>
+        <div>
+          <span>Roof</span>
+          <strong>${clean(park.roof || "Open Air")}</strong>
+        </div>
+      </div>
+
+      <div class="park-summary">
+        ${clean(park.summary || "Park profile loaded.")}
+      </div>
+    </div>
+  `;
+}
+
 function renderBallparkWeather(venue) {
   const weather = getWeatherForVenue(venue);
   const park = getParkForVenue(venue);
@@ -119,22 +219,22 @@ function renderBallparkWeather(venue) {
   if (!weather) {
     return `
       <div class="park-weather-card">
-        <h3>Ballpark Weather</h3>
+        <h3>Ballpark Environment</h3>
         <div class="weather-empty">Weather data loading for this park.</div>
+        ${renderParkAttackPanel(park)}
       </div>
     `;
   }
 
-  const arrow = Number.isFinite(Number(weather.arrowDegrees)) ? Number(weather.arrowDegrees) : 0;
   const windText = isDome
-    ? "Fixed dome. Wind is not active inside the park."
+    ? "Fixed roof or dome environment. Wind is not treated as active inside the park."
     : `Wind ${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}. Arrow shows live wind flow across the field.`;
 
   return `
     <div class="park-weather-card">
       <div class="park-weather-head">
         <div>
-          <h3>Ballpark Weather</h3>
+          <h3>Ballpark Environment</h3>
           <p>${weather.venue} • ${weather.city || ""}</p>
         </div>
         <div class="weather-live-pill">LIVE</div>
@@ -151,7 +251,7 @@ function renderBallparkWeather(venue) {
         </div>
         <div class="weather-stat">
           <span>Wind</span>
-          <strong>${isDome ? "Dome" : `${weather.windSpeed ?? "--"} MPH`}</strong>
+          <strong>${isDome ? "Roof" : `${weather.windSpeed ?? "--"} MPH`}</strong>
         </div>
         <div class="weather-stat">
           <span>Direction</span>
@@ -159,396 +259,15 @@ function renderBallparkWeather(venue) {
         </div>
       </div>
 
-      <div class="ballpark-diagram">
-        <div class="outfield-arc"></div>
-        <div class="infield-diamond"></div>
-        <div class="home-plate"></div>
-        <div class="base base-first"></div>
-        <div class="base base-second"></div>
-        <div class="base base-third"></div>
-        ${isDome ? `<div class="dome-label">DOME</div>` : `<div class="wind-arrow" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>`}
-      </div>
+      ${renderParkDimensionDiagram(park, weather, isDome)}
 
-      ${renderParkFactors(venue)}
+      ${renderParkAttackPanel(park)}
 
       <div class="wind-read">
         ${windText}
       </div>
     </div>
   `;
-}
-
-function renderParkFactors(venue) {
-  const park = getParkForVenue(venue);
-
-  if (!park) {
-    return `
-      <div class="park-factor-missing">
-        Park dimensions coming soon for this venue.
-      </div>
-    `;
-  }
-
-  return `
-    <div class="park-factor-grid">
-      <div class="weather-stat">
-        <span>LF</span>
-        <strong>${park.lf} FT</strong>
-      </div>
-      <div class="weather-stat">
-        <span>LCF</span>
-        <strong>${park.lcf} FT</strong>
-      </div>
-      <div class="weather-stat">
-        <span>CF</span>
-        <strong>${park.cf} FT</strong>
-      </div>
-      <div class="weather-stat">
-        <span>RCF</span>
-        <strong>${park.rcf} FT</strong>
-      </div>
-      <div class="weather-stat">
-        <span>RF</span>
-        <strong>${park.rf} FT</strong>
-      </div>
-      <div class="weather-stat">
-        <span>HR Factor</span>
-        <strong>${park.hrFactor}</strong>
-      </div>
-      <div class="weather-stat">
-        <span>LHB Boost</span>
-        <strong>${park.leftyBoost}</strong>
-      </div>
-      <div class="weather-stat">
-        <span>RHB Boost</span>
-        <strong>${park.rightyBoost}</strong>
-      </div>
-    </div>
-
-    <div class="park-summary">
-      <strong>${park.roof}</strong> • ${park.summary}
-    </div>
-  `;
-}
-
-async function loadParkFactors() {
-  try {
-    const res = await fetch("data/mlb_park_factors.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-
-    return Array.isArray(data.parks) ? data.parks : [];
-  } catch {
-    return [];
-  }
-}
-
-async function loadStatcastZones() {
-  try {
-    const res = await fetch("data/statcast_zones.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return null;
-
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-function getParkForVenue(venue) {
-  return state.parks.find(item => item.venue === venue) || null;
-}
-
-async function loadLastUpdated() {
-  try {
-    const res = await fetch("data/site_last_updated.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return null;
-
-    return await res.json();
-  } catch {
-    return null;
-  }
-}
-
-function formatUpdatedTime(iso) {
-  if (!iso) return "Unknown";
-
-  const date = new Date(iso);
-
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
-  });
-}
-
-function statBlock(label, value) {
-  return `
-    <div class="profile-stat">
-      <div class="profile-stat-label">${label}</div>
-      <div class="profile-stat-value">${clean(value)}</div>
-    </div>
-  `;
-}
-
-function getPlayerZoneData(player) {
-  const zones = state.statcastZones?.players || {};
-  return zones[player] || null;
-}
-
-function zoneClass(value, metric) {
-  const n = Number(value || 0);
-
-  if (metric === "k") {
-    if (n >= 0.30) return "hot";
-    if (n >= 0.20) return "warm";
-    return "neutral";
-  }
-
-  if (metric === "hr") {
-    if (n >= 2) return "hot";
-    if (n >= 1) return "warm";
-    return "neutral";
-  }
-
-  if (n >= 0.500) return "hot";
-  if (n >= 0.300) return "warm";
-  return "neutral";
-}
-
-function formatZoneValue(value, metric) {
-  const n = Number(value || 0);
-
-  if (metric === "hr") return String(Math.round(n));
-  if (metric === "k" || metric === "hardHit" || metric === "barrel") return `${Math.round(n * 100)}%`;
-
-  return n.toFixed(3).replace(/^0/, "");
-}
-
-function renderZoneMetricGrid(title, metric, playerZones) {
-  const values = playerZones?.zones?.[metric] || Array.from({ length: 25 }, () => 0);
-
-  return `
-    <div class="metric-zone-card">
-      <div class="metric-zone-title">${title}</div>
-      <div class="metric-zone-grid">
-        ${values.map(value => `
-          <div class="metric-zone-cell ${zoneClass(value, metric)}">
-            ${formatZoneValue(value, metric)}
-          </div>
-        `).join("")}
-      </div>
-    </div>
-  `;
-}
-
-
-function zoneIndexToGrid(index) {
-  const row = Math.floor(index / 5);
-  const col = index % 5;
-  return { row, col };
-}
-
-function strongestZones(values, count = 3) {
-  return values
-    .map((value, index) => ({ value: Number(value || 0), index }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, count);
-}
-
-function sprayDirectionSummary(playerZones) {
-  const hr = playerZones?.zones?.hr || [];
-  const barrel = playerZones?.zones?.barrel || [];
-  const iso = playerZones?.zones?.iso || [];
-
-  let pull = 0;
-  let middle = 0;
-  let oppo = 0;
-
-  hr.forEach((v, i) => {
-    const col = i % 5;
-    const total = Number(v || 0) + Number(barrel[i] || 0) + Number(iso[i] || 0);
-
-    if (col <= 1) pull += total;
-    else if (col === 2) middle += total;
-    else oppo += total;
-  });
-
-  if (pull >= middle && pull >= oppo) return "PULL SIDE DAMAGE";
-  if (middle >= pull && middle >= oppo) return "MIDDLE LANE POWER";
-  return "OPPO POWER";
-}
-
-function renderSprayOverlay(playerZones) {
-  const hr = playerZones?.zones?.hr || [];
-  const barrel = playerZones?.zones?.barrel || [];
-  const hardHit = playerZones?.zones?.hardHit || [];
-  const iso = playerZones?.zones?.iso || [];
-
-  const topHr = strongestZones(hr, 4);
-  const topBarrel = strongestZones(barrel, 4);
-
-  return `
-    <div class="spray-overlay-card">
-      <div class="spray-overlay-header">
-        <div>
-          <strong>Power Spray Overlay</strong>
-          <span>${sprayDirectionSummary(playerZones)}</span>
-        </div>
-
-        <div class="spray-overlay-legend">
-          <div><i class="hr"></i> HR</div>
-          <div><i class="barrel"></i> Barrel</div>
-          <div><i class="hard"></i> Hard Hit</div>
-        </div>
-      </div>
-
-      <div class="spray-overlay-grid">
-        ${Array.from({ length: 25 }).map((_, index) => {
-          const hrVal = Number(hr[index] || 0);
-          const barrelVal = Number(barrel[index] || 0);
-          const hhVal = Number(hardHit[index] || 0);
-          const isoVal = Number(iso[index] || 0);
-
-          const isHrHot = topHr.some(z => z.index == index && z.value > 0);
-          const isBarrelHot = topBarrel.some(z => z.index == index && z.value > 0);
-
-          let cls = "neutral";
-
-          if (isHrHot) cls = "hr-hot";
-          else if (isBarrelHot) cls = "barrel-hot";
-          else if (hhVal >= 0.35 || isoVal >= 0.35) cls = "hard-hot";
-
-          return `
-            <div class="spray-zone ${cls}">
-              <span>${hrVal > 0 ? Math.round(hrVal) : ""}</span>
-            </div>
-          `;
-        }).join("")}
-      </div>
-
-      <div class="spray-overlay-summary">
-        <div>
-          <strong>${topHr.filter(z => z.value > 0).length}</strong>
-          <span>HR Lanes</span>
-        </div>
-
-        <div>
-          <strong>${topBarrel.filter(z => z.value > 0).length}</strong>
-          <span>Barrel Lanes</span>
-        </div>
-
-        <div>
-          <strong>${playerZones.rows}</strong>
-          <span>Tracked Pitches</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderStatcastZoneLab(row) {
-  const playerZones = getPlayerZoneData(row.player);
-
-  if (!playerZones || !playerZones.rows) {
-    return `
-      <div class="zone-lab-wrap">
-        <div class="zone-lab-card">
-          <div class="zone-lab-head">
-            <strong>Statcast Zone Lab</strong>
-            <span>No Baseball Savant zone data loaded for this player yet</span>
-          </div>
-        </div>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="zone-lab-wrap">
-      <div class="zone-lab-card">
-        <div class="zone-lab-head">
-          <strong>Statcast Zone Lab</strong>
-          <span>${playerZones.rows} tracked pitches from Baseball Savant</span>
-        </div>
-
-        ${renderSprayOverlay(playerZones)}
-
-        <div class="metric-zone-board">
-          ${renderZoneMetricGrid("AVG", "avg", playerZones)}
-          ${renderZoneMetricGrid("ISO", "iso", playerZones)}
-          ${renderZoneMetricGrid("SLG", "slg", playerZones)}
-          ${renderZoneMetricGrid("xwOBA", "xwoba", playerZones)}
-          ${renderZoneMetricGrid("HR", "hr", playerZones)}
-          ${renderZoneMetricGrid("K%", "k", playerZones)}
-          ${renderZoneMetricGrid("Hard Hit", "hardHit", playerZones)}
-          ${renderZoneMetricGrid("Barrel", "barrel", playerZones)}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function buildHrMatchupRead(row, hitter, pitcher) {
-  const park = getParkForVenue(row.venue);
-  const weather = getWeatherForVenue(row.venue);
-
-  const bullets = [];
-
-  if (Number(hitter.hr) >= 15) {
-    bullets.push("Power profile is already showing real HR production.");
-  }
-
-  if (Number(hitter.slg) >= 0.500) {
-    bullets.push("Slugging profile supports extra base and HR upside.");
-  }
-
-  if (Number(hitter.ops) >= 0.850) {
-    bullets.push("OPS shows the bat is not just power only. He is getting on base and doing damage.");
-  }
-
-  if (Number(pitcher.era) >= 4.50) {
-    bullets.push("Opposing pitcher ERA points to run prevention issues.");
-  }
-
-  if (Number(pitcher.whip) >= 1.30) {
-    bullets.push("Pitcher WHIP suggests traffic on the bases and more damage chances.");
-  }
-
-  if (Number(pitcher.homeRuns) >= 3) {
-    bullets.push("Pitcher has already allowed HR damage this season.");
-  }
-
-  if (park?.hrFactor >= 105) {
-    bullets.push(`${park.venue} grades as a favorable HR park in this build.`);
-  }
-
-  if (park?.summary) {
-    bullets.push(park.summary);
-  }
-
-  if (weather && Number(weather.temp) >= 80) {
-    bullets.push("Warm temperature can help ball carry.");
-  }
-
-  if (weather && Number(weather.windSpeed) >= 10 && !String(park?.roof || "").toLowerCase().includes("dome")) {
-    bullets.push(`Wind is active at ${weather.windSpeed} MPH ${weather.windCompass || ""}, which matters for carry and pull side flight.`);
-  }
-
-  if (!bullets.length) {
-    bullets.push("Model ranking is being driven by the combined power score, pitcher profile, game context, and park setup.");
-  }
-
-  return bullets;
 }
 
 function openPlayerProfile(index) {
