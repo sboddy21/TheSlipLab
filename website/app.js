@@ -973,6 +973,24 @@ function renderGameLineups(row) {
   `;
 }
 
+
+async function loadParkFactors() {
+  try {
+    const res = await fetch("data/mlb_park_factors.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return [];
+
+    const data = await res.json();
+
+    return data.parks || data.rows || [];
+  } catch (err) {
+    console.error(err);
+    return [];
+  }
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
