@@ -15,6 +15,7 @@ const marketFiles = {
     rbis: "data/mlb_rbis.json",
     games: "data/mlb_games_today.json",
     weather: "data/mlb_weather.json",
+    results: "data/mlb_results.json",
     results: "data/mlb_results.json"
   }
 };
@@ -1218,6 +1219,11 @@ async function render() {
       </article>
     `).join("");
 
+    return;
+  }
+
+  if (state.market === "results") {
+    board.innerHTML = renderResultsBoard(raw);
     return;
   }
 
