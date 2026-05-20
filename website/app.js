@@ -4,7 +4,8 @@ const state = {
   rows: [],
   weather: [],
   parks: [],
-  statcastZones: null
+  statcastZones: null,
+  stacks: null
 };
 
 const marketFiles = {
@@ -16,7 +17,9 @@ const marketFiles = {
     games: "data/mlb_games_today.json",
     weather: "data/mlb_weather.json",
     results: "data/mlb_results.json",
-    results: "data/mlb_results.json"
+    stacks: "data/mlb_team_stacks.json",
+    results: "data/mlb_results.json",
+    stacks: "data/mlb_team_stacks.json"
   }
 };
 
@@ -909,6 +912,8 @@ function renderGroupedHomeRunBoard(rows) {
   return `
     ${renderTopVulnerabilities(rows)}
 
+    ${renderTeamStackStrip()}
+
     <div class="game-group-board">
       ${groups.map(group => `
         <section class="game-group">
@@ -1148,6 +1153,67 @@ function renderResultsBoard(data) {
   `;
 }
 
+
+async function loadTeamStacks() {
+  try {
+    const res = await fetch("data/mlb_team_stacks.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return null;
+
+    return await res.json();
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+}
+
+function renderTeamStackStrip() {
+  const stacks = state.stacks?.stacks || [];
+
+  if (!stacks.length || state.market !== "home_runs") return "";
+
+  return `
+    <section class="stack-strip">
+      <div class="stack-strip-head">
+        <div>
+          <span>TEAM STACK INTELLIGENCE</span>
+          <h2>Top Stack Spots</h2>
+        </div>
+      </div>
+
+      <div class="stack-strip-grid">
+        ${stacks.slice(0, 5).map(stack => `
+          <article class="stack-card">
+            <div class="stack-card-top">
+              <strong>${clean(stack.team)}</strong>
+              <span>${clean(stack.grade)}</span>
+            </div>
+
+            <div class="stack-score">${clean(stack.stackScore)}</div>
+
+            <div class="stack-meta">
+              <span>${clean(stack.bats)} bats</span>
+              <span>vs ${clean(stack.opposingPitcher)}</span>
+              <span>Park ${clean(stack.parkFactor || "--")}</span>
+            </div>
+
+            <div class="stack-hitters">
+              ${(stack.hitters || []).slice(0, 4).map(hitter => `
+                <div>
+                  <strong>${clean(hitter.player)}</strong>
+                  <span>Score ${clean(hitter.score)} • HR ${clean(hitter.hr || "--")}</span>
+                </div>
+              `).join("")}
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -1174,12 +1240,13 @@ async function render() {
   board.innerHTML =
     `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
     loadParkFactors(),
-    loadStatcastZones()
+    loadStatcastZones(),
+    loadTeamStacks()
   ]);
 
   const rows = state.market === "games"
@@ -1194,6 +1261,7 @@ async function render() {
   state.weather = weatherRows;
   state.parks = parkRows;
   state.statcastZones = statcastZones;
+  state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at);
 
