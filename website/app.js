@@ -97,6 +97,34 @@ async function loadRows() {
   }
 }
 
+
+async function loadLastUpdated() {
+  try {
+    const res = await fetch("data/site_last_updated.json", {
+      cache: "no-store"
+    });
+
+    if (!res.ok) return;
+
+    const data = await res.json();
+
+    const updated = new Date(data.updated_at).toLocaleString([], {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit"
+    });
+
+    const topUpdated = document.getElementById("top-updated");
+
+    if (topUpdated) {
+      topUpdated.textContent = `Last Updated: ${updated}`;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 async function loadWeather() {
   try {
     const res = await fetch("data/mlb_weather.json", {
