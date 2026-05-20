@@ -141,7 +141,7 @@ async function loadWeather() {
   }
 }
 
-function getWeatherForVenue(venue) {
+function OLD_REMOVED_getWeatherForVenue(venue) {
   return state.weather.find(item => item.venue === venue) || null;
 }
 
@@ -159,6 +159,23 @@ function renderWeatherMini(venue) {
       <span>${weather.windSpeed ?? "--"} MPH ${weather.windCompass || ""}</span>
     </div>
   `;
+}
+
+
+function getWeatherForVenue(venue) {
+  if (!venue || !Array.isArray(state.weather)) return null;
+
+  return state.weather.find(row =>
+    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
+  ) || null;
+}
+
+function getParkForVenue(venue) {
+  if (!venue || !Array.isArray(state.parks)) return null;
+
+  return state.parks.find(row =>
+    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
+  ) || null;
 }
 
 function parkHrGrade(park) {
