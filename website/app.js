@@ -1348,26 +1348,29 @@ async function render() {
       </div>
     `;
 
-  const boardClickTarget = document.getElementById("board");
+  document.querySelectorAll("[data-profile-index]").forEach(card => {
+    card.style.cursor = "pointer";
+    card.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
 
-  if (boardClickTarget && !boardClickTarget.dataset.clickBound) {
-    boardClickTarget.dataset.clickBound = "true";
+      const index = Number(card.dataset.profileIndex);
 
-    boardClickTarget.addEventListener("click", event => {
-      const playerCard = event.target.closest("[data-profile-index]");
-
-      if (playerCard) {
-        openPlayerProfile(Number(playerCard.dataset.profileIndex));
-        return;
+      if (Number.isFinite(index)) {
+        openPlayerProfile(index);
       }
+    };
+  });
 
-      const pitcherCard = event.target.closest("[data-pitcher-profile]");
+  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
+    card.style.cursor = "pointer";
+    card.onclick = event => {
+      event.preventDefault();
+      event.stopPropagation();
 
-      if (pitcherCard) {
-        openPitcherVulnerabilityProfile(decodeURIComponent(pitcherCard.dataset.pitcherProfile));
-      }
-    });
-  }
+      openPitcherVulnerabilityProfile(decodeURIComponent(card.dataset.pitcherProfile));
+    };
+  });
 }
 
 document.querySelectorAll("nav button").forEach(btn => {
