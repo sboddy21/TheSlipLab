@@ -153,7 +153,7 @@ function main() {
   fs.mkdirSync(path.join(ROOT, "exports/content"), { recursive: true });
 
   const rows = readJson("website/data/mlb_home_runs.json", []);
-  const gamesData = readJson("website/data/mlb_games.json", {});
+  const gamesData = readJson("website/data/mlb_games_today.json", {});
   const games = Array.isArray(gamesData) ? gamesData : gamesData.games || [];
 
   const posts = [
