@@ -655,10 +655,12 @@ function getPitcherAttackZones(player, row = null) {
   return null;
 }
 
-function zoneClass(level) {
-  if (level >= 75) return "red";
-  if (level >= 55) return "orange";
-  if (level >= 38) return "yellow";
+function attackZoneClass(level) {
+  const value = number(level);
+
+  if (value >= 78) return "red";
+  if (value >= 62) return "orange";
+  if (value >= 44) return "yellow";
   return "blue";
 }
 
@@ -687,14 +689,14 @@ function renderPitcherAttackZones(row) {
         </div>
 
         <div class="attack-zone-summary">
-          <strong>${zones.hitterPower}</strong>
+          <strong>${Math.min(99, zones.hitterPower)}</strong>
           <span>Power</span>
         </div>
       </div>
 
       <div class="attack-zone-grid">
         ${zones.zones.map(zone => `
-          <div class="attack-zone-cell ${zoneClass(zone.danger)}">
+          <div class="attack-zone-cell ${attackZoneClass(zone.danger)}">
             <span>${zone.zone}</span>
             <strong>${zone.danger}</strong>
           </div>

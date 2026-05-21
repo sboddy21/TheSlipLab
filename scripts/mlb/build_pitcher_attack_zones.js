@@ -40,11 +40,30 @@ function buildZoneGrid(row) {
   const era = n(pitcher.era);
   const whip = n(pitcher.whip);
   const hrAllowed = n(pitcher.homeRuns);
+  const hitsAllowed = n(pitcher.hits);
+  const ip = n(pitcher.inningsPitched);
 
   const side = String(row.batSide || "B").toUpperCase();
 
-  const hitterPower = clamp(hr / 24 + slg / 1.25 + ops / 2.5 + score / 150, 0.12, 1.2);
-  const pitcherLeak = clamp(era / 6.5 + whip / 2 + hrAllowed / 18, 0.08, 1.15);
+  const hitterPower = clamp(
+    hr * 1.15 +
+    slg * 22 +
+    ops * 12 +
+    score * 0.35,
+    8,
+    99
+  );
+
+  const pitcherLeak = clamp(
+    era * 5.8 +
+    whip * 12 +
+    hrAllowed * 3.8 +
+    (ip > 0 ? hitsAllowed / ip * 10 : 0),
+    8,
+    99
+  );
+
+  const baseDanger = clamp((hitterPower * 0.48) + (pitcherLeak * 0.42), 10, 88);
 
   const zones = [];
 
@@ -54,25 +73,32 @@ function buildZoneGrid(row) {
 
     const heart = rowIndex >= 1 && rowIndex <= 3 && colIndex >= 1 && colIndex <= 3;
     const upper = rowIndex <= 1;
+    const lower = rowIndex >= 3;
+    const edge = rowIndex === 0 || rowIndex === 4 || colIndex === 0 || colIndex === 4;
     const pull = side === "L" ? colIndex >= 3 : side === "R" ? colIndex <= 1 : colIndex === 2;
+    const middle = colIndex === 2;
 
-    let danger = hitterPower * 0.48 + pitcherLeak * 0.42;
+    let danger = baseDanger;
 
-    if (heart) danger += 0.16;
-    if (upper) danger += 0.08;
-    if (pull) danger += 0.12;
+    if (heart) danger += 8;
+    if (upper) danger += 5;
+    if (pull) danger += 7;
+    if (middle) danger += 3;
+    if (lower) danger -= 4;
+    if (edge) danger -= 10;
 
-    danger = clamp(danger, 0.04, 0.98);
+    const variation = ((index * 7) % 11) - 5;
+    danger = Math.round(clamp(danger + variation, 12, 92));
 
     zones.push({
       zone: index + 1,
-      danger: Math.round(danger * 100),
+      danger,
       attack:
-        danger >= 75
+        danger >= 78
           ? "Red"
-          : danger >= 55
+          : danger >= 62
             ? "Orange"
-            : danger >= 38
+            : danger >= 44
               ? "Yellow"
               : "Blue"
     });
@@ -80,8 +106,8 @@ function buildZoneGrid(row) {
 
   return {
     side,
-    hitterPower: Math.round(hitterPower * 100),
-    pitcherLeak: Math.round(pitcherLeak * 100),
+    hitterPower: Math.round(hitterPower),
+    pitcherLeak: Math.round(pitcherLeak),
     zones
   };
 }
