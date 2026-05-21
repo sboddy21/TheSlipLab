@@ -11,9 +11,6 @@ const state = {
 const marketFiles = {
   mlb: {
     home_runs: "data/mlb_home_runs.json",
-    hits: "data/mlb_hits.json",
-    total_bases: "data/mlb_total_bases.json",
-    rbis: "data/mlb_rbis.json",
     games: "data/mlb_games_today.json",
     weather: "data/mlb_weather.json",
     results: "data/mlb_results.json"
