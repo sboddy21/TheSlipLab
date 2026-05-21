@@ -121,6 +121,20 @@ async function loadParkFactors() {
 
 
 
+
+
+async function loadParkCarryVisuals() {
+  try {
+    const response = await fetch(`./data/park_carry_visuals.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadLaunchAngleClusters() {
   try {
     const response = await fetch(`./data/launch_angle_clusters.json?v=${Date.now()}`);
@@ -607,6 +621,83 @@ function renderStatcastZoneLab(row) {
 
 
 
+
+
+function getParkCarryVisual(player, row = null) {
+  const visuals = state.parkCarryVisuals?.players || {};
+
+  if (row?.player && visuals[row.player]) return visuals[row.player];
+  if (player && visuals[player]) return visuals[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(visuals).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return visuals[key];
+  }
+
+  return null;
+}
+
+function carryClass(score) {
+  const value = number(score);
+
+  if (value >= 78) return "elite";
+  if (value >= 64) return "good";
+  if (value <= 38) return "cold";
+  return "neutral";
+}
+
+function renderParkCarryVisual(row) {
+  const data = getParkCarryVisual(row.player, row);
+
+  if (!data?.carry) {
+    return `
+      <div class="carry-card">
+        <div class="carry-head">
+          <strong>Live Park Carry</strong>
+          <span>No park carry data loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const carry = data.carry;
+  const score = number(carry.carryScore);
+  const cls = carryClass(score);
+
+  return `
+    <div class="carry-card ${cls}">
+      <div class="carry-head">
+        <div>
+          <strong>Live Park Carry</strong>
+          <span>${clean(carry.venue)} • ${clean(carry.label)}</span>
+        </div>
+        <div class="carry-score">
+          <strong>${clean(carry.carryScore)}</strong>
+          <span>Carry</span>
+        </div>
+      </div>
+
+      <div class="carry-field">
+        <div class="carry-wall"></div>
+        <div class="carry-arc" style="width:${Math.max(20, score)}%;"></div>
+        <div class="carry-ball" style="left:${Math.max(12, Math.min(88, score))}%;"></div>
+        <div class="carry-home"></div>
+      </div>
+
+      <div class="carry-grid">
+        <div><span>Temp</span><strong>${clean(carry.temp)}°</strong><small>${clean(carry.tempBoost)} boost</small></div>
+        <div><span>Humidity</span><strong>${clean(carry.humidity)}%</strong><small>${clean(carry.humidityBoost)} boost</small></div>
+        <div><span>Wind</span><strong>${clean(carry.windSpeed)} MPH</strong><small>${clean(carry.windBoost)} boost</small></div>
+        <div><span>Park</span><strong>${clean(carry.parkFactor)}</strong><small>${clean(carry.parkBoost)} boost</small></div>
+        <div><span>Roof</span><strong>${clean(carry.roof)}</strong><small>${carry.activeWind ? "Wind active" : "Wind muted"}</small></div>
+      </div>
+    </div>
+  `;
+}
+
+
 function getLaunchAngleProfile(player, row = null) {
   const clusters = state.launchAngleClusters?.players || {};
 
@@ -947,6 +1038,9 @@ function openPlayerProfile(index) {
 
     <h3>HR Launch Angle Clusters</h3>
     ${renderLaunchAngleClusters(row)}
+
+    <h3>Live Park Carry</h3>
+    ${renderParkCarryVisual(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1508,7 +1602,7 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, parkCarryVisuals, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
@@ -1517,6 +1611,7 @@ async function render() {
     loadPitchTypeDamage(),
     loadHandednessOverlays(),
     loadLaunchAngleClusters(),
+    loadParkCarryVisuals(),
     loadTeamStacks()
   ]);
 
@@ -1537,6 +1632,7 @@ async function render() {
   state.pitchTypeDamage = pitchTypeDamage;
   state.handednessOverlays = handednessOverlays;
   state.launchAngleClusters = launchAngleClusters;
+  state.parkCarryVisuals = parkCarryVisuals;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
