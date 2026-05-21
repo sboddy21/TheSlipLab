@@ -123,6 +123,20 @@ async function loadParkFactors() {
 
 
 
+
+
+async function loadPitcherAttackZones() {
+  try {
+    const response = await fetch(`./data/pitcher_attack_zones.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadParkCarryVisuals() {
   try {
     const response = await fetch(`./data/park_carry_visuals.json?v=${Date.now()}`);
@@ -623,6 +637,81 @@ function renderStatcastZoneLab(row) {
 
 
 
+
+
+function getPitcherAttackZones(player, row = null) {
+  const zones = state.pitcherAttackZones?.players || {};
+
+  if (row?.player && zones[row.player]) return zones[row.player];
+  if (player && zones[player]) return zones[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(zones).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return zones[key];
+  }
+
+  return null;
+}
+
+function zoneClass(level) {
+  if (level >= 75) return "red";
+  if (level >= 55) return "orange";
+  if (level >= 38) return "yellow";
+  return "blue";
+}
+
+function renderPitcherAttackZones(row) {
+  const data = getPitcherAttackZones(row.player, row);
+
+  if (!data?.zones?.zones) {
+    return `
+      <div class="attack-zone-card">
+        <div class="attack-zone-head">
+          <strong>Pitcher Attack Zones</strong>
+          <span>No attack zones loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const zones = data.zones;
+
+  return `
+    <div class="attack-zone-card">
+      <div class="attack-zone-head">
+        <div>
+          <strong>Pitcher Attack Zones</strong>
+          <span>Hot attack lanes against this matchup</span>
+        </div>
+
+        <div class="attack-zone-summary">
+          <strong>${zones.hitterPower}</strong>
+          <span>Power</span>
+        </div>
+      </div>
+
+      <div class="attack-zone-grid">
+        ${zones.zones.map(zone => `
+          <div class="attack-zone-cell ${zoneClass(zone.danger)}">
+            <span>${zone.zone}</span>
+            <strong>${zone.danger}</strong>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="attack-zone-legend">
+        <span><i class="red"></i> HR Kill Zone</span>
+        <span><i class="orange"></i> Damage Zone</span>
+        <span><i class="yellow"></i> Contact Zone</span>
+        <span><i class="blue"></i> Weak Zone</span>
+      </div>
+    </div>
+  `;
+}
+
+
 function getParkCarryVisual(player, row = null) {
   const visuals = state.parkCarryVisuals?.players || {};
 
@@ -1041,6 +1130,9 @@ function openPlayerProfile(index) {
 
     <h3>Live Park Carry</h3>
     ${renderParkCarryVisual(row)}
+
+    <h3>Pitcher Attack Zones</h3>
+    ${renderPitcherAttackZones(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1602,7 +1694,7 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, parkCarryVisuals, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, parkCarryVisuals, pitcherAttackZones, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
@@ -1612,6 +1704,7 @@ async function render() {
     loadHandednessOverlays(),
     loadLaunchAngleClusters(),
     loadParkCarryVisuals(),
+    loadPitcherAttackZones(),
     loadTeamStacks()
   ]);
 
@@ -1633,6 +1726,7 @@ async function render() {
   state.handednessOverlays = handednessOverlays;
   state.launchAngleClusters = launchAngleClusters;
   state.parkCarryVisuals = parkCarryVisuals;
+  state.pitcherAttackZones = pitcherAttackZones;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
