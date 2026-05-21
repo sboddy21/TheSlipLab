@@ -284,9 +284,26 @@ function statBlock(label, value) {
   `;
 }
 
-function getPlayerZoneData(player) {
+function getPlayerZoneData(player, row = null) {
   const zones = state.statcastZones?.players || {};
-  return zones[player] || null;
+
+  if (row?.player && zones[row.player]) return zones[row.player];
+  if (player && zones[player]) return zones[player];
+
+  const rowPlayerId = row?.playerId ? String(row.playerId) : "";
+  if (rowPlayerId) {
+    const byId = Object.values(zones).find(zone => String(zone.playerId || "") === rowPlayerId);
+    if (byId) return byId;
+  }
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(zones).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return zones[key];
+  }
+
+  return null;
 }
 
 function zoneClass(value, metric) {
@@ -420,9 +437,9 @@ function renderSprayOverlay(playerZones) {
 }
 
 function renderStatcastZoneLab(row) {
-  const playerZones = getPlayerZoneData(row.player);
+  const playerZones = getPlayerZoneData(row.player, row);
 
-  if (!playerZones || !playerZones.rows) {
+  if (!playerZones || !playerZones.zones) {
     return `
       <div class="zone-lab-wrap">
         <div class="zone-lab-card">
@@ -440,7 +457,7 @@ function renderStatcastZoneLab(row) {
       <div class="zone-lab-card">
         <div class="zone-lab-head">
           <strong>Statcast Zone Lab</strong>
-          <span>${playerZones.rows} tracked pitches from Baseball Savant</span>
+          <span>${playerZones.rows || 25} powered zones • ${clean(playerZones.source || "Slip Lab model")}</span>
         </div>
 
         ${renderSprayOverlay(playerZones)}
