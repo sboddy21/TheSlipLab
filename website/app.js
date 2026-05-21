@@ -1170,7 +1170,7 @@ function openActiveProfileModal() {
 
   if (!modal) return;
 
-  openActiveProfileModal();
+  modal.classList.add("show");
   modal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
 }
