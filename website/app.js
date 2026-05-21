@@ -1,6 +1,5 @@
 const state = {
-
-sport: "mlb",
+  sport: "mlb",
   market: "home_runs",
   rows: [],
   weather: [],
@@ -804,6 +803,11 @@ function openPitcherVulnerabilityProfile(pitcherName) {
 
   modal.classList.add("show");
 
+  body.querySelectorAll("[data-profile-index]").forEach(card => {
+    card.addEventListener("click", event => {
+      event.stopPropagation();
+      openPlayerProfile(Number(card.dataset.profileIndex));
+    });
   });
 }
 
@@ -1344,89 +1348,41 @@ async function render() {
       </div>
     `;
 
-  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
-    card.style.cursor = "pointer";
-    card.onclick = event => {
-      event.preventDefault();
-      event.stopPropagation();
+  document.querySelectorAll("[data-profile-index]").forEach(card => {
+    card.addEventListener("click", () => {
+      openPlayerProfile(Number(card.dataset.profileIndex));
+    });
+  });
 
+  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
+    card.addEventListener("click", () => {
       openPitcherVulnerabilityProfile(decodeURIComponent(card.dataset.pitcherProfile));
-    };
+    });
   });
 }
 
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.sport = btn.dataset.sport;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
-
-render().catch(showAppError);
+    render().catch(showAppError);
   });
 });
 
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.market = btn.dataset.market;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
+    render().catch(showAppError);
+  });
 });
 
+document.addEventListener("click", event => {
+  if (event.target.matches("[data-close-profile]")) {
+    closePlayerProfile();
+  }
 
-render().catch(showAppError);
-  });
+  if (event.target.id === "profile-modal") {
+    closePlayerProfile();
+  }
 });
 
 document.addEventListener("keydown", event => {
@@ -1434,35 +1390,5 @@ document.addEventListener("keydown", event => {
     closePlayerProfile();
   }
 });
-
-
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-    event.stopPropagation();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
 
 render().catch(showAppError);
