@@ -518,7 +518,6 @@ function openPlayerProfile(index) {
       ${statBlock("OPS", hitter.ops)}
       ${statBlock("AVG", hitter.avg)}
       ${statBlock("OBP", hitter.obp)}
-      ${statBlock("RBI", hitter.rbi)}
       ${statBlock("Doubles", hitter.doubles)}
       ${statBlock("Strikeouts", hitter.strikeOuts)}
     </div>
@@ -529,7 +528,6 @@ function openPlayerProfile(index) {
       ${statBlock("WHIP", pitcher.whip)}
       ${statBlock("HR Allowed", pitcher.homeRuns)}
       ${statBlock("IP", pitcher.inningsPitched)}
-      ${statBlock("Hits Allowed", pitcher.hits)}
       ${statBlock("Walks", pitcher.baseOnBalls)}
       ${statBlock("Strikeouts", pitcher.strikeOuts)}
     </div>
@@ -680,7 +678,6 @@ function openPitcherVulnerabilityProfile(pitcherName) {
       <div><span class="profile-label">WHIP</span><strong>${clean(pitcher.whip)}</strong></div>
       <div><span class="profile-label">HR Allowed</span><strong>${clean(pitcher.homeRuns)}</strong></div>
       <div><span class="profile-label">Attack Pool</span><strong>${rows.length} bats</strong></div>
-      <div><span class="profile-label">Hits Allowed</span><strong>${clean(pitcher.hits)}</strong></div>
       <div><span class="profile-label">Walks</span><strong>${clean(pitcher.baseOnBalls)}</strong></div>
       <div><span class="profile-label">Strikeouts</span><strong>${clean(pitcher.strikeOuts)}</strong></div>
       <div><span class="profile-label">IP</span><strong>${clean(pitcher.inningsPitched)}</strong></div>
@@ -1007,7 +1004,6 @@ async function render() {
   if (pageSubtitle) {
     pageSubtitle.textContent =
       state.sport === "mlb"
-        ? "Home Runs, Hits, Total Bases, and RBIs."
         : "Coming soon.";
   }
 
