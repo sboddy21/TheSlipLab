@@ -1215,240 +1215,22 @@ function renderTeamStackStrip() {
 }
 
 async function render() {
-  document.querySelectorAll("nav button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.sport === state.sport);
-  });
-
-  document.querySelectorAll(".tabs button").forEach(btn => {
-    btn.classList.toggle("active", btn.dataset.market === state.market);
-  });
-
-  document.getElementById("page-title").textContent =
-    `${state.sport.toUpperCase()} Lab`;
-
-  document.getElementById("page-subtitle").textContent =
-    state.sport === "mlb"
-      ? "Home Runs, Hits, Total Bases, and RBIs."
-      : "Coming soon.";
-
-  const board = document.getElementById("board");
-  const boardTitle = document.getElementById("board-title");
-  const boardMeta = document.getElementById("board-meta");
-
-  boardTitle.textContent = titleCase(state.market);
-
-  board.innerHTML =
-    `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
-
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, stackRows] = await Promise.all([
-    loadRows(),
-    loadLastUpdated(),
-    loadWeather(),
-    loadParkFactors(),
-    loadStatcastZones(),
-    loadTeamStacks()
-  ]);
-
-  const rows = state.market === "games"
-    ? raw.games || []
-    : state.market === "weather"
-      ? raw.weather || []
-      : state.market === "results"
-        ? raw.results || []
-        : raw;
-
-  state.rows = rows;
-  state.weather = weatherRows;
-  state.parks = parkRows;
-  state.statcastZones = statcastZones;
-  state.stacks = stackRows;
-
-  const updated = formatUpdatedTime(updatedInfo?.updated_at);
-
-  boardMeta.textContent =
-    `${rows.length} rows loaded • Last Updated ${updated}`;
-
-  const topUpdated = document.getElementById("top-updated");
-
-  if (topUpdated) {
-    topUpdated.textContent = `Last Updated: ${updated}`;
-  }
-
-  if (!rows.length) {
-    board.innerHTML =
-      `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
-    return;
-  }
-
-  if (state.market === "weather") {
-    board.innerHTML = rows.map(row => `
-      <article class="weather-board-card">
-        ${renderBallparkWeather(row.venue)}
-      </article>
-    `).join("");
-
-    return;
-  }
-
-  if (state.market === "results") {
-    board.innerHTML = renderResultsBoard(raw);
-    return;
-  }
-
-  if (state.market === "results") {
-    board.innerHTML = renderResultsBoard(raw);
-    return;
-  }
-
-  if (state.market === "games") {
-    board.innerHTML = rows.map((row, index) => `
-      <article class="card game-card">
-        <div class="rank">#${index + 1}</div>
-
-        <div>
-          <div class="player">${row.matchup || "MLB Game"}</div>
-          <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
-          ${renderLiveStatusPill(row)}
-          ${renderLineupStatus(row)}
-          ${renderWeatherMini(row.venue)}
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Away SP</div>
-          <div class="stat-value">${row.awayProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Home SP</div>
-          <div class="stat-value">${row.homeProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Score</div>
-          <div class="stat-value">${row.awayScore ?? "--"} • ${row.homeScore ?? "--"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Game ID</div>
-          <div class="stat-value">${row.gamePk || "--"}</div>
-        </div>
-
-        ${renderGameLineups(row)}
-      </article>
-    `).join("");
-
-    return;
-  }
-
-  board.innerHTML = state.market === "home_runs"
-    ? renderGroupedHomeRunBoard(rows)
-    : `
-      <div class="main-board-grid">
-        ${rows.map((row, index) => renderPlayerBoardCard(row, index)).join("")}
-      </div>
-    `;
-
-  document.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.addEventListener("click", () => {
-      openPlayerProfile(Number(card.dataset.profileIndex));
-    });
-  });
-
-  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
-    card.addEventListener("click", () => {
-      openPitcherVulnerabilityProfile(decodeURIComponent(card.dataset.pitcherProfile));
-    });
-  });
-}
-
+  
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.sport = btn.dataset.sport;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
-
-render().catch(showAppError);
+    render().catch(showAppError);
   });
 });
 
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.market = btn.dataset.market;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
-
-render().catch(showAppError);
+    render().catch(showAppError);
   });
 });
 
 document.addEventListener("click", event => {
-  if (event.target.matches("[data-close-profile]")) {
-    closePlayerProfile();
-  }
-
-  if (event.target.id === "profile-modal") {
-    closePlayerProfile();
-  }
-});
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") {
-    closePlayerProfile();
-  }
-});
-
-
-document.addEventListener("click", event => {
   const playerCard = event.target.closest("[data-profile-index]");
 
   if (playerCard) {
@@ -1474,5 +1256,10 @@ document.addEventListener("click", event => {
   }
 });
 
+const profileClose = document.getElementById("profile-close");
+
+if (profileClose) {
+  profileClose.addEventListener("click", closePlayerProfile);
+}
 
 render().catch(showAppError);
