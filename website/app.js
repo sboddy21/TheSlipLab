@@ -119,6 +119,20 @@ async function loadParkFactors() {
 
 
 
+
+
+async function loadLaunchAngleClusters() {
+  try {
+    const response = await fetch(`./data/launch_angle_clusters.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadHandednessOverlays() {
   try {
     const response = await fetch(`./data/handedness_overlays.json?v=${Date.now()}`);
@@ -591,6 +605,81 @@ function renderStatcastZoneLab(row) {
 
 
 
+
+
+function getLaunchAngleProfile(player, row = null) {
+  const clusters = state.launchAngleClusters?.players || {};
+
+  if (row?.player && clusters[row.player]) return clusters[row.player];
+  if (player && clusters[player]) return clusters[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(clusters).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return clusters[key];
+  }
+
+  return null;
+}
+
+function renderLaunchAngleClusters(row) {
+  const data = getLaunchAngleProfile(row.player, row);
+
+  if (!data?.launchProfile) {
+    return `
+      <div class="launch-card">
+        <div class="launch-head">
+          <strong>HR Launch Angle Clusters</strong>
+          <span>No launch profile loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const profile = data.launchProfile;
+
+  return `
+    <div class="launch-card">
+      <div class="launch-head">
+        <div>
+          <strong>HR Launch Angle Clusters</strong>
+          <span>Ideal window ${clean(profile.bestWindow)} degrees • Power arc ${clean(profile.powerArc)}%</span>
+        </div>
+        <div class="launch-score">
+          <strong>${clean(profile.idealAngle)}°</strong>
+          <span>Ideal LA</span>
+        </div>
+      </div>
+
+      <div class="launch-stage">
+        <div class="launch-line launch-low"></div>
+        <div class="launch-line launch-mid"></div>
+        <div class="launch-line launch-high"></div>
+
+        ${profile.clusters.map(cluster => `
+          <div class="launch-dot" style="left:${cluster.x}%; top:${cluster.y}%;">
+            <span>${cluster.hrFit}%</span>
+            <b>${cluster.label}</b>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="launch-grid">
+        ${profile.clusters.map(cluster => `
+          <article>
+            <span>${cluster.label}</span>
+            <strong>${cluster.launchAngle}°</strong>
+            <p>${cluster.angleRange}° • ${cluster.exitVelo} MPH • ${cluster.hrFit}% HR fit</p>
+            <i><b style="width:${cluster.hrFit}%"></b></i>
+          </article>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+
 function getHandednessOverlay(player, row = null) {
   const overlays = state.handednessOverlays?.players || {};
 
@@ -855,6 +944,9 @@ function openPlayerProfile(index) {
 
     <h3>Handedness Overlay</h3>
     ${renderHandednessOverlay(row)}
+
+    <h3>HR Launch Angle Clusters</h3>
+    ${renderLaunchAngleClusters(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1416,7 +1508,7 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
@@ -1424,6 +1516,7 @@ async function render() {
     loadStatcastZones(),
     loadPitchTypeDamage(),
     loadHandednessOverlays(),
+    loadLaunchAngleClusters(),
     loadTeamStacks()
   ]);
 
@@ -1443,6 +1536,7 @@ async function render() {
   state.statcastZones = statcastZones;
   state.pitchTypeDamage = pitchTypeDamage;
   state.handednessOverlays = handednessOverlays;
+  state.launchAngleClusters = launchAngleClusters;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
