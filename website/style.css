@@ -4094,3 +4094,130 @@ nav button.active,
   background:
     radial-gradient(circle at center, rgba(77, 145, 255, .20), rgba(22, 44, 78, .24));
 }
+
+
+/* Hot Cold Attack Regions */
+.hotcold-card {
+  border: 1px solid #1d3b2a;
+  border-radius: 18px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at top, rgba(51,255,119,.08), transparent 34%),
+    linear-gradient(180deg, rgba(10,18,14,.96), rgba(6,11,9,.96));
+}
+
+.hotcold-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.hotcold-head strong {
+  display: block;
+  font-size: 16px;
+}
+
+.hotcold-head span {
+  display: block;
+  margin-top: 4px;
+  color: #9bb0a1;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.hotcold-score {
+  min-width: 104px;
+  text-align: center;
+  border: 1px solid #244b34;
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(16,29,21,.82);
+}
+
+.hotcold-score strong {
+  color: #33ff77;
+  font-size: 24px;
+}
+
+.hotcold-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 6px;
+  max-width: 620px;
+  margin: 0 auto 12px;
+}
+
+.hotcold-cell {
+  min-height: 52px;
+  border-radius: 12px;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.hotcold-cell.hot {
+  background: radial-gradient(circle at center, rgba(51,255,119,.34), rgba(11,65,31,.28));
+}
+
+.hotcold-cell.warm {
+  background: radial-gradient(circle at center, rgba(255,214,77,.28), rgba(92,78,24,.25));
+}
+
+.hotcold-cell.neutral {
+  background: radial-gradient(circle at center, rgba(121,145,132,.18), rgba(31,42,36,.24));
+}
+
+.hotcold-cell.cold {
+  background: radial-gradient(circle at center, rgba(77,145,255,.20), rgba(22,44,78,.24));
+}
+
+.hotcold-cell span {
+  font-size: 10px;
+  font-weight: 1000;
+  color: #dce7df;
+}
+
+.hotcold-cell strong {
+  font-size: 18px;
+}
+
+.hotcold-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+
+.hotcold-summary div {
+  border: 1px solid #244b34;
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(16,29,21,.76);
+}
+
+.hotcold-summary span {
+  display: block;
+  color: #9bb0a1;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.hotcold-summary strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 18px;
+}
+
+@media (max-width: 700px) {
+  .hotcold-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .hotcold-cell {
+    min-height: 46px;
+  }
+}

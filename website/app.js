@@ -125,6 +125,20 @@ async function loadParkFactors() {
 
 
 
+
+
+async function loadHotColdAttackRegions() {
+  try {
+    const response = await fetch(`./data/hot_cold_attack_regions.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadPitcherAttackZones() {
   try {
     const response = await fetch(`./data/pitcher_attack_zones.json?v=${Date.now()}`);
@@ -639,6 +653,80 @@ function renderStatcastZoneLab(row) {
 
 
 
+
+
+function getHotColdAttackRegions(player, row = null) {
+  const regions = state.hotColdAttackRegions?.players || {};
+
+  if (row?.player && regions[row.player]) return regions[row.player];
+  if (player && regions[player]) return regions[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(regions).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return regions[key];
+  }
+
+  return null;
+}
+
+function hotColdClass(region) {
+  if (region === "hot") return "hot";
+  if (region === "warm") return "warm";
+  if (region === "cold") return "cold";
+  return "neutral";
+}
+
+function renderHotColdAttackRegions(row) {
+  const data = getHotColdAttackRegions(row.player, row);
+
+  if (!data?.regions?.regions) {
+    return `
+      <div class="hotcold-card">
+        <div class="hotcold-head">
+          <strong>Hot/Cold Attack Regions</strong>
+          <span>No hot/cold region data loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const regions = data.regions;
+
+  return `
+    <div class="hotcold-card">
+      <div class="hotcold-head">
+        <div>
+          <strong>Hot/Cold Attack Regions</strong>
+          <span>${clean(regions.read)}</span>
+        </div>
+
+        <div class="hotcold-score">
+          <strong>${clean(regions.bestScore)}</strong>
+          <span>Best Zone ${clean(regions.bestZone)}</span>
+        </div>
+      </div>
+
+      <div class="hotcold-grid">
+        ${regions.regions.map(region => `
+          <div class="hotcold-cell ${hotColdClass(region.region)}">
+            <span>${region.zone}</span>
+            <strong>${region.combined}</strong>
+          </div>
+        `).join("")}
+      </div>
+
+      <div class="hotcold-summary">
+        <div><span>Hot Regions</span><strong>${clean(regions.hotRegions)}</strong></div>
+        <div><span>Cold Regions</span><strong>${clean(regions.coldRegions)}</strong></div>
+        <div><span>Best Lane</span><strong>${clean(regions.bestLane)}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+
 function getPitcherAttackZones(player, row = null) {
   const zones = state.pitcherAttackZones?.players || {};
 
@@ -1135,6 +1223,9 @@ function openPlayerProfile(index) {
 
     <h3>Pitcher Attack Zones</h3>
     ${renderPitcherAttackZones(row)}
+
+    <h3>Hot/Cold Attack Regions</h3>
+    ${renderHotColdAttackRegions(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1696,7 +1787,7 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, parkCarryVisuals, pitcherAttackZones, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, launchAngleClusters, parkCarryVisuals, pitcherAttackZones, hotColdAttackRegions, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
@@ -1707,6 +1798,7 @@ async function render() {
     loadLaunchAngleClusters(),
     loadParkCarryVisuals(),
     loadPitcherAttackZones(),
+    loadHotColdAttackRegions(),
     loadTeamStacks()
   ]);
 
@@ -1729,6 +1821,7 @@ async function render() {
   state.launchAngleClusters = launchAngleClusters;
   state.parkCarryVisuals = parkCarryVisuals;
   state.pitcherAttackZones = pitcherAttackZones;
+  state.hotColdAttackRegions = hotColdAttackRegions;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
