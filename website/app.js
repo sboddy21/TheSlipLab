@@ -548,7 +548,7 @@ function openPlayerProfile(index) {
     </div>
   `;
 
-  modal.classList.add("show");
+  openActiveProfileModal();
 }
 
 function closePlayerProfile() {
@@ -726,7 +726,7 @@ function openPitcherVulnerabilityProfile(pitcherName) {
     </div>
   `;
 
-  modal.classList.add("show");
+  openActiveProfileModal();
 }
 
 function liveStatusText(row) {
@@ -1144,3 +1144,86 @@ if (profileClose) {
 }
 
 render().catch(showAppError);
+
+/* SLIP LAB MODAL CONTROLLER START */
+function getProfileModalParts() {
+  return {
+    modal: document.getElementById("profile-modal"),
+    body: document.getElementById("profile-body")
+  };
+}
+
+function closePlayerProfile() {
+  const { modal, body } = getProfileModalParts();
+
+  if (!modal) return;
+
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+
+  if (body) body.innerHTML = "";
+}
+
+function openActiveProfileModal() {
+  const { modal } = getProfileModalParts();
+
+  if (!modal) return;
+
+  openActiveProfileModal();
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function installSlipLabModalController() {
+  const { modal } = getProfileModalParts();
+
+  if (!modal || modal.dataset.modalControllerReady === "true") return;
+
+  modal.dataset.modalControllerReady = "true";
+  modal.setAttribute("aria-hidden", modal.classList.contains("show") ? "false" : "true");
+
+  document.addEventListener("click", event => {
+    const closeButton = event.target.closest("[data-close-profile], .profile-close, .close-button");
+
+    if (closeButton) {
+      event.preventDefault();
+      closePlayerProfile();
+      return;
+    }
+
+    const pitcherCard = event.target.closest("[data-pitcher-profile]");
+
+    if (pitcherCard) {
+      event.preventDefault();
+      const pitcherName = decodeURIComponent(pitcherCard.dataset.pitcherProfile || "");
+      openPitcherVulnerabilityProfile(pitcherName);
+      openActiveProfileModal();
+      return;
+    }
+
+    const playerCard = event.target.closest("[data-profile-index]");
+
+    if (playerCard) {
+      event.preventDefault();
+      openPlayerProfile(Number(playerCard.dataset.profileIndex));
+      openActiveProfileModal();
+    }
+  });
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) {
+      closePlayerProfile();
+    }
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && modal.classList.contains("show")) {
+      closePlayerProfile();
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", installSlipLabModalController);
+installSlipLabModalController();
+/* SLIP LAB MODAL CONTROLLER END */
