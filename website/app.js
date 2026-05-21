@@ -16,31 +16,35 @@ const marketFiles = {
     rbis: "data/mlb_rbis.json",
     games: "data/mlb_games_today.json",
     weather: "data/mlb_weather.json",
-    results: "data/mlb_results.json",
-    stacks: "data/mlb_team_stacks.json",
-    results: "data/mlb_results.json",
-    stacks: "data/mlb_team_stacks.json"
+    results: "data/mlb_results.json"
   }
 };
 
+function clean(value, fallback = "--") {
+  if (value === null || value === undefined || value === "") return fallback;
+  return String(value);
+}
+
+function number(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function titleCase(text) {
-  return text.replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
+  return String(text || "").replaceAll("_", " ").replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function showAppError(error) {
   const board = document.getElementById("board");
   const meta = document.getElementById("board-meta");
 
-  if (meta) {
-    meta.textContent = "App error detected";
-  }
+  if (meta) meta.textContent = "App error detected";
 
   if (board) {
     board.innerHTML = `
       <div class="empty">
-        <strong>Site error:</strong>
-        <br>
-        ${error?.message || error}
+        <strong>Site error:</strong><br>
+        ${clean(error?.message || error)}
       </div>
     `;
   }
@@ -48,31 +52,19 @@ function showAppError(error) {
   console.error(error);
 }
 
+function formatUpdatedTime(iso) {
+  if (!iso) return "Loading...";
 
-function clean(value, fallback = "--") {
-  return value === null || value === undefined || value === "" ? fallback : value;
-}
+  const date = new Date(iso);
 
-function gameStatusLabel(row) {
-  const status = String(row.status || "").toLowerCase();
-  const abstractStatus = String(row.abstractStatus || "").toLowerCase();
+  if (Number.isNaN(date.getTime())) return "Loading...";
 
-  if (status.includes("final") || abstractStatus.includes("final")) return "FINAL";
-  if (status.includes("delay") || status.includes("postponed")) return "DELAYED";
-  if (abstractStatus.includes("live") || status.includes("progress")) return "LIVE";
-  if (abstractStatus.includes("preview") || status.includes("scheduled")) return "PRE GAME";
-
-  return String(row.status || "GAME").toUpperCase();
-}
-
-function gameStatusClass(row) {
-  const label = gameStatusLabel(row);
-
-  if (label === "LIVE") return "status-pill live";
-  if (label === "FINAL") return "status-pill final";
-  if (label === "DELAYED") return "status-pill delayed";
-
-  return "status-pill";
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  });
 }
 
 function formatGameTime(iso) {
@@ -80,10 +72,25 @@ function formatGameTime(iso) {
 
   const date = new Date(iso);
 
+  if (Number.isNaN(date.getTime())) return "TBD";
+
   return date.toLocaleTimeString([], {
     hour: "numeric",
     minute: "2-digit"
   });
+}
+
+async function fetchJson(file, fallback) {
+  try {
+    const res = await fetch(file, { cache: "no-store" });
+
+    if (!res.ok) return fallback;
+
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return fallback;
+  }
 }
 
 async function loadRows() {
@@ -91,63 +98,45 @@ async function loadRows() {
 
   if (!file) return [];
 
-  try {
-    const res = await fetch(file, { cache: "no-store" });
-
-    if (!res.ok) return [];
-
-    return await res.json();
-  } catch {
-    return [];
-  }
+  return fetchJson(file, []);
 }
 
-
-async function OLD_REMOVED_loadLastUpdated() {
-  try {
-    const res = await fetch("data/site_last_updated.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return;
-
-    const data = await res.json();
-
-    const updated = new Date(data.updated_at).toLocaleString([], {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit"
-    });
-
-    const topUpdated = document.getElementById("top-updated");
-
-    if (topUpdated) {
-      topUpdated.textContent = `Last Updated: ${updated}`;
-    }
-  } catch (err) {
-    console.error(err);
-  }
+async function loadLastUpdated() {
+  return fetchJson("data/site_last_updated.json", null);
 }
 
 async function loadWeather() {
-  try {
-    const res = await fetch("data/mlb_weather.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-
-    return Array.isArray(data.weather) ? data.weather : [];
-  } catch {
-    return [];
-  }
+  const data = await fetchJson("data/mlb_weather.json", { weather: [] });
+  return data.weather || data.rows || [];
 }
 
-function OLD_REMOVED_getWeatherForVenue(venue) {
-  return state.weather.find(item => item.venue === venue) || null;
+async function loadParkFactors() {
+  const data = await fetchJson("data/mlb_park_factors.json", { parks: [] });
+  return data.parks || data.rows || [];
+}
+
+async function loadStatcastZones() {
+  return fetchJson("data/statcast_zones.json", null);
+}
+
+async function loadTeamStacks() {
+  return fetchJson("data/mlb_team_stacks.json", { stacks: [] });
+}
+
+function getWeatherForVenue(venue) {
+  if (!venue || !Array.isArray(state.weather)) return null;
+
+  return state.weather.find(row =>
+    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
+  ) || null;
+}
+
+function getParkForVenue(venue) {
+  if (!venue || !Array.isArray(state.parks)) return null;
+
+  return state.parks.find(row =>
+    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
+  ) || null;
 }
 
 function renderWeatherMini(venue) {
@@ -166,29 +155,13 @@ function renderWeatherMini(venue) {
   `;
 }
 
-
-function getWeatherForVenue(venue) {
-  if (!venue || !Array.isArray(state.weather)) return null;
-
-  return state.weather.find(row =>
-    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
-  ) || null;
-}
-
-function getParkForVenue(venue) {
-  if (!venue || !Array.isArray(state.parks)) return null;
-
-  return state.parks.find(row =>
-    String(row.venue || "").toLowerCase() === String(venue || "").toLowerCase()
-  ) || null;
-}
-
 function parkHrGrade(park) {
-  const factor = Number(park?.hrFactor || 100);
+  const factor = number(park?.hrFactor, 100);
 
   if (factor >= 112) return { label: "ELITE HR PARK", className: "elite" };
   if (factor >= 104) return { label: "HR FRIENDLY", className: "good" };
   if (factor >= 96) return { label: "NEUTRAL", className: "neutral" };
+
   return { label: "SUPPRESSED", className: "cold" };
 }
 
@@ -197,37 +170,21 @@ function renderParkDimensionDiagram(park, weather, isDome) {
 
   return `
     <div class="park-dimension-diagram">
-      <div class="park-wall park-wall-lf">
-        <span>LF</span>
-        <strong>${clean(park?.lf || "--")}</strong>
-      </div>
-
-      <div class="park-wall park-wall-lcf">
-        <span>LCF</span>
-        <strong>${clean(park?.lcf || "--")}</strong>
-      </div>
-
-      <div class="park-wall park-wall-cf">
-        <span>CF</span>
-        <strong>${clean(park?.cf || "--")}</strong>
-      </div>
-
-      <div class="park-wall park-wall-rcf">
-        <span>RCF</span>
-        <strong>${clean(park?.rcf || "--")}</strong>
-      </div>
-
-      <div class="park-wall park-wall-rf">
-        <span>RF</span>
-        <strong>${clean(park?.rf || "--")}</strong>
-      </div>
+      <div class="park-wall park-wall-lf"><span>LF</span><strong>${clean(park?.lf)}</strong></div>
+      <div class="park-wall park-wall-lcf"><span>LCF</span><strong>${clean(park?.lcf)}</strong></div>
+      <div class="park-wall park-wall-cf"><span>CF</span><strong>${clean(park?.cf)}</strong></div>
+      <div class="park-wall park-wall-rcf"><span>RCF</span><strong>${clean(park?.rcf)}</strong></div>
+      <div class="park-wall park-wall-rf"><span>RF</span><strong>${clean(park?.rf)}</strong></div>
 
       <div class="field-arc"></div>
       <div class="field-grass"></div>
       <div class="field-diamond"></div>
       <div class="field-home"></div>
 
-      ${isDome ? `<div class="field-center-badge">ROOF</div>` : `<div class="wind-arrow wind-arrow-park" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>`}
+      ${isDome
+        ? `<div class="field-center-badge">ROOF</div>`
+        : `<div class="wind-arrow wind-arrow-park" style="transform: translate(-50%, -50%) rotate(${arrow}deg);">➜</div>`
+      }
     </div>
   `;
 }
@@ -242,7 +199,7 @@ function renderParkAttackPanel(park) {
   }
 
   const grade = parkHrGrade(park);
-  const factor = Number(park.hrFactor || 100);
+  const factor = number(park.hrFactor, 100);
   const meter = Math.max(0, Math.min(100, Math.round((factor / 125) * 100)));
 
   return `
@@ -262,18 +219,9 @@ function renderParkAttackPanel(park) {
       </div>
 
       <div class="park-fit-grid">
-        <div>
-          <span>Lefty Pull Fit</span>
-          <strong>${clean(park.leftyBoost || "Neutral")}</strong>
-        </div>
-        <div>
-          <span>Righty Pull Fit</span>
-          <strong>${clean(park.rightyBoost || "Neutral")}</strong>
-        </div>
-        <div>
-          <span>Roof</span>
-          <strong>${clean(park.roof || "Open Air")}</strong>
-        </div>
+        <div><span>Lefty Pull Fit</span><strong>${clean(park.leftyBoost || "Neutral")}</strong></div>
+        <div><span>Righty Pull Fit</span><strong>${clean(park.rightyBoost || "Neutral")}</strong></div>
+        <div><span>Roof</span><strong>${clean(park.roof || "Open Air")}</strong></div>
       </div>
 
       <div class="park-summary">
@@ -307,39 +255,226 @@ function renderBallparkWeather(venue) {
       <div class="park-weather-head">
         <div>
           <h3>Ballpark Environment</h3>
-          <p>${weather.venue} • ${weather.city || ""}</p>
+          <p>${clean(weather.venue)} • ${clean(weather.city, "")}</p>
         </div>
         <div class="weather-live-pill">LIVE</div>
       </div>
 
       <div class="weather-grid">
-        <div class="weather-stat">
-          <span>Temp</span>
-          <strong>${weather.temp ?? "--"}°F</strong>
-        </div>
-        <div class="weather-stat">
-          <span>Humidity</span>
-          <strong>${weather.humidity ?? "--"}%</strong>
-        </div>
-        <div class="weather-stat">
-          <span>Wind</span>
-          <strong>${isDome ? "Roof" : `${weather.windSpeed ?? "--"} MPH`}</strong>
-        </div>
-        <div class="weather-stat">
-          <span>Direction</span>
-          <strong>${isDome ? "Indoor" : weather.windCompass || "--"}</strong>
-        </div>
+        <div class="weather-stat"><span>Temp</span><strong>${weather.temp ?? "--"}°F</strong></div>
+        <div class="weather-stat"><span>Humidity</span><strong>${weather.humidity ?? "--"}%</strong></div>
+        <div class="weather-stat"><span>Wind</span><strong>${isDome ? "Roof" : `${weather.windSpeed ?? "--"} MPH`}</strong></div>
+        <div class="weather-stat"><span>Direction</span><strong>${isDome ? "Indoor" : weather.windCompass || "--"}</strong></div>
       </div>
 
       ${renderParkDimensionDiagram(park, weather, isDome)}
-
       ${renderParkAttackPanel(park)}
 
-      <div class="wind-read">
-        ${windText}
+      <div class="wind-read">${windText}</div>
+    </div>
+  `;
+}
+
+function statBlock(label, value) {
+  return `
+    <div class="profile-stat">
+      <div class="profile-stat-label">${label}</div>
+      <div class="profile-stat-value">${clean(value)}</div>
+    </div>
+  `;
+}
+
+function getPlayerZoneData(player) {
+  const zones = state.statcastZones?.players || {};
+  return zones[player] || null;
+}
+
+function zoneClass(value, metric) {
+  const n = number(value);
+
+  if (metric === "k") {
+    if (n >= 0.3) return "hot";
+    if (n >= 0.2) return "warm";
+    return "neutral";
+  }
+
+  if (metric === "hr") {
+    if (n >= 2) return "hot";
+    if (n >= 1) return "warm";
+    return "neutral";
+  }
+
+  if (n >= 0.5) return "hot";
+  if (n >= 0.3) return "warm";
+
+  return "neutral";
+}
+
+function formatZoneValue(value, metric) {
+  const n = number(value);
+
+  if (metric === "hr") return String(Math.round(n));
+  if (metric === "k" || metric === "hardHit" || metric === "barrel") return `${Math.round(n * 100)}%`;
+
+  return n.toFixed(3).replace(/^0/, "");
+}
+
+function renderZoneMetricGrid(title, metric, playerZones) {
+  const values = playerZones?.zones?.[metric] || Array.from({ length: 25 }, () => 0);
+
+  return `
+    <div class="metric-zone-card">
+      <div class="metric-zone-title">${title}</div>
+      <div class="metric-zone-grid">
+        ${values.map(value => `
+          <div class="metric-zone-cell ${zoneClass(value, metric)}">
+            ${formatZoneValue(value, metric)}
+          </div>
+        `).join("")}
       </div>
     </div>
   `;
+}
+
+function strongestZones(values, count = 3) {
+  return values
+    .map((value, index) => ({ value: number(value), index }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, count);
+}
+
+function sprayDirectionSummary(playerZones) {
+  const hr = playerZones?.zones?.hr || [];
+  const barrel = playerZones?.zones?.barrel || [];
+  const iso = playerZones?.zones?.iso || [];
+
+  let pull = 0;
+  let middle = 0;
+  let oppo = 0;
+
+  hr.forEach((value, index) => {
+    const col = index % 5;
+    const total = number(value) + number(barrel[index]) + number(iso[index]);
+
+    if (col <= 1) pull += total;
+    else if (col === 2) middle += total;
+    else oppo += total;
+  });
+
+  if (pull >= middle && pull >= oppo) return "PULL SIDE DAMAGE";
+  if (middle >= pull && middle >= oppo) return "MIDDLE LANE POWER";
+
+  return "OPPO POWER";
+}
+
+function renderSprayOverlay(playerZones) {
+  const hr = playerZones?.zones?.hr || [];
+  const barrel = playerZones?.zones?.barrel || [];
+  const hardHit = playerZones?.zones?.hardHit || [];
+  const iso = playerZones?.zones?.iso || [];
+
+  const topHr = strongestZones(hr, 4);
+  const topBarrel = strongestZones(barrel, 4);
+
+  return `
+    <div class="spray-overlay-card">
+      <div class="spray-overlay-header">
+        <div>
+          <strong>Power Spray Overlay</strong>
+          <span>${sprayDirectionSummary(playerZones)}</span>
+        </div>
+
+        <div class="spray-overlay-legend">
+          <div><i class="hr"></i> HR</div>
+          <div><i class="barrel"></i> Barrel</div>
+          <div><i class="hard"></i> Hard Hit</div>
+        </div>
+      </div>
+
+      <div class="spray-overlay-grid">
+        ${Array.from({ length: 25 }).map((_, index) => {
+          const hrVal = number(hr[index]);
+          const barrelVal = number(barrel[index]);
+          const hardVal = number(hardHit[index]);
+          const isoVal = number(iso[index]);
+          const isHrHot = topHr.some(zone => zone.index === index && zone.value > 0);
+          const isBarrelHot = topBarrel.some(zone => zone.index === index && zone.value > 0);
+
+          let cls = "neutral";
+
+          if (isHrHot) cls = "hr-hot";
+          else if (isBarrelHot) cls = "barrel-hot";
+          else if (hardVal >= 0.35 || isoVal >= 0.35) cls = "hard-hot";
+
+          return `<div class="spray-zone ${cls}"><span>${hrVal > 0 ? Math.round(hrVal) : ""}</span></div>`;
+        }).join("")}
+      </div>
+
+      <div class="spray-overlay-summary">
+        <div><strong>${topHr.filter(zone => zone.value > 0).length}</strong><span>HR Lanes</span></div>
+        <div><strong>${topBarrel.filter(zone => zone.value > 0).length}</strong><span>Barrel Lanes</span></div>
+        <div><strong>${clean(playerZones.rows)}</strong><span>Tracked Pitches</span></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStatcastZoneLab(row) {
+  const playerZones = getPlayerZoneData(row.player);
+
+  if (!playerZones || !playerZones.rows) {
+    return `
+      <div class="zone-lab-wrap">
+        <div class="zone-lab-card">
+          <div class="zone-lab-head">
+            <strong>Statcast Zone Lab</strong>
+            <span>No Baseball Savant zone data loaded for this player yet</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="zone-lab-wrap">
+      <div class="zone-lab-card">
+        <div class="zone-lab-head">
+          <strong>Statcast Zone Lab</strong>
+          <span>${playerZones.rows} tracked pitches from Baseball Savant</span>
+        </div>
+
+        ${renderSprayOverlay(playerZones)}
+
+        <div class="metric-zone-board">
+          ${renderZoneMetricGrid("AVG", "avg", playerZones)}
+          ${renderZoneMetricGrid("ISO", "iso", playerZones)}
+          ${renderZoneMetricGrid("SLG", "slg", playerZones)}
+          ${renderZoneMetricGrid("xwOBA", "xwoba", playerZones)}
+          ${renderZoneMetricGrid("HR", "hr", playerZones)}
+          ${renderZoneMetricGrid("K%", "k", playerZones)}
+          ${renderZoneMetricGrid("Hard Hit", "hardHit", playerZones)}
+          ${renderZoneMetricGrid("Barrel", "barrel", playerZones)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function buildHrMatchupRead(row, hitter, pitcher) {
+  const bullets = [];
+
+  if (number(hitter.hr) >= 10) bullets.push(`${row.player} has live season power with ${hitter.hr} HR.`);
+  if (number(hitter.slg) >= 0.5) bullets.push(`Slugging profile is strong at ${hitter.slg}.`);
+  if (number(hitter.ops) >= 0.85) bullets.push(`OPS profile supports the power read at ${hitter.ops}.`);
+  if (number(pitcher.era) >= 5) bullets.push(`Opposing pitcher has an elevated ERA at ${pitcher.era}.`);
+  if (number(pitcher.whip) >= 1.4) bullets.push(`Traffic risk is live with a ${pitcher.whip} WHIP.`);
+  if (number(pitcher.homeRuns) >= 5) bullets.push(`${pitcher.homeRuns} HR allowed creates long ball vulnerability.`);
+
+  if (!bullets.length) {
+    bullets.push("Model ranking is driven by combined power score, pitcher profile, game context, and park setup.");
+  }
+
+  return bullets;
 }
 
 function openPlayerProfile(index) {
@@ -352,6 +487,8 @@ function openPlayerProfile(index) {
 
   const modal = document.getElementById("profile-modal");
   const body = document.getElementById("profile-body");
+
+  if (!modal || !body) return;
 
   body.innerHTML = `
     <div class="profile-top">
@@ -367,27 +504,13 @@ function openPlayerProfile(index) {
     </div>
 
     <div class="profile-summary">
-      <div>
-        <span class="profile-label">Game</span>
-        <strong>${clean(row.game)}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Venue</span>
-        <strong>${clean(row.venue)}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Opposing Pitcher</span>
-        <strong>${clean(row.opposingPitcher)}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Model Read</span>
-        <strong>${clean(row.edge)}</strong>
-      </div>
+      <div><span class="profile-label">Game</span><strong>${clean(row.game)}</strong></div>
+      <div><span class="profile-label">Venue</span><strong>${clean(row.venue)}</strong></div>
+      <div><span class="profile-label">Opposing Pitcher</span><strong>${clean(row.opposingPitcher)}</strong></div>
+      <div><span class="profile-label">Model Read</span><strong>${clean(row.edge)}</strong></div>
     </div>
 
-    <div class="profile-note">
-      ${clean(row.note, "No matchup note available yet.")}
-    </div>
+    <div class="profile-note">${clean(row.note, "No matchup note available yet.")}</div>
 
     ${renderBallparkWeather(row.venue)}
 
@@ -431,83 +554,20 @@ function openPlayerProfile(index) {
 function closePlayerProfile() {
   const modal = document.getElementById("profile-modal");
 
-  if (modal) {
-    modal.classList.remove("show");
-  }
+  if (modal) modal.classList.remove("show");
 }
-
 
 function pitcherKey(row) {
   return String(row.opposingPitcher || row.pitcher || "Unknown Pitcher").trim();
 }
 
-function renderTopVulnerabilities(rows) {
-  if (!rows || !rows.length || state.market !== "home_runs") return "";
-
-  const pitcherMap = new Map();
-
-  rows.forEach(row => {
-    const key = pitcherKey(row);
-    if (!pitcherMap.has(key)) {
-      pitcherMap.set(key, {
-        pitcher: key,
-        rows: [],
-        score: Number(row.score || 0),
-        era: row.stats?.pitcher?.era || "--",
-        game: row.game || "",
-        venue: row.venue || "",
-        opponent: row.opponent || "",
-        team: row.team || ""
-      });
-    }
-
-    const item = pitcherMap.get(key);
-    item.rows.push(row);
-    item.score = Math.max(item.score, Number(row.score || 0));
-  });
-
-  const vulnRows = [...pitcherMap.values()]
-    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
-    .slice(0, 6);
-
-  return `
-    <section class="top-vuln-strip">
-      <div class="top-vuln-header">
-        <div>
-          <div class="top-vuln-kicker">PROJECTED HRs • HIGH VALUE GAMES</div>
-          <h2>TOP VULNERABILITIES</h2>
-        </div>
-        <div class="top-vuln-toggles">
-          <button class="top-vuln-toggle active">VULN</button>
-          <button class="top-vuln-toggle">PARK</button>
-        </div>
-      </div>
-
-      <div class="top-vuln-row">
-        ${vulnRows.map((item, index) => `
-          <article class="top-vuln-card" data-pitcher-profile="${encodeURIComponent(item.pitcher)}">
-            <div class="top-vuln-rank">#${index + 1}</div>
-            <div class="top-vuln-score">${clean(item.score || "--")}</div>
-            <div class="top-vuln-label">${item.rows.length} BATS</div>
-            <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
-            <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
-            <div class="top-vuln-era">ERA ${clean(item.era)}</div>
-            <div class="top-vuln-attack">${pitcherAttackGrade(item.rows[0]?.stats?.pitcher || {}).label}</div>
-          </article>
-        `).join("")}
-      </div>
-    </section>
-  `;
-}
-
-
 function pitcherAttackGrade(pitcher) {
-  const era = Number(pitcher?.era || 0);
-  const whip = Number(pitcher?.whip || 0);
-  const hr = Number(pitcher?.homeRuns || 0);
-  const hits = Number(pitcher?.hits || 0);
-  const walks = Number(pitcher?.baseOnBalls || 0);
-  const innings = Number(pitcher?.inningsPitched || 0);
+  const era = number(pitcher?.era);
+  const whip = number(pitcher?.whip);
+  const hr = number(pitcher?.homeRuns);
+  const hits = number(pitcher?.hits);
+  const walks = number(pitcher?.baseOnBalls);
+  const innings = number(pitcher?.inningsPitched);
 
   let score = 0;
 
@@ -529,257 +589,134 @@ function pitcherAttackGrade(pitcher) {
   if (score >= 70) return { label: "GREEN ATTACK", className: "green", score };
   if (score >= 45) return { label: "PLAYABLE ATTACK", className: "yellow", score };
   if (score >= 25) return { label: "WATCH ONLY", className: "gray", score };
+
   return { label: "RED AVOID", className: "red", score };
 }
 
-function pitcherAttackFactors(pitcher) {
-  const good = [];
-  const bad = [];
+function renderTopVulnerabilities(rows) {
+  if (!rows || !rows.length || state.market !== "home_runs") return "";
 
-  const era = Number(pitcher?.era || 0);
-  const whip = Number(pitcher?.whip || 0);
-  const hr = Number(pitcher?.homeRuns || 0);
-  const hits = Number(pitcher?.hits || 0);
-  const walks = Number(pitcher?.baseOnBalls || 0);
-  const innings = Number(pitcher?.inningsPitched || 0);
-  const strikeouts = Number(pitcher?.strikeOuts || 0);
+  const map = new Map();
 
-  if (era >= 4.5) good.push(`ERA leak at ${era}`);
-  else if (era > 0) bad.push(`ERA is not a major attack point at ${era}`);
+  rows.forEach(row => {
+    const key = pitcherKey(row);
 
-  if (whip >= 1.35) good.push(`Traffic risk with ${whip} WHIP`);
-  else if (whip > 0) bad.push(`WHIP is controlled at ${whip}`);
+    if (!map.has(key)) {
+      map.set(key, {
+        pitcher: key,
+        rows: [],
+        score: number(row.score),
+        era: row.stats?.pitcher?.era || "--",
+        game: row.game || "",
+        team: row.team || "",
+        opponent: row.opponent || ""
+      });
+    }
 
-  if (hr >= 5) good.push(`${hr} HR allowed`);
-  else bad.push("Limited HR leak in current sample");
+    const item = map.get(key);
+    item.rows.push(row);
+    item.score = Math.max(item.score, number(row.score));
+  });
 
-  if (innings > 0 && hits / innings >= 1.15) good.push("Hit rate allowed is elevated");
-  else if (innings > 0) bad.push("Hit rate allowed is not extreme");
-
-  if (innings > 0 && walks / innings >= 0.45) good.push("Walks create extra damage paths");
-  else if (innings > 0) bad.push("Walk rate is not a clear boost");
-
-  if (innings > 0 && strikeouts / innings >= 1.1) bad.push("Strikeout profile can erase HR chances");
-
-  if (!good.length) good.push("No major pitcher leak detected from current box profile");
-  if (!bad.length) bad.push("No strong avoid signal detected from current box profile");
-
-  return { good, bad };
-}
-
-function renderPitcherAttackPanel(pitcher) {
-  const grade = pitcherAttackGrade(pitcher);
-  const factors = pitcherAttackFactors(pitcher);
+  const vulnRows = [...map.values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
 
   return `
-    <div class="pitcher-attack-panel">
-      <div class="pitcher-attack-grade ${grade.className}">
-        <span>Pitcher Attack Grade</span>
-        <strong>${grade.label}</strong>
-        <small>${grade.score}/95 attack score</small>
-      </div>
-
-      <div class="pitcher-attack-columns">
-        <div class="pitcher-attack-list good">
-          <h4>Green Attack Spots</h4>
-          ${factors.good.map(item => `<div>${item}</div>`).join("")}
+    <section class="top-vuln-strip">
+      <div class="top-vuln-header">
+        <div>
+          <div class="top-vuln-kicker">PROJECTED HRs • HIGH VALUE GAMES</div>
+          <h2>TOP VULNERABILITIES</h2>
         </div>
-
-        <div class="pitcher-attack-list bad">
-          <h4>Red Avoid Spots</h4>
-          ${factors.bad.map(item => `<div>${item}</div>`).join("")}
+        <div class="top-vuln-toggles">
+          <button class="top-vuln-toggle active">VULN</button>
+          <button class="top-vuln-toggle">PARK</button>
         </div>
       </div>
-    </div>
-  `;
-}
 
-function pitcherRiskLabel(pitcher) {
-  const era = Number(pitcher?.era || 0);
-  const whip = Number(pitcher?.whip || 0);
-  const walks = Number(pitcher?.baseOnBalls || 0);
-  const innings = Number(pitcher?.inningsPitched || 0);
-  const hr = Number(pitcher?.homeRuns || 0);
-
-  if (era >= 6 || whip >= 1.6) return "HIGH LEAK";
-  if (era >= 4.5 || whip >= 1.35 || hr >= 8) return "ATTACKABLE";
-  if (walks >= 10 && innings <= 25) return "TRAFFIC RISK";
-  return "WATCH";
-}
-
-function pitcherRiskBullets(pitcher, rows) {
-  const bullets = [];
-  const topBat = rows[0];
-  const era = Number(pitcher?.era || 0);
-  const whip = Number(pitcher?.whip || 0);
-  const hr = Number(pitcher?.homeRuns || 0);
-  const hits = Number(pitcher?.hits || 0);
-  const walks = Number(pitcher?.baseOnBalls || 0);
-  const innings = Number(pitcher?.inningsPitched || 0);
-
-  if (era >= 6) bullets.push(`ERA is sitting at ${era}, which puts this pitcher in a danger profile.`);
-  if (whip >= 1.5) bullets.push(`WHIP is elevated at ${whip}, creating extra traffic before power contact.`);
-  if (hr > 0) bullets.push(`${hr} HR allowed already, so the long ball risk is live.`);
-  if (hits >= 20) bullets.push(`${hits} hits allowed shows contact leakage.`);
-  if (walks >= 8) bullets.push(`${walks} walks allowed means free runners can turn one swing into damage.`);
-  if (topBat) bullets.push(`${topBat.player} is the top ranked bat against this pitcher with a ${topBat.score} HR Match Score.`);
-
-  if (!bullets.length) {
-    bullets.push("This pitcher is showing up because the board has multiple bats with playable power scores in the same matchup.");
-  }
-
-  return bullets;
-}
-
-function hitterPowerLabel(row) {
-  const hitter = row.stats?.hitter || {};
-  const hr = Number(hitter.hr || 0);
-  const slg = Number(hitter.slg || 0);
-  const ops = Number(hitter.ops || 0);
-  const score = Number(row.score || 0);
-
-  if (score >= 70 || hr >= 15 || slg >= 0.55 || ops >= 0.9) return "CORE DANGER";
-  if (score >= 58 || hr >= 10 || slg >= 0.48 || ops >= 0.8) return "LIVE POWER";
-  return "WATCH BAT";
-}
-
-function renderPitcherDangerMeter(pitcher) {
-  const era = Number(pitcher?.era || 0);
-  const whip = Number(pitcher?.whip || 0);
-  const hr = Number(pitcher?.homeRuns || 0);
-
-  const eraScore = Math.min(100, Math.round((era / 8) * 100));
-  const whipScore = Math.min(100, Math.round((whip / 2) * 100));
-  const hrScore = Math.min(100, Math.round((hr / 15) * 100));
-
-  return `
-    <div class="pitcher-danger-meter">
-      <div class="danger-meter-row">
-        <span>ERA Risk</span>
-        <div><i style="width:${eraScore}%"></i></div>
-        <strong>${clean(pitcher?.era || "--")}</strong>
+      <div class="top-vuln-row">
+        ${vulnRows.map((item, index) => `
+          <article class="top-vuln-card" data-pitcher-profile="${encodeURIComponent(item.pitcher)}">
+            <div class="top-vuln-rank">#${index + 1}</div>
+            <div class="top-vuln-score">${clean(item.score)}</div>
+            <div class="top-vuln-label">${item.rows.length} BATS</div>
+            <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
+            <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
+            <div class="top-vuln-era">ERA ${clean(item.era)}</div>
+            <div class="top-vuln-attack">${pitcherAttackGrade(item.rows[0]?.stats?.pitcher || {}).label}</div>
+          </article>
+        `).join("")}
       </div>
-      <div class="danger-meter-row">
-        <span>Traffic</span>
-        <div><i style="width:${whipScore}%"></i></div>
-        <strong>${clean(pitcher?.whip || "--")}</strong>
-      </div>
-      <div class="danger-meter-row">
-        <span>HR Leak</span>
-        <div><i style="width:${hrScore}%"></i></div>
-        <strong>${clean(pitcher?.homeRuns || "--")}</strong>
-      </div>
-    </div>
+    </section>
   `;
 }
 
 function openPitcherVulnerabilityProfile(pitcherName) {
   const rows = state.rows
     .filter(row => pitcherKey(row) === pitcherName)
-    .sort((a, b) => Number(b.score || 0) - Number(a.score || 0));
+    .sort((a, b) => number(b.score) - number(a.score));
 
   if (!rows.length) return;
 
   const pitcher = rows[0].stats?.pitcher || {};
-  const topRows = rows.slice(0, 5);
-  const riskLabel = pitcherRiskLabel(pitcher);
-
   const modal = document.getElementById("profile-modal");
   const body = document.getElementById("profile-body");
+
+  if (!modal || !body) return;
 
   body.innerHTML = `
     <div class="profile-top pitcher-profile-top">
       <div>
         <div class="profile-rank">PITCHER VULNERABILITY</div>
         <h2>${clean(pitcherName)}</h2>
-        <p>${clean(rows[0].game || "")}</p>
+        <p>${clean(rows[0].game)}</p>
       </div>
       <div class="profile-score">
-        <span>${clean(rows[0].score || "--")}</span>
+        <span>${clean(rows[0].score)}</span>
         <small>Top Bat Score</small>
       </div>
     </div>
 
-    <div class="pitcher-risk-banner">
-      <div>
-        <span>Risk Grade</span>
-        <strong>${riskLabel}</strong>
-      </div>
-      <p>${rows.length} bats from this matchup are currently showing on the HR board.</p>
-    </div>
-
     <div class="profile-summary">
-      <div>
-        <span class="profile-label">ERA</span>
-        <strong>${clean(pitcher.era || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">WHIP</span>
-        <strong>${clean(pitcher.whip || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">HR Allowed</span>
-        <strong>${clean(pitcher.homeRuns || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Attack Pool</span>
-        <strong>${rows.length} bats</strong>
-      </div>
-      <div>
-        <span class="profile-label">Hits Allowed</span>
-        <strong>${clean(pitcher.hits || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Walks</span>
-        <strong>${clean(pitcher.baseOnBalls || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">Strikeouts</span>
-        <strong>${clean(pitcher.strikeOuts || "--")}</strong>
-      </div>
-      <div>
-        <span class="profile-label">IP</span>
-        <strong>${clean(pitcher.inningsPitched || "--")}</strong>
-      </div>
+      <div><span class="profile-label">ERA</span><strong>${clean(pitcher.era)}</strong></div>
+      <div><span class="profile-label">WHIP</span><strong>${clean(pitcher.whip)}</strong></div>
+      <div><span class="profile-label">HR Allowed</span><strong>${clean(pitcher.homeRuns)}</strong></div>
+      <div><span class="profile-label">Attack Pool</span><strong>${rows.length} bats</strong></div>
+      <div><span class="profile-label">Hits Allowed</span><strong>${clean(pitcher.hits)}</strong></div>
+      <div><span class="profile-label">Walks</span><strong>${clean(pitcher.baseOnBalls)}</strong></div>
+      <div><span class="profile-label">Strikeouts</span><strong>${clean(pitcher.strikeOuts)}</strong></div>
+      <div><span class="profile-label">IP</span><strong>${clean(pitcher.inningsPitched)}</strong></div>
     </div>
-
-    ${renderPitcherDangerMeter(pitcher)}
-
-    ${renderPitcherAttackPanel(pitcher)}
 
     ${renderBallparkWeather(rows[0].venue)}
-
-    <h3>Why This Pitcher Is Vulnerable</h3>
-    <div class="profile-explainer">
-      <ul class="matchup-read-list">
-        ${pitcherRiskBullets(pitcher, rows).map(item => `<li>${item}</li>`).join("")}
-      </ul>
-    </div>
 
     <h3>Top Danger Bats</h3>
 
     <div class="pitcher-batter-board">
-      ${topRows.map((row, index) => {
+      ${rows.slice(0, 6).map((row, index) => {
         const hitter = row.stats?.hitter || {};
+        const realIndex = state.rows.indexOf(row);
+
         return `
-          <article class="pitcher-batter-card" data-profile-index="${state.rows.indexOf(row)}">
+          <article class="pitcher-batter-card" data-profile-index="${realIndex}">
             <div class="pitcher-batter-topline">
               <div class="pitcher-batter-rank">#${index + 1}</div>
-              <div class="pitcher-batter-chip">${hitterPowerLabel(row)}</div>
+              <div class="pitcher-batter-chip">LIVE POWER</div>
             </div>
 
             <div class="pitcher-batter-main">
-              <strong>${clean(row.player || "Unknown Player")}</strong>
-              <span>${clean(row.team || "")} • ${clean(row.edge || "HR target")}</span>
+              <strong>${clean(row.player)}</strong>
+              <span>${clean(row.team)} • ${clean(row.edge || "HR target")}</span>
             </div>
 
             <div class="pitcher-batter-tags">
-              <span>Score ${clean(row.score || "--")}</span>
-              <span>Side ${clean(row.batSide || "--")}</span>
-              <span>HR ${clean(hitter.hr || "--")}</span>
-              <span>SLG ${clean(hitter.slg || "--")}</span>
-              <span>OPS ${clean(hitter.ops || "--")}</span>
-              <span>AVG ${clean(hitter.avg || "--")}</span>
+              <span>Score ${clean(row.score)}</span>
+              <span>Side ${clean(row.batSide)}</span>
+              <span>HR ${clean(hitter.hr)}</span>
+              <span>SLG ${clean(hitter.slg)}</span>
+              <span>OPS ${clean(hitter.ops)}</span>
+              <span>AVG ${clean(hitter.avg)}</span>
             </div>
 
             <p>${clean(row.note || "Model likes this bat based on power profile, matchup context, and pitcher vulnerability.")}</p>
@@ -787,52 +724,20 @@ function openPitcherVulnerabilityProfile(pitcherName) {
         `;
       }).join("")}
     </div>
-
-    ${rows.length > 5 ? `
-      <h3>Other Bats In This Pool</h3>
-      <div class="pitcher-mini-list">
-        ${rows.slice(5).map(row => `
-          <button data-profile-index="${state.rows.indexOf(row)}">
-            <strong>${clean(row.player)}</strong>
-            <span>${clean(row.score)} score • ${clean(row.edge || "Watch")}</span>
-          </button>
-        `).join("")}
-      </div>
-    ` : ""}
   `;
 
   modal.classList.add("show");
-
-  body.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.addEventListener("click", event => {
-      event.stopPropagation();
-      openPlayerProfile(Number(card.dataset.profileIndex));
-    });
-  });
 }
 
-
-
 function liveStatusText(row) {
-  const raw = String(
-    row.status ||
-    row.gameStatus ||
-    row.detailedState ||
-    row.abstractGameState ||
-    row.statusCode ||
-    ""
-  ).trim();
-
+  const raw = String(row.status || row.gameStatus || row.detailedState || row.abstractGameState || "").trim();
   const inning = row.currentInning || row.inning || "";
   const inningState = row.inningState || row.halfInning || "";
 
-  if (/final/i.test(raw)) return "FINAL";
+  if (/final|game over/i.test(raw)) return "FINAL";
   if (/delay|postponed|suspended/i.test(raw)) return raw.toUpperCase();
   if (/live|in progress|progress/i.test(raw)) {
-    if (inning) {
-      const half = String(inningState || "").toUpperCase();
-      return `${half ? half + " " : ""}${inning}`;
-    }
+    if (inning) return `${String(inningState || "").toUpperCase()} ${inning}`.trim();
     return "LIVE";
   }
   if (/preview|scheduled|pre-game|warmup/i.test(raw)) return "SCHEDULED";
@@ -847,6 +752,7 @@ function liveStatusClass(row) {
   if (/FINAL/.test(text)) return "status-pill final";
   if (/DELAY|POSTPONED|SUSPENDED/.test(text)) return "status-pill delayed";
   if (/LIVE|TOP|BOT|MID|END|^[0-9]+$/.test(text)) return "status-pill live";
+
   return "status-pill scheduled";
 }
 
@@ -854,102 +760,12 @@ function renderLiveStatusPill(row) {
   return `<span class="${liveStatusClass(row)}">${liveStatusText(row)}</span>`;
 }
 
-function groupRowsByGame(rows) {
-  const map = new Map();
-
-  rows.forEach(row => {
-    const key = row.game || `${row.team || "Unknown"} vs ${row.opponent || "Unknown"}`;
-
-    if (!map.has(key)) {
-      map.set(key, {
-        game: key,
-        venue: row.venue || "",
-        rows: []
-      });
-    }
-
-    map.get(key).rows.push(row);
-  });
-
-  return [...map.values()]
-    .map(group => ({
-      ...group,
-      rows: group.rows.sort((a, b) => Number(b.score || 0) - Number(a.score || 0)),
-      topScore: Math.max(...group.rows.map(row => Number(row.score || 0)))
-    }))
-    .sort((a, b) => b.topScore - a.topScore);
-}
-
-function renderPlayerBoardCard(row, index) {
-  return `
-    <article class="card ${state.market === "home_runs" ? "clickable-card" : ""}" ${state.market === "home_runs" ? `data-profile-index="${index}"` : ""}>
-      <div class="rank">#${row.rank || index + 1}</div>
-
-      <div>
-        <div class="player">${row.player || "Unknown Player"}</div>
-        <div class="meta">${row.team || ""} • ${row.game || ""}</div>
-        ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
-      </div>
-
-      <div class="stat">
-        <div class="stat-label">Score</div>
-        <div class="stat-value">${row.score ?? "--"}</div>
-      </div>
-
-      ${state.market === "home_runs" ? `
-        <div class="stat">
-          <div class="stat-label">Profile</div>
-          <div class="stat-value">Open</div>
-        </div>
-      ` : ""}
-    </article>
-  `;
-}
-
-function renderGroupedHomeRunBoard(rows) {
-  const groups = groupRowsByGame(rows);
-
-  return `
-    ${renderTopVulnerabilities(rows)}
-
-    ${renderTeamStackStrip()}
-
-    <div class="game-group-board">
-      ${groups.map(group => `
-        <section class="game-group">
-          <div class="game-group-header">
-            <div>
-              <span>GAME STACK</span>
-              <h3>${clean(group.game)}</h3>
-              <p>${clean(group.venue || "Venue TBD")} ${renderLiveStatusPill(group.rows[0])}</p>
-            </div>
-
-            <div class="game-group-meta">
-              <strong>${group.rows.length}</strong>
-              <span>Bats</span>
-            </div>
-
-            <div class="game-group-meta">
-              <strong>${clean(group.topScore)}</strong>
-              <span>Top Score</span>
-            </div>
-          </div>
-
-          <div class="game-group-grid">
-            ${group.rows.map(row => renderPlayerBoardCard(row, state.rows.indexOf(row))).join("")}
-          </div>
-        </section>
-      `).join("")}
-    </div>
-  `;
-}
-
-
 function lineupStatusClass(status) {
   const value = String(status || "").toUpperCase();
 
   if (value.includes("BOTH CONFIRMED") || value === "CONFIRMED") return "lineup-pill confirmed";
   if (value.includes("PARTIAL")) return "lineup-pill partial";
+
   return "lineup-pill pending";
 }
 
@@ -980,9 +796,7 @@ function renderTeamLineup(teamName, status, lineup) {
             <strong>${clean(player.player)}</strong>
             <em>${clean(player.position || "--")}</em>
           </div>
-        `).join("") : `
-          <div class="lineup-empty">Lineup has not been posted yet.</div>
-        `}
+        `).join("") : `<div class="lineup-empty">Lineup has not been posted yet.</div>`}
       </div>
     </div>
   `;
@@ -997,176 +811,54 @@ function renderGameLineups(row) {
   `;
 }
 
+function groupRowsByGame(rows) {
+  const map = new Map();
 
-async function OLD_REMOVED_loadParkFactors() {
-  try {
-    const res = await fetch("data/mlb_park_factors.json", {
-      cache: "no-store"
-    });
+  rows.forEach(row => {
+    const key = row.game || `${row.team || "Unknown"} vs ${row.opponent || "Unknown"}`;
 
-    if (!res.ok) return [];
+    if (!map.has(key)) {
+      map.set(key, {
+        game: key,
+        venue: row.venue || "",
+        rows: []
+      });
+    }
 
-    const data = await res.json();
-
-    return data.parks || data.rows || [];
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
-
-async function loadLastUpdated() {
-  try {
-    const res = await fetch("data/site_last_updated.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return null;
-
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-}
-
-async function loadParkFactors() {
-  try {
-    const res = await fetch("data/mlb_park_factors.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return [];
-
-    const data = await res.json();
-
-    return data.parks || data.rows || [];
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-}
-
-async function loadStatcastZones() {
-  try {
-    const res = await fetch("data/statcast_zones.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return null;
-
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
-}
-
-
-function formatUpdatedTime(iso) {
-  if (!iso) return "Loading...";
-
-  const date = new Date(iso);
-
-  if (Number.isNaN(date.getTime())) return "Loading...";
-
-  return date.toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit"
+    map.get(key).rows.push(row);
   });
+
+  return [...map.values()]
+    .map(group => ({
+      ...group,
+      rows: group.rows.sort((a, b) => number(b.score) - number(a.score)),
+      topScore: Math.max(...group.rows.map(row => number(row.score)))
+    }))
+    .sort((a, b) => b.topScore - a.topScore);
 }
 
-
-function renderResultsBoard(data) {
-  const rows = data?.results || [];
-  const total = data?.totalHomeRuns || rows.length || 0;
-  const flagged = data?.modelFlaggedHomeRuns || 0;
-  const rate = data?.modelFlagRate || 0;
-
+function renderPlayerBoardCard(row, index) {
   return `
-    <section class="results-lab">
-      <div class="results-hero">
-        <div>
-          <span>MODEL VALIDATION</span>
-          <h2>HR Results</h2>
-          <p>Every home run from the live MLB feed matched against The Slip Lab board.</p>
-        </div>
+    <article class="card clickable-card" data-profile-index="${index}">
+      <div class="rank">#${clean(row.rank || index + 1)}</div>
 
-        <div class="results-scorebox">
-          <strong>${flagged}/${total}</strong>
-          <span>Model flagged HRs</span>
-        </div>
-
-        <div class="results-scorebox">
-          <strong>${rate}%</strong>
-          <span>Flag rate</span>
-        </div>
+      <div>
+        <div class="player">${clean(row.player || "Unknown Player")}</div>
+        <div class="meta">${clean(row.team || "")} • ${clean(row.game || "")}</div>
+        ${state.market === "home_runs" ? renderWeatherMini(row.venue) : ""}
       </div>
 
-      <div class="results-table">
-        <div class="results-row results-head">
-          <div>#</div>
-          <div>Batter</div>
-          <div>Team</div>
-          <div>Pitcher</div>
-          <div>Score</div>
-          <div>Model</div>
-          <div>Tags</div>
-        </div>
-
-        ${rows.length ? rows.map(row => `
-          <div class="results-row">
-            <div>${clean(row.rank)}</div>
-
-            <div>
-              <strong>${clean(row.player)}</strong>
-              <span>${clean(row.description || "Home run")}</span>
-            </div>
-
-            <div>${clean(row.team)}</div>
-
-            <div>
-              <strong>${clean(row.pitcher || "Unknown")}</strong>
-              <span>ERA ${clean(row.opposingPitcherEra || "--")}</span>
-            </div>
-
-            <div class="result-score">${clean(row.modelScore || "--")}</div>
-
-            <div>
-              <span class="${row.wasOnBoard ? "result-flag yes" : "result-flag no"}">
-                ${row.wasOnBoard ? "FLAGGED" : "NOT FLAGGED"}
-              </span>
-            </div>
-
-            <div class="result-tags">
-              ${(row.tags || []).map(tag => `<span>${clean(tag)}</span>`).join("")}
-            </div>
-          </div>
-        `).join("") : `
-          <div class="results-empty">No HR results found yet.</div>
-        `}
+      <div class="stat">
+        <div class="stat-label">Score</div>
+        <div class="stat-value">${clean(row.score)}</div>
       </div>
-    </section>
+
+      <div class="stat">
+        <div class="stat-label">Profile</div>
+        <div class="stat-value">Open</div>
+      </div>
+    </article>
   `;
-}
-
-
-async function loadTeamStacks() {
-  try {
-    const res = await fetch("data/mlb_team_stacks.json", {
-      cache: "no-store"
-    });
-
-    if (!res.ok) return null;
-
-    return await res.json();
-  } catch (err) {
-    console.error(err);
-    return null;
-  }
 }
 
 function renderTeamStackStrip() {
@@ -1214,6 +906,89 @@ function renderTeamStackStrip() {
   `;
 }
 
+function renderGroupedHomeRunBoard(rows) {
+  const groups = groupRowsByGame(rows);
+
+  return `
+    ${renderTopVulnerabilities(rows)}
+    ${renderTeamStackStrip()}
+
+    <div class="game-group-board">
+      ${groups.map(group => `
+        <section class="game-group">
+          <div class="game-group-header">
+            <div>
+              <span>GAME STACK</span>
+              <h3>${clean(group.game)}</h3>
+              <p>${clean(group.venue || "Venue TBD")} ${renderLiveStatusPill(group.rows[0])}</p>
+            </div>
+
+            <div class="game-group-meta">
+              <strong>${group.rows.length}</strong>
+              <span>Bats</span>
+            </div>
+
+            <div class="game-group-meta">
+              <strong>${clean(group.topScore)}</strong>
+              <span>Top Score</span>
+            </div>
+          </div>
+
+          <div class="game-group-grid">
+            ${group.rows.map(row => renderPlayerBoardCard(row, state.rows.indexOf(row))).join("")}
+          </div>
+        </section>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderResultsBoard(data) {
+  const rows = data?.results || [];
+  const total = data?.totalHomeRuns || rows.length || 0;
+  const flagged = data?.modelFlaggedHomeRuns || 0;
+  const rate = data?.modelFlagRate || 0;
+
+  return `
+    <section class="results-lab">
+      <div class="results-hero">
+        <div>
+          <span>MODEL VALIDATION</span>
+          <h2>HR Results</h2>
+          <p>Every home run from the live MLB feed matched against The Slip Lab board.</p>
+        </div>
+
+        <div class="results-scorebox"><strong>${flagged}/${total}</strong><span>Model flagged HRs</span></div>
+        <div class="results-scorebox"><strong>${rate}%</strong><span>Flag rate</span></div>
+      </div>
+
+      <div class="results-table">
+        <div class="results-row results-head">
+          <div>#</div>
+          <div>Batter</div>
+          <div>Team</div>
+          <div>Pitcher</div>
+          <div>Score</div>
+          <div>Model</div>
+          <div>Tags</div>
+        </div>
+
+        ${rows.length ? rows.map(row => `
+          <div class="results-row">
+            <div>${clean(row.rank)}</div>
+            <div><strong>${clean(row.player)}</strong><span>${clean(row.description || "Home run")}</span></div>
+            <div>${clean(row.team)}</div>
+            <div><strong>${clean(row.pitcher || "Unknown")}</strong><span>ERA ${clean(row.opposingPitcherEra || "--")}</span></div>
+            <div class="result-score">${clean(row.modelScore || "--")}</div>
+            <div><span class="${row.wasOnBoard ? "result-flag yes" : "result-flag no"}">${row.wasOnBoard ? "FLAGGED" : "NOT FLAGGED"}</span></div>
+            <div class="result-tags">${(row.tags || []).map(tag => `<span>${clean(tag)}</span>`).join("")}</div>
+          </div>
+        `).join("") : `<div class="results-empty">No HR results found yet.</div>`}
+      </div>
+    </section>
+  `;
+}
+
 async function render() {
   document.querySelectorAll("nav button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.sport === state.sport);
@@ -1223,22 +998,24 @@ async function render() {
     btn.classList.toggle("active", btn.dataset.market === state.market);
   });
 
-  document.getElementById("page-title").textContent =
-    `${state.sport.toUpperCase()} Lab`;
-
-  document.getElementById("page-subtitle").textContent =
-    state.sport === "mlb"
-      ? "Home Runs, Hits, Total Bases, and RBIs."
-      : "Coming soon.";
-
+  const pageTitle = document.getElementById("page-title");
+  const pageSubtitle = document.getElementById("page-subtitle");
   const board = document.getElementById("board");
   const boardTitle = document.getElementById("board-title");
   const boardMeta = document.getElementById("board-meta");
 
-  boardTitle.textContent = titleCase(state.market);
+  if (!board || !boardTitle || !boardMeta) return;
 
-  board.innerHTML =
-    `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
+  if (pageTitle) pageTitle.textContent = `${state.sport.toUpperCase()} Lab`;
+  if (pageSubtitle) {
+    pageSubtitle.textContent =
+      state.sport === "mlb"
+        ? "Home Runs, Hits, Total Bases, and RBIs."
+        : "Coming soon.";
+  }
+
+  boardTitle.textContent = titleCase(state.market);
+  board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
   const [raw, updatedInfo, weatherRows, parkRows, statcastZones, stackRows] = await Promise.all([
     loadRows(),
@@ -1255,7 +1032,9 @@ async function render() {
       ? raw.weather || []
       : state.market === "results"
         ? raw.results || []
-        : raw;
+        : Array.isArray(raw)
+          ? raw
+          : [];
 
   state.rows = rows;
   state.weather = weatherRows;
@@ -1263,10 +1042,9 @@ async function render() {
   state.statcastZones = statcastZones;
   state.stacks = stackRows;
 
-  const updated = formatUpdatedTime(updatedInfo?.updated_at);
+  const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
 
-  boardMeta.textContent =
-    `${rows.length} rows loaded • Last Updated ${updated}`;
+  boardMeta.textContent = `${rows.length} rows loaded • Last Updated ${updated}`;
 
   const topUpdated = document.getElementById("top-updated");
 
@@ -1274,9 +1052,13 @@ async function render() {
     topUpdated.textContent = `Last Updated: ${updated}`;
   }
 
+  if (state.market === "results") {
+    board.innerHTML = renderResultsBoard(raw);
+    return;
+  }
+
   if (!rows.length) {
-    board.innerHTML =
-      `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
+    board.innerHTML = `<div class="empty">${state.sport.toUpperCase()} ${titleCase(state.market)} data coming soon.</div>`;
     return;
   }
 
@@ -1290,48 +1072,23 @@ async function render() {
     return;
   }
 
-  if (state.market === "results") {
-    board.innerHTML = renderResultsBoard(raw);
-    return;
-  }
-
-  if (state.market === "results") {
-    board.innerHTML = renderResultsBoard(raw);
-    return;
-  }
-
   if (state.market === "games") {
     board.innerHTML = rows.map((row, index) => `
       <article class="card game-card">
         <div class="rank">#${index + 1}</div>
 
         <div>
-          <div class="player">${row.matchup || "MLB Game"}</div>
-          <div class="meta">${row.venue || ""} • ${formatGameTime(row.gameDate)}</div>
+          <div class="player">${clean(row.matchup || "MLB Game")}</div>
+          <div class="meta">${clean(row.venue || "")} • ${formatGameTime(row.gameDate)}</div>
           ${renderLiveStatusPill(row)}
           ${renderLineupStatus(row)}
           ${renderWeatherMini(row.venue)}
         </div>
 
-        <div class="stat">
-          <div class="stat-label">Away SP</div>
-          <div class="stat-value">${row.awayProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Home SP</div>
-          <div class="stat-value">${row.homeProbablePitcher || "TBD"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Score</div>
-          <div class="stat-value">${row.awayScore ?? "--"} • ${row.homeScore ?? "--"}</div>
-        </div>
-
-        <div class="stat">
-          <div class="stat-label">Game ID</div>
-          <div class="stat-value">${row.gamePk || "--"}</div>
-        </div>
+        <div class="stat"><div class="stat-label">Away SP</div><div class="stat-value">${clean(row.awayProbablePitcher || "TBD")}</div></div>
+        <div class="stat"><div class="stat-label">Home SP</div><div class="stat-value">${clean(row.homeProbablePitcher || "TBD")}</div></div>
+        <div class="stat"><div class="stat-label">Score</div><div class="stat-value">${row.awayScore ?? "--"} • ${row.homeScore ?? "--"}</div></div>
+        <div class="stat"><div class="stat-label">Game ID</div><div class="stat-value">${clean(row.gamePk)}</div></div>
 
         ${renderGameLineups(row)}
       </article>
@@ -1347,119 +1104,28 @@ async function render() {
         ${rows.map((row, index) => renderPlayerBoardCard(row, index)).join("")}
       </div>
     `;
-
-  document.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.addEventListener("click", () => {
-      openPlayerProfile(Number(card.dataset.profileIndex));
-    });
-  });
-
-  document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
-    card.addEventListener("click", () => {
-      openPitcherVulnerabilityProfile(decodeURIComponent(card.dataset.pitcherProfile));
-    });
-  });
 }
 
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.sport = btn.dataset.sport;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
-
-render().catch(showAppError);
+    render().catch(showAppError);
   });
 });
 
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.market = btn.dataset.market;
-    
-document.addEventListener("click", event => {
-  const playerCard = event.target.closest("[data-profile-index]");
-
-  if (playerCard) {
-    event.preventDefault();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
-    return;
-  }
-
-  const pitcherCard = event.target.closest("[data-pitcher-profile]");
-
-  if (pitcherCard) {
-    event.preventDefault();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
-  }
-});
-
-
-render().catch(showAppError);
+    render().catch(showAppError);
   });
 });
 
 document.addEventListener("click", event => {
-  if (event.target.matches("[data-close-profile]")) {
-    closePlayerProfile();
-  }
-
-  if (event.target.id === "profile-modal") {
-    closePlayerProfile();
-  }
-});
-
-document.addEventListener("keydown", event => {
-  if (event.key === "Escape") {
-    closePlayerProfile();
-  }
-});
-
-
-document.addEventListener("click", event => {
   const playerCard = event.target.closest("[data-profile-index]");
 
   if (playerCard) {
     event.preventDefault();
-
-    const index = Number(playerCard.dataset.profileIndex);
-
-    if (Number.isFinite(index)) {
-      openPlayerProfile(index);
-    }
-
+    openPlayerProfile(Number(playerCard.dataset.profileIndex));
     return;
   }
 
@@ -1467,12 +1133,14 @@ document.addEventListener("click", event => {
 
   if (pitcherCard) {
     event.preventDefault();
-
-    openPitcherVulnerabilityProfile(
-      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
-    );
+    openPitcherVulnerabilityProfile(decodeURIComponent(pitcherCard.dataset.pitcherProfile));
   }
 });
 
+const profileClose = document.getElementById("profile-close");
+
+if (profileClose) {
+  profileClose.addEventListener("click", closePlayerProfile);
+}
 
 render().catch(showAppError);
