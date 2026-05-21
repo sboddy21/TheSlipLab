@@ -1364,14 +1364,70 @@ async function render() {
 document.querySelectorAll("nav button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.sport = btn.dataset.sport;
-    render().catch(showAppError);
+    
+document.addEventListener("click", event => {
+  const playerCard = event.target.closest("[data-profile-index]");
+
+  if (playerCard) {
+    event.preventDefault();
+
+    const index = Number(playerCard.dataset.profileIndex);
+
+    if (Number.isFinite(index)) {
+      openPlayerProfile(index);
+    }
+
+    return;
+  }
+
+  const pitcherCard = event.target.closest("[data-pitcher-profile]");
+
+  if (pitcherCard) {
+    event.preventDefault();
+
+    openPitcherVulnerabilityProfile(
+      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
+    );
+  }
+});
+
+
+render().catch(showAppError);
   });
 });
 
 document.querySelectorAll(".tabs button").forEach(btn => {
   btn.addEventListener("click", () => {
     state.market = btn.dataset.market;
-    render().catch(showAppError);
+    
+document.addEventListener("click", event => {
+  const playerCard = event.target.closest("[data-profile-index]");
+
+  if (playerCard) {
+    event.preventDefault();
+
+    const index = Number(playerCard.dataset.profileIndex);
+
+    if (Number.isFinite(index)) {
+      openPlayerProfile(index);
+    }
+
+    return;
+  }
+
+  const pitcherCard = event.target.closest("[data-pitcher-profile]");
+
+  if (pitcherCard) {
+    event.preventDefault();
+
+    openPitcherVulnerabilityProfile(
+      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
+    );
+  }
+});
+
+
+render().catch(showAppError);
   });
 });
 
@@ -1390,5 +1446,33 @@ document.addEventListener("keydown", event => {
     closePlayerProfile();
   }
 });
+
+
+document.addEventListener("click", event => {
+  const playerCard = event.target.closest("[data-profile-index]");
+
+  if (playerCard) {
+    event.preventDefault();
+
+    const index = Number(playerCard.dataset.profileIndex);
+
+    if (Number.isFinite(index)) {
+      openPlayerProfile(index);
+    }
+
+    return;
+  }
+
+  const pitcherCard = event.target.closest("[data-pitcher-profile]");
+
+  if (pitcherCard) {
+    event.preventDefault();
+
+    openPitcherVulnerabilityProfile(
+      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
+    );
+  }
+});
+
 
 render().catch(showAppError);
