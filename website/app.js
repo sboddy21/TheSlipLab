@@ -1,4 +1,34 @@
 const state = {
+
+document.addEventListener("click", event => {
+  const playerCard = event.target.closest("[data-profile-index]");
+
+  if (playerCard) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const index = Number(playerCard.dataset.profileIndex);
+
+    if (Number.isFinite(index)) {
+      openPlayerProfile(index);
+    }
+
+    return;
+  }
+
+  const pitcherCard = event.target.closest("[data-pitcher-profile]");
+
+  if (pitcherCard) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    openPitcherVulnerabilityProfile(
+      decodeURIComponent(pitcherCard.dataset.pitcherProfile)
+    );
+  }
+});
+
+
   sport: "mlb",
   market: "home_runs",
   rows: [],
@@ -803,11 +833,6 @@ function openPitcherVulnerabilityProfile(pitcherName) {
 
   modal.classList.add("show");
 
-  body.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.addEventListener("click", event => {
-      event.stopPropagation();
-      openPlayerProfile(Number(card.dataset.profileIndex));
-    });
   });
 }
 
@@ -1347,20 +1372,6 @@ async function render() {
         ${rows.map((row, index) => renderPlayerBoardCard(row, index)).join("")}
       </div>
     `;
-
-  document.querySelectorAll("[data-profile-index]").forEach(card => {
-    card.style.cursor = "pointer";
-    card.onclick = event => {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const index = Number(card.dataset.profileIndex);
-
-      if (Number.isFinite(index)) {
-        openPlayerProfile(index);
-      }
-    };
-  });
 
   document.querySelectorAll("[data-pitcher-profile]").forEach(card => {
     card.style.cursor = "pointer";
