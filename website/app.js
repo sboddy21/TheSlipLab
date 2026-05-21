@@ -115,6 +115,20 @@ async function loadParkFactors() {
   return data.parks || data.rows || [];
 }
 
+
+
+async function loadPitchTypeDamage() {
+  try {
+    const response = await fetch(`./data/pitch_type_damage.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadStatcastZones() {
   return fetchJson("data/statcast_zones.json", null);
 }
@@ -559,6 +573,100 @@ function renderStatcastZoneLab(row) {
   `;
 }
 
+
+
+function getPitchDamage(player, row = null) {
+  const damage = state.pitchTypeDamage?.players || {};
+
+  if (row?.player && damage[row.player]) return damage[row.player];
+  if (player && damage[player]) return damage[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(damage).find(name => name.toLowerCase().trim() == normalized);
+    if (key) return damage[key];
+  }
+
+  return null;
+}
+
+function pitchDamageClass(value) {
+  const n = number(value);
+
+  if (n >= 75) return "elite";
+  if (n >= 55) return "strong";
+  if (n >= 35) return "solid";
+  return "weak";
+}
+
+function renderPitchTypeDamageMap(row) {
+  const data = getPitchDamage(row.player, row);
+
+  if (!data?.pitchDamage) {
+    return `
+      <div class="pitch-damage-card">
+        <div class="pitch-damage-head">
+          <strong>Pitch Type Damage Map</strong>
+          <span>No pitch type data loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const pitches = Object.values(data.pitchDamage);
+
+  return `
+    <div class="pitch-damage-card">
+      <div class="pitch-damage-head">
+        <div>
+          <strong>Pitch Type Damage Map</strong>
+          <span>Whiff vs crush profile by pitch type</span>
+        </div>
+      </div>
+
+      <div class="pitch-damage-grid">
+        ${pitches.map(pitch => `
+          <article class="pitch-damage-tile ${pitchDamageClass(pitch.crush)}">
+            <div class="pitch-damage-top">
+              <strong>${pitch.label}</strong>
+              <span>${pitch.crush}% Crush</span>
+            </div>
+
+            <div class="pitch-damage-bars">
+              <div>
+                <label>SLG</label>
+                <b>${pitch.slg}</b>
+              </div>
+
+              <div>
+                <label>HR</label>
+                <b>${pitch.hr}</b>
+              </div>
+
+              <div>
+                <label>Barrel</label>
+                <b>${Math.round(pitch.barrel * 100)}%</b>
+              </div>
+
+              <div>
+                <label>Hard Hit</label>
+                <b>${Math.round(pitch.hardHit * 100)}%</b>
+              </div>
+
+              <div>
+                <label>Whiff</label>
+                <b>${Math.round(pitch.whiff * 100)}%</b>
+              </div>
+            </div>
+          </article>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+
 function buildHrMatchupRead(row, hitter, pitcher) {
   const bullets = [];
 
@@ -638,6 +746,9 @@ function openPlayerProfile(index) {
 
     <h3>Power Zone Map</h3>
     ${renderStatcastZoneLab(row)}
+
+    <h3>Pitch Type Damage</h3>
+    ${renderPitchTypeDamageMap(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1199,12 +1310,13 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
     loadParkFactors(),
     loadStatcastZones(),
+    loadPitchTypeDamage(),
     loadTeamStacks()
   ]);
 
@@ -1222,6 +1334,7 @@ async function render() {
   state.weather = weatherRows;
   state.parks = parkRows;
   state.statcastZones = statcastZones;
+  state.pitchTypeDamage = pitchTypeDamage;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
