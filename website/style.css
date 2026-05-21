@@ -3102,3 +3102,285 @@ nav button.active,
     min-height: 42px;
   }
 }
+
+/* Interactive Spray Chart */
+.spray-chart-card {
+  border: 1px solid #1d3b2a;
+  border-radius: 18px;
+  padding: 14px;
+  background:
+    radial-gradient(circle at top, rgba(51, 255, 119, .10), transparent 32%),
+    linear-gradient(180deg, rgba(10, 18, 14, .96), rgba(6, 11, 9, .96));
+  margin-bottom: 14px;
+}
+
+.spray-chart-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.spray-chart-head strong {
+  display: block;
+  font-size: 16px;
+}
+
+.spray-chart-head span {
+  display: block;
+  margin-top: 4px;
+  color: #9bb0a1;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.spray-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.spray-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: 11px;
+}
+
+.spray-chart-legend i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.spray-chart-legend .hr {
+  background: #33ff77;
+}
+
+.spray-chart-legend .barrel {
+  background: #d8bd62;
+}
+
+.spray-chart-legend .hard {
+  background: #ff6b6b;
+}
+
+.spray-stage {
+  width: min(620px, 100%);
+  margin: 0 auto;
+}
+
+.spray-field {
+  position: relative;
+  height: 390px;
+  overflow: hidden;
+  border: 1px solid #25573a;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 84%, rgba(212, 171, 92, .28) 0 10%, transparent 11%),
+    radial-gradient(circle at 50% 82%, rgba(51, 255, 119, .14) 0 42%, transparent 43%),
+    linear-gradient(180deg, rgba(9, 22, 15, .96), rgba(5, 10, 8, .96));
+}
+
+.spray-arc {
+  position: absolute;
+  left: 50%;
+  bottom: -38%;
+  transform: translateX(-50%);
+  border: 2px solid rgba(51, 255, 119, .22);
+  border-radius: 50% 50% 0 0;
+}
+
+.spray-arc.outer {
+  width: 96%;
+  height: 94%;
+}
+
+.spray-arc.inner {
+  width: 56%;
+  height: 54%;
+  border-color: rgba(255, 255, 255, .10);
+}
+
+.spray-foul {
+  position: absolute;
+  bottom: 14%;
+  width: 2px;
+  height: 76%;
+  background: rgba(255, 255, 255, .16);
+  transform-origin: bottom center;
+}
+
+.spray-foul.left {
+  left: 50%;
+  transform: rotate(-43deg);
+}
+
+.spray-foul.right {
+  right: 50%;
+  transform: rotate(43deg);
+}
+
+.spray-infield {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  width: 110px;
+  height: 110px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1px solid rgba(216, 189, 98, .35);
+  background: rgba(216, 189, 98, .08);
+}
+
+.spray-home {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  width: 14px;
+  height: 14px;
+  transform: translateX(-50%) rotate(45deg);
+  background: #f4fff7;
+  border-radius: 2px;
+}
+
+.spray-label {
+  position: absolute;
+  color: #9bb0a1;
+  font-size: 11px;
+  font-weight: 1000;
+  letter-spacing: .8px;
+}
+
+.spray-label.left {
+  left: 12%;
+  top: 27%;
+}
+
+.spray-label.center {
+  left: 50%;
+  top: 13%;
+  transform: translateX(-50%);
+}
+
+.spray-label.right {
+  right: 12%;
+  top: 27%;
+}
+
+.spray-dot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 999px;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 0 18px rgba(0, 0, 0, .35);
+  transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+}
+
+.spray-dot:hover {
+  transform: translate(-50%, -50%) scale(1.2);
+  filter: brightness(1.18);
+  z-index: 5;
+}
+
+.spray-dot span {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%);
+  display: none;
+  white-space: nowrap;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: #020503;
+  color: #f4fff7;
+  border: 1px solid #25573a;
+  font-size: 10px;
+  font-weight: 1000;
+}
+
+.spray-dot:hover span {
+  display: block;
+}
+
+.spray-dot.hr {
+  background: radial-gradient(circle, #f4fff7 0 10%, #33ff77 35%, rgba(51, 255, 119, .28) 72%);
+}
+
+.spray-dot.barrel {
+  background: radial-gradient(circle, #fff5bc 0 10%, #d8bd62 38%, rgba(216, 189, 98, .24) 74%);
+}
+
+.spray-dot.hard {
+  background: radial-gradient(circle, #ffd2d2 0 10%, #ff6b6b 38%, rgba(255, 107, 107, .24) 74%);
+}
+
+.spray-dot.soft {
+  background: radial-gradient(circle, #cfe2d5 0 10%, #6c7d72 40%, rgba(108, 125, 114, .20) 74%);
+}
+
+.spray-lanes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.spray-lanes div {
+  border: 1px solid #244b34;
+  border-radius: 14px;
+  padding: 10px;
+  background: rgba(16, 29, 21, .74);
+}
+
+.spray-lanes span {
+  display: block;
+  color: #9bb0a1;
+  font-size: 11px;
+  font-weight: 1000;
+  text-transform: uppercase;
+}
+
+.spray-lanes strong {
+  display: block;
+  margin: 4px 0 7px;
+  font-size: 20px;
+}
+
+.spray-lanes i {
+  display: block;
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+}
+
+.spray-lanes b {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: #33ff77;
+}
+
+@media (max-width: 760px) {
+  .spray-chart-head {
+    display: grid;
+  }
+
+  .spray-chart-legend {
+    justify-content: flex-start;
+  }
+
+  .spray-field {
+    height: 320px;
+  }
+
+  .spray-lanes {
+    grid-template-columns: 1fr;
+  }
+}

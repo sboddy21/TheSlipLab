@@ -360,80 +360,162 @@ function strongestZones(values, count = 3) {
     .slice(0, count);
 }
 
-function sprayDirectionSummary(playerZones) {
-  const hr = playerZones?.zones?.hr || [];
-  const barrel = playerZones?.zones?.barrel || [];
-  const iso = playerZones?.zones?.iso || [];
-
-  let pull = 0;
-  let middle = 0;
-  let oppo = 0;
-
-  hr.forEach((value, index) => {
-    const col = index % 5;
-    const total = number(value) + number(barrel[index]) + number(iso[index]);
-
-    if (col <= 1) pull += total;
-    else if (col === 2) middle += total;
-    else oppo += total;
-  });
-
-  if (pull >= middle && pull >= oppo) return "PULL SIDE DAMAGE";
-  if (middle >= pull && middle >= oppo) return "MIDDLE LANE POWER";
-
-  return "OPPO POWER";
-}
-
-function renderSprayOverlay(playerZones) {
+function sprayLaneBreakdown(playerZones, batSide = "") {
   const hr = playerZones?.zones?.hr || [];
   const barrel = playerZones?.zones?.barrel || [];
   const hardHit = playerZones?.zones?.hardHit || [];
   const iso = playerZones?.zones?.iso || [];
 
-  const topHr = strongestZones(hr, 4);
-  const topBarrel = strongestZones(barrel, 4);
+  const side = String(batSide || "").toUpperCase();
+
+  const lanes = {
+    pull: 0,
+    center: 0,
+    oppo: 0
+  };
+
+  hr.forEach((value, index) => {
+    const col = index % 5;
+    const rawTotal =
+      number(value) * 2.25 +
+      number(barrel[index]) * 2 +
+      number(hardHit[index]) +
+      number(iso[index]);
+
+    let lane = "center";
+
+    if (side === "L") {
+      if (col >= 3) lane = "pull";
+      else if (col <= 1) lane = "oppo";
+    } else {
+      if (col <= 1) lane = "pull";
+      else if (col >= 3) lane = "oppo";
+    }
+
+    if (col === 2) lane = "center";
+
+    lanes[lane] += rawTotal;
+  });
+
+  const total = lanes.pull + lanes.center + lanes.oppo || 1;
+
+  return {
+    pull: Math.round((lanes.pull / total) * 100),
+    center: Math.round((lanes.center / total) * 100),
+    oppo: Math.round((lanes.oppo / total) * 100),
+    label:
+      lanes.pull >= lanes.center && lanes.pull >= lanes.oppo
+        ? "PULL SIDE DAMAGE"
+        : lanes.center >= lanes.pull && lanes.center >= lanes.oppo
+          ? "MIDDLE LANE POWER"
+          : "OPPO POWER"
+  };
+}
+
+function sprayPointStyle(index, playerZones, batSide = "") {
+  const hr = number(playerZones?.zones?.hr?.[index]);
+  const barrel = number(playerZones?.zones?.barrel?.[index]);
+  const hardHit = number(playerZones?.zones?.hardHit?.[index]);
+  const iso = number(playerZones?.zones?.iso?.[index]);
+
+  const row = Math.floor(index / 5);
+  const col = index % 5;
+  const side = String(batSide || "").toUpperCase();
+
+  const xBase = side === "L"
+    ? [24, 34, 50, 66, 78][col]
+    : [22, 34, 50, 66, 76][col];
+
+  const yBase = [28, 40, 52, 64, 76][row];
+
+  const heat = Math.min(1, (hr * 0.22) + (barrel * 1.25) + (hardHit * 0.72) + (iso * 0.5));
+  const size = 10 + Math.round(heat * 26);
+
+  let cls = "spray-dot";
+  if (hr >= 2 || heat >= 0.72) cls += " hr";
+  else if (barrel >= 0.22 || heat >= 0.52) cls += " barrel";
+  else if (hardHit >= 0.35 || heat >= 0.36) cls += " hard";
+  else cls += " soft";
+
+  return {
+    x: xBase,
+    y: yBase,
+    size,
+    cls,
+    label: hr > 0 ? `${Math.round(hr)} HR` : barrel > 0.1 ? `${Math.round(barrel * 100)}% Barrel` : `${Math.round(hardHit * 100)}% Hard`
+  };
+}
+
+function renderInteractiveSprayChart(playerZones, row = {}) {
+  const side = row.batSide || row.batSideDescription || "";
+  const lanes = sprayLaneBreakdown(playerZones, side);
+  const points = Array.from({ length: 25 }).map((_, index) => sprayPointStyle(index, playerZones, side));
 
   return `
-    <div class="spray-overlay-card">
-      <div class="spray-overlay-header">
+    <div class="spray-chart-card">
+      <div class="spray-chart-head">
         <div>
-          <strong>Power Spray Overlay</strong>
-          <span>${sprayDirectionSummary(playerZones)}</span>
+          <strong>Interactive Spray Chart</strong>
+          <span>${lanes.label} • ${clean(side, "B")} bat path</span>
         </div>
 
-        <div class="spray-overlay-legend">
-          <div><i class="hr"></i> HR</div>
-          <div><i class="barrel"></i> Barrel</div>
-          <div><i class="hard"></i> Hard Hit</div>
+        <div class="spray-chart-legend">
+          <span><i class="hr"></i> HR lane</span>
+          <span><i class="barrel"></i> Barrel lane</span>
+          <span><i class="hard"></i> Hard hit</span>
         </div>
       </div>
 
-      <div class="spray-overlay-grid">
-        ${Array.from({ length: 25 }).map((_, index) => {
-          const hrVal = number(hr[index]);
-          const barrelVal = number(barrel[index]);
-          const hardVal = number(hardHit[index]);
-          const isoVal = number(iso[index]);
-          const isHrHot = topHr.some(zone => zone.index === index && zone.value > 0);
-          const isBarrelHot = topBarrel.some(zone => zone.index === index && zone.value > 0);
+      <div class="spray-stage" data-spray-stage>
+        <div class="spray-field">
+          <div class="spray-foul left"></div>
+          <div class="spray-foul right"></div>
+          <div class="spray-arc outer"></div>
+          <div class="spray-arc inner"></div>
+          <div class="spray-infield"></div>
+          <div class="spray-home"></div>
 
-          let cls = "neutral";
+          <div class="spray-label left">LF</div>
+          <div class="spray-label center">CF</div>
+          <div class="spray-label right">RF</div>
 
-          if (isHrHot) cls = "hr-hot";
-          else if (isBarrelHot) cls = "barrel-hot";
-          else if (hardVal >= 0.35 || isoVal >= 0.35) cls = "hard-hot";
-
-          return `<div class="spray-zone ${cls}"><span>${hrVal > 0 ? Math.round(hrVal) : ""}</span></div>`;
-        }).join("")}
+          ${points.map((point, index) => `
+            <button
+              type="button"
+              class="${point.cls}"
+              style="left:${point.x}%; top:${point.y}%; width:${point.size}px; height:${point.size}px;"
+              data-spray-zone="${index + 1}"
+              title="${point.label}"
+            >
+              <span>${point.label}</span>
+            </button>
+          `).join("")}
+        </div>
       </div>
 
-      <div class="spray-overlay-summary">
-        <div><strong>${topHr.filter(zone => zone.value > 0).length}</strong><span>HR Lanes</span></div>
-        <div><strong>${topBarrel.filter(zone => zone.value > 0).length}</strong><span>Barrel Lanes</span></div>
-        <div><strong>${clean(playerZones.rows)}</strong><span>Tracked Pitches</span></div>
+      <div class="spray-lanes">
+        <div>
+          <span>Pull</span>
+          <strong>${lanes.pull}%</strong>
+          <i><b style="width:${lanes.pull}%"></b></i>
+        </div>
+        <div>
+          <span>Center</span>
+          <strong>${lanes.center}%</strong>
+          <i><b style="width:${lanes.center}%"></b></i>
+        </div>
+        <div>
+          <span>Oppo</span>
+          <strong>${lanes.oppo}%</strong>
+          <i><b style="width:${lanes.oppo}%"></b></i>
+        </div>
       </div>
     </div>
   `;
+}
+
+function renderSprayOverlay(playerZones, row = {}) {
+  return renderInteractiveSprayChart(playerZones, row);
 }
 
 function renderStatcastZoneLab(row) {
@@ -460,7 +542,7 @@ function renderStatcastZoneLab(row) {
           <span>${playerZones.rows || 25} powered zones • ${clean(playerZones.source || "Slip Lab model")}</span>
         </div>
 
-        ${renderSprayOverlay(playerZones)}
+        ${renderSprayOverlay(playerZones, row)}
 
         <div class="metric-zone-board">
           ${renderZoneMetricGrid("AVG", "avg", playerZones)}
