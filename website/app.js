@@ -117,6 +117,20 @@ async function loadParkFactors() {
 
 
 
+
+
+async function loadHandednessOverlays() {
+  try {
+    const response = await fetch(`./data/handedness_overlays.json?v=${Date.now()}`);
+
+    if (!response.ok) return {};
+
+    return await response.json();
+  } catch {
+    return {};
+  }
+}
+
 async function loadPitchTypeDamage() {
   try {
     const response = await fetch(`./data/pitch_type_damage.json?v=${Date.now()}`);
@@ -575,6 +589,95 @@ function renderStatcastZoneLab(row) {
 
 
 
+
+
+function getHandednessOverlay(player, row = null) {
+  const overlays = state.handednessOverlays?.players || {};
+
+  if (row?.player && overlays[row.player]) return overlays[row.player];
+  if (player && overlays[player]) return overlays[player];
+
+  const normalized = String(player || row?.player || "").toLowerCase().trim();
+
+  if (normalized) {
+    const key = Object.keys(overlays).find(name => name.toLowerCase().trim() === normalized);
+    if (key) return overlays[key];
+  }
+
+  return null;
+}
+
+function renderHandednessOverlay(row) {
+  const data = getHandednessOverlay(row.player, row);
+
+  if (!data?.overlay) {
+    return `
+      <div class="handedness-card">
+        <div class="handedness-head">
+          <strong>Handedness Overlay</strong>
+          <span>No handedness overlay loaded yet</span>
+        </div>
+      </div>
+    `;
+  }
+
+  const overlay = data.overlay;
+
+  return `
+    <div class="handedness-card">
+      <div class="handedness-head">
+        <div>
+          <strong>Handedness Overlay</strong>
+          <span>${clean(overlay.matchupSide)} • ${clean(overlay.read)}</span>
+        </div>
+        <div class="handedness-score">
+          <strong>${clean(overlay.splitAdvantage)}</strong>
+          <span>Split Fit</span>
+        </div>
+      </div>
+
+      <div class="handedness-grid">
+        <div>
+          <span>Hitter Power</span>
+          <strong>${clean(overlay.hitterPower)}%</strong>
+          <i><b style="width:${overlay.hitterPower}%"></b></i>
+        </div>
+
+        <div>
+          <span>Pitcher Leak</span>
+          <strong>${clean(overlay.pitcherLeak)}%</strong>
+          <i><b style="width:${overlay.pitcherLeak}%"></b></i>
+        </div>
+
+        <div>
+          <span>Pull Lane</span>
+          <strong>${clean(overlay.pull)}%</strong>
+          <i><b style="width:${overlay.pull}%"></b></i>
+        </div>
+
+        <div>
+          <span>Center Lane</span>
+          <strong>${clean(overlay.center)}%</strong>
+          <i><b style="width:${overlay.center}%"></b></i>
+        </div>
+
+        <div>
+          <span>Oppo Lane</span>
+          <strong>${clean(overlay.oppo)}%</strong>
+          <i><b style="width:${overlay.oppo}%"></b></i>
+        </div>
+
+        <div>
+          <span>Bat Side</span>
+          <strong>${clean(overlay.batSide)}</strong>
+          <i><b style="width:${overlay.splitAdvantage}%"></b></i>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+
 function getPitchDamage(player, row = null) {
   const damage = state.pitchTypeDamage?.players || {};
 
@@ -749,6 +852,9 @@ function openPlayerProfile(index) {
 
     <h3>Pitch Type Damage</h3>
     ${renderPitchTypeDamageMap(row)}
+
+    <h3>Handedness Overlay</h3>
+    ${renderHandednessOverlay(row)}
 
     <div class="profile-explainer">
       <strong>Slip Lab Read:</strong>
@@ -1310,13 +1416,14 @@ async function render() {
   boardTitle.textContent = titleCase(state.market);
   board.innerHTML = `<div class="empty">Loading ${state.sport.toUpperCase()} ${titleCase(state.market)} data...</div>`;
 
-  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, stackRows] = await Promise.all([
+  const [raw, updatedInfo, weatherRows, parkRows, statcastZones, pitchTypeDamage, handednessOverlays, stackRows] = await Promise.all([
     loadRows(),
     loadLastUpdated(),
     loadWeather(),
     loadParkFactors(),
     loadStatcastZones(),
     loadPitchTypeDamage(),
+    loadHandednessOverlays(),
     loadTeamStacks()
   ]);
 
@@ -1335,6 +1442,7 @@ async function render() {
   state.parks = parkRows;
   state.statcastZones = statcastZones;
   state.pitchTypeDamage = pitchTypeDamage;
+  state.handednessOverlays = handednessOverlays;
   state.stacks = stackRows;
 
   const updated = formatUpdatedTime(updatedInfo?.updated_at || updatedInfo?.updatedAt);
