@@ -557,6 +557,106 @@ function closePlayerProfile() {
   if (modal) modal.classList.remove("show");
 }
 
+
+function safeArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function pitcherStats(row) {
+  return row?.stats?.pitcher || row?.pitcherStats || {};
+}
+
+function hitterStats(row) {
+  return row?.stats?.hitter || row?.hitterStats || {};
+}
+
+function pitcherAttackScore(row) {
+  const p = pitcherStats(row);
+  let score = 0;
+
+  const era = number(p.era);
+  const whip = number(p.whip);
+  const hr = number(p.homeRuns);
+  const hits = number(p.hits);
+  const walks = number(p.baseOnBalls);
+  const ip = number(p.inningsPitched);
+
+  if (era >= 6) score += 30;
+  else if (era >= 4.75) score += 22;
+  else if (era >= 4) score += 14;
+
+  if (whip >= 1.6) score += 25;
+  else if (whip >= 1.35) score += 17;
+  else if (whip >= 1.2) score += 9;
+
+  if (hr >= 12) score += 22;
+  else if (hr >= 7) score += 15;
+  else if (hr >= 3) score += 8;
+
+  if (ip > 0 && hits / ip >= 1.15) score += 12;
+  if (ip > 0 && walks / ip >= 0.45) score += 9;
+
+  score += Math.min(20, Math.max(0, number(row.score) / 5));
+
+  return Math.round(score);
+}
+
+function pitcherAttackGradeFromScore(score) {
+  if (score >= 80) return { label: "Priority Attack", className: "green" };
+  if (score >= 60) return { label: "Strong Attack", className: "yellow" };
+  if (score >= 40) return { label: "Watch Spot", className: "gray" };
+  return { label: "Low Priority", className: "red" };
+}
+
+function pitcherWeaknessNotes(rows) {
+  const first = rows[0] || {};
+  const p = pitcherStats(first);
+  const notes = [];
+
+  if (number(p.era) >= 5) notes.push(`Elevated ERA profile at ${clean(p.era)}.`);
+  if (number(p.whip) >= 1.35) notes.push(`Traffic risk is live with a ${clean(p.whip)} WHIP.`);
+  if (number(p.homeRuns) >= 5) notes.push(`${clean(p.homeRuns)} HR allowed creates long ball vulnerability.`);
+  if (number(p.hits) > 0) notes.push(`${clean(p.hits)} hits allowed adds contact risk.`);
+  if (rows.length >= 3) notes.push(`${rows.length} bats from this matchup are grading into the HR pool.`);
+
+  if (!notes.length) {
+    notes.push("Pitcher vulnerability is being driven by matchup score, hitter power, park context, and available pitcher profile.");
+  }
+
+  return notes;
+}
+
+function dangerBatCard(row, index) {
+  const hitter = hitterStats(row);
+  const realIndex = state.rows.indexOf(row);
+
+  return `
+    <article class="pitcher-batter-card" data-profile-index="${realIndex}">
+      <div class="pitcher-batter-topline">
+        <div class="pitcher-batter-rank">#${index + 1}</div>
+        <div class="pitcher-batter-chip">DANGER BAT</div>
+      </div>
+
+      <div class="pitcher-batter-main">
+        <strong>${clean(row.player)}</strong>
+        <span>${clean(row.team)} • ${clean(row.edge || "HR target")}</span>
+      </div>
+
+      <div class="pitcher-batter-tags">
+        <span>Score ${clean(row.score)}</span>
+        <span>Side ${clean(row.batSide)}</span>
+        <span>HR ${clean(hitter.hr)}</span>
+        <span>SLG ${clean(hitter.slg)}</span>
+        <span>OPS ${clean(hitter.ops)}</span>
+        <span>AVG ${clean(hitter.avg)}</span>
+      </div>
+
+      <p>${clean(row.note || "Model likes this bat based on power profile, pitcher vulnerability, park fit, and game environment.")}</p>
+    </article>
+  `;
+}
+
+
 function pitcherKey(row) {
   return String(row.opposingPitcher || row.pitcher || "Unknown Pitcher").trim();
 }
@@ -605,8 +705,7 @@ function renderTopVulnerabilities(rows) {
       map.set(key, {
         pitcher: key,
         rows: [],
-        score: number(row.score),
-        era: row.stats?.pitcher?.era || "--",
+        score: 0,
         game: row.game || "",
         team: row.team || "",
         opponent: row.opponent || ""
@@ -615,7 +714,7 @@ function renderTopVulnerabilities(rows) {
 
     const item = map.get(key);
     item.rows.push(row);
-    item.score = Math.max(item.score, number(row.score));
+    item.score = Math.max(item.score, pitcherAttackScore(row));
   });
 
   const vulnRows = [...map.values()]
@@ -626,27 +725,29 @@ function renderTopVulnerabilities(rows) {
     <section class="top-vuln-strip">
       <div class="top-vuln-header">
         <div>
-          <div class="top-vuln-kicker">PROJECTED HRs • HIGH VALUE GAMES</div>
-          <h2>TOP VULNERABILITIES</h2>
-        </div>
-        <div class="top-vuln-toggles">
-          <button class="top-vuln-toggle active">VULN</button>
-          <button class="top-vuln-toggle">PARK</button>
+          <div class="top-vuln-kicker">HR MATCHUP INTELLIGENCE</div>
+          <h2>Pitcher Vulnerability Lab</h2>
         </div>
       </div>
 
       <div class="top-vuln-row">
-        ${vulnRows.map((item, index) => `
-          <article class="top-vuln-card" data-pitcher-profile="${encodeURIComponent(item.pitcher)}">
-            <div class="top-vuln-rank">#${index + 1}</div>
-            <div class="top-vuln-score">${clean(item.score)}</div>
-            <div class="top-vuln-label">${item.rows.length} BATS</div>
-            <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
-            <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
-            <div class="top-vuln-era">ERA ${clean(item.era)}</div>
-            <div class="top-vuln-attack">${pitcherAttackGrade(item.rows[0]?.stats?.pitcher || {}).label}</div>
-          </article>
-        `).join("")}
+        ${vulnRows.map((item, index) => {
+          const first = item.rows[0] || {};
+          const p = pitcherStats(first);
+          const grade = pitcherAttackGradeFromScore(item.score);
+
+          return `
+            <article class="top-vuln-card" data-pitcher-profile="${encodeURIComponent(item.pitcher)}">
+              <div class="top-vuln-rank">#${index + 1}</div>
+              <div class="top-vuln-score">${clean(item.score)}</div>
+              <div class="top-vuln-label">ATTACK SCORE</div>
+              <div class="top-vuln-pitcher">${clean(item.pitcher)}</div>
+              <div class="top-vuln-matchup">${clean(item.game || `${item.team} vs ${item.opponent}`)}</div>
+              <div class="top-vuln-era">ERA ${clean(p.era)} • WHIP ${clean(p.whip)} • HR ${clean(p.homeRuns)}</div>
+              <div class="top-vuln-attack ${grade.className}">${grade.label}</div>
+            </article>
+          `;
+        }).join("")}
       </div>
     </section>
   `;
@@ -659,7 +760,11 @@ function openPitcherVulnerabilityProfile(pitcherName) {
 
   if (!rows.length) return;
 
-  const pitcher = rows[0].stats?.pitcher || {};
+  const first = rows[0];
+  const pitcher = pitcherStats(first);
+  const attackScore = Math.max(...rows.map(row => pitcherAttackScore(row)));
+  const grade = pitcherAttackGradeFromScore(attackScore);
+
   const modal = document.getElementById("profile-modal");
   const body = document.getElementById("profile-body");
 
@@ -670,11 +775,11 @@ function openPitcherVulnerabilityProfile(pitcherName) {
       <div>
         <div class="profile-rank">PITCHER VULNERABILITY</div>
         <h2>${clean(pitcherName)}</h2>
-        <p>${clean(rows[0].game)}</p>
+        <p>${clean(first.game)}</p>
       </div>
       <div class="profile-score">
-        <span>${clean(rows[0].score)}</span>
-        <small>Top Bat Score</small>
+        <span>${clean(attackScore)}</span>
+        <small>${grade.label}</small>
       </div>
     </div>
 
@@ -689,40 +794,18 @@ function openPitcherVulnerabilityProfile(pitcherName) {
       <div><span class="profile-label">IP</span><strong>${clean(pitcher.inningsPitched)}</strong></div>
     </div>
 
-    ${renderBallparkWeather(rows[0].venue)}
+    ${renderBallparkWeather(first.venue)}
+
+    <h3>Pitcher Weakness Read</h3>
+    <div class="profile-explainer">
+      <ul class="matchup-read-list">
+        ${pitcherWeaknessNotes(rows).map(item => `<li>${item}</li>`).join("")}
+      </ul>
+    </div>
 
     <h3>Top Danger Bats</h3>
-
     <div class="pitcher-batter-board">
-      ${rows.slice(0, 6).map((row, index) => {
-        const hitter = row.stats?.hitter || {};
-        const realIndex = state.rows.indexOf(row);
-
-        return `
-          <article class="pitcher-batter-card" data-profile-index="${realIndex}">
-            <div class="pitcher-batter-topline">
-              <div class="pitcher-batter-rank">#${index + 1}</div>
-              <div class="pitcher-batter-chip">LIVE POWER</div>
-            </div>
-
-            <div class="pitcher-batter-main">
-              <strong>${clean(row.player)}</strong>
-              <span>${clean(row.team)} • ${clean(row.edge || "HR target")}</span>
-            </div>
-
-            <div class="pitcher-batter-tags">
-              <span>Score ${clean(row.score)}</span>
-              <span>Side ${clean(row.batSide)}</span>
-              <span>HR ${clean(hitter.hr)}</span>
-              <span>SLG ${clean(hitter.slg)}</span>
-              <span>OPS ${clean(hitter.ops)}</span>
-              <span>AVG ${clean(hitter.avg)}</span>
-            </div>
-
-            <p>${clean(row.note || "Model likes this bat based on power profile, matchup context, and pitcher vulnerability.")}</p>
-          </article>
-        `;
-      }).join("")}
+      ${rows.slice(0, 8).map((row, index) => dangerBatCard(row, index)).join("")}
     </div>
   `;
 
@@ -1153,6 +1236,16 @@ function getProfileModalParts() {
   };
 }
 
+function openActiveProfileModal() {
+  const { modal } = getProfileModalParts();
+
+  if (!modal) return;
+
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
 function closePlayerProfile() {
   const { modal, body } = getProfileModalParts();
 
@@ -1165,26 +1258,16 @@ function closePlayerProfile() {
   if (body) body.innerHTML = "";
 }
 
-function openActiveProfileModal() {
-  const { modal } = getProfileModalParts();
-
-  if (!modal) return;
-
-  modal.classList.add("show");
-  modal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
-}
-
 function installSlipLabModalController() {
   const { modal } = getProfileModalParts();
 
   if (!modal || modal.dataset.modalControllerReady === "true") return;
 
   modal.dataset.modalControllerReady = "true";
-  modal.setAttribute("aria-hidden", modal.classList.contains("show") ? "false" : "true");
+  modal.setAttribute("aria-hidden", "true");
 
   document.addEventListener("click", event => {
-    const closeButton = event.target.closest("[data-close-profile], .profile-close, .close-button");
+    const closeButton = event.target.closest("[data-close-profile], .profile-close");
 
     if (closeButton) {
       event.preventDefault();
@@ -1196,9 +1279,7 @@ function installSlipLabModalController() {
 
     if (pitcherCard) {
       event.preventDefault();
-      const pitcherName = decodeURIComponent(pitcherCard.dataset.pitcherProfile || "");
-      openPitcherVulnerabilityProfile(pitcherName);
-      openActiveProfileModal();
+      openPitcherVulnerabilityProfile(decodeURIComponent(pitcherCard.dataset.pitcherProfile || ""));
       return;
     }
 
@@ -1207,14 +1288,11 @@ function installSlipLabModalController() {
     if (playerCard) {
       event.preventDefault();
       openPlayerProfile(Number(playerCard.dataset.profileIndex));
-      openActiveProfileModal();
     }
   });
 
   modal.addEventListener("click", event => {
-    if (event.target === modal) {
-      closePlayerProfile();
-    }
+    if (event.target === modal) closePlayerProfile();
   });
 
   document.addEventListener("keydown", event => {
