@@ -4,10 +4,59 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>The Slip Lab</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="app"></div>
-  <script src="./app.js"></script>
+  <header class="topbar">
+    <div>
+      <h1>The Slip Lab</h1>
+      <p>Simple sports data. Clean edges. Better decisions.</p>
+      <p id="top-updated" class="top-updated">Last Updated: Loading...</p>
+    </div>
+    <nav>
+      <button data-sport="mlb" class="active">MLB</button>
+      <button data-sport="nba">NBA</button>
+      <button data-sport="nhl">NHL</button>
+      <button data-sport="nfl">NFL</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h2 id="page-title">MLB Lab</h2>
+      <p id="page-subtitle">Home Runs, Hits, Total Bases, and RBIs.</p>
+      </div>
+      <div class="badge">Live MLB Data • Auto Refreshing</div>
+    </section>
+
+    <section class="tabs">
+      <button data-market="home_runs" class="active">Home Runs</button>
+      <button data-market="games">Today's Games</button>
+      <button data-market="weather">Weather</button>
+          <button data-market="results">Results</button>
+    </section>
+
+    
+    <section class="board-header">
+      <div>
+        <h3 id="board-title">Home Runs</h3>
+        <p id="board-meta">Loading board data...</p>
+      </div>
+    </section>
+
+    <section id="board" class="board"></section>
+  
+  </main>
+
+
+  <div id="profile-modal" class="profile-modal">
+    <div class="profile-panel">
+      <button class="profile-close" data-close-profile>Close</button>
+      <div id="profile-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
