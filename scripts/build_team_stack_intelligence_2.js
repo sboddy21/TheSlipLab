@@ -2,64 +2,50 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = path.resolve();
-const DATA_DIR = path.join(ROOT, "data");
+const WEBSITE_DATA = path.join(ROOT, "website", "data");
+const EXPORTS_DIR = path.join(ROOT, "exports");
 
-const MASTER_FILE = path.join(DATA_DIR, "master_hr_model.csv");
-const WEATHER_FILE = path.join(DATA_DIR, "weather_environment_engine.csv");
-const BULLPEN_FILE = path.join(DATA_DIR, "bullpen_usage.csv");
-const PITCHER_ATTACK_FILE = path.join(DATA_DIR, "pitcher_attack_sheet.csv");
+const FILES = {
+  homeRuns: path.join(WEBSITE_DATA, "mlb_home_runs.json"),
+  teamStacks: path.join(WEBSITE_DATA, "mlb_team_stacks.json"),
+  weather: path.join(WEBSITE_DATA, "mlb_weather.json"),
+  pitcherZones: path.join(WEBSITE_DATA, "pitcher_attack_zones.json"),
+  playerPool: path.join(WEBSITE_DATA, "mlb_player_pool.json")
+};
 
-const OUTPUT_CSV = path.join(DATA_DIR, "team_stack_intelligence_2.csv");
-const OUTPUT_JSON = path.join(DATA_DIR, "team_stack_intelligence_2.json");
+const OUTPUTS = {
+  stackIntel: path.join(WEBSITE_DATA, "team_stack_intelligence_2.json"),
+  leverage: path.join(WEBSITE_DATA, "stack_leverage_profiles.json"),
+  collapse: path.join(WEBSITE_DATA, "collapse_alerts.json"),
+  csv: path.join(EXPORTS_DIR, "team_stack_intelligence_2.csv")
+};
 
-function parseCSVLine(line) {
-  const result = [];
-  let current = "";
-  let insideQuotes = false;
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    const next = line[i + 1];
-
-    if (char === '"' && insideQuotes && next === '"') {
-      current += '"';
-      i++;
-    } else if (char === '"') {
-      insideQuotes = !insideQuotes;
-    } else if (char === "," && !insideQuotes) {
-      result.push(current);
-      current = "";
-    } else {
-      current += char;
-    }
-  }
-
-  result.push(current);
-  return result;
+function readJson(file, fallback) {
+  if (!fs.existsSync(file)) return fallback;
+  return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-function loadCSV(filePath) {
-  if (!fs.existsSync(filePath)) {
-    console.log(`Missing file: ${filePath}`);
-    return [];
-  }
+function writeJson(file, data) {
+  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+}
 
-  const raw = fs.readFileSync(filePath, "utf8").trim();
-  if (!raw) return [];
+function num(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  const lines = raw.split(/\r?\n/);
-  const headers = parseCSVLine(lines.shift()).map(h => h.trim());
+function clean(value) {
+  return String(value ?? "").trim();
+}
 
-  return lines.map(line => {
-    const values = parseCSVLine(line);
-    const row = {};
+function clamp(value, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, value));
+}
 
-    headers.forEach((header, index) => {
-      row[header] = values[index] ?? "";
-    });
-
-    return row;
-  });
+function avg(values) {
+  const nums = values.map(v => num(v)).filter(v => Number.isFinite(v));
+  if (!nums.length) return 0;
+  return nums.reduce((a, b) => a + b, 0) / nums.length;
 }
 
 function csvEscape(value) {
@@ -70,270 +56,360 @@ function csvEscape(value) {
   return text;
 }
 
-function writeCSV(filePath, rows) {
+function writeCsv(file, rows) {
   if (!rows.length) {
-    fs.writeFileSync(filePath, "");
+    fs.writeFileSync(file, "");
     return;
   }
 
   const headers = Object.keys(rows[0]);
   const lines = [
     headers.join(","),
-    ...rows.map(row => headers.map(header => csvEscape(row[header])).join(","))
+    ...rows.map(row => headers.map(h => csvEscape(row[h])).join(","))
   ];
 
-  fs.writeFileSync(filePath, lines.join("\n"));
+  fs.writeFileSync(file, lines.join("\n"));
 }
 
-function num(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-}
+function combos(items, size) {
+  const out = [];
 
-function clean(value) {
-  return String(value || "").trim();
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function average(arr) {
-  const filtered = arr.filter(v => Number.isFinite(v));
-  if (!filtered.length) return 0;
-  return filtered.reduce((a, b) => a + b, 0) / filtered.length;
-}
-
-function key(value) {
-  return clean(value).toLowerCase();
-}
-
-function getWeatherBoost(weatherRows, game) {
-  const row = weatherRows.find(r => key(r.game) === key(game));
-  if (!row) return 0;
-  return num(row.weather_boost);
-}
-
-function getBullpenData(rows, team) {
-  return rows.find(r => key(r.team) === key(team));
-}
-
-function getPitcherAttack(rows, pitcher) {
-  return rows.find(r => key(r.pitcher) === key(pitcher));
-}
-
-function calculatePitcherCollapseProbability(pitcherAttack) {
-  if (!pitcherAttack) return 50;
-
-  const attackScore = num(pitcherAttack.attack_score);
-  const era = num(pitcherAttack.era);
-  const whip = num(pitcherAttack.whip);
-  const hr9 = num(pitcherAttack.hr_per_9);
-  const barrel = num(pitcherAttack.barrel_allowed_pct);
-
-  const score =
-    attackScore * 0.35 +
-    era * 4 +
-    whip * 12 +
-    hr9 * 12 +
-    barrel * 1.5;
-
-  return clamp(Math.round(score), 1, 99);
-}
-
-function calculateBullpenCollapseScore(bullpen) {
-  if (!bullpen) return 50;
-
-  const usage = num(bullpen.used);
-  const b2b = num(bullpen.b2b);
-  const pitches = num(bullpen.pitches);
-  const innings = num(bullpen.innings);
-  const bullpenScore = num(bullpen.score);
-
-  const score =
-    usage * 10 +
-    b2b * 18 +
-    pitches * 0.08 +
-    innings * 1.4 +
-    bullpenScore * 0.7;
-
-  return clamp(Math.round(score), 1, 99);
-}
-
-function classifyVolatility(score) {
-  if (score >= 90) return "NUCLEAR";
-  if (score >= 75) return "AGGRESSIVE";
-  if (score >= 60) return "BALANCED";
-  if (score >= 45) return "SAFE";
-  return "LOTTO";
-}
-
-function classifyLeverage(score) {
-  if (score >= 85) return "ELITE";
-  if (score >= 70) return "STRONG";
-  if (score >= 55) return "SOLID";
-  if (score >= 40) return "MID";
-  return "LOW";
-}
-
-function buildCombinations(players, size) {
-  const results = [];
-
-  function helper(start, combo) {
+  function walk(start, combo) {
     if (combo.length === size) {
-      results.push([...combo]);
+      out.push([...combo]);
       return;
     }
 
-    for (let i = start; i < players.length; i++) {
-      combo.push(players[i]);
-      helper(i + 1, combo);
+    for (let i = start; i < items.length; i++) {
+      combo.push(items[i]);
+      walk(i + 1, combo);
       combo.pop();
     }
   }
 
-  helper(0, []);
-  return results;
+  walk(0, []);
+  return out;
+}
+
+function getWeather(weatherRows, venue) {
+  return weatherRows.find(w => clean(w.venue).toLowerCase() === clean(venue).toLowerCase()) || {};
+}
+
+function getZoneProfile(zonePlayers, player) {
+  return zonePlayers[clean(player)] || {};
+}
+
+function topZones(zoneProfile) {
+  const zones = zoneProfile?.zones?.zones || [];
+  return zones
+    .slice()
+    .sort((a, b) => num(b.danger) - num(a.danger))
+    .slice(0, 5)
+    .map(z => `${z.zone}:${z.danger}`)
+    .join(" | ");
+}
+
+function redZoneCount(zoneProfile) {
+  const zones = zoneProfile?.zones?.zones || [];
+  return zones.filter(z => clean(z.attack).toLowerCase() === "red").length;
+}
+
+function stackGrade(score) {
+  if (score >= 90) return "NUKE STACK";
+  if (score >= 80) return "ELITE STACK";
+  if (score >= 70) return "ATTACK STACK";
+  if (score >= 60) return "LIVE STACK";
+  if (score >= 50) return "WATCH STACK";
+  return "THIN STACK";
+}
+
+function volatilityLabel(score) {
+  if (score >= 90) return "NUCLEAR";
+  if (score >= 78) return "CHAOTIC";
+  if (score >= 66) return "AGGRESSIVE";
+  if (score >= 54) return "STABLE";
+  return "SAFE";
+}
+
+function leverageLabel(score) {
+  if (score >= 85) return "ELITE LEVERAGE";
+  if (score >= 72) return "STRONG LEVERAGE";
+  if (score >= 60) return "SOLID LEVERAGE";
+  if (score >= 48) return "LIGHT LEVERAGE";
+  return "CHALKY";
+}
+
+function collapseLabel(score) {
+  if (score >= 85) return "RED ALERT";
+  if (score >= 72) return "HIGH RISK";
+  if (score >= 60) return "PRESSURE SPOT";
+  if (score >= 48) return "WATCH";
+  return "LOW";
+}
+
+function pitcherCollapseFromStack(stack) {
+  const factors = Array.isArray(stack.factors) ? stack.factors.join(" ") : "";
+  const eraMatch = factors.match(/ERA leak at ([0-9.]+)/i);
+  const whipMatch = factors.match(/WHIP/i);
+  const hrMatch = factors.match(/([0-9]+) HR allowed/i);
+
+  const era = eraMatch ? num(eraMatch[1]) : 4.2;
+  const hrAllowed = hrMatch ? num(hrMatch[1]) : 4;
+  const whipBoost = whipMatch ? 12 : 0;
+
+  return clamp(Math.round((era * 9) + (hrAllowed * 3.5) + whipBoost), 1, 99);
+}
+
+function weatherBoost(weather, stack) {
+  const wind = num(weather.windSpeed ?? stack.windSpeed);
+  const temp = num(weather.temp ?? stack.temp);
+
+  let score = 0;
+
+  if (wind >= 12) score += 14;
+  else if (wind >= 8) score += 9;
+  else if (wind >= 5) score += 5;
+
+  if (temp >= 80) score += 8;
+  else if (temp >= 70) score += 5;
+  else if (temp <= 50 && temp > 0) score -= 4;
+
+  return clamp(score, -10, 20);
+}
+
+function dedupeHitters(hitters) {
+  const map = new Map();
+
+  for (const h of hitters || []) {
+    const name = clean(h.player);
+    if (!name) continue;
+
+    const current = map.get(name);
+    if (!current || num(h.score) > num(current.score)) {
+      map.set(name, h);
+    }
+  }
+
+  return [...map.values()];
 }
 
 console.log("");
 console.log("TEAM STACK INTELLIGENCE 2.0");
 console.log("");
 
-const masterRows = loadCSV(MASTER_FILE);
-const weatherRows = loadCSV(WEATHER_FILE);
-const bullpenRows = loadCSV(BULLPEN_FILE);
-const pitcherAttackRows = loadCSV(PITCHER_ATTACK_FILE);
+const homeRunsRaw = readJson(FILES.homeRuns, []);
+const teamStacksRaw = readJson(FILES.teamStacks, { stacks: [] });
+const weatherRaw = readJson(FILES.weather, { weather: [] });
+const pitcherZonesRaw = readJson(FILES.pitcherZones, { players: {} });
+const playerPoolRaw = readJson(FILES.playerPool, { players: [] });
 
-if (!masterRows.length) {
-  console.log("No master HR rows found");
-  process.exit(1);
-}
+const homeRuns = Array.isArray(homeRunsRaw) ? homeRunsRaw : [];
+const teamStacks = Array.isArray(teamStacksRaw?.stacks) ? teamStacksRaw.stacks : [];
+const weatherRows = Array.isArray(weatherRaw?.weather) ? weatherRaw.weather : [];
+const zonePlayers = pitcherZonesRaw?.players || {};
+const playerPool = Array.isArray(playerPoolRaw?.players) ? playerPoolRaw.players : [];
 
-const groupedTeams = {};
+const playerPoolByName = new Map(playerPool.map(p => [clean(p.player), p]));
 
-for (const row of masterRows) {
-  const team = clean(row.team);
-  if (!team) continue;
+const stackRows = [];
+const leverageRows = [];
+const collapseRows = [];
 
-  if (!groupedTeams[team]) groupedTeams[team] = [];
-  groupedTeams[team].push(row);
-}
-
-const finalStacks = [];
-
-for (const [team, hitters] of Object.entries(groupedTeams)) {
-  const sortedHitters = hitters
+for (const stack of teamStacks) {
+  const hitters = dedupeHitters(stack.hitters)
     .map(h => {
-      const hrScore =
-        num(h.final_score) ||
-        num(h.hr_score) ||
-        num(h.score) ||
-        num(h.model_score);
+      const pool = playerPoolByName.get(clean(h.player)) || {};
+      const zoneProfile = getZoneProfile(zonePlayers, h.player);
+      const redZones = redZoneCount(zoneProfile);
+      const zonePower = num(zoneProfile?.zones?.hitterPower);
+      const pitcherLeak = num(zoneProfile?.zones?.pitcherLeak);
 
-      return { ...h, hrScore };
+      return {
+        player: clean(h.player),
+        batSide: clean(h.batSide || zoneProfile?.zones?.side),
+        score: num(h.score),
+        hr: num(h.hr),
+        slg: num(h.slg),
+        ops: num(h.ops),
+        edge: clean(h.edge),
+        note: clean(h.note),
+        position: clean(pool.position),
+        playerId: pool.playerId || null,
+        redZones,
+        zonePower,
+        pitcherLeak,
+        topZones: topZones(zoneProfile)
+      };
     })
-    .filter(h => clean(h.player) && h.hrScore > 0)
-    .sort((a, b) => b.hrScore - a.hrScore)
+    .filter(h => h.player && h.score > 0)
+    .sort((a, b) => b.score - a.score)
     .slice(0, 7);
 
-  if (sortedHitters.length < 2) continue;
+  if (hitters.length < 2) continue;
 
-  const sample = sortedHitters[0];
-  const game = clean(sample.game);
-  const opponent = clean(sample.opponent || sample.opp || sample.away_team || sample.home_team);
-  const opposingPitcher = clean(sample.pitcher || sample.opposing_pitcher || sample.probable_pitcher);
+  const weather = getWeather(weatherRows, stack.venue);
+  const pCollapse = pitcherCollapseFromStack(stack);
+  const wBoost = weatherBoost(weather, stack);
+  const parkBoost = num(stack.parkFactor) ? clamp((num(stack.parkFactor) - 100) * 0.7, -8, 12) : 0;
+  const baseStackScore = num(stack.stackScore);
+  const bullpenCollapse = clamp(Math.round((pCollapse * 0.55) + (baseStackScore * 0.25) + (wBoost * 1.4)), 1, 99);
 
-  const weatherBoost = getWeatherBoost(weatherRows, game);
-  const bullpen = getBullpenData(bullpenRows, opponent);
-  const pitcherAttack = getPitcherAttack(pitcherAttackRows, opposingPitcher);
-
-  const pitcherCollapse = calculatePitcherCollapseProbability(pitcherAttack);
-  const bullpenCollapse = calculateBullpenCollapseScore(bullpen);
+  collapseRows.push({
+    team: clean(stack.team),
+    opponent: clean(stack.opponent),
+    game: clean(stack.game),
+    venue: clean(stack.venue),
+    opposingPitcher: clean(stack.opposingPitcher),
+    pitcherCollapseProbability: pCollapse,
+    bullpenCollapseScore: bullpenCollapse,
+    collapseLabel: collapseLabel(Math.max(pCollapse, bullpenCollapse)),
+    stackScore: baseStackScore,
+    weatherBoost: wBoost,
+    parkBoost: Number(parkBoost.toFixed(2)),
+    factors: Array.isArray(stack.factors) ? stack.factors.join(" | ") : ""
+  });
 
   for (const size of [2, 3, 4]) {
-    const combos = buildCombinations(sortedHitters, size);
+    if (hitters.length < size) continue;
 
-    for (const combo of combos) {
-      const players = combo.map(c => clean(c.player));
-      const avgHRScore = average(combo.map(c => c.hrScore));
+    for (const group of combos(hitters, size)) {
+      const avgScore = avg(group.map(h => h.score));
+      const avgOps = avg(group.map(h => h.ops));
+      const avgSlg = avg(group.map(h => h.slg));
+      const totalHr = group.reduce((sum, h) => sum + num(h.hr), 0);
+      const redZones = group.reduce((sum, h) => sum + num(h.redZones), 0);
+      const avgLeak = avg(group.map(h => h.pitcherLeak));
+      const sameSide = group.every(h => h.batSide && h.batSide === group[0].batSide);
+      const sideBonus = sameSide ? 8 : 2;
 
-      const firstBats = clean(combo[0].bats || combo[0].stand);
-      const handednessCorrelation = combo.filter(c => clean(c.bats || c.stand) === firstBats).length;
+      const correlationScore = clamp(Math.round(
+        avgScore * 0.42 +
+        pCollapse * 0.18 +
+        bullpenCollapse * 0.13 +
+        redZones * 1.5 +
+        sideBonus +
+        wBoost +
+        parkBoost
+      ), 1, 99);
 
-      const recentForm = average(combo.map(c => num(c.recent_hr_score) || num(c.trend_score)));
-      const power = average(combo.map(c => num(c.barrel_pct) + num(c.hard_hit_pct)));
+      const leverageScore = clamp(Math.round(
+        correlationScore * 0.46 +
+        avgLeak * 0.18 +
+        avgScore * 0.2 +
+        size * 3 +
+        (100 - baseStackScore) * 0.04
+      ), 1, 99);
 
-      const leverageScore =
-        avgHRScore * 0.4 +
-        pitcherCollapse * 0.2 +
-        bullpenCollapse * 0.2 +
-        weatherBoost * 3 +
-        recentForm * 0.1 +
-        power * 0.1;
+      const volatilityScore = clamp(Math.round(
+        correlationScore * 0.35 +
+        totalHr * 1.2 +
+        pCollapse * 0.18 +
+        bullpenCollapse * 0.16 +
+        size * 5
+      ), 1, 99);
 
-      const correlationScore =
-        handednessCorrelation * 12 +
-        weatherBoost * 4 +
-        pitcherCollapse * 0.45 +
-        bullpenCollapse * 0.25;
+      const chainReactionProbability = clamp(Math.round(
+        correlationScore * 0.38 +
+        pCollapse * 0.23 +
+        bullpenCollapse * 0.19 +
+        wBoost * 1.1 +
+        parkBoost * 1.3 +
+        size * 3
+      ), 1, 99);
 
-      const chainReactionProbability = clamp(
-        Math.round(leverageScore * 0.45 + correlationScore * 0.55),
-        1,
-        99
-      );
+      const finalScore = clamp(Math.round(
+        correlationScore * 0.32 +
+        leverageScore * 0.22 +
+        volatilityScore * 0.18 +
+        chainReactionProbability * 0.28
+      ), 1, 99);
 
-      const volatility = clamp(
-        Math.round(avgHRScore * 0.45 + power * 0.3 + pitcherCollapse * 0.15 + bullpenCollapse * 0.1),
-        1,
-        99
-      );
+      const row = {
+        updatedAt: new Date().toISOString(),
+        team: clean(stack.team),
+        opponent: clean(stack.opponent),
+        game: clean(stack.game),
+        venue: clean(stack.venue),
+        opposingPitcher: clean(stack.opposingPitcher),
+        stackSize: size,
+        players: group.map(h => h.player).join(" | "),
+        batSides: group.map(h => h.batSide || "U").join(" | "),
+        avgHrScore: Number(avgScore.toFixed(2)),
+        avgOps: Number(avgOps.toFixed(3)),
+        avgSlg: Number(avgSlg.toFixed(3)),
+        totalSeasonHr: totalHr,
+        redAttackZones: redZones,
+        pitcherCollapseProbability: pCollapse,
+        bullpenCollapseScore: bullpenCollapse,
+        weatherBoost: wBoost,
+        parkBoost: Number(parkBoost.toFixed(2)),
+        correlationScore,
+        leverageScore,
+        leverageProfile: leverageLabel(leverageScore),
+        volatilityScore,
+        volatilityMeter: volatilityLabel(volatilityScore),
+        hrChainReactionProbability: chainReactionProbability,
+        finalStackScore: finalScore,
+        stackGrade: stackGrade(finalScore),
+        correlatedHrLane: sameSide ? "SAME SIDE POWER LANE" : "MIXED DAMAGE LANE",
+        sprayDistribution: sameSide ? `${group[0].batSide} SIDE CLUSTER` : "BALANCED SPRAY",
+        topAttackZones: group.map(h => `${h.player}: ${h.topZones}`).join(" || ")
+      };
 
-      finalStacks.push({
-        date: new Date().toISOString(),
-        team,
-        stack_size: size,
-        players: players.join(" | "),
-        game,
-        opponent,
-        opposing_pitcher: opposingPitcher,
-        avg_hr_score: avgHRScore.toFixed(2),
-        leverage_score: leverageScore.toFixed(2),
-        leverage_grade: classifyLeverage(leverageScore),
-        correlation_score: correlationScore.toFixed(2),
-        pitcher_collapse_probability: pitcherCollapse,
-        bullpen_collapse_score: bullpenCollapse,
-        weather_boost: weatherBoost,
-        stack_volatility_score: volatility,
-        stack_volatility_label: classifyVolatility(volatility),
-        hr_chain_reaction_probability: chainReactionProbability,
-        spray_distribution_bias: handednessCorrelation >= size ? "PULL SIDE HEAVY" : "BALANCED",
-        correlated_hr_lane: handednessCorrelation >= size ? "STRONG" : "MODERATE"
+      stackRows.push(row);
+      leverageRows.push({
+        team: row.team,
+        opponent: row.opponent,
+        game: row.game,
+        stackSize: row.stackSize,
+        players: row.players,
+        leverageScore: row.leverageScore,
+        leverageProfile: row.leverageProfile,
+        finalStackScore: row.finalStackScore,
+        stackGrade: row.stackGrade,
+        reason: `${row.correlatedHrLane} with ${row.pitcherCollapseProbability} pitcher collapse and ${row.hrChainReactionProbability} chain reaction`
       });
     }
   }
 }
 
-finalStacks.sort((a, b) =>
-  num(b.hr_chain_reaction_probability) - num(a.hr_chain_reaction_probability)
-);
+stackRows.sort((a, b) => b.finalStackScore - a.finalStackScore);
+leverageRows.sort((a, b) => b.leverageScore - a.leverageScore);
+collapseRows.sort((a, b) => Math.max(b.pitcherCollapseProbability, b.bullpenCollapseScore) - Math.max(a.pitcherCollapseProbability, a.bullpenCollapseScore));
 
-writeCSV(OUTPUT_CSV, finalStacks);
-fs.writeFileSync(OUTPUT_JSON, JSON.stringify(finalStacks, null, 2));
+const payload = {
+  date: new Date().toISOString().slice(0, 10),
+  updatedAt: new Date().toISOString(),
+  source: "The Slip Lab Stack Intelligence 2.0",
+  count: stackRows.length,
+  stacks: stackRows
+};
+
+writeJson(OUTPUTS.stackIntel, payload);
+writeJson(OUTPUTS.leverage, {
+  updatedAt: new Date().toISOString(),
+  count: leverageRows.length,
+  profiles: leverageRows
+});
+writeJson(OUTPUTS.collapse, {
+  updatedAt: new Date().toISOString(),
+  count: collapseRows.length,
+  alerts: collapseRows
+});
+writeCsv(OUTPUTS.csv, stackRows);
 
 console.log("TEAM STACK INTELLIGENCE 2.0 COMPLETE");
-console.log(`Stacks Built: ${finalStacks.length}`);
-console.log(`Saved: ${OUTPUT_CSV}`);
-console.log(`Saved: ${OUTPUT_JSON}`);
+console.log(`Stacks built: ${stackRows.length}`);
+console.log(`Saved: ${OUTPUTS.stackIntel}`);
+console.log(`Saved: ${OUTPUTS.leverage}`);
+console.log(`Saved: ${OUTPUTS.collapse}`);
+console.log(`Saved: ${OUTPUTS.csv}`);
 
-console.table(
-  finalStacks.slice(0, 15).map(s => ({
-    team: s.team,
-    size: s.stack_size,
-    players: s.players,
-    leverage: s.leverage_grade,
-    volatility: s.stack_volatility_label,
-    chain: s.hr_chain_reaction_probability
-  }))
-);
+console.table(stackRows.slice(0, 12).map(s => ({
+  team: s.team,
+  size: s.stackSize,
+  players: s.players,
+  grade: s.stackGrade,
+  volatility: s.volatilityMeter,
+  chain: s.hrChainReactionProbability
+})));
