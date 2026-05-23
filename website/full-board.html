@@ -2,52 +2,142 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | Full Board</title>
+
   <style>
-    body {
-      margin: 0;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 42px 24px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
-      letter-spacing: -.04em;
-    }
-
-    p {
-      color: #999;
-      margin: 0 0 26px;
-    }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,.10);
-      background: #101010;
-      border-radius: 22px;
-      padding: 24px;
-      color: #aaa;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+    .search{flex:1;min-width:260px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
+    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
+    .table-wrap{overflow:auto;border:1px solid rgba(255,255,255,.07);border-radius:16px;background:#0b1015}
+    table{width:100%;border-collapse:collapse;min-width:980px}
+    th{position:sticky;top:0;background:#0d1318;color:#8e98a3;font-size:10px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    td{padding:12px;border-bottom:1px solid rgba(255,255,255,.055);font-size:12px;color:#dbe3ea}
+    tr:hover td{background:rgba(147,255,45,.04)}
+    .rank{color:#93ff2d;font-weight:950}
+    .player{font-weight:950;color:#fff}
+    .score{color:#93ff2d;font-weight:950;font-size:15px}
+    .tier{display:inline-flex;border-radius:999px;background:rgba(147,255,45,.10);border:1px solid rgba(147,255,45,.18);padding:5px 8px;color:#93ff2d;font-weight:950;font-size:10px}
   </style>
 </head>
 <body>
-  <script src="./mlb-nav.js"></script>
 
-  <main class="page">
-    <h1>Full Board</h1>
-    <p>Full HR rankings across today’s slate.</p>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill active">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./results.html" class="nav-pill">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
+  </div>
+</div>
 
-    <section class="panel">
-      This page is ready to connect to The Slip Lab HR data engine.
-    </section>
-  </main>
+<main class="wrap">
+  <h1 class="title">Full Board</h1>
+  <p class="sub">Every HR candidate ranked by The Slip Lab HR Confidence model.</p>
+
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Search player, team, matchup, pitch type, or tier"/>
+    <div class="small-pill" id="status">Loading</div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Team</th>
+          <th>Opponent</th>
+          <th>Tier</th>
+          <th>HR Conf</th>
+          <th>Power</th>
+          <th>Pitch Edge</th>
+          <th>Pitcher Risk</th>
+          <th>Weather</th>
+          <th>Best Pitch</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</main>
+
+<script>
+let players = [];
+
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+
+  const rows = players
+    .filter(row => {
+      const hay = [
+        row.player,
+        row.team,
+        row.opponent,
+        row.game,
+        row.bestPitch,
+        row.tier
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    })
+    .sort((a,b) => Number(b.hrConfidence || 0) - Number(a.hrConfidence || 0));
+
+  document.getElementById("status").textContent = `${rows.length} hitters`;
+
+  document.getElementById("tbody").innerHTML = rows.map((row,index) => `
+    <tr>
+      <td class="rank">#${index + 1}</td>
+      <td class="player">${clean(row.player)}</td>
+      <td>${clean(row.team)}</td>
+      <td>${clean(row.opponent)}</td>
+      <td><span class="tier">${clean(row.tier)}</span></td>
+      <td class="score">${score(row.hrConfidence)}</td>
+      <td>${score(row.powerScore)}</td>
+      <td>${score(row.pitchEdge)}</td>
+      <td>${score(row.pitcherRisk)}</td>
+      <td>${score(row.weather)}</td>
+      <td>${clean(row.bestPitch)}</td>
+    </tr>
+  `).join("");
+}
+
+async function load(){
+  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+  const json = await res.json();
+
+  players = json.allPlayers || [];
+
+  document.getElementById("search").addEventListener("input", render);
+
+  render();
+}
+
+load();
+</script>
+
 </body>
 </html>
