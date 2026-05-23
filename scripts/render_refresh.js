@@ -35,7 +35,7 @@ function softRun(command, args = [], options = {}) {
   const result = spawnSync(command, args, {
     stdio: "inherit",
     shell: false,
-    timeout: options.timeout || 120000,
+    timeout: options.timeout || 60000,
     env: {
       ...process.env,
       GIT_TERMINAL_PROMPT: "0"
@@ -48,28 +48,14 @@ function softRun(command, args = [], options = {}) {
 }
 
 console.log("");
-console.log("THE SLIP LAB RENDER REFRESH STARTED");
+console.log("THE SLIP LAB RENDER FAST REFRESH STARTED");
 console.log("Time:", new Date().toISOString());
 
-run("node", ["scripts/mlb/fetch_mlb_today.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_mlb_player_pool.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_home_run_board.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_hits_board.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_team_stacks.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_weather_board.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_pitcher_attack_zones.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_pitch_type_damage.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_launch_angle_clusters.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_hot_cold_attack_regions.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_handedness_overlays.js"], { timeout: 60000 });
-run("node", ["scripts/mlb/build_park_carry_visuals.js"], { timeout: 60000 });
-run("node", ["scripts/statcast_zone_engine.js"], { timeout: 60000 });
-run("node", ["scripts/build_team_stack_intelligence_2.js"], { timeout: 60000 });
-run("node", ["scripts/content/build_x_content.js"], { timeout: 60000 });
+run("node", ["scripts/run_fast_refresh.js"], { timeout: 240000 });
 
 run("node", [
   "-e",
-  "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'render_cron_5_min'},null,2));"
+  "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'render_fast_refresh_5_min'},null,2));"
 ]);
 
 run("git", ["config", "user.name", "render-refresh-bot"]);
@@ -81,12 +67,12 @@ if (process.env.GITHUB_TOKEN) {
 
 run("git", ["add", "website/data", "exports/content", "data", "exports"]);
 
-softRun("git", ["commit", "-m", "Render auto refresh MLB data"]);
+softRun("git", ["commit", "-m", "Render fast refresh MLB data"]);
 
 softRun("git", ["pull", "--rebase", "origin", "main"], { timeout: 60000 });
 
 run("git", ["push", "origin", "main"], { timeout: 60000 });
 
 console.log("");
-console.log("RENDER REFRESH COMPLETE");
+console.log("RENDER FAST REFRESH COMPLETE");
 console.log("Time:", new Date().toISOString());
