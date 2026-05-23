@@ -30,7 +30,77 @@
     .player{font-weight:950;color:#fff}
     .score{color:#93ff2d;font-weight:950;font-size:15px}
     .tier{display:inline-flex;border-radius:999px;background:rgba(147,255,45,.10);border:1px solid rgba(147,255,45,.18);padding:5px 8px;color:#93ff2d;font-weight:950;font-size:10px}
-  </style>
+  
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:22px;
+}
+.modal-backdrop.show{display:flex}
+.modal{
+  width:min(820px,100%);
+  background:#090d12;
+  border:1px solid rgba(147,255,45,.22);
+  border-radius:18px;
+  padding:18px;
+}
+.modal-top{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+.modal h2{font-size:24px;margin-bottom:4px}
+.modal p{font-size:12px;color:#8e98a3}
+.close{
+  background:#111820;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  padding:8px 10px;
+  font-weight:900;
+  cursor:pointer;
+}
+.card-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.deep-stat{
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:12px;
+}
+.deep-label{
+  color:#8e98a3;
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:900;
+  margin-bottom:5px;
+}
+.deep-value{
+  font-size:20px;
+  font-weight:950;
+  color:#93ff2d;
+}
+.why-box{
+  margin-top:14px;
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:14px;
+  color:#d7dde4;
+  font-size:13px;
+  line-height:1.55;
+}
+tbody tr{cursor:pointer}
+</style>
 </head>
 <body>
 
@@ -64,7 +134,7 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr>
+        <tr data-player="${clean(row.player)}">
           <th>Rank</th>
           <th>Player</th>
           <th>Team</th>
@@ -81,13 +151,68 @@
       <tbody id="tbody"></tbody>
     </table>
   </div>
+
 </main>
+
+<div class="modal-backdrop" id="playerModal">
+  <div class="modal">
+    <div class="modal-top">
+      <div>
+        <h2 id="modalName">Player Card</h2>
+        <p id="modalSub">HR scouting profile</p>
+      </div>
+      <button class="close" id="closeModal">Close</button>
+    </div>
+
+    <div class="card-grid">
+      <div class="deep-stat"><div class="deep-label">HR Confidence</div><div class="deep-value" id="mConfidence">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Power</div><div class="deep-value" id="mPower">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Pitch Edge</div><div class="deep-value" id="mPitch">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Pitcher Risk</div><div class="deep-value" id="mRisk">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Weather Carry</div><div class="deep-value" id="mWeather">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Bullpen Risk</div><div class="deep-value" id="mBullpen">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Due Score</div><div class="deep-value" id="mDue">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Tier</div><div class="deep-value" id="mTier">N/A</div></div>
+      <div class="deep-stat"><div class="deep-label">Best Pitch</div><div class="deep-value" id="mBestPitch">N/A</div></div>
+    </div>
+
+    <div class="why-box" id="mWhy">Loading.</div>
+  </div>
+</div>
 
 <script>
 let players = [];
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+
+
+function openPlayerCard(name){
+  const row = players.find(x => String(x.player || "").toLowerCase() === String(name || "").toLowerCase());
+  if(!row) return;
+
+  document.getElementById("modalName").textContent = clean(row.player);
+  document.getElementById("modalSub").textContent = clean(row.team) + " vs " + clean(row.opponent);
+
+  document.getElementById("mConfidence").textContent = score(row.hrConfidence);
+  document.getElementById("mPower").textContent = score(row.powerScore);
+  document.getElementById("mPitch").textContent = score(row.pitchEdge);
+  document.getElementById("mRisk").textContent = score(row.pitcherRisk);
+  document.getElementById("mWeather").textContent = score(row.weather);
+  document.getElementById("mBullpen").textContent = score(row.bullpen);
+  document.getElementById("mDue").textContent = score(row.due);
+  document.getElementById("mTier").textContent = clean(row.tier);
+  document.getElementById("mBestPitch").textContent = clean(row.bestPitch);
+
+  const reasons = Array.isArray(row.reasons) && row.reasons.length
+    ? row.reasons.join(", ")
+    : "HR profile connected through The Slip Lab model.";
+
+  document.getElementById("mWhy").textContent =
+    clean(row.player) + " is ranked because of " + reasons + ".";
+
+  document.getElementById("playerModal").classList.add("show");
+}
 
 function render(){
   const q = document.getElementById("search").value.toLowerCase();
@@ -110,7 +235,7 @@ function render(){
   document.getElementById("status").textContent = `${rows.length} hitters`;
 
   document.getElementById("tbody").innerHTML = rows.map((row,index) => `
-    <tr>
+    <tr data-player="${clean(row.player)}">
       <td class="rank">#${index + 1}</td>
       <td class="player">${clean(row.player)}</td>
       <td>${clean(row.team)}</td>
@@ -132,7 +257,20 @@ async function load(){
 
   players = json.allPlayers || [];
 
-  document.getElementById("search").addEventListener("input", render);
+  
+document.getElementById("search").addEventListener("input", render);
+
+document.addEventListener("click", e => {
+  const row = e.target.closest("tr[data-player]");
+  if(row){
+    openPlayerCard(row.dataset.player);
+  }
+
+  if(e.target.id === "closeModal" || e.target.id === "playerModal"){
+    document.getElementById("playerModal").classList.remove("show");
+  }
+});
+
 
   render();
 }
