@@ -2032,6 +2032,8 @@ async function render() {
   }
 }
 
+let searchRenderTimer = null;
+
 function attachSearchEvents() {
   const input = document.getElementById("player-search-input");
   const clear = document.getElementById("player-search-clear");
@@ -2041,7 +2043,19 @@ function attachSearchEvents() {
 
     input.addEventListener("input", event => {
       state.searchQuery = event.target.value;
-      render().catch(showAppError);
+
+      clearTimeout(searchRenderTimer);
+
+      searchRenderTimer = setTimeout(() => {
+        render().then(() => {
+          const nextInput = document.getElementById("player-search-input");
+
+          if (nextInput) {
+            nextInput.focus();
+            nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
+          }
+        }).catch(showAppError);
+      }, 350);
     });
   }
 
