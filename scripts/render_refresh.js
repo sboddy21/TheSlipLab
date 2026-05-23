@@ -3,7 +3,7 @@ import { spawnSync } from "child_process";
 function run(command, args = [], options = {}) {
   console.log("");
   console.log("==================================================");
-  console.log("RUNNING:", command, args.join(" "));
+  console.log("RUNNING:", command, args.map(a => String(a).includes("x-access-token") ? "[TOKEN HIDDEN]" : a).join(" "));
   console.log("==================================================");
 
   const result = spawnSync(command, args, {
@@ -29,9 +29,6 @@ function run(command, args = [], options = {}) {
 }
 
 function softRun(command, args = [], options = {}) {
-  console.log("");
-  console.log("SOFT RUNNING:", command, args.join(" "));
-
   const result = spawnSync(command, args, {
     stdio: "inherit",
     shell: false,
@@ -61,9 +58,12 @@ run("node", [
 run("git", ["config", "user.name", "render-refresh-bot"]);
 run("git", ["config", "user.email", "render-refresh-bot@users.noreply.github.com"]);
 
-if (process.env.GITHUB_TOKEN) {
-  run("git", ["remote", "set-url", "origin", `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/sboddy21/TheSlipLab.git`]);
-}
+const repoUrl = process.env.GITHUB_TOKEN
+  ? `https://x-access-token:${process.env.GITHUB_TOKEN}@github.com/sboddy21/TheSlipLab.git`
+  : "https://github.com/sboddy21/TheSlipLab.git";
+
+softRun("git", ["remote", "remove", "origin"]);
+run("git", ["remote", "add", "origin", repoUrl]);
 
 run("git", ["add", "website/data", "exports/content", "data", "exports"]);
 
