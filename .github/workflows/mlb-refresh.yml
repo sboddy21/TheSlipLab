@@ -1,83 +1,49 @@
-name: MLB Auto Refresh
+name: The Slip Lab MLB Refresh
 
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: "2-59/5 * * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: mlb-refresh
+  cancel-in-progress: true
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout Repo
+      - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
-      - name: Fetch MLB Games
-        run: node scripts/mlb/fetch_mlb_today.js
+      - name: Run full Slip Lab pipeline
+        run: node scripts/run_all.js
 
-      - name: Build MLB Player Pool
-        run: node scripts/mlb/build_mlb_player_pool.js
-
-      - name: Build MLB Home Run Board
-        run: node scripts/mlb/build_home_run_board.js
-
-      - name: Build MLB Weather Board
-        run: node scripts/mlb/build_weather_board.js
-
-      - name: Build Team Stacks
-        run: node scripts/mlb/build_team_stacks.js
-
-      - name: Build Statcast Zones
-        run: node scripts/mlb/build_statcast_zones.js
-
-      - name: Build Pitch Type Damage
-        run: node scripts/mlb/build_pitch_type_damage.js
-
-      - name: Build Handedness Overlays
-        run: node scripts/mlb/build_handedness_overlays.js
-
-      - name: Build Launch Angle Clusters
-        run: node scripts/mlb/build_launch_angle_clusters.js
-
-      - name: Build Park Carry Visuals
-        run: node scripts/mlb/build_park_carry_visuals.js
-
-      - name: Build Pitcher Attack Zones
-        run: node scripts/mlb/build_pitcher_attack_zones.js
-
-      - name: Build Hot Cold Attack Regions
-        run: node scripts/mlb/build_hot_cold_attack_regions.js
-
-      - name: Build HR Results
-        run: node scripts/mlb/build_hr_results.js
-
-      - name: Build X Content
-        run: node scripts/content/build_x_content.js
-
-      - name: Stamp Site Update Time
+      - name: Stamp update time
         if: always()
         run: |
-          mkdir -p website/data
-          node -e "const fs=require('fs');fs.writeFileSync('website/data/site_last_updated.json', JSON.stringify({ updated_at:new Date().toISOString(), source:'github_actions', workflow:'mlb-refresh' }, null, 2));"
+          node -e "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'github_actions_5_min_refresh'},null,2));"
 
-      - name: Commit Updated Data
-        if: always()
+      - name: Commit refreshed data
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add website/data/**/*.json website/data/*.json exports/content/*.txt || true
-          git diff --cached --quiet || git commit -m "Auto refresh MLB data"
-          git pull --rebase origin main || true
-          git push
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add website/data exports/content data exports || true
+          git commit -m "Auto refresh MLB data" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin main
