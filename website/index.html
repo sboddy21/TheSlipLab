@@ -8,200 +8,201 @@
   <link rel="stylesheet" href="./styles.css"/>
 
   <style>
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-    }
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
 
-    body{
-      background:#05070b;
-      color:#f3f3f3;
-      font-family:Inter,sans-serif;
-    }
+body{
+  background:#05070b;
+  color:#f3f3f3;
+  font-family:Inter,Arial,sans-serif;
+}
 
-    a{
-      text-decoration:none;
-      color:inherit;
-    }
+a{
+  text-decoration:none;
+  color:inherit;
+}
 
-    .topbar{
-      width:100%;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      background:#05070b;
-      position:sticky;
-      top:0;
-      z-index:999;
-    }
+.topbar{
+  width:100%;
+  border-bottom:1px solid rgba(255,255,255,.06);
+  background:#05070b;
+  position:sticky;
+  top:0;
+  z-index:999;
+}
 
-    .topbar-inner{
-      max-width:1400px;
-      margin:auto;
-      padding:18px 28px;
-      display:flex;
-      align-items:center;
-      gap:18px;
-    }
+.topbar-inner{
+  max-width:1600px;
+  margin:auto;
+  padding:12px 22px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
 
-    .brand{
-      font-size:30px;
-      font-weight:800;
-      color:white;
-      margin-right:20px;
-    }
+.brand{
+  font-size:20px;
+  font-weight:900;
+  color:white;
+  margin-right:14px;
+  white-space:nowrap;
+}
 
-    .nav{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+.nav{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
 
-    .nav-pill{
-      padding:12px 18px;
-      border-radius:999px;
-      background:#0d1318;
-      border:1px solid rgba(255,255,255,.08);
-      color:#d9d9d9;
-      font-size:14px;
-      font-weight:700;
-      transition:.2s ease;
-    }
+.nav-pill{
+  padding:8px 14px;
+  border-radius:14px;
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.08);
+  color:#d9d9d9;
+  font-size:12px;
+  font-weight:800;
+  transition:.2s ease;
+}
 
-    .nav-pill:hover{
-      border-color:#93ff2d;
-      color:white;
-    }
+.nav-pill:hover{
+  border-color:#93ff2d;
+  color:white;
+}
 
-    .nav-pill.active{
-      background:#93ff2d;
-      color:black;
-      border-color:#93ff2d;
-    }
+.nav-pill.active{
+  background:#93ff2d;
+  color:black;
+  border-color:#93ff2d;
+}
 
-    .hero{
-      max-width:1400px;
-      margin:auto;
-      padding:36px 28px 10px;
-    }
+.hero{
+  max-width:1600px;
+  margin:auto;
+  padding:24px 22px 8px;
+}
 
-    .hero h1{
-      font-size:56px;
-      font-weight:900;
-      margin-bottom:10px;
-    }
+.hero h1{
+  font-size:34px;
+  line-height:1;
+  font-weight:950;
+  margin-bottom:8px;
+}
 
-    .hero p{
-      color:#9aa4af;
-      font-size:16px;
-    }
+.hero p{
+  color:#8e98a3;
+  font-size:13px;
+}
 
-    .section{
-      max-width:1400px;
-      margin:auto;
-      padding:28px;
-    }
+.section{
+  max-width:1600px;
+  margin:auto;
+  padding:16px 22px;
+}
 
-    .section-title{
-      font-size:30px;
-      font-weight:900;
-      margin-bottom:22px;
-    }
+.section-title{
+  font-size:18px;
+  font-weight:900;
+  margin-bottom:14px;
+}
 
-    .vulnerability-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-      gap:18px;
-    }
+.vulnerability-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:12px;
+}
 
-    .vuln-card{
-      background:#0b1015;
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:20px;
-      padding:20px;
-      transition:.2s ease;
-    }
+.vuln-card{
+  background:#0b1015;
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:14px;
+  padding:14px;
+  transition:.2s ease;
+}
 
-    .vuln-card:hover{
-      transform:translateY(-3px);
-      border-color:#93ff2d;
-    }
+.vuln-card:hover{
+  transform:translateY(-2px);
+  border-color:#93ff2d;
+}
 
-    .vuln-rank{
-      color:#93ff2d;
-      font-size:12px;
-      font-weight:800;
-      margin-bottom:12px;
-    }
+.vuln-rank{
+  color:#93ff2d;
+  font-size:10px;
+  font-weight:900;
+  margin-bottom:8px;
+}
 
-    .vuln-score{
-      font-size:48px;
-      font-weight:900;
-      margin-bottom:10px;
-    }
+.vuln-score{
+  font-size:28px;
+  font-weight:950;
+  margin-bottom:4px;
+}
 
-    .vuln-name{
-      font-size:22px;
-      font-weight:800;
-      margin-bottom:8px;
-    }
+.vuln-name{
+  font-size:14px;
+  font-weight:900;
+  margin-bottom:6px;
+}
 
-    .vuln-meta{
-      color:#b0bac5;
-      font-size:13px;
-      line-height:1.7;
-    }
+.vuln-meta{
+  color:#b0bac5;
+  font-size:11px;
+  line-height:1.45;
+}
 
-    .modules{
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
-      gap:22px;
-      margin-top:10px;
-    }
+.modules{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+  margin-top:8px;
+}
 
-    .module{
-      background:#0b1015;
-      border-radius:22px;
-      border:1px solid rgba(255,255,255,.06);
-      padding:24px;
-    }
+.module{
+  background:#0b1015;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.06);
+  padding:16px;
+}
 
-    .module h3{
-      font-size:24px;
-      margin-bottom:18px;
-    }
+.module h3{
+  font-size:16px;
+  margin-bottom:12px;
+}
 
-    .mini-player{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      padding:12px 0;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
+.mini-player{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
 
-    .mini-player:last-child{
-      border-bottom:none;
-    }
+.mini-player:last-child{
+  border-bottom:none;
+}
 
-    .mini-player strong{
-      font-size:15px;
-    }
+.mini-player strong{
+  font-size:12px;
+}
 
-    .mini-player span{
-      color:#9aa4af;
-      font-size:12px;
-    }
+.mini-player span{
+  color:#9aa4af;
+  font-size:10px;
+}
 
-    .score{
-      color:#93ff2d;
-      font-size:22px;
-      font-weight:900;
-    }
+.score{
+  color:#93ff2d;
+  font-size:18px;
+  font-weight:950;
+}
 
-    .footer-space{
-      height:80px;
-    }
-
-  </style>
+.footer-space{
+  height:60px;
+}
+</style>
 </head>
 
 <body>
