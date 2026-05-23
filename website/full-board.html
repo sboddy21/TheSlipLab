@@ -174,6 +174,10 @@ tbody tr{cursor:pointer}
       <div class="deep-stat"><div class="deep-label">Due Score</div><div class="deep-value" id="mDue">0</div></div>
       <div class="deep-stat"><div class="deep-label">Tier</div><div class="deep-value" id="mTier">N/A</div></div>
       <div class="deep-stat"><div class="deep-label">Best Pitch</div><div class="deep-value" id="mBestPitch">N/A</div></div>
+      <div class="deep-stat"><div class="deep-label">Zone Overlap</div><div class="deep-value" id="mZoneOverlap">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Hitter Zone Power</div><div class="deep-value" id="mHitterZonePower">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Pitcher Leak</div><div class="deep-value" id="mPitcherLeak">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Hot Zones</div><div class="deep-value" id="mHotZones">0</div></div>
     </div>
 
     <div class="why-box" id="mWhy">Loading.</div>
@@ -203,13 +207,21 @@ function openPlayerCard(name){
   document.getElementById("mDue").textContent = score(row.due);
   document.getElementById("mTier").textContent = clean(row.tier);
   document.getElementById("mBestPitch").textContent = clean(row.bestPitch);
+  document.getElementById("mZoneOverlap").textContent = score(row.zoneOverlap);
+  document.getElementById("mHitterZonePower").textContent = score(row.hitterZonePower);
+  document.getElementById("mPitcherLeak").textContent = score(row.pitcherLeak);
+  document.getElementById("mHotZones").textContent = clean(row.hotZoneCount);
 
   const reasons = Array.isArray(row.reasons) && row.reasons.length
     ? row.reasons.join(", ")
     : "HR profile connected through The Slip Lab model.";
 
+  const zoneText = Number(row.zoneOverlap || 0) > 0
+    ? " Zone overlap is " + score(row.zoneOverlap) + " with " + clean(row.hotZoneCount) + " hot zones."
+    : "";
+
   document.getElementById("mWhy").textContent =
-    clean(row.player) + " is ranked because of " + reasons + ".";
+    clean(row.player) + " is ranked because of " + reasons + "." + zoneText;
 
   document.getElementById("playerModal").classList.add("show");
 }

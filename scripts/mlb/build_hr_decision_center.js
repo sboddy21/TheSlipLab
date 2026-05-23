@@ -255,21 +255,51 @@ function bullpenScore(opponent) {
   );
 }
 
-function pitcherAttackScore(player) {
+function zoneProfileFor(player) {
   const row = attackMap.get(norm(player));
 
-  if (!row) return 0;
+  const zones = row?.zones || {};
 
-  return round(
-    num(
-      pick(row, [
-        "attackScore",
-        "dangerScore",
-        "zoneScore",
-        "score"
-      ])
-    )
+  const hitterPower = num(zones.hitterPower);
+  const pitcherLeak = num(zones.pitcherLeak);
+  const zoneRows = Array.isArray(zones.zones) ? zones.zones : [];
+
+  let hotZoneCount = 0;
+  let overlapTotal = 0;
+
+  for (const zone of zoneRows) {
+    const hitter = num(zone.hitterPower || zone.hitter || zone.power);
+    const pitcher = num(zone.pitcherLeak || zone.pitcher || zone.leak);
+    const overlap = num(zone.overlap || zone.score || Math.min(hitter, pitcher));
+
+    if (overlap >= 55) hotZoneCount += 1;
+
+    overlapTotal += overlap;
+  }
+
+  const avgZoneOverlap = zoneRows.length
+    ? overlapTotal / zoneRows.length
+    : 0;
+
+  const zoneOverlap = round(
+    hitterPower * 0.36 +
+    pitcherLeak * 0.36 +
+    avgZoneOverlap * 0.18 +
+    hotZoneCount * 2.5
   );
+
+  return {
+    zoneOverlap,
+    hitterZonePower: round(hitterPower),
+    pitcherLeak: round(pitcherLeak),
+    hotZoneCount
+  };
+}
+
+function pitcherAttackScore(player) {
+  const zoneProfile = zoneProfileFor(player);
+
+  return round(zoneProfile.zoneOverlap);
 }
 
 function decisionTier(score) {
@@ -377,6 +407,8 @@ function buildCard(row) {
     pitchProfile.score
   );
 
+  const zoneProfile = zoneProfileFor(player);
+
   const pitcherRisk = round(
     pitcherAttackScore(player)
   );
@@ -409,6 +441,10 @@ function buildCard(row) {
     powerScore,
     pitchScore: pitchEdge,
     pitcherRisk,
+    zoneOverlap: zoneProfile.zoneOverlap,
+    hitterZonePower: zoneProfile.hitterZonePower,
+    pitcherLeak: zoneProfile.pitcherLeak,
+    hotZoneCount: zoneProfile.hotZoneCount,
     weather,
     due
   });
@@ -424,6 +460,10 @@ function buildCard(row) {
     powerScore,
     pitchEdge,
     pitcherRisk,
+    zoneOverlap: zoneProfile.zoneOverlap,
+    hitterZonePower: zoneProfile.hitterZonePower,
+    pitcherLeak: zoneProfile.pitcherLeak,
+    hotZoneCount: zoneProfile.hotZoneCount,
     weather,
     bullpen,
     due,
