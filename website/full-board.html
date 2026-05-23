@@ -232,8 +232,28 @@ tbody tr{cursor:pointer}
 
     <div class="zone-wrap">
       <div class="zone-panel">
-        <div class="zone-title">Hitter Zone Power</div>
-        <div class="zone-grid" id="hitterZoneGrid"></div>
+        <div class="zone-title">AVG</div>
+        <div class="zone-grid" id="avgZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">ISO</div>
+        <div class="zone-grid" id="isoZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">SLG</div>
+        <div class="zone-grid" id="slgZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">HR</div>
+        <div class="zone-grid" id="hrZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">K</div>
+        <div class="zone-grid" id="kZoneGrid"></div>
       </div>
 
       <div class="zone-panel">
@@ -268,13 +288,47 @@ function zoneClass(value){
   return "";
 }
 
-function renderZoneGrid(id, cells, key){
+function displayZoneValue(value, mode){
+  const n = Number(value || 0);
+
+  if(mode === "decimal"){
+    return n ? n.toFixed(3).replace(/^0/, "") : ".000";
+  }
+
+  if(mode === "count"){
+    return n ? String(Math.round(n)) : "0";
+  }
+
+  return n ? n.toFixed(0) : "0";
+}
+
+function zoneScale(value, mode){
+  const n = Number(value || 0);
+
+  if(mode === "decimal"){
+    return n * 100;
+  }
+
+  if(mode === "count"){
+    return n * 25;
+  }
+
+  return n;
+}
+
+function renderZoneGrid(id, cells, key, mode = "score"){
   const grid = document.getElementById(id);
-  const safeCells = Array.isArray(cells) && cells.length ? cells : Array.from({length:25}, (_, index) => ({index}));
+  if(!grid) return;
+
+  const safeCells = Array.isArray(cells) && cells.length
+    ? cells
+    : Array.from({length:25}, (_, index) => ({index}));
 
   grid.innerHTML = safeCells.slice(0,25).map(cell => {
-    const value = Number(cell[key] || 0);
-    return `<div class="zone-cell ${zoneClass(value)}">${value ? value.toFixed(0) : "0"}</div>`;
+    const raw = key ? Number(cell[key] || 0) : Number(cell.value || 0);
+    const scaled = zoneScale(raw, mode);
+
+    return `<div class="zone-cell ${zoneClass(scaled)}">${displayZoneValue(raw, mode)}</div>`;
   }).join("");
 }
 
@@ -299,7 +353,11 @@ function openPlayerCard(name){
   document.getElementById("mPitcherLeak").textContent = score(row.pitcherLeak);
   document.getElementById("mHotZones").textContent = clean(row.hotZoneCount);
 
-  renderZoneGrid("hitterZoneGrid", row.zoneCells, "hitter");
+  renderZoneGrid("avgZoneGrid", row.avgZones, null, "decimal");
+  renderZoneGrid("isoZoneGrid", row.isoZones, null, "decimal");
+  renderZoneGrid("slgZoneGrid", row.slgZones, null, "decimal");
+  renderZoneGrid("hrZoneGrid", row.hrZones, null, "count");
+  renderZoneGrid("kZoneGrid", row.kZones, null, "decimal");
   renderZoneGrid("pitcherZoneGrid", row.zoneCells, "pitcher");
   renderZoneGrid("overlapZoneGrid", row.zoneCells, "overlap");
 
