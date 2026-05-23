@@ -100,6 +100,56 @@
   line-height:1.55;
 }
 tbody tr{cursor:pointer}
+
+.zone-wrap{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.zone-panel{
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:12px;
+}
+.zone-title{
+  color:#8e98a3;
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:950;
+  margin-bottom:10px;
+  text-align:center;
+}
+.zone-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:2px;
+}
+.zone-cell{
+  aspect-ratio:1;
+  border-radius:4px;
+  background:#141922;
+  border:1px solid rgba(0,0,0,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:10px;
+  font-weight:950;
+  color:#dce5ee;
+}
+.zone-cell.z1{background:#1c242d}
+.zone-cell.z2{background:#183d34}
+.zone-cell.z3{background:#496315}
+.zone-cell.z4{background:#9a6b11}
+.zone-cell.z5{background:#ffb423;color:#fff}
+.zone-cell.hot{
+  outline:2px solid #ffd400;
+  box-shadow:0 0 12px rgba(255,212,0,.75);
+}
+@media(max-width:800px){
+  .zone-wrap{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
@@ -180,6 +230,23 @@ tbody tr{cursor:pointer}
       <div class="deep-stat"><div class="deep-label">Hot Zones</div><div class="deep-value" id="mHotZones">0</div></div>
     </div>
 
+    <div class="zone-wrap">
+      <div class="zone-panel">
+        <div class="zone-title">Hitter Zone Power</div>
+        <div class="zone-grid" id="hitterZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">Pitcher Leak</div>
+        <div class="zone-grid" id="pitcherZoneGrid"></div>
+      </div>
+
+      <div class="zone-panel">
+        <div class="zone-title">Zone Overlap</div>
+        <div class="zone-grid" id="overlapZoneGrid"></div>
+      </div>
+    </div>
+
     <div class="why-box" id="mWhy">Loading.</div>
   </div>
 </div>
@@ -190,6 +257,26 @@ let players = [];
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
 
+
+function zoneClass(value){
+  const n = Number(value || 0);
+  if(n >= 80) return "z5 hot";
+  if(n >= 60) return "z4 hot";
+  if(n >= 40) return "z3";
+  if(n >= 20) return "z2";
+  if(n > 0) return "z1";
+  return "";
+}
+
+function renderZoneGrid(id, cells, key){
+  const grid = document.getElementById(id);
+  const safeCells = Array.isArray(cells) && cells.length ? cells : Array.from({length:25}, (_, index) => ({index}));
+
+  grid.innerHTML = safeCells.slice(0,25).map(cell => {
+    const value = Number(cell[key] || 0);
+    return `<div class="zone-cell ${zoneClass(value)}">${value ? value.toFixed(0) : "0"}</div>`;
+  }).join("");
+}
 
 function openPlayerCard(name){
   const row = players.find(x => String(x.player || "").toLowerCase() === String(name || "").toLowerCase());
@@ -211,6 +298,10 @@ function openPlayerCard(name){
   document.getElementById("mHitterZonePower").textContent = score(row.hitterZonePower);
   document.getElementById("mPitcherLeak").textContent = score(row.pitcherLeak);
   document.getElementById("mHotZones").textContent = clean(row.hotZoneCount);
+
+  renderZoneGrid("hitterZoneGrid", row.zoneCells, "hitter");
+  renderZoneGrid("pitcherZoneGrid", row.zoneCells, "pitcher");
+  renderZoneGrid("overlapZoneGrid", row.zoneCells, "overlap");
 
   const reasons = Array.isArray(row.reasons) && row.reasons.length
     ? row.reasons.join(", ")

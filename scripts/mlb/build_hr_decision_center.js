@@ -288,11 +288,25 @@ function zoneProfileFor(player) {
     hotZoneCount * 2.5
   );
 
+  const zoneCells = zoneRows.map((zone, index) => {
+    const hitter = num(zone.hitterPower || zone.hitter || zone.power || zone.batter || zone.value);
+    const pitcher = num(zone.pitcherLeak || zone.pitcher || zone.leak || zone.vuln || zone.risk);
+    const overlap = num(zone.overlap || zone.score || Math.min(hitter, pitcher));
+
+    return {
+      index,
+      hitter: round(hitter),
+      pitcher: round(pitcher),
+      overlap: round(overlap)
+    };
+  });
+
   return {
     zoneOverlap,
     hitterZonePower: round(hitterPower),
     pitcherLeak: round(pitcherLeak),
-    hotZoneCount
+    hotZoneCount,
+    zoneCells
   };
 }
 
@@ -445,6 +459,7 @@ function buildCard(row) {
     hitterZonePower: zoneProfile.hitterZonePower,
     pitcherLeak: zoneProfile.pitcherLeak,
     hotZoneCount: zoneProfile.hotZoneCount,
+    zoneCells: zoneProfile.zoneCells,
     weather,
     due
   });
@@ -464,6 +479,7 @@ function buildCard(row) {
     hitterZonePower: zoneProfile.hitterZonePower,
     pitcherLeak: zoneProfile.pitcherLeak,
     hotZoneCount: zoneProfile.hotZoneCount,
+    zoneCells: zoneProfile.zoneCells,
     weather,
     bullpen,
     due,
