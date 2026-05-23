@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { toArray, norm, num, dedupeByGame } from "./live_utils.js";
 
 const ROOT = process.cwd();
 const WEBSITE_DATA = path.join(ROOT, "website/data");
@@ -13,33 +14,8 @@ function readJSON(filePath, fallback = []) {
   }
 }
 
-function toArray(payload) {
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.games)) return payload.games;
-  if (Array.isArray(payload.weather)) return payload.weather;
-  if (Array.isArray(payload.stacks)) return payload.stacks;
-  if (Array.isArray(payload.alerts)) return payload.alerts;
-  if (Array.isArray(payload.rows)) return payload.rows;
-  if (Array.isArray(payload.data)) return payload.data;
-  if (Array.isArray(payload.teams)) return payload.teams;
-  return [];
-}
-
-function num(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-}
-
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
-}
-
-function normalize(value = "") {
-  return String(value)
-    .replace(/\./g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
 }
 
 function leverageLabel(score) {
@@ -61,20 +37,18 @@ function hrEnvironment(score) {
 console.log("LIVE GAME STATE ENGINE");
 console.log("======================");
 
-const games = toArray(
-  readJSON(path.join(WEBSITE_DATA, "mlb_games_today.json"), [])
+const games = dedupeByGame(
+  toArray(readJSON(path.join(WEBSITE_DATA, "mlb_games_today.json"), [])),
+  []
 );
 
 const bullpen = toArray(
   readJSON(path.join(WEBSITE_DATA, "bullpen_collapse_engine.json"), [])
 );
 
-const stackPayload = readJSON(
-  path.join(WEBSITE_DATA, "team_stack_intelligence_2.json"),
-  []
+const stacks = toArray(
+  readJSON(path.join(WEBSITE_DATA, "team_stack_intelligence_2.json"), [])
 );
-
-const stacks = toArray(stackPayload);
 
 const weather = toArray(
   readJSON(path.join(WEBSITE_DATA, "mlb_weather.json"), [])
@@ -82,37 +56,30 @@ const weather = toArray(
 
 const bullpenMap = {};
 for (const row of bullpen) {
-  bullpenMap[normalize(row.team || row.Team)] = row;
+  bullpenMap[norm(row.team || row.Team)] = row;
 }
 
 const weatherMap = {};
 for (const row of weather) {
-  const home = normalize(
-    row.home_team ||
-    row.homeTeam ||
-    row.home ||
-    row.homeTeamName ||
-    ""
-  );
+  const home = norm(row.home_team || row.homeTeam || row.home || row.homeTeamName || "");
+  const away = norm(row.away_team || row.awayTeam || row.away || row.awayTeamName || "");
+  const team = norm(row.team || row.Team || "");
 
-  const away = normalize(
-    row.away_team ||
-    row.awayTeam ||
-    row.away ||
-    row.awayTeamName ||
-    ""
-  );
+  const boost =
+    num(row.weather_boost) +
+    num(row.wind_boost) +
+    num(row.park_boost) +
+    num(row.weatherBoost) +
+    num(row.windBoost);
 
-  const team = normalize(row.team || row.Team || "");
-
-  if (home) weatherMap[home] = row;
-  if (away) weatherMap[away] = row;
-  if (team) weatherMap[team] = row;
+  if (home) weatherMap[home] = boost;
+  if (away) weatherMap[away] = boost;
+  if (team) weatherMap[team] = boost;
 }
 
 const stackMap = {};
 for (const row of stacks) {
-  stackMap[normalize(row.team || row.Team)] = row;
+  stackMap[norm(row.team || row.Team)] = row;
 }
 
 const output = [];
@@ -136,8 +103,8 @@ for (const game of games) {
 
   if (!home || !away) continue;
 
-  const homeKey = normalize(home);
-  const awayKey = normalize(away);
+  const homeKey = norm(home);
+  const awayKey = norm(away);
 
   const homeBullpen = bullpenMap[homeKey] || {};
   const awayBullpen = bullpenMap[awayKey] || {};
@@ -145,15 +112,7 @@ for (const game of games) {
   const homeStack = stackMap[homeKey] || {};
   const awayStack = stackMap[awayKey] || {};
 
-  const weatherRow =
-    weatherMap[homeKey] ||
-    weatherMap[awayKey] ||
-    {};
-
-  const weatherBoost =
-    num(weatherRow.weather_boost) +
-    num(weatherRow.wind_boost) +
-    num(weatherRow.park_boost);
+  const weatherBoost = weatherMap[homeKey] || weatherMap[awayKey] || 0;
 
   const homePressure = clamp(
     num(awayBullpen.dangerScore) * 0.45 +
@@ -215,15 +174,17 @@ for (const game of games) {
   });
 }
 
-output.sort((a, b) => num(b.leverageScore) - num(a.leverageScore));
+const cleanOutput = dedupeByGame(output, ["leverageScore"]);
+
+cleanOutput.sort((a, b) => num(b.leverageScore) - num(a.leverageScore));
 
 fs.writeFileSync(
   path.join(WEBSITE_DATA, "live_game_state.json"),
   JSON.stringify(
     {
       updatedAt: new Date().toISOString(),
-      count: output.length,
-      games: output
+      count: cleanOutput.length,
+      games: cleanOutput
     },
     null,
     2
@@ -232,10 +193,10 @@ fs.writeFileSync(
 
 console.log("");
 console.log("LIVE GAME STATE ENGINE COMPLETE");
-console.log(`Games: ${output.length}`);
+console.log(`Games: ${cleanOutput.length}`);
 
 console.table(
-  output.slice(0, 10).map(game => ({
+  cleanOutput.slice(0, 10).map(game => ({
     game: game.game,
     leverage: game.leverageScore,
     hr: game.hrEnvironment,
