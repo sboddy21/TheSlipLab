@@ -1,65 +1,432 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab</title>
-  <link rel="stylesheet" href="style.css" />
+
+  <link rel="stylesheet" href="./styles.css"/>
+
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+
+    body{
+      background:#05070b;
+      color:#f3f3f3;
+      font-family:Inter,sans-serif;
+    }
+
+    a{
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .topbar{
+      width:100%;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:#05070b;
+      position:sticky;
+      top:0;
+      z-index:999;
+    }
+
+    .topbar-inner{
+      max-width:1400px;
+      margin:auto;
+      padding:18px 28px;
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+
+    .brand{
+      font-size:30px;
+      font-weight:800;
+      color:white;
+      margin-right:20px;
+    }
+
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .nav-pill{
+      padding:12px 18px;
+      border-radius:999px;
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      color:#d9d9d9;
+      font-size:14px;
+      font-weight:700;
+      transition:.2s ease;
+    }
+
+    .nav-pill:hover{
+      border-color:#93ff2d;
+      color:white;
+    }
+
+    .nav-pill.active{
+      background:#93ff2d;
+      color:black;
+      border-color:#93ff2d;
+    }
+
+    .hero{
+      max-width:1400px;
+      margin:auto;
+      padding:36px 28px 10px;
+    }
+
+    .hero h1{
+      font-size:56px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      color:#9aa4af;
+      font-size:16px;
+    }
+
+    .section{
+      max-width:1400px;
+      margin:auto;
+      padding:28px;
+    }
+
+    .section-title{
+      font-size:30px;
+      font-weight:900;
+      margin-bottom:22px;
+    }
+
+    .vulnerability-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+      gap:18px;
+    }
+
+    .vuln-card{
+      background:#0b1015;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:20px;
+      padding:20px;
+      transition:.2s ease;
+    }
+
+    .vuln-card:hover{
+      transform:translateY(-3px);
+      border-color:#93ff2d;
+    }
+
+    .vuln-rank{
+      color:#93ff2d;
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:12px;
+    }
+
+    .vuln-score{
+      font-size:48px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+
+    .vuln-name{
+      font-size:22px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .vuln-meta{
+      color:#b0bac5;
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .modules{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+      gap:22px;
+      margin-top:10px;
+    }
+
+    .module{
+      background:#0b1015;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.06);
+      padding:24px;
+    }
+
+    .module h3{
+      font-size:24px;
+      margin-bottom:18px;
+    }
+
+    .mini-player{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:12px 0;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .mini-player:last-child{
+      border-bottom:none;
+    }
+
+    .mini-player strong{
+      font-size:15px;
+    }
+
+    .mini-player span{
+      color:#9aa4af;
+      font-size:12px;
+    }
+
+    .score{
+      color:#93ff2d;
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .footer-space{
+      height:80px;
+    }
+
+  </style>
 </head>
+
 <body>
-  <script src="./mlb-nav.js"></script>
-  <header class="topbar">
-    <div>
-      <h1>The Slip Lab</h1>
-      <p>Simple sports data. Clean edges. Better decisions.</p>
-      <p id="top-updated" class="top-updated">Last Updated: Loading...</p>
+
+<div class="topbar">
+  <div class="topbar-inner">
+
+    <div class="brand">
+      The Slip Lab
     </div>
-    <nav>
-      <button data-sport="mlb" class="active">MLB</button>
-      <button data-sport="nba">NBA</button>
-      <button data-sport="nhl">NHL</button>
-      <button data-sport="nfl">NFL</button>
-    </nav>
-  </header>
 
-  <main>
-    <section class="hero">
-      <div>
-        <h2 id="page-title">MLB Lab</h2>
-      <p id="page-subtitle">Home Runs, Hits, Total Bases, and RBIs.</p>
-      </div>
-      <div class="badge">Live MLB Data • Auto Refreshing</div>
-    </section>
+    <div class="nav">
 
-    <section class="tabs">
-      <button data-market="home_runs" class="active">Home Runs</button>
-      <button type="button" class="hr-nav-pill" onclick="window.location.href='./hr-decision-center.html'">HR Decision Center</button>
-      
-      <button data-market="games">Today's Games</button>
-      <button data-market="weather">Weather</button>
-          <button data-market="results">Results</button>
-    </section>
+      <a href="#" class="nav-pill active">Slate</a>
 
-    
-    <section class="board-header">
-      <div>
-        <h3 id="board-title">Home Runs</h3>
-        <p id="board-meta">Loading board data...</p>
-      </div>
-    </section>
+      <a href="./full-board.html" class="nav-pill">
+        Full Board
+      </a>
 
-    <section id="board" class="board"></section>
-  
-  </main>
+      <a href="./matchup-lab.html" class="nav-pill">
+        Matchup Lab
+      </a>
 
+      <a href="./power-zones.html" class="nav-pill">
+        Power Zones
+      </a>
 
-  <div id="profile-modal" class="profile-modal">
-    <div class="profile-panel">
-      <button class="profile-close" data-close-profile>Close</button>
-      <div id="profile-body"></div>
+      <a href="./quick-target.html" class="nav-pill">
+        Quick Target
+      </a>
+
+      <a href="./heat-check.html" class="nav-pill">
+        Heat Check
+      </a>
+
+      <a href="./streak-lab.html" class="nav-pill">
+        Streak Lab
+      </a>
+
+      <a href="./results.html" class="nav-pill">
+        Results
+      </a>
+
+      <a href="./hr-decision-center.html" class="nav-pill">
+        Decision Center
+      </a>
+
     </div>
+
+  </div>
+</div>
+
+<div class="hero">
+  <h1>MLB HR Intelligence</h1>
+
+  <p>
+    Matchup driven home run intelligence powered by pitcher vulnerability,
+    pitch damage, power zones, Statcast data, and HR environment scoring.
+  </p>
+</div>
+
+<div class="section">
+
+  <div class="section-title">
+    Pitcher Vulnerability Lab
   </div>
 
-  <script src="app.js"></script>
+  <div class="vulnerability-grid">
+
+    <div class="vuln-card">
+      <div class="vuln-rank">#1 ATTACK</div>
+      <div class="vuln-score">93</div>
+      <div class="vuln-name">Michael Lorenzen</div>
+
+      <div class="vuln-meta">
+        ERA 7.03<br>
+        WHIP 1.91<br>
+        HR Allowed 9<br>
+        Barrel Risk Elevated
+      </div>
+    </div>
+
+    <div class="vuln-card">
+      <div class="vuln-rank">#2 ATTACK</div>
+      <div class="vuln-score">87</div>
+      <div class="vuln-name">Chris Paddack</div>
+
+      <div class="vuln-meta">
+        ERA 7.07<br>
+        WHIP 1.63<br>
+        Hard Hit Risk Elevated
+      </div>
+    </div>
+
+    <div class="vuln-card">
+      <div class="vuln-rank">#3 ATTACK</div>
+      <div class="vuln-score">74</div>
+      <div class="vuln-name">Jake Irvin</div>
+
+      <div class="vuln-meta">
+        Flyball Damage Risk<br>
+        Pull Side Exposure
+      </div>
+    </div>
+
+    <div class="vuln-card">
+      <div class="vuln-rank">#4 ATTACK</div>
+      <div class="vuln-score">66</div>
+      <div class="vuln-name">Slade Cecconi</div>
+
+      <div class="vuln-meta">
+        Elevated HR Environment<br>
+        Four Seam Exposure
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="section">
+
+  <div class="modules">
+
+    <div class="module">
+      <h3>Quick Target</h3>
+
+      <div class="mini-player">
+        <div>
+          <strong>Jordan Walker</strong><br>
+          <span>vs Chris Paddack</span>
+        </div>
+
+        <div class="score">100</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>Kyle Schwarber</strong><br>
+          <span>vs Slade Cecconi</span>
+        </div>
+
+        <div class="score">97</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>Corbin Carroll</strong><br>
+          <span>vs Michael Lorenzen</span>
+        </div>
+
+        <div class="score">88</div>
+      </div>
+
+    </div>
+
+    <div class="module">
+      <h3>Heat Check</h3>
+
+      <div class="mini-player">
+        <div>
+          <strong>Byron Buxton</strong><br>
+          <span>HR Yesterday</span>
+        </div>
+
+        <div class="score">HOT</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>CJ Abrams</strong><br>
+          <span>Barrel Surge</span>
+        </div>
+
+        <div class="score">HOT</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>Ben Rice</strong><br>
+          <span>Hard Hit Streak</span>
+        </div>
+
+        <div class="score">HOT</div>
+      </div>
+
+    </div>
+
+    <div class="module">
+      <h3>Power Zones</h3>
+
+      <div class="mini-player">
+        <div>
+          <strong>Kyle Schwarber</strong><br>
+          <span>Crushes 4 Seam + Slider</span>
+        </div>
+
+        <div class="score">A+</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>Matt Olson</strong><br>
+          <span>Flyball Pull Zone</span>
+        </div>
+
+        <div class="score">A</div>
+      </div>
+
+      <div class="mini-player">
+        <div>
+          <strong>Yordan Alvarez</strong><br>
+          <span>Elite Pitch Damage</span>
+        </div>
+
+        <div class="score">A+</div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="footer-space"></div>
+
 </body>
 </html>
