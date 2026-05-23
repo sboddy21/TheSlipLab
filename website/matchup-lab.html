@@ -2,52 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | Matchup Lab</title>
+
   <style>
-    body {
-      margin: 0;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 42px 24px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
-      letter-spacing: -.04em;
-    }
-
-    p {
-      color: #999;
-      margin: 0 0 26px;
-    }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,.10);
-      background: #101010;
-      border-radius: 22px;
-      padding: 24px;
-      color: #aaa;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+    .search,.select{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
+    .search{flex:1;min-width:260px}
+    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+    .card-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .name{font-size:16px;font-weight:950}
+    .meta{font-size:11px;color:#8e98a3;margin-top:4px}
+    .score{font-size:28px;font-weight:950;color:#93ff2d;text-align:right}
+    .label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;text-align:right}
+    .meter{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin:10px 0 14px}
+    .fill{height:100%;background:#93ff2d;border-radius:999px}
+    .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .metric-value{font-size:17px;font-weight:950;color:#f3f3f3}
+    .why{margin-top:12px;color:#c9d1d9;font-size:12px;line-height:1.45}
   </style>
 </head>
 <body>
-  <script src="./mlb-nav.js"></script>
 
-  <main class="page">
-    <h1>Matchup Lab</h1>
-    <p>Filter hitters by pitch type, handedness, power profile, and matchup strength.</p>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill active">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./results.html" class="nav-pill">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
+  </div>
+</div>
 
-    <section class="panel">
-      This page is ready to connect to The Slip Lab HR data engine.
-    </section>
-  </main>
+<main class="wrap">
+  <h1 class="title">Matchup Lab</h1>
+  <p class="sub">Compare hitter power, pitch edge, pitcher risk, weather, and bullpen risk in one scan.</p>
+
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Search player, team, opponent, pitch type, or tier"/>
+    <select id="filter" class="select">
+      <option value="all">All Matchups</option>
+      <option value="elite">Elite HR Confidence</option>
+      <option value="pitch">Strong Pitch Edge</option>
+      <option value="risk">High Pitcher Risk</option>
+      <option value="weather">Weather Carry</option>
+      <option value="bullpen">Bullpen Boost</option>
+    </select>
+    <div class="small-pill" id="status">Loading</div>
+  </div>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+let players = [];
+
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+
+function passFilter(row, filter){
+  if(filter === "elite") return Number(row.hrConfidence || 0) >= 55;
+  if(filter === "pitch") return Number(row.pitchEdge || 0) >= 55;
+  if(filter === "risk") return Number(row.pitcherRisk || 0) >= 40;
+  if(filter === "weather") return Number(row.weather || 0) >= 20;
+  if(filter === "bullpen") return Number(row.bullpen || 0) >= 40;
+  return true;
+}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+  const filter = document.getElementById("filter").value;
+
+  const rows = players
+    .filter(row => passFilter(row, filter))
+    .filter(row => {
+      const hay = [
+        row.player,
+        row.team,
+        row.opponent,
+        row.game,
+        row.bestPitch,
+        row.tier,
+        ...(row.reasons || [])
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    })
+    .sort((a,b) => Number(b.hrConfidence || 0) - Number(a.hrConfidence || 0));
+
+  document.getElementById("status").textContent = `${rows.length} matchups`;
+
+  document.getElementById("grid").innerHTML = rows.map(row => `
+    <article class="card">
+      <div class="card-top">
+        <div>
+          <div class="name">${clean(row.player)}</div>
+          <div class="meta">${clean(row.team)} vs ${clean(row.opponent)}</div>
+        </div>
+        <div>
+          <div class="label">HR Confidence</div>
+          <div class="score">${score(row.hrConfidence)}</div>
+        </div>
+      </div>
+
+      <div class="meter">
+        <div class="fill" style="width:${Math.min(100, Number(row.hrConfidence || 0))}%"></div>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Power</div>
+          <div class="metric-value">${score(row.powerScore)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Pitch Edge</div>
+          <div class="metric-value">${score(row.pitchEdge)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Pitcher Risk</div>
+          <div class="metric-value">${score(row.pitcherRisk)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Weather</div>
+          <div class="metric-value">${score(row.weather)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Bullpen</div>
+          <div class="metric-value">${score(row.bullpen)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Best Pitch</div>
+          <div class="metric-value">${clean(row.bestPitch)}</div>
+        </div>
+      </div>
+
+      <div class="why">
+        ${(row.reasons && row.reasons.length) ? row.reasons.join(", ") : "HR matchup profile connected."}
+      </div>
+    </article>
+  `).join("");
+}
+
+async function load(){
+  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+  const json = await res.json();
+
+  players = json.allPlayers || [];
+
+  document.getElementById("search").addEventListener("input", render);
+  document.getElementById("filter").addEventListener("change", render);
+
+  render();
+}
+
+load();
+</script>
+
 </body>
 </html>
