@@ -42,7 +42,7 @@ function card(team) {
         <div><label>Collapse</label><strong>${clean(team.collapseScore)}</strong></div>
         <div><label>Weather</label><strong>${clean(team.weatherBoost)}</strong></div>
         <div><label>Park Factor</label><strong>${clean(team.parkFactor)}</strong></div>
-        <div><label>Source</label><strong>${clean(team.source)}</strong></div>
+        <div><label>Model Type</label><strong>Derived Signal</strong></div>
       </div>
     </article>
   `;

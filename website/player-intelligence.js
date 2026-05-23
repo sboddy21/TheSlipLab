@@ -55,8 +55,8 @@ function card(player) {
       </div>
 
       <div class="matchup">
-        <span>Best Pitch Matchup</span>
-        <strong>${player.bestPitchMatchup}</strong>
+        <span>Matchup Signal</span>
+        <strong>${player.bestPitchMatchup === "PITCHER DAMAGE PROFILE" ? "Pitcher Damage Edge" : player.bestPitchMatchup}</strong>
       </div>
     </article>
   `;
