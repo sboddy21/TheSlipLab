@@ -2074,11 +2074,13 @@ document.querySelectorAll("nav button").forEach(btn => {
   });
 });
 
-document.querySelectorAll(".tabs button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    state.market = btn.dataset.market;
-    render().catch(showAppError);
-  });
+document.addEventListener("click", event => {
+  const tabButton = event.target.closest(".tabs button");
+
+  if (!tabButton) return;
+
+  state.market = tabButton.dataset.market;
+  render().catch(showAppError);
 });
 
 document.addEventListener("click", event => {
