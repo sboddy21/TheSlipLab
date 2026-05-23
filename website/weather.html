@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Slip Lab | Weather</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+    .venue{font-size:16px;font-weight:950;margin-bottom:4px}
+    .city{font-size:11px;color:#8e98a3;margin-bottom:12px}
+    .score{font-size:30px;font-weight:950;color:#93ff2d}
+    .label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+    .metric-value{font-size:16px;font-weight:950}
+    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+  </style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="./index.html">The Slip Lab</a>
+  <div class="nav">
+    <a href="./index.html" class="nav-pill">Slate</a>
+    <a href="./full-board.html" class="nav-pill">Full Board</a>
+    <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+    <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+    <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+    <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+    <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+    <a href="./weather.html" class="nav-pill active">Weather</a>
+    <a href="./results.html" class="nav-pill">Results</a>
+    <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+  </div>
+</div></div>
+
+<main class="wrap">
+  <h1 class="title">Weather</h1>
+  <p class="sub">HR carry conditions by ballpark. Wind and temperature only matter here if they help the ball travel.</p>
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(row){
+  const wind = Number(row.windSpeed || row.wind_speed || 0);
+  const temp = Number(row.temp || row.temperature || 0);
+  let s = wind * 1.8;
+  if(temp > 65) s += (temp - 65) * .7;
+  return Math.max(0,s);
+}
+function fmt(v){const n=Number(v);return Number.isFinite(n)?n.toFixed(1):"0.0"}
+async function load(){
+  const res = await fetch("./data/mlb_weather.json?v=" + Date.now());
+  const json = await res.json();
+  const rows = Array.isArray(json) ? json : json.weather || [];
+  const sorted = rows.map(r => ({...r, carry:score(r)})).sort((a,b)=>b.carry-a.carry);
+  document.getElementById("grid").innerHTML = sorted.map(row => `
+    <article class="card">
+      <div class="venue">${clean(row.venue)}</div>
+      <div class="city">${clean(row.city)}</div>
+      <div class="label">HR Carry</div>
+      <div class="score">${fmt(row.carry)}</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-label">Temp</div><div class="metric-value">${clean(row.temp)}°</div></div>
+        <div class="metric"><div class="metric-label">Wind</div><div class="metric-value">${clean(row.windSpeed)} MPH</div></div>
+        <div class="metric"><div class="metric-label">Dir</div><div class="metric-value">${clean(row.windCompass)}</div></div>
+      </div>
+    </article>
+  `).join("");
+}
+load();
+</script>
+</body>
+</html>
