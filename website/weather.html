@@ -4,84 +4,305 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | Weather</title>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
     a{text-decoration:none;color:inherit}
+
     .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
     .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
     .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
     .nav{display:flex;gap:8px;flex-wrap:wrap}
     .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
     .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+
     .wrap{max-width:1600px;margin:auto;padding:24px 22px}
     .title{font-size:32px;font-weight:950;margin-bottom:6px}
     .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+
+    .card{
+      background:#0b1015;
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px;
+      overflow:hidden;
+    }
+
+    .card-top{
+      padding:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
     .venue{font-size:16px;font-weight:950;margin-bottom:4px}
-    .city{font-size:11px;color:#8e98a3;margin-bottom:12px}
-    .score{font-size:30px;font-weight:950;color:#93ff2d}
-    .label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
-    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
-    .metric-value{font-size:16px;font-weight:950}
-    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .city{font-size:11px;color:#8e98a3}
+
+    .carry{text-align:right}
+    .carry-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900}
+    .carry-score{font-size:28px;font-weight:950;color:#93ff2d}
+
+    .field-wrap{
+      position:relative;
+      height:230px;
+      background:
+        radial-gradient(circle at 50% 92%, rgba(147,255,45,.12), transparent 34%),
+        linear-gradient(180deg,#081018,#05070b);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+
+    .field-svg{
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    .grass{fill:#12351e}
+    .dirt{fill:#69471f}
+    .wall{fill:none;stroke:#93ff2d;stroke-width:2.5}
+    .line{stroke:rgba(255,255,255,.35);stroke-width:1}
+    .dim{fill:#f3f3f3;font-size:11px;font-weight:900}
+    .label{fill:#9aa4af;font-size:9px;font-weight:900;text-transform:uppercase}
+
+    .wind-arrow{
+      position:absolute;
+      left:50%;
+      top:50%;
+      width:64px;
+      height:64px;
+      margin-left:-32px;
+      margin-top:-32px;
+      border-radius:50%;
+      border:1px solid rgba(147,255,45,.25);
+      background:rgba(5,7,11,.62);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#93ff2d;
+      font-size:38px;
+      font-weight:950;
+      box-shadow:0 0 22px rgba(147,255,45,.18);
+    }
+
+    .wind-text{
+      position:absolute;
+      left:12px;
+      top:12px;
+      background:rgba(5,7,11,.72);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      padding:6px 9px;
+      font-size:11px;
+      font-weight:900;
+      color:#fff;
+    }
+
+    .metrics{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:8px;
+      padding:12px;
+    }
+
+    .metric{
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:12px;
+      padding:9px;
+    }
+
+    .metric-label{
+      font-size:9px;
+      color:#8e98a3;
+      text-transform:uppercase;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+
+    .metric-value{
+      font-size:14px;
+      font-weight:950;
+      color:#f3f3f3;
+    }
+
+    .boost{
+      color:#93ff2d;
+    }
   </style>
 </head>
+
 <body>
-<div class="topbar"><div class="topbar-inner">
-  <a class="brand" href="./index.html">The Slip Lab</a>
-  <div class="nav">
-    <a href="./index.html" class="nav-pill">Slate</a>
-    <a href="./full-board.html" class="nav-pill">Full Board</a>
-    <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
-    <a href="./power-zones.html" class="nav-pill">Power Zones</a>
-    <a href="./quick-target.html" class="nav-pill">Quick Target</a>
-    <a href="./heat-check.html" class="nav-pill">Heat Check</a>
-    <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
-    <a href="./weather.html" class="nav-pill active">Weather</a>
-    <a href="./results.html" class="nav-pill">Results</a>
-    <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./weather.html" class="nav-pill active">Weather</a>
+      <a href="./results.html" class="nav-pill">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
   </div>
-</div></div>
+</div>
 
 <main class="wrap">
   <h1 class="title">Weather</h1>
-  <p class="sub">HR carry conditions by ballpark. Wind and temperature only matter here if they help the ball travel.</p>
+  <p class="sub">Ballpark layout, live wind direction, temperature, and HR carry conditions.</p>
   <section class="grid" id="grid"></section>
 </main>
 
 <script>
-function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
-function score(row){
-  const wind = Number(row.windSpeed || row.wind_speed || 0);
-  const temp = Number(row.temp || row.temperature || 0);
+const PARKS = {
+  "Great American Ball Park": {lf:328, lcf:379, cf:404, rcf:370, rf:325},
+  "Yankee Stadium": {lf:318, lcf:399, cf:408, rcf:385, rf:314},
+  "Fenway Park": {lf:310, lcf:379, cf:390, rcf:380, rf:302},
+  "Wrigley Field": {lf:355, lcf:368, cf:400, rcf:368, rf:353},
+  "Citizens Bank Park": {lf:329, lcf:374, cf:401, rcf:369, rf:330},
+  "Camden Yards": {lf:333, lcf:384, cf:410, rcf:373, rf:318},
+  "Oriole Park at Camden Yards": {lf:333, lcf:384, cf:410, rcf:373, rf:318},
+  "Chase Field": {lf:330, lcf:374, cf:407, rcf:374, rf:334},
+  "Kauffman Stadium": {lf:330, lcf:387, cf:410, rcf:387, rf:330},
+  "Oracle Park": {lf:339, lcf:364, cf:391, rcf:415, rf:309},
+  "Rogers Centre": {lf:328, lcf:375, cf:400, rcf:375, rf:328},
+  "loanDepot park": {lf:344, lcf:386, cf:407, rcf:392, rf:335},
+  "Petco Park": {lf:336, lcf:390, cf:396, rcf:391, rf:322},
+  "Angel Stadium": {lf:347, lcf:390, cf:396, rcf:370, rf:350},
+  "Truist Park": {lf:335, lcf:385, cf:400, rcf:375, rf:325},
+  "American Family Field": {lf:344, lcf:371, cf:400, rcf:374, rf:345}
+};
+
+function clean(v){
+  if(v === null || v === undefined || v === "") return "N/A";
+  return String(v);
+}
+
+function num(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function carryScore(row){
+  const wind = num(row.windSpeed || row.wind_speed);
+  const temp = num(row.temp || row.temperature);
   let s = wind * 1.8;
   if(temp > 65) s += (temp - 65) * .7;
   return Math.max(0,s);
 }
-function fmt(v){const n=Number(v);return Number.isFinite(n)?n.toFixed(1):"0.0"}
+
+function fmt(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toFixed(1) : "0.0";
+}
+
+function parkDims(venue){
+  return PARKS[venue] || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
+}
+
+function arrowRotation(row){
+  const deg = num(row.arrowDegrees);
+  if(deg) return deg;
+  return num(row.windDirection);
+}
+
+function fieldSvg(venue){
+  const d = parkDims(venue);
+
+  return `
+    <svg class="field-svg" viewBox="0 0 420 250" preserveAspectRatio="none">
+      <path class="grass" d="M210 230 L60 95 Q210 18 360 95 Z"></path>
+      <path class="dirt" d="M210 230 L165 190 L210 150 L255 190 Z"></path>
+
+      <line class="line" x1="210" y1="230" x2="60" y2="95"></line>
+      <line class="line" x1="210" y1="230" x2="360" y2="95"></line>
+
+      <path class="wall" d="M60 95 Q120 45 210 38 Q300 45 360 95"></path>
+
+      <text class="dim" x="55" y="88">${d.lf}</text>
+      <text class="dim" x="120" y="52">${d.lcf}</text>
+      <text class="dim" x="198" y="34">${d.cf}</text>
+      <text class="dim" x="285" y="52">${d.rcf}</text>
+      <text class="dim" x="352" y="88">${d.rf}</text>
+
+      <text class="label" x="42" y="112">LF</text>
+      <text class="label" x="194" y="56">CF</text>
+      <text class="label" x="360" y="112">RF</text>
+    </svg>
+  `;
+}
+
 async function load(){
   const res = await fetch("./data/mlb_weather.json?v=" + Date.now());
   const json = await res.json();
   const rows = Array.isArray(json) ? json : json.weather || [];
-  const sorted = rows.map(r => ({...r, carry:score(r)})).sort((a,b)=>b.carry-a.carry);
-  document.getElementById("grid").innerHTML = sorted.map(row => `
-    <article class="card">
-      <div class="venue">${clean(row.venue)}</div>
-      <div class="city">${clean(row.city)}</div>
-      <div class="label">HR Carry</div>
-      <div class="score">${fmt(row.carry)}</div>
-      <div class="metrics">
-        <div class="metric"><div class="metric-label">Temp</div><div class="metric-value">${clean(row.temp)}°</div></div>
-        <div class="metric"><div class="metric-label">Wind</div><div class="metric-value">${clean(row.windSpeed)} MPH</div></div>
-        <div class="metric"><div class="metric-label">Dir</div><div class="metric-value">${clean(row.windCompass)}</div></div>
-      </div>
-    </article>
-  `).join("");
+
+  const sorted = rows
+    .map(row => ({...row, carry:carryScore(row)}))
+    .sort((a,b) => b.carry - a.carry);
+
+  document.getElementById("grid").innerHTML = sorted.map(row => {
+    const venue = clean(row.venue);
+    const wind = clean(row.windSpeed || row.wind_speed);
+    const temp = clean(row.temp || row.temperature);
+    const dir = clean(row.windCompass || row.windDirection || "Unknown");
+    const rotation = arrowRotation(row);
+
+    return `
+      <article class="card">
+        <div class="card-top">
+          <div>
+            <div class="venue">${venue}</div>
+            <div class="city">${clean(row.city)}</div>
+          </div>
+
+          <div class="carry">
+            <div class="carry-label">HR Carry</div>
+            <div class="carry-score">${fmt(row.carry)}</div>
+          </div>
+        </div>
+
+        <div class="field-wrap">
+          ${fieldSvg(venue)}
+          <div class="wind-text">${wind} MPH ${dir}</div>
+          <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-label">Temp</div>
+            <div class="metric-value">${temp}°</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Wind</div>
+            <div class="metric-value">${wind} MPH</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Direction</div>
+            <div class="metric-value">${dir}</div>
+          </div>
+
+          <div class="metric">
+            <div class="metric-label">Carry</div>
+            <div class="metric-value boost">${fmt(row.carry)}</div>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join("");
 }
+
 load();
 </script>
+
 </body>
 </html>
