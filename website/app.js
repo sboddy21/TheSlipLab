@@ -2220,6 +2220,38 @@ async function render() {
     button.textContent = "Player Search";
     tabs.appendChild(button);
   }
+
+  if (!tabs.querySelector('[data-market="live_center"]')) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.market = "live_center";
+    button.textContent = "Live Center";
+    tabs.appendChild(button);
+  }
+
+  if (!tabs.querySelector('[data-market="heatmap"]')) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.market = "heatmap";
+    button.textContent = "Heatmap";
+    tabs.appendChild(button);
+  }
+
+  if (!tabs.querySelector('[data-market="bullpen"]')) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.market = "bullpen";
+    button.textContent = "Bullpen";
+    tabs.appendChild(button);
+  }
+
+  if (!tabs.querySelector('[data-market="players_live"]')) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.market = "players_live";
+    button.textContent = "Players+";
+    tabs.appendChild(button);
+  }
 }
 
 let searchRenderTimer = null;
