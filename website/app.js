@@ -1,3 +1,26 @@
+
+/* FORCE LIVE PLATFORM TAB LINKS */
+document.addEventListener("click", function (event) {
+  const button = event.target.closest("[data-market]");
+  if (!button) return;
+
+  const routes = {
+    live_center: "./command-center.html",
+    heatmap: "./live-heatmap.html",
+    bullpen: "./bullpen-collapse.html",
+    players_live: "./player-intelligence.html"
+  };
+
+  const route = routes[button.dataset.market];
+
+  if (route) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    window.location.href = route;
+  }
+}, true);
+
 const state = {
   sport: "mlb",
   market: "home_runs",
