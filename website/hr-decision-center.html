@@ -2,283 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>The Slip Lab | HR Decision Center</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Slip Lab | Decision Center</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-
-    .wrap {
-      max-width: 1380px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .title {
-      font-size: 34px;
-      font-weight: 950;
-      letter-spacing: -0.05em;
-    }
-
-    .sub {
-      color: #999;
-      margin-top: 8px;
-      font-size: 14px;
-    }
-
-    .home {
-      color: #9cff38;
-      text-decoration: none;
-      border: 1px solid rgba(156,255,56,.28);
-      padding: 10px 14px;
-      border-radius: 999px;
-      font-weight: 900;
-    }
-
-    .tabs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 22px;
-    }
-
-    .tab {
-      background: #111;
-      color: #eee;
-      border: 1px solid rgba(255,255,255,.10);
-      padding: 10px 14px;
-      border-radius: 999px;
-      cursor: pointer;
-      font-weight: 900;
-      font-size: 13px;
-    }
-
-    .tab.active {
-      background: #9cff38;
-      color: #050505;
-      border-color: #9cff38;
-    }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill,minmax(320px,1fr));
-      gap: 18px;
-    }
-
-    .card {
-      background: linear-gradient(180deg,#151515,#0d0d0d);
-      border: 1px solid rgba(255,255,255,.08);
-      border-radius: 24px;
-      padding: 18px;
-      box-shadow: 0 20px 40px rgba(0,0,0,.35);
-    }
-
-    .tier {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 11px;
-      font-weight: 900;
-      margin-bottom: 14px;
-    }
-
-    .tier.Nuclear {
-      background: rgba(255,70,70,.14);
-      color: #ff6868;
-      border: 1px solid rgba(255,70,70,.35);
-    }
-
-    .tier.Elite {
-      background: rgba(255,186,59,.14);
-      color: #ffca5c;
-      border: 1px solid rgba(255,186,59,.35);
-    }
-
-    .tier.Strong {
-      background: rgba(156,255,56,.14);
-      color: #9cff38;
-      border: 1px solid rgba(156,255,56,.35);
-    }
-
-    .tier["Live Longshot"] {
-      background: rgba(120,170,255,.14);
-      color: #8db2ff;
-    }
-
-    .name {
-      font-size: 24px;
-      font-weight: 950;
-      margin-bottom: 4px;
-      letter-spacing: -0.04em;
-    }
-
-    .matchup {
-      color: #aaa;
-      font-size: 13px;
-      margin-bottom: 18px;
-    }
-
-    .confidence-wrap {
-      margin-bottom: 18px;
-    }
-
-    .confidence-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-
-    .confidence-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #888;
-      font-weight: 900;
-    }
-
-    .confidence-score {
-      font-size: 24px;
-      font-weight: 950;
-    }
-
-    .bar {
-      height: 10px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      overflow: hidden;
-    }
-
-    .fill {
-      height: 100%;
-      border-radius: 999px;
-      background: linear-gradient(90deg,#9cff38,#d6ff9c);
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .metric {
-      background: rgba(255,255,255,.05);
-      border: 1px solid rgba(255,255,255,.06);
-      border-radius: 16px;
-      padding: 12px;
-    }
-
-    .metric-label {
-      color: #888;
-      font-size: 10px;
-      font-weight: 900;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-
-    .metric-value {
-      font-size: 22px;
-      font-weight: 950;
-    }
-
-    .pitch-box {
-      background: rgba(156,255,56,.08);
-      border: 1px solid rgba(156,255,56,.20);
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 16px;
-    }
-
-    .pitch-title {
-      color: #9cff38;
-      font-size: 11px;
-      font-weight: 900;
-      margin-bottom: 5px;
-      text-transform: uppercase;
-    }
-
-    .pitch-value {
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .reasons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .reason {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(255,255,255,.07);
-      color: #ddd;
-      border-radius: 999px;
-      padding: 6px 10px;
-      font-size: 11px;
-      font-weight: 700;
-    }
-
-    .status {
-      color: #777;
-      font-size: 12px;
-      margin-bottom: 18px;
-    }
-
-    @media (max-width: 700px) {
-      .top {
-        display: block;
-      }
-
-      .home {
-        display: inline-block;
-        margin-top: 14px;
-      }
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+    .tab{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:10px 13px;font-size:12px;font-weight:900;cursor:pointer}
+    .tab.active{background:#93ff2d;color:#05070b;border-color:#93ff2d}
+    .status{color:#8e98a3;font-size:12px;margin-bottom:14px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+    .card-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .tier{display:inline-flex;border-radius:999px;background:rgba(147,255,45,.10);border:1px solid rgba(147,255,45,.18);padding:5px 8px;color:#93ff2d;font-weight:950;font-size:10px;margin-bottom:8px}
+    .name{font-size:17px;font-weight:950;margin-bottom:4px}
+    .meta{font-size:11px;color:#8e98a3}
+    .score{font-size:28px;font-weight:950;color:#93ff2d;text-align:right}
+    .label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;text-align:right}
+    .meter{height:8px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin:10px 0 14px}
+    .fill{height:100%;background:#93ff2d;border-radius:999px}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .metric-value{font-size:16px;font-weight:950;color:#f3f3f3}
+    .pitch{margin-top:10px;background:rgba(147,255,45,.08);border:1px solid rgba(147,255,45,.18);border-radius:12px;padding:10px}
+    .pitch-label{font-size:9px;color:#93ff2d;text-transform:uppercase;font-weight:950;margin-bottom:4px}
+    .pitch-value{font-size:14px;font-weight:950}
+    .why{margin-top:10px;color:#c9d1d9;font-size:12px;line-height:1.45}
   </style>
 </head>
 <body>
-  <script src="./mlb-nav.js"></script>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./results.html" class="nav-pill">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill active">Decision Center</a>
+    </div>
+  </div>
+</div>
 
 <main class="wrap">
+  <h1 class="title">Decision Center</h1>
+  <p class="sub">Fastest page for choosing HR candidates using confidence, pitch damage, pitcher risk, weather, and power profile.</p>
 
-  <section class="top">
-    <div>
-      <div class="title">HR Decision Center</div>
-      <div class="sub">
-        Home run scouting board powered by power metrics, pitch damage, pitcher attack zones, weather carry and bullpen risk.
-      </div>
-    </div>
-
-    <a href="./index.html" class="home">Back Home</a>
-  </section>
-
-  <div class="status" id="status"></div>
-
+  <div class="status" id="status">Loading</div>
   <section class="tabs" id="tabs"></section>
-
   <section class="grid" id="grid"></section>
-
 </main>
 
 <script>
@@ -286,7 +75,7 @@ const sections = [
   ["bestPicks","Best HR Picks"],
   ["safestPlays","Safest Plays"],
   ["lottoBombs","Live Longshots"],
-  ["pitchTypeEdges","Pitch Type Edges"],
+  ["pitchTypeEdges","Pitch Edges"],
   ["weatherCarry","Weather Carry"],
   ["bullpenBoosts","Bullpen Boosts"]
 ];
@@ -294,30 +83,12 @@ const sections = [
 let active = "bestPicks";
 let data = null;
 
-const tabs = document.getElementById("tabs");
-const grid = document.getElementById("grid");
-const status = document.getElementById("status");
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
 
-function clean(v) {
-  if (v === null || v === undefined || v === "") return "N/A";
-  return String(v);
-}
-
-function score(v) {
-  const n = Number(v);
-  if (!Number.isFinite(n)) return "0";
-  return n.toFixed(1);
-}
-
-function tierClass(tier) {
-  return tier.replace(/\s/g,"");
-}
-
-function renderTabs() {
-  tabs.innerHTML = sections.map(([key,label]) => `
-    <button
-      class="tab ${key === active ? "active" : ""}"
-      data-key="${key}">
+function renderTabs(){
+  document.getElementById("tabs").innerHTML = sections.map(([key,label]) => `
+    <button class="tab ${key === active ? "active" : ""}" data-key="${key}">
       ${label}
     </button>
   `).join("");
@@ -331,40 +102,30 @@ function renderTabs() {
   });
 }
 
-function renderGrid() {
+function renderGrid(){
   const rows = data?.sections?.[active] || [];
 
-  grid.innerHTML = rows.map(row => `
+  document.getElementById("grid").innerHTML = rows.map(row => `
     <article class="card">
+      <div class="tier">${clean(row.tier)}</div>
 
-      <div class="tier ${tierClass(clean(row.tier))}">
-        ${clean(row.tier)}
-      </div>
-
-      <div class="name">
-        ${clean(row.player)}
-      </div>
-
-      <div class="matchup">
-        ${clean(row.team)} vs ${clean(row.opponent)}
-      </div>
-
-      <div class="confidence-wrap">
-        <div class="confidence-top">
-          <div class="confidence-label">HR Confidence</div>
-          <div class="confidence-score">${score(row.hrConfidence)}</div>
+      <div class="card-top">
+        <div>
+          <div class="name">${clean(row.player)}</div>
+          <div class="meta">${clean(row.team)} vs ${clean(row.opponent)}</div>
         </div>
 
-        <div class="bar">
-          <div
-            class="fill"
-            style="width:${Math.min(100,row.hrConfidence)}%">
-          </div>
+        <div>
+          <div class="label">HR Conf</div>
+          <div class="score">${score(row.hrConfidence)}</div>
         </div>
+      </div>
+
+      <div class="meter">
+        <div class="fill" style="width:${Math.min(100, Number(row.hrConfidence || 0))}%"></div>
       </div>
 
       <div class="metrics">
-
         <div class="metric">
           <div class="metric-label">Power</div>
           <div class="metric-value">${score(row.powerScore)}</div>
@@ -385,38 +146,41 @@ function renderGrid() {
           <div class="metric-value">${score(row.weather)}</div>
         </div>
 
+        <div class="metric">
+          <div class="metric-label">Bullpen</div>
+          <div class="metric-value">${score(row.bullpen)}</div>
+        </div>
+
+        <div class="metric">
+          <div class="metric-label">Due</div>
+          <div class="metric-value">${score(row.due)}</div>
+        </div>
       </div>
 
-      <div class="pitch-box">
-        <div class="pitch-title">Best Pitch Matchup</div>
+      <div class="pitch">
+        <div class="pitch-label">Best Pitch Matchup</div>
         <div class="pitch-value">${clean(row.bestPitch)}</div>
       </div>
 
-      <div class="reasons">
-        ${(row.reasons || []).map(reason => `
-          <span class="reason">${clean(reason)}</span>
-        `).join("")}
+      <div class="why">
+        ${(row.reasons && row.reasons.length) ? row.reasons.join(", ") : "HR profile connected."}
       </div>
-
     </article>
   `).join("");
 }
 
-async function loadData() {
-  const res = await fetch(
-    "./data/hr_decision_center.json?v=" + Date.now()
-  );
-
+async function load(){
+  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
   data = await res.json();
 
-  status.textContent =
-    `Updated ${new Date(data.updatedAt).toLocaleString()} • ${data.totalPlayers} HR candidates loaded`;
+  document.getElementById("status").textContent =
+    `Updated ${new Date(data.updatedAt).toLocaleString()} • ${data.totalPlayers} HR candidates`;
 
   renderTabs();
   renderGrid();
 }
 
-loadData();
+load();
 </script>
 
 </body>
