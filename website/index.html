@@ -202,6 +202,101 @@ a{
 .footer-space{
   height:60px;
 }
+
+.clickable-card{
+  cursor:pointer;
+}
+
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.72);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  padding:22px;
+}
+
+.modal-backdrop.show{
+  display:flex;
+}
+
+.modal{
+  width:min(720px,100%);
+  background:#090d12;
+  border:1px solid rgba(147,255,45,.22);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 30px 80px rgba(0,0,0,.55);
+}
+
+.modal-top{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  align-items:flex-start;
+  margin-bottom:16px;
+}
+
+.modal h2{
+  font-size:22px;
+  margin-bottom:4px;
+}
+
+.modal p{
+  color:#9aa4af;
+  font-size:12px;
+}
+
+.close-modal{
+  background:#111820;
+  color:#fff;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  padding:8px 10px;
+  cursor:pointer;
+  font-weight:900;
+}
+
+.deep-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+
+.deep-stat{
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:12px;
+}
+
+.deep-label{
+  color:#8e98a3;
+  font-size:10px;
+  text-transform:uppercase;
+  font-weight:900;
+  margin-bottom:5px;
+}
+
+.deep-value{
+  font-size:20px;
+  font-weight:950;
+  color:#93ff2d;
+}
+
+.why-box{
+  margin-top:14px;
+  background:#0d1318;
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:12px;
+  padding:14px;
+  color:#d7dde4;
+  font-size:13px;
+  line-height:1.55;
+}
 </style>
 </head>
 
@@ -272,7 +367,7 @@ a{
 
   <div class="vulnerability-grid">
 
-    <div class="vuln-card">
+    <div class="vuln-card clickable-card" data-type="pitcher">
       <div class="vuln-rank">#1 ATTACK</div>
       <div class="vuln-score">93</div>
       <div class="vuln-name">Michael Lorenzen</div>
@@ -285,7 +380,7 @@ a{
       </div>
     </div>
 
-    <div class="vuln-card">
+    <div class="vuln-card clickable-card" data-type="pitcher">
       <div class="vuln-rank">#2 ATTACK</div>
       <div class="vuln-score">87</div>
       <div class="vuln-name">Chris Paddack</div>
@@ -297,7 +392,7 @@ a{
       </div>
     </div>
 
-    <div class="vuln-card">
+    <div class="vuln-card clickable-card" data-type="pitcher">
       <div class="vuln-rank">#3 ATTACK</div>
       <div class="vuln-score">74</div>
       <div class="vuln-name">Jake Irvin</div>
@@ -308,7 +403,7 @@ a{
       </div>
     </div>
 
-    <div class="vuln-card">
+    <div class="vuln-card clickable-card" data-type="pitcher">
       <div class="vuln-rank">#4 ATTACK</div>
       <div class="vuln-score">66</div>
       <div class="vuln-name">Slade Cecconi</div>
@@ -330,7 +425,7 @@ a{
     <div class="module">
       <h3>Quick Target</h3>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Jordan Walker</strong><br>
           <span>vs Chris Paddack</span>
@@ -339,7 +434,7 @@ a{
         <div class="score">100</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Kyle Schwarber</strong><br>
           <span>vs Slade Cecconi</span>
@@ -348,7 +443,7 @@ a{
         <div class="score">97</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Corbin Carroll</strong><br>
           <span>vs Michael Lorenzen</span>
@@ -362,7 +457,7 @@ a{
     <div class="module">
       <h3>Heat Check</h3>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Byron Buxton</strong><br>
           <span>HR Yesterday</span>
@@ -371,7 +466,7 @@ a{
         <div class="score">HOT</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>CJ Abrams</strong><br>
           <span>Barrel Surge</span>
@@ -380,7 +475,7 @@ a{
         <div class="score">HOT</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Ben Rice</strong><br>
           <span>Hard Hit Streak</span>
@@ -394,7 +489,7 @@ a{
     <div class="module">
       <h3>Power Zones</h3>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Kyle Schwarber</strong><br>
           <span>Crushes 4 Seam + Slider</span>
@@ -403,7 +498,7 @@ a{
         <div class="score">A+</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Matt Olson</strong><br>
           <span>Flyball Pull Zone</span>
@@ -412,7 +507,7 @@ a{
         <div class="score">A</div>
       </div>
 
-      <div class="mini-player">
+      <div class="mini-player clickable-card" data-type="player">
         <div>
           <strong>Yordan Alvarez</strong><br>
           <span>Elite Pitch Damage</span>
@@ -429,5 +524,137 @@ a{
 
 <div class="footer-space"></div>
 
+
+<div class="modal-backdrop" id="deepDiveModal">
+  <div class="modal">
+    <div class="modal-top">
+      <div>
+        <h2 id="modalTitle">Player Deep Dive</h2>
+        <p id="modalSub">HR matchup profile</p>
+      </div>
+      <button class="close-modal" id="closeModal">Close</button>
+    </div>
+
+    <div class="deep-grid">
+      <div class="deep-stat">
+        <div class="deep-label">HR Confidence</div>
+        <div class="deep-value" id="statConfidence">Loading</div>
+      </div>
+      <div class="deep-stat">
+        <div class="deep-label">Power</div>
+        <div class="deep-value" id="statPower">Loading</div>
+      </div>
+      <div class="deep-stat">
+        <div class="deep-label">Pitch Edge</div>
+        <div class="deep-value" id="statPitch">Loading</div>
+      </div>
+      <div class="deep-stat">
+        <div class="deep-label">Pitcher Risk</div>
+        <div class="deep-value" id="statRisk">Loading</div>
+      </div>
+      <div class="deep-stat">
+        <div class="deep-label">Weather</div>
+        <div class="deep-value" id="statWeather">Loading</div>
+      </div>
+      <div class="deep-stat">
+        <div class="deep-label">Best Pitch</div>
+        <div class="deep-value" id="statBestPitch">Loading</div>
+      </div>
+    </div>
+
+    <div class="why-box" id="whyBox">
+      Loading matchup explanation.
+    </div>
+  </div>
+</div>
+
+<script>
+let hrDeepDiveData = [];
+
+async function loadDeepDiveData(){
+  try{
+    const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+    const json = await res.json();
+    hrDeepDiveData = json.allPlayers || [];
+  }catch(e){
+    hrDeepDiveData = [];
+  }
+}
+
+function cleanValue(value){
+  if(value === null || value === undefined || value === "") return "N/A";
+  return String(value);
+}
+
+function scoreValue(value){
+  const n = Number(value);
+  if(!Number.isFinite(n)) return "0.0";
+  return n.toFixed(1);
+}
+
+function openDeepDive(name){
+  const modal = document.getElementById("deepDiveModal");
+
+  const match = hrDeepDiveData.find(row =>
+    String(row.player || "").toLowerCase() === String(name || "").toLowerCase()
+  );
+
+  document.getElementById("modalTitle").textContent = name || "HR Deep Dive";
+
+  if(!match){
+    document.getElementById("modalSub").textContent = "Detailed data not found yet";
+    document.getElementById("statConfidence").textContent = "N/A";
+    document.getElementById("statPower").textContent = "N/A";
+    document.getElementById("statPitch").textContent = "N/A";
+    document.getElementById("statRisk").textContent = "N/A";
+    document.getElementById("statWeather").textContent = "N/A";
+    document.getElementById("statBestPitch").textContent = "N/A";
+    document.getElementById("whyBox").textContent = "This card is ready for deep dive data once the player is connected to the HR Decision Center engine.";
+    modal.classList.add("show");
+    return;
+  }
+
+  document.getElementById("modalSub").textContent =
+    cleanValue(match.team) + " vs " + cleanValue(match.opponent);
+
+  document.getElementById("statConfidence").textContent = scoreValue(match.hrConfidence);
+  document.getElementById("statPower").textContent = scoreValue(match.powerScore);
+  document.getElementById("statPitch").textContent = scoreValue(match.pitchEdge);
+  document.getElementById("statRisk").textContent = scoreValue(match.pitcherRisk);
+  document.getElementById("statWeather").textContent = scoreValue(match.weather);
+  document.getElementById("statBestPitch").textContent = cleanValue(match.bestPitch);
+
+  const reasons = Array.isArray(match.reasons) && match.reasons.length
+    ? match.reasons.join(", ")
+    : "strong HR profile in today’s matchup";
+
+  document.getElementById("whyBox").textContent =
+    cleanValue(match.player) + " is graded as a " + cleanValue(match.tier) +
+    " HR candidate because of " + reasons + ".";
+
+  modal.classList.add("show");
+}
+
+function getCardName(card){
+  const strong = card.querySelector("strong");
+  const nameNode = card.querySelector(".vuln-name");
+  if(strong) return strong.textContent.trim();
+  if(nameNode) return nameNode.textContent.trim();
+  return "";
+}
+
+document.addEventListener("click", event => {
+  const card = event.target.closest(".clickable-card");
+  if(card){
+    openDeepDive(getCardName(card));
+  }
+
+  if(event.target.id === "closeModal" || event.target.id === "deepDiveModal"){
+    document.getElementById("deepDiveModal").classList.remove("show");
+  }
+});
+
+loadDeepDiveData();
+</script>
 </body>
 </html>
