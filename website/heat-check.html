@@ -2,52 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | Heat Check</title>
+
   <style>
-    body {
-      margin: 0;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 42px 24px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
-      letter-spacing: -.04em;
-    }
-
-    p {
-      color: #999;
-      margin: 0 0 26px;
-    }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,.10);
-      background: #101010;
-      border-radius: 22px;
-      padding: 24px;
-      color: #aaa;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+    .search{flex:1;min-width:260px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
+    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+    .badge{display:inline-flex;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.22);color:#ff7474;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950;margin-bottom:12px}
+    .name{font-size:17px;font-weight:950;margin-bottom:4px}
+    .meta{font-size:11px;color:#8e98a3;margin-bottom:12px}
+    .score-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .metric-value{font-size:18px;font-weight:950;color:#93ff2d}
+    .why{margin-top:12px;color:#c9d1d9;font-size:12px;line-height:1.45}
   </style>
 </head>
 <body>
-  <script src="./mlb-nav.js"></script>
 
-  <main class="page">
-    <h1>Heat Check</h1>
-    <p>Recent HR hitters and bats showing power form.</p>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill active">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./results.html" class="nav-pill">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
+  </div>
+</div>
 
-    <section class="panel">
-      This page is ready to connect to The Slip Lab HR data engine.
-    </section>
-  </main>
+<main class="wrap">
+  <h1 class="title">Heat Check</h1>
+  <p class="sub">Bats showing HR momentum through power score, due score, pitch damage, and current matchup fit.</p>
+
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Search player, team, opponent, pitch type, or tier"/>
+    <div class="small-pill" id="status">Loading</div>
+  </div>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+let players = [];
+
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+
+function heatScore(row){
+  return (
+    Number(row.due || 0) * .34 +
+    Number(row.powerScore || 0) * .28 +
+    Number(row.pitchEdge || 0) * .22 +
+    Number(row.hrConfidence || 0) * .16
+  );
+}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+
+  const rows = players
+    .filter(row => {
+      const hay = [
+        row.player,
+        row.team,
+        row.opponent,
+        row.game,
+        row.bestPitch,
+        row.tier
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    })
+    .map(row => ({...row, heat: heatScore(row)}))
+    .sort((a,b) => b.heat - a.heat)
+    .slice(0,60);
+
+  document.getElementById("status").textContent = `${rows.length} heat bats`;
+
+  document.getElementById("grid").innerHTML = rows.map(row => `
+    <article class="card">
+      <div class="badge">HEAT SCORE ${score(row.heat)}</div>
+
+      <div class="name">${clean(row.player)}</div>
+      <div class="meta">${clean(row.team)} vs ${clean(row.opponent)} • Best pitch: ${clean(row.bestPitch)}</div>
+
+      <div class="score-row">
+        <div class="metric">
+          <div class="metric-label">Due</div>
+          <div class="metric-value">${score(row.due)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Power</div>
+          <div class="metric-value">${score(row.powerScore)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Pitch Edge</div>
+          <div class="metric-value">${score(row.pitchEdge)}</div>
+        </div>
+      </div>
+
+      <div class="why">
+        ${clean(row.player)} is showing heat through power profile, due pressure, and pitch damage alignment.
+      </div>
+    </article>
+  `).join("");
+}
+
+async function load(){
+  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+  const json = await res.json();
+
+  players = json.allPlayers || [];
+
+  document.getElementById("search").addEventListener("input", render);
+
+  render();
+}
+
+load();
+</script>
+
 </body>
 </html>
