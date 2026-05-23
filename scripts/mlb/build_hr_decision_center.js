@@ -289,9 +289,10 @@ function zoneProfileFor(player) {
   );
 
   const zoneCells = zoneRows.map((zone, index) => {
-    const hitter = num(zone.hitterPower || zone.hitter || zone.power || zone.batter || zone.value);
-    const pitcher = num(zone.pitcherLeak || zone.pitcher || zone.leak || zone.vuln || zone.risk);
-    const overlap = num(zone.overlap || zone.score || Math.min(hitter, pitcher));
+    const danger = num(zone.danger);
+    const hitter = num(zone.hitterPower || zone.hitter || zone.power || zone.batter || zone.value || danger);
+    const pitcher = num(zone.pitcherLeak || zone.pitcher || zone.leak || zone.vuln || zone.risk || danger);
+    const overlap = num(zone.overlap || zone.score || danger || Math.min(hitter, pitcher));
 
     return {
       index,
