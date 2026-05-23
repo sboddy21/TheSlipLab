@@ -2,52 +2,230 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | Results</title>
+
   <style>
-    body {
-      margin: 0;
-      background: #050505;
-      color: #f5f5f5;
-      font-family: Arial, sans-serif;
-    }
-
-    .page {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 42px 24px;
-    }
-
-    h1 {
-      font-size: 34px;
-      margin: 0 0 8px;
-      letter-spacing: -.04em;
-    }
-
-    p {
-      color: #999;
-      margin: 0 0 26px;
-    }
-
-    .panel {
-      border: 1px solid rgba(255,255,255,.10);
-      background: #101010;
-      border-radius: 22px;
-      padding: 24px;
-      color: #aaa;
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
+    a{text-decoration:none;color:inherit}
+    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
+    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
+    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
+    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
+    .title{font-size:32px;font-weight:950;margin-bottom:6px}
+    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
+    .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+    .summary-card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px}
+    .summary-label{font-size:10px;text-transform:uppercase;color:#8e98a3;font-weight:900;margin-bottom:5px}
+    .summary-value{font-size:28px;font-weight:950;color:#93ff2d}
+    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+    .search{flex:1;min-width:260px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
+    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+    .hit{border-color:rgba(147,255,45,.28)}
+    .miss{border-color:rgba(255,255,255,.07)}
+    .badge{display:inline-flex;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950;margin-bottom:12px}
+    .hit .badge{background:rgba(147,255,45,.12);border:1px solid rgba(147,255,45,.22);color:#93ff2d}
+    .miss .badge{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:#aab2bd}
+    .name{font-size:17px;font-weight:950;margin-bottom:4px}
+    .meta{font-size:11px;color:#8e98a3;margin-bottom:12px}
+    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
+    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .metric-value{font-size:16px;font-weight:950;color:#f3f3f3}
+    .note{margin-top:12px;color:#c9d1d9;font-size:12px;line-height:1.45}
   </style>
 </head>
 <body>
-  <script src="./mlb-nav.js"></script>
 
-  <main class="page">
-    <h1>Results</h1>
-    <p>Track yesterday’s HR results and which hitters were flagged by The Slip Lab.</p>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./results.html" class="nav-pill active">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
+  </div>
+</div>
 
-    <section class="panel">
-      This page is ready to connect to The Slip Lab HR data engine.
-    </section>
-  </main>
+<main class="wrap">
+  <h1 class="title">Results</h1>
+  <p class="sub">Track actual home runs against hitters flagged by The Slip Lab HR model.</p>
+
+  <section class="summary">
+    <div class="summary-card">
+      <div class="summary-label">Flagged Hitters</div>
+      <div class="summary-value" id="sumFlagged">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">HR Results Found</div>
+      <div class="summary-value" id="sumResults">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Model Hits</div>
+      <div class="summary-value" id="sumHits">0</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-label">Top Tier Hits</div>
+      <div class="summary-value" id="sumTop">0</div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <input id="search" class="search" placeholder="Search player, team, tier, or result"/>
+    <div class="small-pill" id="status">Loading</div>
+  </div>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<script>
+let candidates = [];
+let results = [];
+
+function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
+function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+
+function normalize(v){
+  return String(v || "").trim().toLowerCase();
+}
+
+function resultPlayer(row){
+  return row.player || row.name || row.batter || row.hitter || row.playerName || "";
+}
+
+function resultTeam(row){
+  return row.team || row.player_team || row.batter_team || "";
+}
+
+function didHomer(row){
+  const fields = [
+    row.hr,
+    row.home_run,
+    row.homeRun,
+    row.did_homer,
+    row.hit_hr,
+    row.result
+  ];
+
+  return fields.some(v => {
+    const s = String(v || "").toLowerCase();
+    return s === "1" || s === "true" || s === "yes" || s.includes("hr") || s.includes("home run");
+  });
+}
+
+function buildRows(){
+  const resultMap = new Map();
+
+  results.forEach(row => {
+    const name = normalize(resultPlayer(row));
+    if(!name) return;
+    resultMap.set(name, row);
+  });
+
+  return candidates.map(row => {
+    const result = resultMap.get(normalize(row.player));
+    return {
+      ...row,
+      resultFound: Boolean(result),
+      didHomer: result ? didHomer(result) : false
+    };
+  });
+}
+
+function render(){
+  const q = document.getElementById("search").value.toLowerCase();
+
+  const rows = buildRows()
+    .filter(row => {
+      const hay = [
+        row.player,
+        row.team,
+        row.opponent,
+        row.tier,
+        row.didHomer ? "home run hit" : "no home run"
+      ].join(" ").toLowerCase();
+
+      return hay.includes(q);
+    })
+    .sort((a,b) => {
+      if(a.didHomer !== b.didHomer) return a.didHomer ? -1 : 1;
+      return Number(b.hrConfidence || 0) - Number(a.hrConfidence || 0);
+    });
+
+  const hits = rows.filter(x => x.didHomer);
+  const topHits = hits.filter(x => ["Nuclear","Elite","Strong"].includes(x.tier));
+
+  document.getElementById("sumFlagged").textContent = candidates.length;
+  document.getElementById("sumResults").textContent = results.length;
+  document.getElementById("sumHits").textContent = hits.length;
+  document.getElementById("sumTop").textContent = topHits.length;
+  document.getElementById("status").textContent = `${rows.length} result rows`;
+
+  document.getElementById("grid").innerHTML = rows.map(row => `
+    <article class="card ${row.didHomer ? "hit" : "miss"}">
+      <div class="badge">${row.didHomer ? "HR HIT" : row.resultFound ? "NO HR" : "PENDING"}</div>
+      <div class="name">${clean(row.player)}</div>
+      <div class="meta">${clean(row.team)} vs ${clean(row.opponent)} • ${clean(row.tier)}</div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">HR Conf</div>
+          <div class="metric-value">${score(row.hrConfidence)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Power</div>
+          <div class="metric-value">${score(row.powerScore)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Pitch Edge</div>
+          <div class="metric-value">${score(row.pitchEdge)}</div>
+        </div>
+      </div>
+
+      <div class="note">
+        ${row.didHomer ? "The model flagged this hitter and he homered." : row.resultFound ? "Result found, no HR marked." : "Waiting for HR result file to update."}
+      </div>
+    </article>
+  `).join("");
+}
+
+async function loadJson(path, fallback){
+  try{
+    const res = await fetch(path + "?v=" + Date.now());
+    if(!res.ok) return fallback;
+    return await res.json();
+  }catch(e){
+    return fallback;
+  }
+}
+
+async function load(){
+  const model = await loadJson("./data/hr_decision_center.json", {allPlayers:[]});
+  const resultJson = await loadJson("./data/mlb_results.json", []);
+
+  candidates = model.allPlayers || [];
+  results = Array.isArray(resultJson) ? resultJson : (resultJson.results || resultJson.data || resultJson.rows || []);
+
+  document.getElementById("search").addEventListener("input", render);
+
+  render();
+}
+
+load();
+</script>
+
 </body>
 </html>
