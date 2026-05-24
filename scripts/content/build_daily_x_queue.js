@@ -6,8 +6,7 @@ const ROOT = process.cwd();
 const INPUTS = {
   decisionCenter: path.join(ROOT, "website/data/hr_decision_center.json"),
   stacks: path.join(ROOT, "website/data/mlb_team_stacks.json"),
-  weather: path.join(ROOT, "website/data/mlb_weather.json"),
-  xPosts: path.join(ROOT, "website/data/content/x_posts.json")
+  weather: path.join(ROOT, "website/data/mlb_weather.json")
 };
 
 const OUT_JSON = path.join(ROOT, "website/data/content/x_daily_queue.json");
@@ -36,41 +35,11 @@ function todayKey() {
 }
 
 function easternIsoForToday(hour, minute) {
-  const date = todayKey();
-  return `${date}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00-04:00`;
+  return `${todayKey()}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00-04:00`;
 }
 
-function cleanText(value) {
-  return String(value ?? "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function asArray(value, type = "") {
-  if (Array.isArray(value)) return value;
-
-  if (type === "decisionCenter") {
-    return value?.sections?.bestPicks || value?.allPlayers || [];
-  }
-
-  if (type === "stacks") {
-    return value?.stacks || [];
-  }
-
-  if (type === "weather") {
-    return value?.weather || [];
-  }
-
-  if (type === "xPosts") {
-    return value?.posts || [];
-  }
-
-  if (Array.isArray(value?.rows)) return value.rows;
-  if (Array.isArray(value?.plays)) return value.plays;
-  if (Array.isArray(value?.data)) return value.data;
-  if (Array.isArray(value?.items)) return value.items;
-
-  return [];
+function clean(value) {
+  return String(value ?? "").replace(/\s+/g, " ").trim();
 }
 
 function num(value) {
@@ -78,340 +47,208 @@ function num(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function pickName(row) {
-  return cleanText(
-    row.player ||
-    row.name ||
-    row.batter ||
-    row.hitter ||
-    row.player_name ||
-    "Unknown"
-  );
+function rows(value, type) {
+  if (Array.isArray(value)) return value;
+  if (type === "decision") return value?.sections?.bestPicks || value?.allPlayers || [];
+  if (type === "stacks") return value?.stacks || [];
+  if (type === "weather") return value?.weather || [];
+  return [];
 }
 
-function pickTeam(row) {
-  return cleanText(
-    row.team ||
-    row.playerTeam ||
-    row.batter_team ||
-    row.player_team ||
-    ""
-  );
+function name(row) {
+  return clean(row.player || row.name || row.batter || row.hitter || "Unknown");
 }
 
-function pickOpponent(row) {
-  return cleanText(
-    row.opponent ||
-    row.opp ||
-    row.pitcherTeam ||
-    row.opposing_team ||
-    ""
-  );
+function pitcher(row) {
+  return clean(row.pitcher || row.opposingPitcher || row.probable_pitcher || "");
 }
 
-function pickPitcher(row) {
-  return cleanText(
-    row.pitcher ||
-    row.opposingPitcher ||
-    row.opposing_pitcher ||
-    row.probable_pitcher ||
-    ""
-  );
+function score(row) {
+  return num(row.hrConfidence || row.hrScore || row.score || row.powerScore || row.finalScore);
 }
 
-function pickOdds(row) {
-  return cleanText(
-    row.odds ||
-    row.best_odds ||
-    row.hr_odds ||
-    row.price ||
-    row.line ||
-    ""
-  );
+function pitcherRisk(row) {
+  return num(row.pitcherRisk || row.pitcherAttackScore || row.pitcher_vulnerability || row.attackScore);
 }
 
-function pickScore(row) {
-  return num(
-    row.hrConfidence ||
-    row.hrScore ||
-    row.score ||
-    row.finalScore ||
-    row.modelScore ||
-    row.total_score ||
-    row.overall_score ||
-    row.powerScore
-  );
+function linePlayer(row, index) {
+  const p = pitcher(row);
+  return `${index + 1}. ${name(row)}${p ? ` vs ${p}` : ""}`;
 }
 
-function sortByScore(rows) {
-  return [...rows].sort((a, b) => pickScore(b) - pickScore(a));
+function postText(title, lines, note = "") {
+  const body = [title, "", ...lines];
+  if (note) body.push("", note);
+  return body.join("\n").slice(0, 265).trim();
 }
 
-function formatPlayerLine(row, index) {
-  const name = pickName(row);
-  const odds = pickOdds(row);
-  const pitcher = pickPitcher(row);
-  const score = pickScore(row);
-
-  const parts = [`${index + 1}. ${name}`];
-
-  if (odds) parts.push(odds);
-  if (score) parts.push(`${score.toFixed(1)} score`);
-  if (pitcher) parts.push(`vs ${pitcher}`);
-
-  return parts.join(" | ");
-}
-
-function trimPost(text) {
-  if (text.length <= 275) return text;
-  return text.slice(0, 272).trimEnd() + "...";
-}
-
-function makeGraphicName(type) {
-  return `exports/x/${todayKey()}_${type.toLowerCase()}.png`;
-}
-
-function buildPost({
-  type,
-  title,
-  bodyLines,
-  minuteOffset,
-  cta
-}) {
-  const scheduledMinute = 30 + minuteOffset;
-
-  const text = trimPost([
-    title,
-    "",
-    ...bodyLines,
-    "",
-    cta || "Use the data. Pick your spots. 🧪"
-  ].join("\n"));
-
+function buildPost(type, minuteOffset, text) {
   return {
     id: `${todayKey()}_${type}`,
     date: todayKey(),
     type,
     status: "queued",
-    scheduled_for_eastern: easternIsoForToday(9, scheduledMinute),
+    scheduled_for_eastern: easternIsoForToday(9, 30 + minuteOffset),
     text,
-    graphic: makeGraphicName(type),
     posted: false,
     posted_at: null,
     x_post_id: null
   };
 }
 
-function getTopPlayers(decisionRows) {
-  return sortByScore(decisionRows)
-    .filter(row => pickName(row) !== "Unknown")
-    .slice(0, 5);
-}
+function carryPostedState(newPosts, previousPosts) {
+  const old = new Map(previousPosts.map(post => [post.id, post]));
 
-function getValuePlayers(decisionRows) {
-  return [...decisionRows]
-    .filter(row => pickName(row) !== "Unknown")
-    .sort((a, b) => {
-      const edgeA = num(
-        a.edge ||
-        a.ev ||
-        a.valueScore ||
-        a.value_score ||
-        a.model_edge
-      );
+  return newPosts.map(post => {
+    const previous = old.get(post.id);
+    if (!previous) return post;
 
-      const edgeB = num(
-        b.edge ||
-        b.ev ||
-        b.valueScore ||
-        b.value_score ||
-        b.model_edge
-      );
-
-      return edgeB - edgeA || pickScore(b) - pickScore(a);
-    })
-    .slice(0, 5);
-}
-
-function getMeatballPlayers(decisionRows) {
-  return [...decisionRows]
-    .filter(row => pickName(row) !== "Unknown")
-    .sort((a, b) => {
-      const aScore = num(
-        a.pitcherRisk ||
-        a.pitcherAttackScore ||
-        a.pitcher_attack_score ||
-        a.attackScore ||
-        a.pitcher_vulnerability
-      );
-
-      const bScore = num(
-        b.pitcherRisk ||
-        b.pitcherAttackScore ||
-        b.pitcher_attack_score ||
-        b.attackScore ||
-        b.pitcher_vulnerability
-      );
-
-      return bScore - aScore || pickScore(b) - pickScore(a);
-    })
-    .slice(0, 5);
-}
-
-function getStackLines(stackRows) {
-  return stackRows
-    .slice(0, 5)
-    .map((row, index) => {
-      const team = cleanText(row.team || "Unknown");
-      const score = cleanText(row.grade || row.stackScore || "");
-      const opponent = cleanText(row.opponent || "");
-      return `${index + 1}. ${team}${score ? ` | ${score}` : ""}${opponent ? ` | vs ${opponent}` : ""}`;
-    });
-}
-
-function getWeatherLines(weatherRows) {
-  return weatherRows
-    .sort((a, b) => num(b.windSpeed) - num(a.windSpeed))
-    .slice(0, 5)
-    .map((row, index) => {
-      const venue = cleanText(row.venue || "");
-      const city = cleanText(row.city || "");
-      const wind = cleanText(row.windCompass || "");
-      const speed = num(row.windSpeed);
-      const temp = num(row.temp);
-
-      return `${index + 1}. ${venue} | ${city} | ${speed} MPH ${wind} | ${temp}°`;
-    });
+    return {
+      ...post,
+      status: previous.status || post.status,
+      posted: Boolean(previous.posted),
+      posted_at: previous.posted_at || null,
+      x_post_id: previous.x_post_id || null
+    };
+  });
 }
 
 function main() {
   ensureDir(OUT_JSON);
   ensureDir(OUT_TXT);
 
-  const decisionCenter = readJson(INPUTS.decisionCenter, {});
-  const stacks = readJson(INPUTS.stacks, {});
-  const weather = readJson(INPUTS.weather, {});
-  const xPosts = readJson(INPUTS.xPosts, {});
+  const previousQueue = readJson(OUT_JSON, { posts: [] });
 
-  const decisionRows = asArray(decisionCenter, "decisionCenter");
-  const stackRows = asArray(stacks, "stacks");
-  const weatherRows = asArray(weather, "weather");
-  const xPostRows = asArray(xPosts, "xPosts");
+  const decision = rows(readJson(INPUTS.decisionCenter, {}), "decision");
+  const stacks = rows(readJson(INPUTS.stacks, {}), "stacks");
+  const weather = rows(readJson(INPUTS.weather, {}), "weather");
+
+  const topPlayers = [...decision]
+    .filter(row => name(row) !== "Unknown")
+    .sort((a, b) => score(b) - score(a));
+
+  const meatballs = [...decision]
+    .filter(row => name(row) !== "Unknown")
+    .sort((a, b) => pitcherRisk(b) - pitcherRisk(a) || score(b) - score(a));
 
   const queue = [];
 
-  const topPlayers = getTopPlayers(decisionRows);
+  if (topPlayers.length) {
+    queue.push(buildPost(
+      "TOP_HR_TARGETS",
+      0,
+      postText(
+        "THE SLIP LAB TOP HR TARGETS 🚀",
+        topPlayers.slice(0, 4).map(linePlayer),
+        "Early board. Lineups matter."
+      )
+    ));
+  }
 
   if (topPlayers.length) {
-    queue.push(buildPost({
-      type: "TOP_HR_TARGETS",
-      title: "THE SLIP LAB TOP HR TARGETS 🚀",
-      minuteOffset: 0,
-      bodyLines: topPlayers.map(formatPlayerLine),
-      cta: "HR board is live. Pick your spots. 🧪"
-    }));
+    queue.push(buildPost(
+      "VALUE_HR_WATCH",
+      1,
+      postText(
+        "THE SLIP LAB VALUE HR WATCH 👀",
+        topPlayers.slice(1, 5).map(linePlayer),
+        "Numbers worth checking before lock."
+      )
+    ));
   }
 
-  const valuePlayers = getValuePlayers(decisionRows);
-
-  if (valuePlayers.length) {
-    queue.push(buildPost({
-      type: "VALUE_HR_TARGETS",
-      title: "THE SLIP LAB VALUE HR WATCH 👀",
-      minuteOffset: 2,
-      bodyLines: valuePlayers.map(formatPlayerLine),
-      cta: "Value does not mean lock. It means the number is worth checking."
-    }));
+  if (meatballs.length) {
+    queue.push(buildPost(
+      "MEATBALL_MATCHUPS",
+      2,
+      postText(
+        "THE SLIP LAB MEATBALL MATCHUPS 🍝",
+        meatballs.slice(0, 4).map(linePlayer),
+        "Pitcher attack spots only."
+      )
+    ));
   }
 
-  const meatballPlayers = getMeatballPlayers(decisionRows);
-
-  if (meatballPlayers.length) {
-    queue.push(buildPost({
-      type: "MEATBALL_MATCHUPS",
-      title: "THE SLIP LAB MEATBALL MATCHUPS 🍝",
-      minuteOffset: 4,
-      bodyLines: meatballPlayers.map(formatPlayerLine),
-      cta: "Pitcher attack spots to keep on your radar."
-    }));
+  if (stacks.length) {
+    queue.push(buildPost(
+      "TEAM_STACK_WATCH",
+      3,
+      postText(
+        "THE SLIP LAB TEAM STACK WATCH 🧪",
+        stacks.slice(0, 4).map((row, index) => {
+          const team = clean(row.team || "Unknown");
+          const grade = clean(row.grade || row.stackScore || "");
+          const opp = clean(row.opponent || "");
+          return `${index + 1}. ${team}${grade ? ` ${grade}` : ""}${opp ? ` vs ${opp}` : ""}`;
+        }),
+        "Best offenses on the board."
+      )
+    ));
   }
 
-  const stackLines = getStackLines(stackRows);
-
-  if (stackLines.length) {
-    queue.push(buildPost({
-      type: "TEAM_STACKS",
-      title: "THE SLIP LAB TEAM STACK WATCH 🧪",
-      minuteOffset: 6,
-      bodyLines: stackLines,
-      cta: "Best offenses to monitor before lineups lock."
-    }));
+  if (weather.length) {
+    queue.push(buildPost(
+      "WEATHER_BOOSTS",
+      4,
+      postText(
+        "THE SLIP LAB WEATHER BOOSTS 🌬️",
+        weather
+          .sort((a, b) => num(b.windSpeed) - num(a.windSpeed))
+          .slice(0, 4)
+          .map((row, index) => {
+            const venue = clean(row.venue || "");
+            const city = clean(row.city || "");
+            const wind = clean(row.windCompass || "");
+            return `${index + 1}. ${venue || city} ${num(row.windSpeed)} MPH ${wind}`;
+          }),
+        "Weather can move the HR board."
+      )
+    ));
   }
 
-  const weatherLines = getWeatherLines(weatherRows);
-
-  if (weatherLines.length) {
-    queue.push(buildPost({
-      type: "WEATHER_BOOSTS",
-      title: "THE SLIP LAB WEATHER BOOST SPOTS 🌬️",
-      minuteOffset: 8,
-      bodyLines: weatherLines,
-      cta: "Weather can move the board. Always confirm close to first pitch."
-    }));
+  if (meatballs.length) {
+    queue.push(buildPost(
+      "PITCHER_VULNERABILITIES",
+      5,
+      postText(
+        "TOP PITCHER VULNERABILITIES",
+        meatballs.slice(0, 3).map((row, index) => {
+          const p = pitcher(row) || clean(row.opposingPitcher || "Unknown");
+          const bats = name(row);
+          return `${index + 1}. ${p} attack bat: ${bats}`;
+        }),
+        "Use this with the HR board."
+      )
+    ));
   }
 
-  for (const post of xPostRows.slice(0, 2)) {
-    if (!post?.post) continue;
+  const finalPosts = carryPostedState(queue, previousQueue.posts || []);
 
-    queue.push({
-      id: `${todayKey()}_${post.type}`,
-      date: todayKey(),
-      type: post.type,
-      status: "queued",
-      scheduled_for_eastern: easternIsoForToday(9, 39),
-      text: trimPost(post.post),
-      graphic: makeGraphicName(post.type),
-      posted: false,
-      posted_at: null,
-      x_post_id: null
-    });
-  }
-
-  fs.writeFileSync(
-    OUT_JSON,
-    JSON.stringify({
-      date: todayKey(),
-      window: "9:30 AM to 9:40 AM Eastern",
-      count: queue.length,
-      posts: queue
-    }, null, 2)
-  );
+  fs.writeFileSync(OUT_JSON, JSON.stringify({
+    date: todayKey(),
+    window: "9:30 AM to 9:35 AM Eastern",
+    cadence: "one post per minute",
+    textOnly: true,
+    count: finalPosts.length,
+    posts: finalPosts
+  }, null, 2));
 
   fs.writeFileSync(
     OUT_TXT,
-    queue.map(post => {
-      return [
-        "========================================",
-        post.id,
-        post.scheduled_for_eastern,
-        post.type,
-        "",
-        post.text,
-        "",
-        `Graphic: ${post.graphic}`
-      ].join("\n");
-    }).join("\n\n")
+    finalPosts.map(post => [
+      "========================================",
+      post.id,
+      post.scheduled_for_eastern,
+      post.type,
+      "",
+      post.text
+    ].join("\n")).join("\n\n")
   );
 
   console.log("THE SLIP LAB X DAILY QUEUE COMPLETE");
-  console.log(`Date: ${todayKey()}`);
-  console.log(`Decision center rows: ${decisionRows.length}`);
-  console.log(`Stack rows: ${stackRows.length}`);
-  console.log(`Weather rows: ${weatherRows.length}`);
-  console.log(`X post rows: ${xPostRows.length}`);
-  console.log(`Posts queued: ${queue.length}`);
+  console.log(`Posts queued: ${finalPosts.length}`);
+  console.log("Schedule: 9:30, 9:31, 9:32, 9:33, 9:34, 9:35");
   console.log(`Saved: ${OUT_JSON}`);
-  console.log(`Saved: ${OUT_TXT}`);
 }
 
 main();
