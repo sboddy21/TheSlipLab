@@ -35,12 +35,11 @@ jobs:
       - name: Post X queue
         run: node scripts/content/post_x_queue.js
 
-      - name: Commit updated logs and queue
+      -       - name: Commit updated queue
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
 
-          git add logs/
           git add website/data/content/
 
           git diff --cached --quiet || git commit -m "Automated X posting update"
