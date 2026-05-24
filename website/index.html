@@ -126,7 +126,7 @@ th:first-child,td:first-child{text-align:left;color:#8cff32;font-weight:950}
 </div>
 
 <script>
-let players=[],groups=[],activeFilter="all",activeGame="all",starters={},sprayData={};
+let players=[],groups=[],activeFilter="all",activeGame="all",starters={};
 
 const n=v=>{const x=Number(v);return Number.isFinite(x)?x:0};
 const s=v=>v===null||v===undefined||v===""?"N/A":String(v);
@@ -204,92 +204,15 @@ function cellClass(v,type){const x=n(v);if(type==="hr")return x>=3?"h4":x>=2?"h2
 function heat(title,arr,type){return `<div class="heat-card"><div class="heat-title">${title}</div><div class="heat-grid">${Array.from({length:25}).map((_,i)=>{const v=arr?.[i]?.value??arr?.[i]??0;return `<div class="cell ${cellClass(v,type)}">${type==="hr"?whole(v):dec(v)}</div>`}).join("")}</div></div>`}
 function miniTable(rows){return `<table><thead><tr>${rows[0].map(x=>`<th>${x}</th>`).join("")}</tr></thead><tbody>${rows.slice(1).map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join("")}</tr>`).join("")}</tbody></table>`}
 function bars(items){return items.map(x=>`<div class="bar"><div class="barline"><span>${x.label}</span><span>${x.value}</span></div><div class="track"><div class="fill" style="width:${Math.min(100,Math.max(0,n(x.width)))}%"></div></div></div>`).join("")}
-
-function sprayPointColor(type){
-  if(type==="HR")return "#ff4d57";
-  if(type==="Near HR")return "#f6c400";
-  if(type==="2B")return "#a855f7";
-  if(type==="3B")return "#10c7b0";
-  if(type==="1B")return "#4295ff";
-  return "#7f8f88";
-}
-
-function mapSavantPoint(p){
-  const x = n(p.x);
-  const y = n(p.y);
-
-  const sx = Math.max(28, Math.min(332, x * 1.55));
-  const sy = Math.max(28, Math.min(292, y * 1.18));
-
-  return { sx, sy };
-}
-
 function spraySvg(r){
-  const playerSpray = sprayData?.players?.[s(r.player)] || {};
-  const points = Array.isArray(playerSpray.points) ? playerSpray.points : [];
-  const summary = playerSpray.summary || {};
-
-  const visible = points.slice(0, 180);
-
-  const circles = visible.map((p, i) => {
-    const m = mapSavantPoint(p);
-    const color = sprayPointColor(p.type);
-    const size = p.type === "HR" ? 5.8 : p.type === "Near HR" ? 4.6 : 3.6;
-
-    const label = [
-      `${p.type || "BIP"} ${p.date || ""}`,
-      `Pitcher: ${p.pitcher || "N/A"}`,
-      `Game: ${p.opponent || "N/A"}`,
-      `Distance: ${p.distance || "N/A"} ft`,
-      `Exit Velo: ${p.launchSpeed || "N/A"} mph`,
-      `Launch Ang: ${p.launchAngle || "N/A"}°`,
-      `Pitch: ${p.pitchName || p.pitchType || "N/A"}`
-    ].join(" | ");
-
-    return `<circle class="spray-dot" data-spray="${label.replaceAll('"', "&quot;")}" cx="${m.sx}" cy="${m.sy}" r="${size}" fill="${color}" opacity=".92"/>`;
-  }).join("");
-
-  return `
-    <div class="section-title">Spray Profile</div>
-
-    <div style="display:flex;gap:16px;flex-wrap:wrap;margin:0 0 12px;color:#dce8e3;font-weight:950">
-      <span style="color:#ff4d57">● HR ${summary.HR || 0}</span>
-      <span style="color:#f6c400">● Near HR ${summary["Near HR"] || 0}</span>
-      <span style="color:#a855f7">● 2B ${summary["2B"] || 0}</span>
-      <span style="color:#10c7b0">● 3B ${summary["3B"] || 0}</span>
-      <span style="color:#4295ff">● 1B ${summary["1B"] || 0}</span>
-    </div>
-
-    <div class="spray">
-      <svg viewBox="0 0 360 310">
-        <defs>
-          <radialGradient id="fieldGlow" cx="50%" cy="80%" r="80%">
-            <stop offset="0%" stop-color="rgba(140,255,50,.18)"/>
-            <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
-          </radialGradient>
-        </defs>
-
-        <rect x="0" y="0" width="360" height="310" fill="#061010"/>
-        <path d="M180 286 L48 118 Q180 24 312 118 Z" fill="rgba(20,93,43,.58)" stroke="rgba(140,255,50,.55)" stroke-width="2"/>
-        <path d="M180 286 L82 132 Q180 66 278 132 Z" fill="rgba(15,65,32,.75)" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
-        <path d="M180 286 L180 40" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
-        <path d="M180 286 L76 130" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
-        <path d="M180 286 L284 130" stroke="rgba(255,255,255,.24)" stroke-width="1"/>
-        <path d="M180 286 L110 205 L180 155 L250 205 Z" fill="rgba(151,99,45,.55)"/>
-        <circle cx="180" cy="210" r="13" fill="rgba(151,99,45,.65)"/>
-        <rect x="174" y="278" width="12" height="12" fill="#fff" transform="rotate(45 180 284)"/>
-        <rect x="105" y="199" width="8" height="8" fill="#fff" transform="rotate(45 109 203)"/>
-        <rect x="247" y="199" width="8" height="8" fill="#fff" transform="rotate(45 251 203)"/>
-        <rect x="176" y="151" width="8" height="8" fill="#fff" transform="rotate(45 180 155)"/>
-        <text x="180" y="36" fill="#74817c" font-size="9" text-anchor="middle">CF</text>
-        <text x="66" y="116" fill="#74817c" font-size="9" text-anchor="middle">LF</text>
-        <text x="294" y="116" fill="#74817c" font-size="9" text-anchor="middle">RF</text>
-        ${circles}
-      </svg>
-    </div>
-
-    <div id="sprayTip" style="display:none;position:fixed;z-index:9000;background:#080d10;border:1px solid rgba(140,255,50,.35);border-radius:12px;padding:12px;color:#fff;font-size:12px;max-width:320px;box-shadow:0 20px 50px rgba(0,0,0,.55)"></div>
-  `;
+  let dots="";
+  for(let i=0;i<42;i++){
+    const x=170+Math.sin(i*2.37)*(25+i*2.2);
+    const y=265-Math.abs(Math.cos(i*1.91))*(35+i*2.6);
+    const c=i%7===0?"#ff6374":i%5===0?"#ffd25a":i%3===0?"#00e0a4":"#6eb7ff";
+    dots+=`<circle cx="${x}" cy="${y}" r="${i%7===0?5:3}" fill="${c}" opacity=".9"/>`;
+  }
+  return `<div class="spray"><svg viewBox="0 0 360 310"><path d="M180 285 L55 115 Q180 35 305 115 Z" fill="rgba(140,255,50,.09)" stroke="rgba(140,255,50,.35)"/><path d="M180 285 L180 62 M180 285 L95 125 M180 285 L265 125" stroke="rgba(255,255,255,.18)"/><circle cx="180" cy="285" r="5" fill="#fff"/>${dots}</svg></div>`;
 }
 
 function modalPanel(r,tab){
@@ -323,32 +246,6 @@ document.addEventListener("click",e=>{
  const r=players.find(x=>s(x.player)===b.dataset.player);
  if(r)openModal(r);
 });
-
-document.addEventListener("mouseover",e=>{
- const dot=e.target.closest(".spray-dot");
- if(!dot)return;
- const tip=document.getElementById("sprayTip");
- if(!tip)return;
- tip.innerHTML=String(dot.dataset.spray || "").split(" | ").map(x=>`<div>${x}</div>`).join("");
- tip.style.display="block";
- tip.style.left=(e.clientX+14)+"px";
- tip.style.top=(e.clientY+14)+"px";
-});
-
-document.addEventListener("mousemove",e=>{
- const tip=document.getElementById("sprayTip");
- if(tip && tip.style.display==="block"){
-  tip.style.left=(e.clientX+14)+"px";
-  tip.style.top=(e.clientY+14)+"px";
- }
-});
-
-document.addEventListener("mouseout",e=>{
- if(e.target.closest(".spray-dot")){
-  const tip=document.getElementById("sprayTip");
-  if(tip)tip.style.display="none";
- }
-});
 document.getElementById("mClose").onclick=()=>document.getElementById("modalBg").classList.remove("open");
 document.getElementById("modalBg").onclick=e=>{if(e.target.id==="modalBg")e.target.classList.remove("open")};
 
@@ -356,7 +253,6 @@ async function tryJson(path){try{const r=await fetch(path+"?v="+Date.now());if(!
 
 async function load(){
  const data=await tryJson("./data/hr_decision_center.json");
- sprayData=await tryJson("./data/player_spray_charts.json") || {players:{}};
  players=(data?.allPlayers||[]).sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence));
  window.slipPlayers=players;
 
