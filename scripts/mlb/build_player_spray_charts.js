@@ -3,7 +3,10 @@ import path from "path";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
+
 const DECISION_FILE = path.join(DATA_DIR, "hr_decision_center.json");
+const PITCH_DAMAGE_FILE = path.join(DATA_DIR, "pitch_type_damage.json");
+const STATCAST_ZONES_FILE = path.join(DATA_DIR, "statcast_zones.json");
 const OUT_FILE = path.join(DATA_DIR, "player_spray_charts.json");
 
 const SEASON = new Date().getFullYear();
@@ -12,6 +15,19 @@ const END_DATE = `${SEASON}-11-30`;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function clean(v) {
+  return v === null || v === undefined ? "" : String(v).trim();
+}
+
+function norm(v) {
+  return clean(v).toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function num(v) {
+  const x = Number(v);
+  return Number.isFinite(x) ? x : null;
 }
 
 function csvSplit(line) {
@@ -55,13 +71,25 @@ function parseCsv(text) {
   });
 }
 
-function num(v) {
-  const x = Number(v);
-  return Number.isFinite(x) ? x : null;
+function readJson(file, fallback = {}) {
+  if (!fs.existsSync(file)) return fallback;
+  return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
-function clean(v) {
-  return v === null || v === undefined ? "" : String(v).trim();
+function buildPlayerIdMap() {
+  const map = new Map();
+
+  for (const file of [PITCH_DAMAGE_FILE, STATCAST_ZONES_FILE]) {
+    const json = readJson(file, {});
+    const players = json.players || {};
+
+    for (const [name, row] of Object.entries(players)) {
+      const playerId = row.playerId || row.mlbId || row.id;
+      if (playerId) map.set(norm(name), playerId);
+    }
+  }
+
+  return map;
 }
 
 function eventType(eventName, distance) {
@@ -120,8 +148,12 @@ function savantUrl(playerId) {
   return `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`;
 }
 
-async function fetchPlayer(player) {
-  const playerId = player.playerId || player.mlbId || player.id;
+async function fetchPlayer(player, idMap) {
+  const playerId =
+    player.playerId ||
+    player.mlbId ||
+    player.id ||
+    idMap.get(norm(player.player));
 
   if (!playerId) {
     return {
@@ -159,7 +191,7 @@ async function fetchPlayer(player) {
         event: clean(row.events),
         date: clean(row.game_date),
         opponent: clean(row.home_team) && clean(row.away_team) ? `${clean(row.away_team)} @ ${clean(row.home_team)}` : "",
-        pitcher: clean(row.pitcher),
+        pitcher: clean(row.player_name) || clean(row.pitcher),
         pitchType: clean(row.pitch_type),
         pitchName: clean(row.pitch_name),
         x: num(row.hc_x),
@@ -197,7 +229,8 @@ async function main() {
     throw new Error(`Missing ${DECISION_FILE}`);
   }
 
-  const decision = JSON.parse(fs.readFileSync(DECISION_FILE, "utf8"));
+  const idMap = buildPlayerIdMap();
+  const decision = readJson(DECISION_FILE, {});
 
   const players = (decision.allPlayers || [])
     .filter(p => p.player)
@@ -208,22 +241,24 @@ async function main() {
     updatedAt: new Date().toISOString(),
     source: "baseballsavant_statcast_search_csv",
     season: SEASON,
+    playerIdSource: "pitch_type_damage_json_and_statcast_zones_json",
     players: {}
   };
 
   console.log("BUILDING PLAYER SPRAY CHARTS");
   console.log("Players:", players.length);
+  console.log("Player ID map:", idMap.size);
 
   for (const player of players) {
     try {
-      const data = await fetchPlayer(player);
+      const data = await fetchPlayer(player, idMap);
       out.players[player.player] = data;
-      console.log("OK", player.player, data.points.length, "points");
+      console.log("OK", player.player, "id", data.playerId, "points", data.points.length, data.error || "");
       await sleep(350);
     } catch (err) {
       out.players[player.player] = {
         player: player.player,
-        playerId: player.playerId || null,
+        playerId: player.playerId || idMap.get(norm(player.player)) || null,
         team: player.team,
         points: [],
         summary: {},
