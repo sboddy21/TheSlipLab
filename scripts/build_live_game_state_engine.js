@@ -196,7 +196,7 @@ console.log("LIVE GAME STATE ENGINE COMPLETE");
 console.log(`Games: ${cleanOutput.length}`);
 
 console.table(
-  cleanOutput.slice(0, 10).map(game => ({
+  cleanOutput.map(game => ({
     game: game.game,
     leverage: game.leverageScore,
     hr: game.hrEnvironment,

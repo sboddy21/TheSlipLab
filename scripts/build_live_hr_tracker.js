@@ -216,7 +216,7 @@ console.log("LIVE HR TRACKER COMPLETE");
 console.log(`Games: ${output.length}`);
 
 console.table(
-  output.slice(0, 10).map(game => ({
+  output.map(game => ({
     game: game.game,
     volatility: game.liveVolatility,
     chain: game.chainReactionScore

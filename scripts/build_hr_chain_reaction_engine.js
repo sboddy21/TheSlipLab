@@ -200,7 +200,7 @@ console.log("HR CHAIN REACTION ENGINE COMPLETE");
 console.log(`Games: ${cleanOutput.length}`);
 
 console.table(
-  cleanOutput.slice(0, 10).map(game => ({
+  cleanOutput.map(game => ({
     game: game.game,
     chain: game.chainReactionScore,
     label: game.chainReactionLabel,
