@@ -6,10 +6,19 @@ import { TwitterApi } from "twitter-api-v2";
 dotenv.config();
 
 const ROOT = process.cwd();
-const QUEUE_FILE = path.join(ROOT, "website/data/content/x_daily_queue.json");
-const LOG_FILE = path.join(ROOT, "logs/x_post_history.json");
 
-const DRY_RUN = String(process.env.X_DRY_RUN || "true").toLowerCase() === "true";
+const QUEUE_FILE = path.join(
+  ROOT,
+  "website/data/content/x_daily_queue.json"
+);
+
+const LOG_FILE = path.join(
+  ROOT,
+  "logs/x_post_history.json"
+);
+
+const DRY_RUN =
+  String(process.env.X_DRY_RUN || "true").toLowerCase() === "true";
 
 function ensureDir(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -31,10 +40,16 @@ function writeJson(filePath, data) {
 
 function requireEnv(name) {
   const value = process.env[name];
+
   if (!value) {
-    throw new Error(`Missing required env value: ${name}`);
+    throw new Error(`Missing env variable: ${name}`);
   }
+
   return value;
+}
+
+function nowIso() {
+  return new Date().toISOString();
 }
 
 function getClient() {
@@ -46,130 +61,105 @@ function getClient() {
   });
 }
 
-function nowIso() {
-  return new Date().toISOString();
-}
-
-function normalizeHistory(history) {
-  return {
-    updatedAt: history.updatedAt || null,
-    posted_ids: Array.isArray(history.posted_ids) ? history.posted_ids : [],
-    posts: Array.isArray(history.posts) ? history.posts : []
-  };
-}
-
-async function postItem(client, post) {
-  const graphicPath = path.join(ROOT, post.graphic || "");
-
-  if (!fs.existsSync(graphicPath)) {
-    throw new Error(`Missing graphic file: ${graphicPath}`);
-  }
-
+async function publishPost(client, post) {
   if (DRY_RUN) {
-    console.log("DRY RUN POST");
-    console.log(`Type: ${post.type}`);
-    console.log(`Text: ${post.text}`);
-    console.log(`Graphic: ${graphicPath}`);
+    console.log("DRY RUN");
+    console.log(post.text);
+
     return {
-      dryRun: true,
-      tweetId: `dry_run_${post.id}`
+      id: `dry_run_${post.id}`
     };
   }
 
-  const mediaId = await client.v1.uploadMedia(graphicPath, {
-    mimeType: "image/png"
-  });
-
   const tweet = await client.v2.tweet({
-    text: post.text,
-    media: {
-      media_ids: [mediaId]
-    }
+    text: post.text
   });
 
   return {
-    dryRun: false,
-    tweetId: tweet?.data?.id || null
+    id: tweet?.data?.id || null
   };
 }
 
 async function main() {
   const queueData = readJson(QUEUE_FILE, { posts: [] });
-  const history = normalizeHistory(readJson(LOG_FILE, {}));
 
-  const posts = Array.isArray(queueData.posts) ? queueData.posts : [];
+  const history = readJson(LOG_FILE, {
+    posted_ids: [],
+    posts: []
+  });
+
+  const posts = Array.isArray(queueData.posts)
+    ? queueData.posts
+    : [];
 
   if (!posts.length) {
-    console.log("No posts in queue.");
+    console.log("No queued posts.");
     return;
   }
 
   const client = getClient();
 
-  let postedCount = 0;
-  let skippedCount = 0;
-  let failedCount = 0;
+  let posted = 0;
+  let skipped = 0;
+  let failed = 0;
 
   for (const post of posts) {
     if (!post?.id) {
-      skippedCount++;
+      skipped++;
       continue;
     }
 
     if (history.posted_ids.includes(post.id)) {
       console.log(`SKIP DUPLICATE: ${post.id}`);
-      skippedCount++;
+      skipped++;
       continue;
     }
 
     try {
-      const result = await postItem(client, post);
+      const result = await publishPost(client, post);
 
       post.posted = !DRY_RUN;
       post.status = DRY_RUN ? "dry_run" : "posted";
       post.posted_at = nowIso();
-      post.x_post_id = result.tweetId;
+      post.x_post_id = result.id;
 
       history.posted_ids.push(post.id);
+
       history.posts.push({
         id: post.id,
         type: post.type,
         text: post.text,
-        graphic: post.graphic,
-        scheduled_for_eastern: post.scheduled_for_eastern,
         posted_at: post.posted_at,
         x_post_id: post.x_post_id,
         dry_run: DRY_RUN
       });
 
-      history.updatedAt = nowIso();
+      posted++;
 
-      postedCount++;
-      console.log(`${DRY_RUN ? "DRY RUN OK" : "POSTED"}: ${post.id}`);
+      console.log(
+        `${DRY_RUN ? "DRY RUN OK" : "POSTED"}: ${post.id}`
+      );
     } catch (error) {
-      failedCount++;
-      post.status = "failed";
-      post.error = error.message;
+      failed++;
+
       console.error(`FAILED: ${post.id}`);
       console.error(error.message);
     }
   }
 
-  queueData.posts = posts;
+  history.updated_at = nowIso();
 
-  writeJson(QUEUE_FILE, queueData);
   writeJson(LOG_FILE, history);
+  writeJson(QUEUE_FILE, queueData);
 
   console.log("THE SLIP LAB X POST QUEUE COMPLETE");
   console.log(`Mode: ${DRY_RUN ? "DRY RUN" : "LIVE"}`);
-  console.log(`Posted: ${postedCount}`);
-  console.log(`Skipped: ${skippedCount}`);
-  console.log(`Failed: ${failedCount}`);
-  console.log(`History: ${LOG_FILE}`);
+  console.log(`Posted: ${posted}`);
+  console.log(`Skipped: ${skipped}`);
+  console.log(`Failed: ${failed}`);
 }
 
 main().catch(error => {
-  console.error("X posting engine failed.");
   console.error(error.message);
   process.exit(1);
 });
