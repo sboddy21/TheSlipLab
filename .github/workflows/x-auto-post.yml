@@ -32,9 +32,6 @@ jobs:
       - name: Build daily X queue
         run: node scripts/content/build_daily_x_queue.js
 
-      - name: Render X graphics
-        run: node scripts/content/render_x_graphics.js
-
       - name: Post X queue
         run: node scripts/content/post_x_queue.js
 
@@ -45,7 +42,6 @@ jobs:
 
           git add logs/
           git add website/data/content/
-          git add exports/x/
 
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
