@@ -173,19 +173,29 @@ function rowPass(row){
 }
 
 function groupedRows(rows){
-  const map = new Map();
+  const gameMap = new Map();
 
   rows.forEach(row => {
     const key = game(row);
-    if(!map.has(key)) map.set(key, []);
-    map.get(key).push(row);
+    if(!gameMap.has(key)) gameMap.set(key, []);
+    gameMap.get(key).push(row);
   });
 
-  return [...map.entries()].map(([key,list]) => ({
-    key,
-    list:list.sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence)),
-    vuln:list.reduce((s,r)=>s+n(r.pitcherRisk),0) / Math.max(1,list.length)
-  })).sort((a,b)=>b.vuln-a.vuln);
+  return [...gameMap.entries()].map(([key,list]) => {
+    const sorted = list.sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence));
+    const avgVuln = sorted.reduce((s,r)=>s+n(r.pitcherRisk),0) / Math.max(1,sorted.length);
+    const top = sorted[0] || {};
+
+    return {
+      key,
+      list: sorted.slice(0, 5),
+      allBatters: sorted,
+      vuln: avgVuln,
+      pitcher: pitcherName(top),
+      opponent: opponentKey(top),
+      team: clean(top.team)
+    };
+  }).sort((a,b)=>b.vuln-a.vuln);
 }
 
 function tagHTML(row, rank){
@@ -233,7 +243,7 @@ function batter(row, rank){
 
 function card(group){
   const top = group.list[0] || {};
-  const bats = group.list.slice(0,5);
+  const bats = (group.list || []).slice(0,5);
   const vuln = whole(group.vuln);
 
   return `
@@ -261,7 +271,7 @@ function card(group){
       <div class="danger">
         <div class="danger-head">
           <span>Danger Batters</span>
-          <span>Top 5</span>
+          <span>${bats.length}/5 bats</span>
         </div>
         <div class="bats">${bats.map((r,i)=>batter(r,i+1)).join("")}</div>
       </div>
