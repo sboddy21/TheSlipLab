@@ -5,6 +5,9 @@ on:
     - cron: "30 13 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   post-x-content:
     runs-on: ubuntu-latest
@@ -35,13 +38,11 @@ jobs:
       - name: Post X queue
         run: node scripts/content/post_x_queue.js
 
-      -       - name: Commit updated queue
+      - name: Commit updated queue
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-
           git add website/data/content/
-
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
       - name: Push updates
