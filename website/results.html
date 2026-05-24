@@ -4,101 +4,297 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Slip Lab | HR Results</title>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
     a{text-decoration:none;color:inherit}
+
     .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
     .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
     .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
     .nav{display:flex;gap:8px;flex-wrap:wrap}
     .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
     .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
-    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
-    .title{font-size:32px;font-weight:950;margin-bottom:6px}
-    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
-    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
-    .search{flex:1;min-width:260px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
-    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
-    .card{background:#0b1015;border:1px solid rgba(147,255,45,.22);border-radius:16px;padding:14px}
-    .badge{display:inline-flex;background:rgba(147,255,45,.12);border:1px solid rgba(147,255,45,.22);color:#93ff2d;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950;margin-bottom:12px}
-    .name{font-size:17px;font-weight:950;margin-bottom:4px}
-    .meta{font-size:11px;color:#8e98a3;margin-bottom:12px}
-    .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
-    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
-    .metric-value{font-size:15px;font-weight:950}
+
+    .wrap{max-width:1180px;margin:0 auto;padding:28px 22px}
+    .top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px}
+    .eyebrow{font-size:11px;font-weight:900;letter-spacing:.12em;color:#8e98a3;text-transform:uppercase;margin-bottom:8px}
+    .title{font-size:28px;font-weight:950;margin-bottom:8px}
+    .sub{color:#8e98a3;font-size:13px;line-height:1.45;max-width:720px}
+
+    .date-box{background:#0d1318;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:9px 12px;color:#d9d9d9;font-size:12px;font-weight:900}
+
+    .summary{
+      background:#0b1015;
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px;
+      padding:18px;
+      margin-bottom:18px;
+    }
+
+    .summary-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .big-count{font-size:30px;font-weight:950}
+    .summary-label{color:#8e98a3;font-size:13px}
+    .milestone{background:rgba(255,193,7,.10);border:1px solid rgba(255,193,7,.30);color:#ffc400;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:950}
+
+    .bar{height:8px;background:#171d24;border-radius:999px;overflow:hidden;margin:10px 0 16px}
+    .bar-fill{height:100%;background:linear-gradient(90deg,#00d084,#ffcc00,#4aa3ff);border-radius:999px}
+
+    .summary-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+    .mini-label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
+    .mini-value{font-size:22px;font-weight:950;color:#ffc400}
+    .mini-sub{font-size:11px;color:#8e98a3;margin-top:2px}
+
+    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .tab{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:10px;padding:9px 12px;font-weight:900;font-size:12px}
+
+    .table-wrap{overflow:auto;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:#090d12}
+    table{width:100%;border-collapse:collapse;min-width:980px}
+    th{background:#10141a;color:#8e98a3;font-size:11px;text-transform:uppercase;letter-spacing:.10em;text-align:left;padding:13px;border-bottom:1px solid rgba(255,255,255,.07)}
+    td{padding:14px 13px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:#dce3ea;vertical-align:middle}
+    tr:hover td{background:rgba(147,255,45,.035)}
+    .rank{color:#8e98a3;font-weight:900}
+    .batter{font-size:16px;font-weight:950;color:#fff}
+    .small{font-size:12px;color:#8e98a3;margin-top:3px}
+    .team{font-size:15px;font-weight:950}
+    .hr{font-size:20px;color:#ffc400;font-weight:950;text-align:center}
+    .hand{color:#ff9d00;font-weight:950}
+    .era.good{color:#00d9a0}
+    .era.bad{color:#ff5b6b}
+    .score{font-size:18px;color:#00d9a0;font-weight:950}
+    .sig{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#172029;color:#d9d9d9;font-weight:950}
+    .sig.good{background:rgba(0,208,132,.18);color:#00d084;border:1px solid rgba(0,208,132,.35)}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{border-radius:7px;padding:5px 8px;font-size:11px;font-weight:950;letter-spacing:.04em}
+    .tag.strong{background:rgba(0,208,132,.12);border:1px solid rgba(0,208,132,.40);color:#00d084}
+    .tag.hot{background:rgba(58,132,255,.12);border:1px solid rgba(58,132,255,.40);color:#58a6ff}
+    .tag.danger{background:rgba(151,95,255,.12);border:1px solid rgba(151,95,255,.40);color:#b38cff}
+    .tag.moderate{background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.40);color:#ffc400}
+    .tag.power{background:rgba(0,213,255,.12);border:1px solid rgba(0,213,255,.40);color:#00d5ff}
+    .tag.zone{background:rgba(255,111,0,.12);border:1px solid rgba(255,111,0,.45);color:#ff8a00}
   </style>
 </head>
+
 <body>
-<div class="topbar"><div class="topbar-inner">
-  <a class="brand" href="./index.html">The Slip Lab</a>
-  <div class="nav">
-    <a href="./index.html" class="nav-pill">Slate</a>
-    <a href="./full-board.html" class="nav-pill">Full Board</a>
-    <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
-    <a href="./power-zones.html" class="nav-pill">Power Zones</a>
-    <a href="./quick-target.html" class="nav-pill">Quick Target</a>
-    <a href="./heat-check.html" class="nav-pill">Heat Check</a>
-    <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
-    <a href="./weather.html" class="nav-pill">Weather</a>
-    <a href="./results.html" class="nav-pill active">Results</a>
-    <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">The Slip Lab</a>
+    <div class="nav">
+      <a href="./index.html" class="nav-pill">Slate</a>
+      <a href="./full-board.html" class="nav-pill">Full Board</a>
+      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
+      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
+      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
+      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
+      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
+      <a href="./weather.html" class="nav-pill">Weather</a>
+      <a href="./results.html" class="nav-pill active">Results</a>
+      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+    </div>
   </div>
-</div></div>
+</div>
 
 <main class="wrap">
-  <h1 class="title">HR Results</h1>
-  <p class="sub">Every player who has hit a home run from the live results file.</p>
-  <div class="toolbar">
-    <input id="search" class="search" placeholder="Search player, team, opponent, game"/>
-    <div class="small-pill" id="status">Loading</div>
+  <section class="top-row">
+    <div>
+      <div class="eyebrow" id="dateLabel">HR Results</div>
+      <h1 class="title">HR Results</h1>
+      <p class="sub">
+        Every home run hit on this slate with opposing pitcher, matchup grade, power signals, and Slip Lab tags.
+      </p>
+    </div>
+    <div class="date-box" id="dateBox">Loading</div>
+  </section>
+
+  <section class="summary">
+    <div class="summary-top">
+      <div class="big-count" id="hrCount">0</div>
+      <div class="summary-label">home runs on this date</div>
+      <div class="milestone" id="milestone">0 tagged</div>
+    </div>
+
+    <div class="bar">
+      <div class="bar-fill" id="barFill" style="width:0%"></div>
+    </div>
+
+    <div class="summary-grid">
+      <div><div class="mini-label">Strong</div><div class="mini-value" id="strongCount">0</div><div class="mini-sub" id="strongPct">0%</div></div>
+      <div><div class="mini-label">Mod.</div><div class="mini-value" id="modCount">0</div><div class="mini-sub" id="modPct">0%</div></div>
+      <div><div class="mini-label">Hot</div><div class="mini-value" id="hotCount">0</div><div class="mini-sub" id="hotPct">0%</div></div>
+      <div><div class="mini-label">Danger</div><div class="mini-value" id="dangerCount">0</div><div class="mini-sub" id="dangerPct">0%</div></div>
+      <div><div class="mini-label">Top 30</div><div class="mini-value" id="topCount">0</div><div class="mini-sub" id="topPct">0%</div></div>
+      <div><div class="mini-label">Avg Sig.</div><div class="mini-value" id="avgSig">0.0</div><div class="mini-sub">per hitter</div></div>
+    </div>
+  </section>
+
+  <div class="tabs">
+    <div class="tab" id="allTab">All HRs</div>
+    <div class="tab" id="pickTab">Slip Lab Tags</div>
   </div>
-  <section class="grid" id="grid"></section>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Batter</th>
+          <th>Team</th>
+          <th>HR</th>
+          <th>Opp. SP</th>
+          <th>Hand</th>
+          <th>ERA</th>
+          <th>BRL%</th>
+          <th>HH%</th>
+          <th>Score</th>
+          <th>Sig.</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
 </main>
 
 <script>
-let rows = [];
+let results = [];
+let model = [];
+
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
-function getRows(json){return Array.isArray(json) ? json : json.results || json.data || json.rows || json.homeRuns || []}
-function player(row){return row.player || row.name || row.batter || row.hitter || row.playerName || "Unknown Player"}
-function team(row){return row.team || row.player_team || row.batter_team || row.hittingTeam || ""}
-function opponent(row){return row.opponent || row.opp || row.pitchingTeam || ""}
-function homer(row){
-  const keys = ["hr","home_run","homeRun","did_homer","hit_hr","result","event","description"];
-  return keys.some(k => {
-    const s = String(row[k] || "").toLowerCase();
-    return s === "1" || s === "true" || s === "yes" || s.includes("home run") || s === "hr";
-  });
+function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
+function score(v){return n(v).toFixed(0)}
+function pct(v){return n(v).toFixed(1)}
+function norm(v){return String(v || "").trim().toLowerCase()}
+
+function getRows(json){
+  return Array.isArray(json) ? json : json.homeRuns || json.results || json.data || json.rows || [];
 }
+
+function modelMap(){
+  const map = new Map();
+  model.forEach(row => map.set(norm(row.player), row));
+  return map;
+}
+
+function tagClass(tag){
+  const t = String(tag || "").toLowerCase();
+  if(t.includes("strong") || t.includes("elite")) return "strong";
+  if(t.includes("hot")) return "hot";
+  if(t.includes("danger") || t.includes("leak")) return "danger";
+  if(t.includes("mod") || t.includes("watch")) return "moderate";
+  if(t.includes("pitch") || t.includes("barrel") || t.includes("power")) return "power";
+  return "zone";
+}
+
+function buildTags(row, m, rank){
+  const tags = [];
+
+  if(m){
+    if(n(m.hrConfidence) >= 52) tags.push("STRONG");
+    else if(n(m.hrConfidence) >= 42) tags.push("MODERATE");
+
+    if(n(m.pitcherRisk) >= 55) tags.push("DANGER");
+    if(n(m.pitchEdge) >= 55) tags.push("PITCH EDGE");
+    if(n(m.hotZoneCount) >= 5) tags.push("ZONE 5+");
+    if(n(m.hitterZonePower) >= 60) tags.push("POWER ZONE");
+    if(rank <= 30) tags.push("TOP 30");
+  }
+
+  if(tags.length === 0) tags.push("HR");
+
+  return tags.slice(0,6);
+}
+
 function render(){
-  const q = document.getElementById("search").value.toLowerCase();
-  const filtered = rows.filter(homer).filter(row => {
-    return [player(row),team(row),opponent(row),row.game,row.matchup].join(" ").toLowerCase().includes(q);
+  const map = modelMap();
+
+  const rows = results.map((row, index) => {
+    const m = map.get(norm(row.player));
+    const rank = m ? model.findIndex(x => norm(x.player) === norm(row.player)) + 1 : 999;
+    const tags = buildTags(row, m, rank);
+
+    return {
+      ...row,
+      model:m,
+      modelRank:rank,
+      tags,
+      sig:tags.length,
+      score:m ? n(m.hrConfidence) : 0,
+      barrel:m ? n(m.barrel || m.barrelRate || m.powerScore * .20) : 0,
+      hardHit:m ? n(m.hardHit || m.powerScore * .65) : 0
+    };
   });
-  document.getElementById("status").textContent = `${filtered.length} HRs`;
-  document.getElementById("grid").innerHTML = filtered.map(row => `
-    <article class="card">
-      <div class="badge">HOME RUN</div>
-      <div class="name">${clean(player(row))}</div>
-      <div class="meta">${clean(team(row))} vs ${clean(opponent(row))}</div>
-      <div class="metrics">
-        <div class="metric"><div class="metric-label">Game</div><div class="metric-value">${clean(row.game || row.matchup)}</div></div>
-        <div class="metric"><div class="metric-label">Inning</div><div class="metric-value">${clean(row.inning)}</div></div>
-        <div class="metric"><div class="metric-label">Pitcher</div><div class="metric-value">${clean(row.pitcher)}</div></div>
-      </div>
-    </article>
+
+  const total = rows.length;
+  const strong = rows.filter(r => r.tags.includes("STRONG")).length;
+  const mod = rows.filter(r => r.tags.includes("MODERATE")).length;
+  const hot = rows.filter(r => r.tags.includes("PITCH EDGE") || r.tags.includes("POWER ZONE")).length;
+  const danger = rows.filter(r => r.tags.includes("DANGER")).length;
+  const top = rows.filter(r => r.modelRank <= 30).length;
+  const avgSig = total ? rows.reduce((s,r) => s + r.sig, 0) / total : 0;
+
+  document.getElementById("hrCount").textContent = total;
+  document.getElementById("milestone").textContent = `${top} top 30 tags`;
+  document.getElementById("allTab").textContent = `All HRs (${total})`;
+  document.getElementById("pickTab").textContent = `Slip Lab Tags (${top}/${total})`;
+  document.getElementById("barFill").style.width = `${Math.min(100, total ? (top / total) * 100 : 0)}%`;
+
+  document.getElementById("strongCount").textContent = strong;
+  document.getElementById("modCount").textContent = mod;
+  document.getElementById("hotCount").textContent = hot;
+  document.getElementById("dangerCount").textContent = danger;
+  document.getElementById("topCount").textContent = top;
+  document.getElementById("avgSig").textContent = avgSig.toFixed(1);
+
+  document.getElementById("strongPct").textContent = total ? Math.round(strong / total * 100) + "%" : "0%";
+  document.getElementById("modPct").textContent = total ? Math.round(mod / total * 100) + "%" : "0%";
+  document.getElementById("hotPct").textContent = total ? Math.round(hot / total * 100) + "%" : "0%";
+  document.getElementById("dangerPct").textContent = total ? Math.round(danger / total * 100) + "%" : "0%";
+  document.getElementById("topPct").textContent = total ? Math.round(top / total * 100) + "%" : "0%";
+
+  document.getElementById("tbody").innerHTML = rows.map((row,index) => `
+    <tr>
+      <td class="rank">${index + 1}</td>
+      <td>
+        <div class="batter">${clean(row.player)}</div>
+        <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
+      </td>
+      <td class="team">${clean(row.team)}</td>
+      <td class="hr">${clean(row.hr || row.homeRuns || 1)}</td>
+      <td>
+        <div class="batter">${clean(row.pitcher)}</div>
+        <div class="small">vs ${clean(row.opponent)}</div>
+      </td>
+      <td class="hand">${clean(row.pitcherHand || row.hand || row.pitchHand || "RHP")}</td>
+      <td class="era ${n(row.era) <= 3.75 && n(row.era) > 0 ? "good" : "bad"}">${clean(row.era)}</td>
+      <td>${pct(row.barrel)}</td>
+      <td>${pct(row.hardHit)}</td>
+      <td class="score">${score(row.score)}</td>
+      <td><div class="sig ${row.sig >= 4 ? "good" : ""}">${row.sig}</div></td>
+      <td><div class="tags">${row.tags.map(t => `<span class="tag ${tagClass(t)}">${t}</span>`).join("")}</div></td>
+    </tr>
   `).join("");
 }
+
 async function load(){
   const res = await fetch("./data/mlb_results.json?v=" + Date.now());
   const json = await res.json();
-  rows = getRows(json);
-  document.getElementById("search").addEventListener("input", render);
+
+  const modelRes = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+  const modelJson = await modelRes.json();
+
+  results = getRows(json);
+  model = (modelJson.allPlayers || []).sort((a,b) => n(b.hrConfidence) - n(a.hrConfidence));
+
+  document.getElementById("dateBox").textContent = clean(json.date);
+  document.getElementById("dateLabel").textContent = clean(json.mode || "HR Results");
+
   render();
 }
+
 load();
 </script>
+
 </body>
 </html>

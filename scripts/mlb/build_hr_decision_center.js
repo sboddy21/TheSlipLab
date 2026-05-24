@@ -266,6 +266,27 @@ function tier(score) {
   return "Watchlist";
 }
 
+function tagsFor(card) {
+  const tags = [];
+
+  if (card.hrConfidence >= 62) tags.push("ELITE");
+  else if (card.hrConfidence >= 52) tags.push("STRONG");
+  else if (card.hrConfidence >= 42) tags.push("MODERATE");
+
+  if (card.pitcherRisk >= 55) tags.push("DANGER");
+  if (card.pitchEdge >= 55) tags.push("PITCH EDGE");
+  if (card.weather >= 20) tags.push("WEATHER");
+  if (card.bullpen >= 55) tags.push("BULLPEN");
+  if (card.due >= 40) tags.push("DUE");
+  if (card.hotZoneCount >= 5) tags.push("ZONE 5+");
+  if (card.hitterZonePower >= 60) tags.push("POWER ZONE");
+  if (card.pitcherLeak >= 70) tags.push("LEAK");
+  if (card.zoneOverlap >= 55) tags.push("OVERLAP");
+  if (card.powerScore >= 60) tags.push("POWER");
+
+  return tags.slice(0, 6);
+}
+
 function reasonsFor(powerScore, pitchEdge, pitcherRisk, weather, due) {
   const reasons = [];
 
@@ -309,7 +330,7 @@ function buildCard(row) {
     bullpen * 0.10
   );
 
-  return {
+  const card = {
     player,
     team,
     opponent,
@@ -341,6 +362,10 @@ function buildCard(row) {
     hardHitZones: statcast.hardHitZones,
     barrelZones: statcast.barrelZones
   };
+
+  card.tags = tagsFor(card);
+
+  return card;
 }
 
 function topUnique(rows, scoreKey, limit = 12) {
