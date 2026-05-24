@@ -3,603 +3,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Slip Lab | MLB HR Slate</title>
+  <title>The Slip Lab | HR Slate</title>
 
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      background:#05060b;
-      color:#f5f7fb;
-      font-family:Inter,Arial,sans-serif;
-    }
+    body{background:#05080a;color:#f3f7f4;font-family:Inter,Arial,sans-serif}
     a{text-decoration:none;color:inherit}
 
-    .topbar{
-      position:sticky;
-      top:0;
-      z-index:1000;
-      background:#07080d;
-      border-bottom:1px solid rgba(255,255,255,.08);
-    }
-
-    .topbar-inner{
-      max-width:1500px;
-      margin:0 auto;
-      padding:12px 22px;
-      display:flex;
-      align-items:center;
-      gap:18px;
-    }
-
-    .brand{
-      font-size:20px;
-      font-weight:950;
-      color:#fff;
-      white-space:nowrap;
-      margin-right:10px;
-    }
-
-    .nav{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .nav-pill{
-      background:#10161d;
-      border:1px solid rgba(255,255,255,.09);
-      color:#d8e1ea;
-      border-radius:13px;
-      padding:8px 13px;
-      font-size:12px;
-      font-weight:900;
-    }
-
-    .nav-pill.active{
-      background:#93ff2d;
-      color:#05060b;
-      border-color:#93ff2d;
-    }
-
-    .wrap{
-      max-width:1500px;
-      margin:0 auto;
-      padding:24px 22px 70px;
-    }
-
-    .slate-head{
-      display:flex;
-      justify-content:space-between;
-      gap:18px;
-      align-items:flex-start;
-      margin-bottom:18px;
-    }
-
-    .eyebrow{
-      color:#8f98a6;
-      font-size:11px;
-      font-weight:950;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      margin-bottom:8px;
-    }
-
-    .title{
-      font-size:31px;
-      line-height:1;
-      font-weight:950;
-      margin-bottom:8px;
-    }
-
-    .sub{
-      color:#8f98a6;
-      font-size:13px;
-      max-width:760px;
-      line-height:1.4;
-    }
-
-    .status-row{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
-
-    .status-pill{
-      background:#0d1219;
-      border:1px solid rgba(255,255,255,.08);
-      color:#9fa8b4;
-      border-radius:10px;
-      padding:8px 11px;
-      font-size:11px;
-      font-weight:900;
-    }
-
-    .status-pill.live{
-      color:#00e599;
-    }
-
-    .filters{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      padding:12px 0 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      margin-bottom:16px;
-    }
-
-    .filter-pill{
-      background:#101118;
-      border:1px solid rgba(255,255,255,.07);
-      color:#aab3bf;
-      border-radius:12px;
-      padding:8px 12px;
-      font-size:11px;
-      font-weight:950;
-      text-transform:uppercase;
-      letter-spacing:.05em;
-      cursor:pointer;
-    }
-
-    .filter-pill.active{
-      color:#ff6b2c;
-      border-color:rgba(255,107,44,.55);
-      background:rgba(255,107,44,.10);
-    }
-
-    .top-panel{
-      background:#0b0d14;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:13px;
-      margin-bottom:16px;
-      overflow:hidden;
-    }
-
-    .top-panel-head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,.07);
-    }
-
-    .panel-label{
-      color:#9fa8b4;
-      font-size:11px;
-      font-weight:950;
-      letter-spacing:.18em;
-      text-transform:uppercase;
-    }
-
-    .panel-note{
-      color:#ff6b2c;
-      font-size:12px;
-      font-weight:950;
-    }
-
-    .vuln-strip{
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-    }
-
-    .vuln-mini{
-      padding:13px 14px;
-      border-right:1px solid rgba(255,255,255,.07);
-      min-height:78px;
-    }
-
-    .vuln-mini:last-child{border-right:none}
-
-    .rankline{
-      display:flex;
-      gap:8px;
-      align-items:center;
-      margin-bottom:6px;
-    }
-
-    .rank{
-      color:#00e599;
-      font-size:11px;
-      font-weight:950;
-    }
-
-    .vscore{
-      color:#ff5f70;
-      font-size:20px;
-      font-weight:950;
-    }
-
-    .target-tag{
-      color:#ff5f70;
-      border:1px solid rgba(255,95,112,.35);
-      background:rgba(255,95,112,.10);
-      border-radius:6px;
-      padding:3px 5px;
-      font-size:9px;
-      font-weight:950;
-    }
-
-    .pitcher-name{
-      font-size:13px;
-      font-weight:950;
-      color:#f8fafc;
-      margin-bottom:3px;
-    }
-
-    .pitcher-sub{
-      font-size:11px;
-      color:#8d96a3;
-    }
-
-    .game-tabs{
-      display:flex;
-      gap:26px;
-      overflow:auto;
-      padding:10px 0 16px;
-      border-bottom:1px solid rgba(255,255,255,.08);
-      margin-bottom:18px;
-    }
-
-    .game-tab{
-      min-width:max-content;
-      color:#8f98a6;
-      font-size:12px;
-      font-weight:950;
-      text-align:center;
-      padding-bottom:9px;
-      border-bottom:2px solid transparent;
-      cursor:pointer;
-    }
-
-    .game-tab.active{
-      color:#fff;
-      border-bottom-color:#ff6b2c;
-    }
-
-    .game-time{
-      color:#626b76;
-      font-size:10px;
-      margin-top:3px;
-    }
-
-    .matchup-grid{
-      display:grid;
-      grid-template-columns:repeat(2,1fr);
-      gap:18px;
-    }
-
-    .pitcher-card{
-      background:#090b12;
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:14px;
-      overflow:hidden;
-    }
-
-    .pitcher-header{
-      position:relative;
-      padding:20px 18px;
-      min-height:170px;
-      border-bottom:1px solid rgba(255,255,255,.07);
-      overflow:hidden;
-    }
-
-    .pitcher-header:before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(circle at 86% 30%, rgba(147,255,45,.10), transparent 18%),
-        linear-gradient(135deg,rgba(95,35,155,.20),transparent 48%);
-      opacity:.8;
-    }
-
-    .pitcher-main{
-      position:relative;
-      z-index:2;
-      display:grid;
-      grid-template-columns:1fr 86px;
-      gap:14px;
-      align-items:start;
-    }
-
-    .pitcher-title{
-      display:flex;
-      align-items:center;
-      gap:9px;
-      margin-bottom:7px;
-    }
-
-    .avatar{
-      width:36px;
-      height:36px;
-      border-radius:50%;
-      background:linear-gradient(135deg,#1c2635,#38475c);
-      border:2px solid rgba(255,255,255,.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-weight:950;
-      color:#fff;
-      font-size:13px;
-    }
-
-    .pname{
-      font-size:21px;
-      font-weight:950;
-      color:#fff;
-    }
-
-    .ptype{
-      display:inline-flex;
-      background:#161a22;
-      color:#aeb7c2;
-      border:1px solid rgba(255,255,255,.08);
-      padding:5px 7px;
-      border-radius:7px;
-      font-size:11px;
-      font-weight:950;
-    }
-
-    .pitcher-meta{
-      color:#8f98a6;
-      font-size:14px;
-      margin-bottom:4px;
-    }
-
-    .red-note{
-      color:#ff5f70;
-      font-size:11px;
-      font-weight:950;
-      margin-top:7px;
-    }
-
-    .vuln-box{
-      justify-self:end;
-      width:76px;
-      height:88px;
-      border-radius:8px;
-      background:rgba(30,70,135,.18);
-      border:1px solid rgba(70,140,255,.35);
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      color:#58a6ff;
-    }
-
-    .vuln-num{
-      font-size:34px;
-      font-weight:950;
-      line-height:1;
-    }
-
-    .vuln-label{
-      color:#9aa4af;
-      font-size:10px;
-      font-weight:950;
-      margin-top:6px;
-    }
-
-    .stat-row{
-      position:relative;
-      z-index:2;
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-top:28px;
-    }
-
-    .pstat{
-      text-align:center;
-    }
-
-    .pstat-label{
-      color:#8f98a6;
-      font-size:11px;
-      font-weight:950;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:5px;
-    }
-
-    .pstat-value{
-      font-size:18px;
-      font-weight:950;
-      color:#f8fafc;
-    }
-
-    .danger-section{
-      padding:14px;
-    }
-
-    .danger-title{
-      display:flex;
-      justify-content:space-between;
-      color:#9aa4af;
-      font-size:11px;
-      font-weight:950;
-      text-transform:uppercase;
-      letter-spacing:.18em;
-      margin-bottom:10px;
-    }
-
-    .batter-stack{
-      display:flex;
-      flex-direction:column;
-      gap:8px;
-    }
-
-    .danger-batter{
-      position:relative;
-      min-height:116px;
-      border-radius:8px;
-      overflow:hidden;
-      border-left:3px solid #b85cff;
-      background:
-        linear-gradient(90deg,rgba(58,12,95,.72),rgba(28,12,45,.72)),
-        radial-gradient(circle at 82% 45%,rgba(255,106,0,.22),transparent 40%);
-      display:grid;
-      grid-template-columns:34px 1fr 92px;
-      gap:10px;
-      padding:10px;
-    }
-
-    .danger-batter.gold{
-      border-left-color:#ffc400;
-      background:
-        linear-gradient(90deg,rgba(92,45,8,.72),rgba(30,16,9,.72)),
-        radial-gradient(circle at 82% 45%,rgba(255,120,0,.20),transparent 40%);
-    }
-
-    .danger-batter.blue{
-      border-left-color:#00d5ff;
-      background:
-        linear-gradient(90deg,rgba(13,60,100,.62),rgba(16,15,32,.78)),
-        radial-gradient(circle at 82% 45%,rgba(0,213,255,.16),transparent 40%);
-    }
-
-    .batter-face{
-      width:30px;
-      height:30px;
-      border-radius:50%;
-      background:linear-gradient(135deg,#223044,#56677d);
-      border:1px solid rgba(255,255,255,.20);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size:11px;
-      font-weight:950;
-      margin-top:2px;
-    }
-
-    .batter-name-row{
-      display:flex;
-      align-items:center;
-      flex-wrap:wrap;
-      gap:6px;
-      margin-bottom:6px;
-    }
-
-    .batter-rank{
-      color:#fff;
-      font-weight:950;
-      font-size:17px;
-    }
-
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      border-radius:6px;
-      padding:4px 6px;
-      font-size:10px;
-      font-weight:950;
-      line-height:1;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.06);
-      color:#dce5ee;
-    }
-
-    .badge.red{background:rgba(255,77,90,.15);border-color:rgba(255,77,90,.55);color:#ff5f70}
-    .badge.orange{background:rgba(255,107,0,.15);border-color:rgba(255,107,0,.55);color:#ff8a00}
-    .badge.purple{background:rgba(160,85,255,.15);border-color:rgba(160,85,255,.55);color:#c091ff}
-    .badge.blue{background:rgba(0,130,255,.15);border-color:rgba(0,130,255,.55);color:#52a8ff}
-    .badge.cyan{background:rgba(0,213,255,.13);border-color:rgba(0,213,255,.50);color:#00d5ff}
-    .badge.green{background:rgba(0,208,132,.13);border-color:rgba(0,208,132,.45);color:#00d084}
-    .badge.gold{background:rgba(255,196,0,.13);border-color:rgba(255,196,0,.52);color:#ffc400}
-
-    .scout-line{
-      color:#c4cad4;
-      font-size:12px;
-      font-style:italic;
-      margin-bottom:5px;
-    }
-
-    .why{
-      color:#ff6b2c;
-      font-size:12px;
-      margin-bottom:5px;
-    }
-
-    .last7{
-      color:#00d084;
-      font-size:12px;
-      font-weight:900;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    }
-
-    .right-metrics{
-      text-align:right;
-      padding-top:3px;
-      color:#f8fafc;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-      font-size:12px;
-      line-height:1.55;
-    }
-
-    .right-metrics .hot{
-      color:#ffb000;
-      font-weight:950;
-    }
-
-    .splits{
-      margin:12px 14px 14px;
-      background:#070910;
-      border:1px solid rgba(255,255,255,.06);
-      border-radius:10px;
-      overflow:hidden;
-    }
-
-    .split-head{
-      padding:10px 12px;
-      color:#9aa4af;
-      font-size:11px;
-      font-weight:950;
-      letter-spacing:.12em;
-      text-transform:uppercase;
-      border-bottom:1px solid rgba(255,255,255,.06);
-    }
-
-    .split-table{
-      width:100%;
-      border-collapse:collapse;
-    }
-
-    .split-table th{
-      color:#8f98a6;
-      font-size:10px;
-      text-transform:uppercase;
-      padding:8px;
-      text-align:right;
-    }
-
-    .split-table th:first-child{text-align:left}
-    .split-table td{
-      padding:8px;
-      font-size:11px;
-      border-top:1px solid rgba(255,255,255,.04);
-      text-align:right;
-      color:#dce5ee;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-    }
-
-    .split-table td:first-child{
-      text-align:left;
-      color:#ff6b2c;
-      font-weight:950;
-    }
+    .topbar{position:sticky;top:0;z-index:1000;background:#070b0d;border-bottom:1px solid rgba(255,255,255,.07)}
+    .topbar-inner{max-width:1500px;margin:auto;padding:10px 20px;display:flex;align-items:center;gap:16px}
+    .brand{font-size:20px;font-weight:950;margin-right:10px}
+    .nav{display:flex;gap:8px;flex-wrap:wrap}
+    .nav-pill{background:#10181b;border:1px solid rgba(255,255,255,.08);color:#d9e4df;border-radius:13px;padding:8px 13px;font-size:12px;font-weight:900}
+    .nav-pill.active{background:#8cff32;color:#061006;border-color:#8cff32}
+
+    .wrap{max-width:1500px;margin:auto;padding:22px 20px 70px}
+    .head{display:flex;justify-content:space-between;gap:16px;margin-bottom:16px}
+    .eyebrow{font-size:10px;letter-spacing:.16em;color:#7d8a84;text-transform:uppercase;font-weight:950;margin-bottom:6px}
+    .title{font-size:30px;font-weight:950;margin-bottom:6px}
+    .sub{font-size:13px;color:#98a59f}
+
+    .live-pill{background:#0d1719;border:1px solid rgba(140,255,50,.18);color:#8cff32;border-radius:999px;padding:8px 12px;font-size:12px;font-weight:950}
+
+    .vuln-panel{background:#090f12;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;margin-bottom:14px}
+    .panel-head{display:flex;justify-content:space-between;align-items:center;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .panel-title{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9aa6a0;font-weight:950}
+    .panel-note{font-size:12px;color:#8cff32;font-weight:950}
+    .vuln-strip{display:grid;grid-template-columns:repeat(5,1fr)}
+    .vuln-item{padding:11px 13px;border-right:1px solid rgba(255,255,255,.06)}
+    .vuln-item:last-child{border-right:none}
+    .vuln-rank{font-size:10px;color:#00e0a4;font-weight:950}
+    .vuln-score{font-size:20px;color:#8cff32;font-weight:950;margin:2px 0}
+    .vuln-name{font-size:13px;font-weight:950}
+    .vuln-sub{font-size:11px;color:#8a9690;margin-top:3px}
+
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+    .filter{background:#10181b;border:1px solid rgba(255,255,255,.08);color:#dce6e1;border-radius:12px;padding:8px 12px;font-size:11px;font-weight:950;cursor:pointer}
+    .filter.active{background:rgba(140,255,50,.14);border-color:rgba(140,255,50,.45);color:#8cff32}
+
+    .game-tabs{display:flex;gap:22px;overflow:auto;margin:8px 0 16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.07)}
+    .game-tab{min-width:max-content;font-size:12px;color:#8f9a95;font-weight:950;cursor:pointer;padding-bottom:8px;border-bottom:2px solid transparent;text-align:center}
+    .game-tab.active{color:#fff;border-color:#8cff32}
+    .game-tab small{display:block;font-size:10px;color:#65716c;margin-top:2px}
+
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .match-card{background:#090f12;border:1px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden}
+
+    .match-top{padding:14px;border-bottom:1px solid rgba(255,255,255,.06);display:grid;grid-template-columns:1fr 72px;gap:10px;background:linear-gradient(135deg,rgba(20,45,38,.52),rgba(8,12,16,.92))}
+    .match-name{font-size:18px;font-weight:950}
+    .match-meta{font-size:12px;color:#9aa6a0;margin-top:4px}
+    .risk-note{font-size:11px;color:#00e0a4;font-weight:900;margin-top:7px}
+    .vbox{height:72px;border-radius:10px;border:1px solid rgba(0,224,164,.28);background:rgba(0,224,164,.08);display:flex;align-items:center;justify-content:center;flex-direction:column}
+    .vbox strong{font-size:30px;color:#8cff32}
+    .vbox span{font-size:9px;color:#a4afaa;font-weight:950}
+
+    .mini-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
+    .mini{text-align:center}
+    .mini label{display:block;font-size:9px;color:#7d8983;text-transform:uppercase;font-weight:950;margin-bottom:3px}
+    .mini b{font-size:14px}
+
+    .danger{padding:11px 13px}
+    .danger-head{display:flex;justify-content:space-between;align-items:center;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#9aa6a0;font-weight:950;margin-bottom:8px}
+    .bats{display:flex;flex-direction:column;gap:7px}
+
+    .bat{display:grid;grid-template-columns:30px 1fr 82px;gap:9px;min-height:96px;padding:9px;border-radius:9px;border-left:3px solid #00e0a4;background:linear-gradient(90deg,rgba(0,224,164,.12),rgba(11,17,21,.96))}
+    .bat.prime{border-left-color:#8cff32;background:linear-gradient(90deg,rgba(140,255,50,.15),rgba(11,17,21,.96))}
+    .face{width:28px;height:28px;border-radius:50%;background:#1b2b31;border:1px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:950}
+    .bat-name{font-size:15px;font-weight:950;margin:3px 0 5px}
+
+    .tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:5px}
+    .tag{font-size:9px;font-weight:950;border-radius:6px;padding:4px 6px;border:1px solid rgba(255,255,255,.12);background:#111a1e;color:#dce6e1}
+    .tag.green{color:#8cff32;border-color:rgba(140,255,50,.35);background:rgba(140,255,50,.10)}
+    .tag.teal{color:#00e0a4;border-color:rgba(0,224,164,.35);background:rgba(0,224,164,.10)}
+    .tag.blue{color:#6eb7ff;border-color:rgba(110,183,255,.35);background:rgba(110,183,255,.10)}
+    .tag.red{color:#ff6274;border-color:rgba(255,98,116,.35);background:rgba(255,98,116,.10)}
+    .tag.gold{color:#ffd25a;border-color:rgba(255,210,90,.35);background:rgba(255,210,90,.10)}
+
+    .why{font-size:11px;color:#c7d1cc;margin-bottom:4px}
+    .why strong{color:#00e0a4}
+    .last{font-size:11px;color:#8cff32;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+    .right{text-align:right;font-size:11px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.55;color:#dce6e1}
+    .right .hot{color:#8cff32;font-weight:950}
+
+    .split{margin:10px 13px 13px;border:1px solid rgba(255,255,255,.06);border-radius:10px;overflow:hidden;background:#070b0e}
+    .split-title{padding:8px 10px;font-size:10px;color:#9aa6a0;letter-spacing:.12em;text-transform:uppercase;font-weight:950;border-bottom:1px solid rgba(255,255,255,.06)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:7px 8px;font-size:10px;border-top:1px solid rgba(255,255,255,.04);text-align:right;color:#dce6e1}
+    th:first-child,td:first-child{text-align:left;color:#8cff32;font-weight:950}
+    th{color:#7f8b85;text-transform:uppercase;font-size:9px}
 
     @media(max-width:1050px){
-      .matchup-grid{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
       .vuln-strip{grid-template-columns:repeat(2,1fr)}
-    }
-
-    @media(max-width:720px){
-      .slate-head{flex-direction:column}
-      .danger-batter{grid-template-columns:30px 1fr}
-      .right-metrics{grid-column:2;text-align:left}
-      .summary-grid{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
@@ -609,223 +105,181 @@
   <div class="topbar-inner">
     <a class="brand" href="./index.html">The Slip Lab</a>
     <nav class="nav">
-      <a href="./index.html" class="nav-pill active">Slate</a>
-      <a href="./full-board.html" class="nav-pill">Full Board</a>
-      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
-      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
-      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
-      <a href="./heat-check.html" class="nav-pill">Heat Check</a>
-      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
-      <a href="./weather.html" class="nav-pill">Weather</a>
-      <a href="./results.html" class="nav-pill">Results</a>
-      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a>
+      <a class="nav-pill active" href="./index.html">Slate</a>
+      <a class="nav-pill" href="./full-board.html">Full Board</a>
+      <a class="nav-pill" href="./matchup-lab.html">Matchup Lab</a>
+      <a class="nav-pill" href="./power-zones.html">Power Zones</a>
+      <a class="nav-pill" href="./quick-target.html">Quick Target</a>
+      <a class="nav-pill" href="./heat-check.html">Heat Check</a>
+      <a class="nav-pill" href="./streak-lab.html">Streak Lab</a>
+      <a class="nav-pill" href="./weather.html">Weather</a>
+      <a class="nav-pill" href="./results.html">Results</a>
+      <a class="nav-pill" href="./hr-decision-center.html">Decision Center</a>
     </nav>
   </div>
 </div>
 
 <main class="wrap">
-  <section class="slate-head">
+  <section class="head">
     <div>
       <div class="eyebrow">Today’s Slate</div>
       <h1 class="title">Home Run Targets</h1>
       <p class="sub">Pitcher vulnerability, danger bats, power zones, pitch damage, weather carry, and recent HR signals.</p>
     </div>
-
-    <div class="status-row">
-      <span class="status-pill active">Today</span>
-      <span class="status-pill">Live HR</span>
-      <span class="status-pill">Refresh</span>
-      <span class="status-pill live" id="updatedPill">Loading</span>
-    </div>
+    <div class="live-pill" id="updated">Loading</div>
   </section>
 
-  <section class="top-panel">
-    <div class="top-panel-head">
-      <div class="panel-label">Top Vulnerabilities</div>
-      <div class="panel-note" id="topNote">Loading</div>
+  <section class="vuln-panel">
+    <div class="panel-head">
+      <div class="panel-title">Top Vulnerabilities</div>
+      <div class="panel-note" id="avgVuln">Loading</div>
     </div>
     <div class="vuln-strip" id="vulnStrip"></div>
   </section>
 
   <section class="filters">
-    <button class="filter-pill active" data-filter="all">All</button>
-    <button class="filter-pill" data-filter="zone">Zone 5+</button>
-    <button class="filter-pill" data-filter="elite">Elite Power</button>
-    <button class="filter-pill" data-filter="weather">Weather Carry</button>
-    <button class="filter-pill" data-filter="danger">Pitcher Danger</button>
+    <button class="filter active" data-filter="all">All</button>
+    <button class="filter" data-filter="zone">Zone 5+</button>
+    <button class="filter" data-filter="power">Elite Power</button>
+    <button class="filter" data-filter="weather">Weather Carry</button>
+    <button class="filter" data-filter="danger">Pitcher Danger</button>
   </section>
 
   <section class="game-tabs" id="gameTabs"></section>
-
-  <section class="matchup-grid" id="matchupGrid"></section>
+  <section class="grid" id="grid"></section>
 </main>
 
 <script>
-let board = [];
+let players = [];
 let activeGame = "all";
 let activeFilter = "all";
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
-function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
-function score(v){return n(v).toFixed(0)}
+function n(v){const x=Number(v);return Number.isFinite(x)?x:0}
 function one(v){return n(v).toFixed(1)}
+function whole(v){return Math.round(n(v))}
 function dec(v){return n(v).toFixed(3).replace(/^0/,"")}
-function norm(v){return String(v || "").trim().toLowerCase()}
+function initials(v){return clean(v).split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase()}
+function game(row){return clean(row.game || `${clean(row.team)} vs ${clean(row.opponent)}`)}
+function opponentKey(row){return clean(row.opponent || "Opponent")}
+function pitcherName(row){return clean(row.pitcher && row.pitcher !== "N/A" ? row.pitcher : "Opponent Pitcher")}
 
-function initials(name){
-  return String(name || "?").split(" ").map(x => x[0]).join("").slice(0,2).toUpperCase();
-}
-
-function pitcherFromGame(row){
-  return clean(row.pitcher || row.opposingPitcher || row.probablePitcher || "Opponent Pitcher");
-}
-
-function gameLabel(row){
-  return clean(row.game || `${clean(row.team)} vs ${clean(row.opponent)}`);
-}
-
-function passFilter(row){
+function rowPass(row){
   if(activeFilter === "zone") return n(row.hotZoneCount) >= 5 || n(row.zoneOverlap) >= 55;
-  if(activeFilter === "elite") return n(row.powerScore) >= 55 || n(row.hrConfidence) >= 52;
+  if(activeFilter === "power") return n(row.powerScore) >= 55;
   if(activeFilter === "weather") return n(row.weather) >= 20;
   if(activeFilter === "danger") return n(row.pitcherRisk) >= 55 || n(row.pitcherLeak) >= 65;
   return true;
 }
 
-function tagBadges(row, rank){
-  const tags = [];
+function groupedRows(rows){
+  const map = new Map();
 
-  tags.push(`<span class="badge red">#${rank}</span>`);
+  rows.forEach(row => {
+    const key = game(row);
+    if(!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  });
 
-  if(n(row.hrConfidence) >= 62) tags.push(`<span class="badge red">ELITE</span>`);
-  else if(n(row.hrConfidence) >= 52) tags.push(`<span class="badge orange">HIGH</span>`);
-  else if(n(row.hrConfidence) >= 42) tags.push(`<span class="badge gold">MID</span>`);
+  return [...map.entries()].map(([key,list]) => ({
+    key,
+    list:list.sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence)),
+    vuln:list.reduce((s,r)=>s+n(r.pitcherRisk),0) / Math.max(1,list.length)
+  })).sort((a,b)=>b.vuln-a.vuln);
+}
 
-  if(n(row.bestPitch)) tags.push(`<span class="badge blue">PITCH</span>`);
-  if(row.bestPitch) tags.push(`<span class="badge cyan">${clean(row.bestPitch)}</span>`);
-  if(n(row.hotZoneCount) >= 5) tags.push(`<span class="badge gold">ZONE ${clean(row.hotZoneCount)}</span>`);
-  if(n(row.pitcherRisk) >= 55) tags.push(`<span class="badge purple">DANGER</span>`);
-  if(n(row.weather) >= 20) tags.push(`<span class="badge green">WEATHER</span>`);
-  if(n(row.bullpen) >= 55) tags.push(`<span class="badge orange">BULLPEN</span>`);
-  if(n(row.powerScore) >= 55) tags.push(`<span class="badge orange">PWR ${score(row.powerScore)}</span>`);
+function tagHTML(row, rank){
+  const tags = [
+    `<span class="tag red">#${rank}</span>`,
+    `<span class="tag ${n(row.hrConfidence)>=52?"green":"gold"}">${n(row.hrConfidence)>=52?"HIGH":"MID"}</span>`,
+    `<span class="tag blue">${clean(row.bestPitch)}</span>`,
+    `<span class="tag gold">ZONE ${whole(row.hotZoneCount || row.zoneOverlap / 7)}</span>`,
+    `<span class="tag teal">PWR ${whole(row.powerScore)}</span>`
+  ];
+
+  if(n(row.pitcherRisk)>=55) tags.push(`<span class="tag red">DANGER</span>`);
+  if(n(row.weather)>=20) tags.push(`<span class="tag teal">WEATHER</span>`);
+  if(n(row.bullpen)>=55) tags.push(`<span class="tag gold">BULLPEN</span>`);
 
   return tags.slice(0,8).join("");
 }
 
-function batterCard(row, rank){
-  const tone = rank === 1 ? "blue" : rank <= 3 ? "" : "gold";
-  const hrText = clean(row.seasonHr || row.hrSeason || Math.max(1, Math.round(n(row.powerScore) / 5)));
+function batter(row, rank){
+  const prime = rank === 1 ? "prime" : "";
 
   return `
-    <article class="danger-batter ${tone}">
-      <div class="batter-face">${initials(row.player)}</div>
-
+    <article class="bat ${prime}">
+      <div class="face">${initials(row.player)}</div>
       <div>
-        <div class="batter-name-row">
-          ${tagBadges(row, rank)}
-          <span class="batter-rank">#${rank} ${clean(row.player)}</span>
+        <div class="tags">${tagHTML(row, rank)}</div>
+        <div class="bat-name">#${rank} ${clean(row.player)}</div>
+        <div class="tags">
+          <span class="tag gold">${Math.max(1,whole(n(row.powerScore)/5))} HR</span>
+          <span class="tag red">HH ${whole(n(row.powerScore)*.78)}%</span>
+          <span class="tag gold">${whole(row.pitcherLeak)} leak</span>
+          <span class="tag blue">${whole(row.zoneOverlap)} overlap</span>
         </div>
-
-        <div class="batter-name-row">
-          <span class="badge orange">${hrText} HR</span>
-          <span class="badge red">HH ${score(n(row.powerScore) * .78)}%</span>
-          <span class="badge gold">${score(row.pitcherLeak)} leak</span>
-          <span class="badge purple">${score(row.zoneOverlap)} overlap</span>
-        </div>
-
-        <div class="scout-line">
-          ${n(row.pitchEdge) >= 55 ? "elite pitch damage" : "solid pitch damage"} · ${n(row.pitcherRisk) >= 55 ? "pitcher leak profile" : "playable pitcher profile"} · ${hrText} HR season
-        </div>
-
-        <div class="why">
-          Why this matters: ${clean(row.reasons && row.reasons.length ? row.reasons.join(" + ") : "power profile plus matchup fit")}
-        </div>
-
-        <div class="last7">
-          L7: ${dec(n(row.avgZones?.[12]?.value || .250))} AVG · ${Math.max(0, Math.round(n(row.hrZones?.[12]?.value || 0)))} HR · ${dec(n(row.slgZones?.[12]?.value || .450))} SLG
-        </div>
+        <div class="why"><strong>Why it matters:</strong> ${clean(row.reasons?.join(" + ") || "power profile plus matchup fit")}</div>
+        <div class="last">L7: ${dec(row.avgZones?.[12]?.value || .250)} AVG · ${whole(row.hrZones?.[12]?.value || 0)} HR · ${dec(row.slgZones?.[12]?.value || .450)} SLG</div>
       </div>
-
-      <div class="right-metrics">
-        <div>${dec(n(row.isoZones?.[12]?.value || .180))} ISO</div>
-        <div class="hot">${one(n(row.barrelZones?.[12]?.value || .12) * 100)}% BRL</div>
-        <div class="hot">${score(row.hrConfidence)} SCORE</div>
+      <div class="right">
+        <div>${dec(row.isoZones?.[12]?.value || .180)} ISO</div>
+        <div class="hot">${one(n(row.barrelZones?.[12]?.value || .12)*100)}% BRL</div>
+        <div class="hot">${whole(row.hrConfidence)} SCORE</div>
       </div>
     </article>
   `;
 }
 
-function pitcherCard(game, hitters, index){
-  const sorted = [...hitters].sort((a,b) => n(b.hrConfidence) - n(a.hrConfidence));
-  const top = sorted[0] || {};
-  const pitcher = pitcherFromGame(top);
-  const vuln = Math.round(sorted.reduce((s,r)=>s + n(r.pitcherRisk),0) / Math.max(1,sorted.length));
-  const danger = sorted.slice(0,5);
+function card(group){
+  const top = group.list[0] || {};
+  const bats = group.list.slice(0,5);
+  const vuln = whole(group.vuln);
 
   return `
-    <section class="pitcher-card">
-      <div class="pitcher-header">
-        <div class="pitcher-main">
-          <div>
-            <div class="pitcher-title">
-              <div class="avatar">${initials(pitcher)}</div>
-              <div class="pname">${pitcher}</div>
-              <span class="ptype">${vuln >= 65 ? "TARGET" : vuln >= 52 ? "STRONG" : "SOLID"}</span>
-            </div>
+    <section class="match-card">
+      <div class="match-top">
+        <div>
+          <div class="match-name">${pitcherName(top)}</div>
+          <div class="match-meta">${opponentKey(top)} · RHP · vs ${clean(top.team)}</div>
+          <div class="risk-note">HR risk profile built from attack zones, pitch damage, and power bats</div>
 
-            <div class="pitcher-meta">${clean(top.opponent)} · RHP · vs ${clean(top.team)}</div>
-            <div class="red-note">HR risk profile built from attack zones, pitch damage, and power bats</div>
-          </div>
-
-          <div class="vuln-box">
-            <div class="vuln-num">${vuln}</div>
-            <div class="vuln-label">VULN</div>
+          <div class="mini-stats">
+            <div class="mini"><label>Risk</label><b>${vuln}</b></div>
+            <div class="mini"><label>Leak</label><b>${whole(top.pitcherLeak)}</b></div>
+            <div class="mini"><label>Zone</label><b>${whole(top.zoneOverlap)}</b></div>
+            <div class="mini"><label>Bats</label><b>${bats.length}</b></div>
           </div>
         </div>
 
-        <div class="stat-row">
-          <div class="pstat"><div class="pstat-label">Risk</div><div class="pstat-value">${vuln}</div></div>
-          <div class="pstat"><div class="pstat-label">Leak</div><div class="pstat-value">${score(top.pitcherLeak)}</div></div>
-          <div class="pstat"><div class="pstat-label">Zone</div><div class="pstat-value">${score(top.zoneOverlap)}</div></div>
-          <div class="pstat"><div class="pstat-label">Bats</div><div class="pstat-value">${danger.length}</div></div>
+        <div class="vbox">
+          <strong>${vuln}</strong>
+          <span>VULN</span>
         </div>
       </div>
 
-      <div class="danger-section">
-        <div class="danger-title">
+      <div class="danger">
+        <div class="danger-head">
           <span>Danger Batters</span>
-          <span>tap to scout · top 5</span>
+          <span>Top 5</span>
         </div>
-
-        <div class="batter-stack">
-          ${danger.map((row,i) => batterCard(row,i + 1)).join("")}
-        </div>
+        <div class="bats">${bats.map((r,i)=>batter(r,i+1)).join("")}</div>
       </div>
 
-      <div class="splits">
-        <div class="split-head">Most Dangerous Batting Spots</div>
-        <table class="split-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>AVG</th>
-              <th>ISO</th>
-              <th>SLG</th>
-              <th>HR</th>
-              <th>BRL</th>
-              <th>HH</th>
-            </tr>
-          </thead>
+      <div class="split">
+        <div class="split-title">Most Dangerous Batting Spots</div>
+        <table>
+          <thead><tr><th>#</th><th>AVG</th><th>ISO</th><th>SLG</th><th>HR</th><th>BRL</th><th>HH</th></tr></thead>
           <tbody>
-            ${danger.slice(0,3).map((row,i) => `
+            ${bats.slice(0,3).map((r,i)=>`
               <tr>
-                <td>#${i + 1}</td>
-                <td>${dec(n(row.avgZones?.[12]?.value || .240))}</td>
-                <td>${dec(n(row.isoZones?.[12]?.value || .140))}</td>
-                <td>${dec(n(row.slgZones?.[12]?.value || .420))}</td>
-                <td>${Math.round(n(row.hrZones?.[12]?.value || 0))}</td>
-                <td>${one(n(row.barrelZones?.[12]?.value || .11) * 100)}%</td>
-                <td>${one(n(row.hardHitZones?.[12]?.value || .42) * 100)}%</td>
+                <td>#${i+1}</td>
+                <td>${dec(r.avgZones?.[12]?.value || .240)}</td>
+                <td>${dec(r.isoZones?.[12]?.value || .140)}</td>
+                <td>${dec(r.slgZones?.[12]?.value || .420)}</td>
+                <td>${whole(r.hrZones?.[12]?.value || 0)}</td>
+                <td>${one(n(r.barrelZones?.[12]?.value || .11)*100)}%</td>
+                <td>${one(n(r.hardHitZones?.[12]?.value || .42)*100)}%</td>
               </tr>
             `).join("")}
           </tbody>
@@ -835,93 +289,65 @@ function pitcherCard(game, hitters, index){
   `;
 }
 
-function renderVulns(rows){
-  const groups = new Map();
+function renderTop(groups){
+  const top = groups.slice(0,5);
+  const avg = top.reduce((s,g)=>s+g.vuln,0) / Math.max(1,top.length);
+  document.getElementById("avgVuln").textContent = `${one(avg)} avg vuln`;
 
-  rows.forEach(row => {
-    const key = pitcherFromGame(row);
-    if(!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(row);
-  });
-
-  const vulns = Array.from(groups.entries()).map(([pitcher,list]) => {
-    const avg = list.reduce((s,r)=>s + n(r.pitcherRisk),0) / Math.max(1,list.length);
-    const top = list[0] || {};
-    return {pitcher, list, score:avg, top};
-  }).sort((a,b)=>b.score-a.score).slice(0,5);
-
-  document.getElementById("topNote").textContent = `${one(vulns.reduce((s,v)=>s+v.score,0) / Math.max(1,vulns.length))} avg vuln`;
-
-  document.getElementById("vulnStrip").innerHTML = vulns.map((v,i)=>`
-    <div class="vuln-mini">
-      <div class="rankline">
-        <span class="rank">#${i + 1}</span>
-        <span class="vscore">${score(v.score)}</span>
-        <span class="target-tag">${v.score >= 65 ? "TARGET" : "STRONG"}</span>
+  document.getElementById("vulnStrip").innerHTML = top.map((g,i)=>{
+    const first = g.list[0] || {};
+    return `
+      <div class="vuln-item">
+        <div class="vuln-rank">#${i+1}</div>
+        <div class="vuln-score">${whole(g.vuln)}</div>
+        <div class="vuln-name">${pitcherName(first)}</div>
+        <div class="vuln-sub">${clean(first.opponent)} vs ${clean(first.team)}</div>
       </div>
-      <div class="pitcher-name">${v.pitcher}</div>
-      <div class="pitcher-sub">${clean(v.top.opponent)} vs ${clean(v.top.team)}</div>
-    </div>
-  `).join("");
+    `;
+  }).join("");
 }
 
-function renderGameTabs(rows){
-  const games = Array.from(new Set(rows.map(gameLabel))).slice(0,18);
-
+function renderTabs(groups){
   document.getElementById("gameTabs").innerHTML = [
-    `<div class="game-tab ${activeGame === "all" ? "active" : ""}" data-game="all">All Games<div class="game-time">${rows.length} bats</div></div>`,
-    ...games.map(g => `<div class="game-tab ${activeGame === g ? "active" : ""}" data-game="${g}">${g}<div class="game-time">today</div></div>`)
+    `<div class="game-tab ${activeGame==="all"?"active":""}" data-game="all">All Games<small>${players.length} bats</small></div>`,
+    ...groups.map(g=>`<div class="game-tab ${activeGame===g.key?"active":""}" data-game="${g.key}">${g.key}<small>${g.list.length} bats</small></div>`)
   ].join("");
 
-  document.querySelectorAll(".game-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      activeGame = tab.dataset.game;
+  document.querySelectorAll(".game-tab").forEach(tab=>{
+    tab.onclick=()=>{
+      activeGame=tab.dataset.game;
       render();
-    });
+    };
   });
 }
 
 function render(){
-  let rows = board.filter(passFilter);
+  const filtered = players.filter(rowPass);
+  const groups = groupedRows(filtered);
 
-  if(activeGame !== "all"){
-    rows = rows.filter(row => gameLabel(row) === activeGame);
-  }
+  renderTop(groups);
+  renderTabs(groupedRows(players));
 
-  renderVulns(rows);
-  renderGameTabs(board);
-
-  const groups = new Map();
-
-  rows.forEach(row => {
-    const key = gameLabel(row);
-    if(!groups.has(key)) groups.set(key, []);
-    groups.get(key).push(row);
-  });
-
-  const cards = Array.from(groups.entries())
-    .map(([game,hitters]) => ({game,hitters, max:Math.max(...hitters.map(h=>n(h.hrConfidence)))}))
-    .sort((a,b)=>b.max-a.max)
-    .slice(0,8);
-
-  document.getElementById("matchupGrid").innerHTML = cards.map((g,i)=>pitcherCard(g.game,g.hitters,i)).join("");
+  const visible = activeGame === "all" ? groups : groups.filter(g=>g.key===activeGame);
+  document.getElementById("grid").innerHTML = visible.slice(0,12).map(card).join("");
 }
 
 async function load(){
-  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+  const res = await fetch("./data/hr_decision_center.json?v="+Date.now());
   const json = await res.json();
 
-  board = (json.allPlayers || []).sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence));
+  players = (json.allPlayers || []).sort((a,b)=>n(b.hrConfidence)-n(a.hrConfidence));
 
-  document.getElementById("updatedPill").textContent = "Live Data Loaded";
+  document.getElementById("updated").textContent = `Live Data Loaded · ${players.length} bats`;
 
-  document.querySelectorAll(".filter-pill").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-pill").forEach(x => x.classList.remove("active"));
+  document.querySelectorAll(".filter").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));
       btn.classList.add("active");
-      activeFilter = btn.dataset.filter;
+      activeFilter=btn.dataset.filter;
+      activeGame="all";
       render();
-    });
+    };
   });
 
   render();
