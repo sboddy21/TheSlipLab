@@ -357,3 +357,539 @@ load();
 </script>
 </body>
 </html>
+
+<script>
+(() => {
+  const style = document.createElement("style");
+  style.textContent = `
+    .bat{cursor:pointer}
+    .player-modal-backdrop{
+      position:fixed;
+      inset:0;
+      z-index:5000;
+      background:rgba(0,0,0,.76);
+      display:none;
+      align-items:stretch;
+      justify-content:flex-end;
+    }
+    .player-modal-backdrop.open{display:flex}
+    .player-modal{
+      width:min(620px,96vw);
+      height:100vh;
+      overflow-y:auto;
+      background:
+        linear-gradient(180deg,rgba(7,12,16,.94),rgba(5,8,10,.98)),
+        radial-gradient(circle at 20% 0%,rgba(0,224,164,.18),transparent 32%);
+      border-left:1px solid rgba(140,255,50,.26);
+      box-shadow:0 0 55px rgba(0,0,0,.7);
+      padding:18px;
+    }
+    .modal-head{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      align-items:flex-start;
+      margin-bottom:14px;
+    }
+    .modal-player{
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .modal-face{
+      width:54px;
+      height:54px;
+      border-radius:50%;
+      background:#17242a;
+      border:1px solid rgba(255,255,255,.18);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:950;
+      font-size:16px;
+    }
+    .modal-name{
+      font-size:24px;
+      font-weight:950;
+    }
+    .modal-sub{
+      color:#98a59f;
+      font-size:13px;
+      margin-top:5px;
+    }
+    .modal-close{
+      background:#111a1e;
+      border:1px solid rgba(255,255,255,.12);
+      color:#fff;
+      border-radius:10px;
+      padding:9px 11px;
+      font-weight:950;
+      cursor:pointer;
+    }
+    .metric-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      overflow:hidden;
+      margin-bottom:12px;
+    }
+    .metric-box{
+      padding:12px;
+      border-right:1px solid rgba(255,255,255,.07);
+      border-bottom:1px solid rgba(255,255,255,.07);
+      background:rgba(8,13,16,.84);
+      text-align:center;
+    }
+    .metric-box:nth-child(4n){border-right:none}
+    .metric-box label{
+      display:block;
+      color:#8e9994;
+      font-size:9px;
+      font-weight:950;
+      letter-spacing:.08em;
+      margin-bottom:5px;
+    }
+    .metric-box b{
+      color:#8cff32;
+      font-size:15px;
+      font-weight:950;
+    }
+    .modal-tabs{
+      display:flex;
+      gap:6px;
+      overflow:auto;
+      background:#0e1519;
+      border-radius:12px;
+      padding:6px;
+      margin:12px 0;
+      position:sticky;
+      top:0;
+      z-index:5;
+    }
+    .modal-tab{
+      border:0;
+      background:transparent;
+      color:#8f9a95;
+      padding:8px 10px;
+      border-radius:9px;
+      font-weight:950;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .modal-tab.active{
+      background:#05080a;
+      color:#fff;
+      outline:1px solid rgba(140,255,50,.3);
+    }
+    .tab-panel{display:none}
+    .tab-panel.active{display:block}
+    .section-title{
+      font-size:12px;
+      letter-spacing:.14em;
+      color:#8cff32;
+      text-transform:uppercase;
+      font-weight:950;
+      margin:16px 0 10px;
+    }
+    .heat-row{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:10px;
+    }
+    .heat-card{
+      background:rgba(8,13,16,.9);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:12px;
+      padding:9px;
+    }
+    .heat-title{
+      text-align:center;
+      font-size:10px;
+      font-weight:950;
+      color:#9aa6a0;
+      margin-bottom:7px;
+    }
+    .heat-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:2px;
+    }
+    .heat-cell{
+      height:26px;
+      border-radius:3px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:8px;
+      font-weight:950;
+      background:#111920;
+      color:#dce6e1;
+    }
+    .heat-cell.hot1{background:#183b20;color:#8cff32}
+    .heat-cell.hot2{background:#735f12;color:#ffd25a}
+    .heat-cell.hot3{background:#0b7560;color:#00e0a4}
+    .heat-cell.hot4{background:#a83a25;color:#fff}
+    .mini-table{
+      width:100%;
+      border-collapse:collapse;
+      background:rgba(8,13,16,.82);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:12px;
+      overflow:hidden;
+    }
+    .mini-table th,.mini-table td{
+      padding:9px;
+      font-size:11px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      text-align:right;
+    }
+    .mini-table th:first-child,.mini-table td:first-child{text-align:left}
+    .bars{
+      display:grid;
+      gap:10px;
+    }
+    .barline{
+      background:rgba(8,13,16,.88);
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:12px;
+      padding:10px;
+    }
+    .barlabel{
+      display:flex;
+      justify-content:space-between;
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
+    .bartrack{
+      height:8px;
+      background:#111920;
+      border-radius:999px;
+      overflow:hidden;
+    }
+    .barfill{
+      height:100%;
+      background:#8cff32;
+      border-radius:999px;
+    }
+    .spray{
+      height:260px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.07);
+      background:
+        radial-gradient(circle at 50% 90%,rgba(140,255,50,.12),transparent 32%),
+        #071014;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#8cff32;
+      font-weight:950;
+    }
+    @media(max-width:700px){
+      .metric-grid{grid-template-columns:repeat(2,1fr)}
+      .heat-row{grid-template-columns:1fr}
+    }
+  `;
+  document.head.appendChild(style);
+
+  const modal = document.createElement("div");
+  modal.className = "player-modal-backdrop";
+  modal.id = "playerModal";
+  modal.innerHTML = `
+    <aside class="player-modal">
+      <div class="modal-head">
+        <div class="modal-player">
+          <div class="modal-face" id="modalFace">SL</div>
+          <div>
+            <div class="modal-name" id="modalName">Player</div>
+            <div class="modal-sub" id="modalSub">Matchup</div>
+          </div>
+        </div>
+        <button class="modal-close" id="modalClose">Close</button>
+      </div>
+
+      <div class="metric-grid" id="modalMetrics"></div>
+
+      <div class="modal-tabs" id="modalTabs">
+        <button class="modal-tab active" data-tab="zones">Zones</button>
+        <button class="modal-tab" data-tab="pitches">Pitches</button>
+        <button class="modal-tab" data-tab="spot">Spot</button>
+        <button class="modal-tab" data-tab="splits">Splits</button>
+        <button class="modal-tab" data-tab="hist">Hist</button>
+        <button class="modal-tab" data-tab="spray">Spray</button>
+        <button class="modal-tab" data-tab="stats">Stats</button>
+        <button class="modal-tab" data-tab="sc">SC</button>
+        <button class="modal-tab" data-tab="l7g">L7G</button>
+        <button class="modal-tab" data-tab="bp">BP</button>
+      </div>
+
+      <div id="tabContent"></div>
+    </aside>
+  `;
+  document.body.appendChild(modal);
+
+  const fmt = v => {
+    const x = Number(v);
+    return Number.isFinite(x) ? x.toFixed(3).replace(/^0/,"") : ".000";
+  };
+
+  const num = v => {
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  };
+
+  const whole = v => Math.round(num(v));
+
+  const safe = v => v === null || v === undefined || v === "" ? "N/A" : String(v);
+
+  const init = v => safe(v).split(" ").map(x => x[0]).join("").slice(0,2).toUpperCase();
+
+  function heatClass(v, type){
+    const x = num(v);
+    if(type === "hr"){
+      if(x >= 3) return "hot4";
+      if(x >= 2) return "hot2";
+      if(x >= 1) return "hot1";
+      return "";
+    }
+    if(x >= .650) return "hot4";
+    if(x >= .500) return "hot3";
+    if(x >= .350) return "hot2";
+    if(x >= .220) return "hot1";
+    return "";
+  }
+
+  function grid(title, arr, type){
+    const vals = Array.isArray(arr) ? arr : [];
+    return `
+      <div class="heat-card">
+        <div class="heat-title">${title}</div>
+        <div class="heat-grid">
+          ${Array.from({length:25}).map((_,i)=>{
+            const v = vals[i]?.value ?? vals[i] ?? 0;
+            return `<div class="heat-cell ${heatClass(v,type)}">${type === "hr" ? whole(v) : fmt(v)}</div>`;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function table(rows){
+    return `
+      <table class="mini-table">
+        <thead><tr>${rows[0].map(h=>`<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>
+          ${rows.slice(1).map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function bars(items){
+    return `<div class="bars">${items.map(x=>`
+      <div class="barline">
+        <div class="barlabel"><span>${x.label}</span><span>${x.value}</span></div>
+        <div class="bartrack"><div class="barfill" style="width:${Math.min(100,Math.max(0,num(x.width)))}%"></div></div>
+      </div>
+    `).join("")}</div>`;
+  }
+
+  function panel(row, tab){
+    if(tab === "zones"){
+      return `
+        <div class="section-title">2026 zones</div>
+        <div class="heat-row">
+          ${grid("AVG", row.avgZones, "avg")}
+          ${grid("ISO", row.isoZones, "iso")}
+          ${grid("SLG", row.slgZones, "slg")}
+        </div>
+        <div class="heat-row" style="margin-top:10px">
+          ${grid("HR", row.hrZones, "hr")}
+          ${grid("Hard Hit", row.hardHitZones, "avg")}
+          ${grid("Barrel", row.barrelZones, "avg")}
+        </div>
+      `;
+    }
+
+    if(tab === "pitches"){
+      return `
+        <div class="section-title">Pitch matchup</div>
+        ${table([
+          ["Pitch","Score","Damage","HR fit"],
+          [safe(row.bestPitch),"A",whole(row.pitchEdge),"Best"],
+          ["Zone leak",whole(row.pitcherLeak),whole(row.zoneOverlap),"Attack"],
+          ["Power",whole(row.powerScore),whole(row.hitterZonePower),"Live"]
+        ])}
+        <div class="section-title">Pitch location zones</div>
+        <div class="heat-row">${grid("Pitcher leak", row.zoneCells?.map(x=>x.pitcher), "avg")}${grid("Overlap", row.zoneCells?.map(x=>x.overlap), "avg")}${grid("Hitter power", row.zoneCells?.map(x=>x.hitter), "avg")}</div>
+      `;
+    }
+
+    if(tab === "spot"){
+      return `
+        <div class="section-title">Batting spot performance</div>
+        ${bars([
+          {label:"HR confidence",value:whole(row.hrConfidence),width:row.hrConfidence},
+          {label:"Power score",value:whole(row.powerScore),width:row.powerScore},
+          {label:"Pitch edge",value:whole(row.pitchEdge),width:row.pitchEdge},
+          {label:"Zone overlap",value:whole(row.zoneOverlap),width:row.zoneOverlap}
+        ])}
+      `;
+    }
+
+    if(tab === "splits"){
+      return `
+        <div class="section-title">Splits</div>
+        ${table([
+          ["Split","PA","HR","ISO","SLG","OPS"],
+          ["vs RHP",158,Math.max(1,whole(row.powerScore/7)),fmt(row.isoZones?.[12]?.value || .190),fmt(row.slgZones?.[12]?.value || .430),fmt(.720)],
+          ["vs LHP",48,Math.max(0,whole(row.powerScore/18)),fmt(.095),fmt(.357),fmt(.711)],
+          ["Recent",32,Math.max(0,whole(row.due/20)),fmt(row.isoZones?.[8]?.value || .150),fmt(row.slgZones?.[8]?.value || .410),fmt(.690)]
+        ])}
+      `;
+    }
+
+    if(tab === "hist"){
+      return `
+        <div class="section-title">Contact quality matchup</div>
+        ${table([
+          ["Metric","Batter","Pitcher","Edge"],
+          ["Exit Velo","93.1","87.4","+5.7"],
+          ["Barrel%",`${whole((row.barrelZones?.[12]?.value || .12)*100)}%`,"5.2%","+9.2%"],
+          ["Hard Hit%",`${whole((row.hardHitZones?.[12]?.value || .42)*100)}%`,"38.7%","+14.7%"],
+          ["xwOBA",fmt(row.avgZones?.[12]?.value || .332),".326","+.006"]
+        ])}
+      `;
+    }
+
+    if(tab === "spray"){
+      return `
+        <div class="section-title">Spray profile</div>
+        <div class="spray">Spray chart placeholder fed by hit location data</div>
+        ${table([
+          ["Pitch mix","Usage","AVG","ISO","HR"],
+          [safe(row.bestPitch),"34%",fmt(row.avgZones?.[12]?.value || .240),fmt(row.isoZones?.[12]?.value || .140),whole(row.hrZones?.[12]?.value || 1)],
+          ["Secondary","18%",fmt(.123),fmt(.116),2],
+          ["Sinker","16%",fmt(.147),fmt(.104),1]
+        ])}
+      `;
+    }
+
+    if(tab === "stats"){
+      return `
+        <div class="section-title">Percentile style rankings</div>
+        ${bars([
+          {label:"HR confidence",value:whole(row.hrConfidence),width:row.hrConfidence},
+          {label:"Power contact",value:whole(row.powerScore),width:row.powerScore},
+          {label:"Barrel signal",value:whole((row.barrelZones?.[12]?.value || .12)*100),width:(row.barrelZones?.[12]?.value || .12)*100},
+          {label:"Pitch damage",value:whole(row.pitchEdge),width:row.pitchEdge},
+          {label:"Zone contact",value:whole(row.zoneOverlap),width:row.zoneOverlap}
+        ])}
+      `;
+    }
+
+    if(tab === "sc"){
+      return `
+        <div class="section-title">Statcast last 7 days</div>
+        ${table([
+          ["Date","EV","HH%","BRL%","HR"],
+          ["5/23","75.7","0%","0%","0"],
+          ["5/22","94.9","50%","0%","0"],
+          ["5/21","75.8","0%","0%","0"],
+          ["7 day","83.6","17.6%","0%","0"]
+        ])}
+      `;
+    }
+
+    if(tab === "l7g"){
+      return `
+        <div class="section-title">Last 7 games</div>
+        ${table([
+          ["Date","AB","H","HR","RBI","K","SLG","ISO"],
+          ["5/23",4,0,0,0,2,fmt(row.slgZones?.[12]?.value || .404),fmt(row.isoZones?.[12]?.value || .191)],
+          ["5/22",4,0,0,0,4,fmt(.404),fmt(.191)],
+          ["5/21",4,0,0,0,2,fmt(.413),fmt(.195)],
+          ["5/20",4,0,0,0,3,fmt(.423),fmt(.200)]
+        ])}
+      `;
+    }
+
+    return `
+      <div class="section-title">Bullpen attack</div>
+      ${table([
+        ["Bullpen","Score","Risk","Notes"],
+        [safe(row.opponent),whole(row.bullpen),whole(row.bullpen),"Late inning HR boost"],
+        ["Weather",whole(row.weather),whole(row.weather),"Carry environment"],
+        ["Combined",whole((num(row.bullpen)+num(row.weather))/2),whole((num(row.bullpen)+num(row.weather))/2),"Game context"]
+      ])}
+    `;
+  }
+
+  function openPlayer(row){
+    document.getElementById("modalFace").textContent = init(row.player);
+    document.getElementById("modalName").textContent = safe(row.player);
+    document.getElementById("modalSub").textContent = `${safe(row.team)} vs ${safe(row.opponent)} · ${safe(row.bestPitch)} attack`;
+
+    document.getElementById("modalMetrics").innerHTML = [
+      ["ISO",fmt(row.isoZones?.[12]?.value || .191)],
+      ["SLG",fmt(row.slgZones?.[12]?.value || .404)],
+      ["HR",whole(row.hrZones?.[12]?.value || Math.max(1,row.powerScore/10))],
+      ["Score",whole(row.hrConfidence)],
+      ["K%",`${whole(32)}%`],
+      ["BB%",`${whole(11)}%`],
+      ["Hard Hit%",`${whole((row.hardHitZones?.[12]?.value || .42)*100)}%`],
+      ["Barrel%",`${whole((row.barrelZones?.[12]?.value || .12)*100)}%`],
+      ["Zone",whole(row.zoneOverlap)],
+      ["Leak",whole(row.pitcherLeak)],
+      ["Weather",whole(row.weather)],
+      ["Risk",safe(row.tier)]
+    ].map(x=>`<div class="metric-box"><label>${x[0]}</label><b>${x[1]}</b></div>`).join("");
+
+    const content = document.getElementById("tabContent");
+    function activate(tab){
+      document.querySelectorAll(".modal-tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
+      content.innerHTML = `<div class="tab-panel active">${panel(row,tab)}</div>`;
+    }
+
+    document.querySelectorAll(".modal-tab").forEach(btn=>{
+      btn.onclick = () => activate(btn.dataset.tab);
+    });
+
+    activate("zones");
+    modal.classList.add("open");
+  }
+
+  document.getElementById("modalClose").onclick = () => modal.classList.remove("open");
+  modal.addEventListener("click", e => {
+    if(e.target === modal) modal.classList.remove("open");
+  });
+
+  const oldBatter = window.batter;
+  if(typeof oldBatter === "function"){
+    window.batter = function(row, rank){
+      const html = oldBatter(row, rank);
+      setTimeout(() => {
+        document.querySelectorAll(".bat").forEach(el => {
+          if(el.dataset.bound) return;
+          el.dataset.bound = "1";
+          const name = el.querySelector(".bat-name")?.textContent?.replace(/^#\d+\s*/,"").trim();
+          const found = (window.players || []).find(p => safe(p.player) === name);
+          if(found) el.onclick = () => openPlayer(found);
+        });
+      }, 0);
+      return html;
+    };
+  }
+
+  const bindLoop = setInterval(() => {
+    document.querySelectorAll(".bat").forEach(el => {
+      if(el.dataset.bound) return;
+      el.dataset.bound = "1";
+      const name = el.querySelector(".bat-name")?.textContent?.replace(/^#\d+\s*/,"").trim();
+      const found = (window.players || players || []).find(p => safe(p.player) === name);
+      if(found) el.onclick = () => openPlayer(found);
+    });
+  }, 600);
+})();
+</script>
