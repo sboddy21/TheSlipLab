@@ -168,7 +168,7 @@ async function main() {
 
   rows.sort((a, b) => b.score - a.score);
 
-  const finalRows = rows.slice(0, 40).map((row, index) => ({
+  const finalRows = rows.map((row, index) => ({
     ...row,
     rank: index + 1
   }));
