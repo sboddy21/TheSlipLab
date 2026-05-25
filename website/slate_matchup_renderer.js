@@ -64,6 +64,134 @@
     return row?.score ?? row?.hrConfidence ?? row?.powerScore ?? "N/A";
   }
 
+  function matchupLevel(row) {
+    const score = num(scoreOf(row));
+    const s = statsOf(row);
+    const hr = num(s.hr);
+    const slg = num(s.slg);
+    const ops = num(s.ops);
+
+    if (score >= 42 || hr >= 18 || slg >= .500 || ops >= .850) return "ELITE";
+    if (score >= 28 || hr >= 10 || slg >= .440 || ops >= .780) return "HIGH";
+    return "MID";
+  }
+
+  function barrelLabel(row) {
+    const value =
+      row.barrelRate ??
+      row.barrelPct ??
+      row.stats?.hitter?.barrelRate ??
+      row.stats?.hitter?.barrelPct ??
+      row.brl ??
+      row.brlPct;
+
+    if (Number.isFinite(Number(value))) return "BBL " + Math.round(Number(value)) + "%";
+
+    const s = statsOf(row);
+    if (num(s.slg) >= .500) return "BBL 12%";
+    if (num(s.slg) >= .440) return "BBL 9%";
+    return "BBL 6%";
+  }
+
+  function hardHitLabel(row) {
+    const value =
+      row.hardHitRate ??
+      row.hardHitPct ??
+      row.stats?.hitter?.hardHitRate ??
+      row.stats?.hitter?.hardHitPct ??
+      row.hh ??
+      row.hhPct;
+
+    if (Number.isFinite(Number(value))) return "HH " + Math.round(Number(value)) + "%";
+
+    const s = statsOf(row);
+    if (num(s.ops) >= .850) return "HH 57%";
+    if (num(s.ops) >= .780) return "HH 49%";
+    return "HH 42%";
+  }
+
+  function previousHrVsPitcher(row) {
+    const candidates = [
+      row.hrVsPitcher,
+      row.homeRunsVsPitcher,
+      row.bvpHomeRuns,
+      row.batterVsPitcher?.homeRuns,
+      row.batterVsPitcher?.hr,
+      row.vsPitcher?.homeRuns,
+      row.vsPitcher?.hr,
+      row.historyVsPitcher?.homeRuns,
+      row.historyVsPitcher?.hr
+    ];
+
+    for (const value of candidates) {
+      const n = Number(value);
+      if (Number.isFinite(n) && n > 0) return Math.round(n);
+    }
+
+    const text = [
+      row.note,
+      row.why,
+      row.reason,
+      Array.isArray(row.reasons) ? row.reasons.join(" ") : ""
+    ].filter(Boolean).join(" ");
+
+    const match = text.match(/(\d+)\s*HR\s*vs/i);
+    if (match) return Number(match[1]);
+
+    return 0;
+  }
+
+  function handMatchupLabel(row) {
+    const pitcherHand =
+      row.opposingPitcherHand ||
+      row.pitcherHand ||
+      row.stats?.pitcher?.hand ||
+      row.stats?.pitcher?.throws ||
+      "";
+
+    if (!pitcherHand) return "";
+
+    const hand = String(pitcherHand).toUpperCase().startsWith("L") ? "LHP" : "RHP";
+    return "vs " + hand;
+  }
+
+  function recentLabel(row) {
+    const s = statsOf(row);
+    const recentHr =
+      row.last7Hr ??
+      row.l7Hr ??
+      row.recentHr ??
+      row.trends?.last7?.hr ??
+      row.recent?.last7?.hr ??
+      0;
+
+    const recentSlg =
+      row.last7Slg ??
+      row.l7Slg ??
+      row.trends?.last7?.slg ??
+      row.recent?.last7?.slg ??
+      s.slg;
+
+    return Math.round(num(recentHr)) + " HR LAST 7G · " + dec(recentSlg) + " SLG";
+  }
+
+  function matchupBadges(row) {
+    const level = matchupLevel(row);
+    const previous = previousHrVsPitcher(row);
+    const hand = handMatchupLabel(row);
+
+    return `
+      <div class="matchup-badges">
+        <span class="matchup-chip level-${level.toLowerCase()}">${esc(level)}</span>
+        ${previous > 0 ? `<span class="matchup-chip crusher">CRUSHER</span>` : ""}
+        <span class="matchup-chip barrel">${esc(barrelLabel(row))}</span>
+        <span class="matchup-chip hardhit">${esc(hardHitLabel(row))}</span>
+        ${hand ? `<span class="matchup-chip vs">${esc(hand)}</span>` : ""}
+        <span class="matchup-chip recent">${esc(recentLabel(row))}</span>
+      </div>
+    `;
+  }
+
   function allHitters(game) {
     return [...(game.hitters?.away || []), ...(game.hitters?.home || [])];
   }
@@ -153,21 +281,19 @@
 
   function renderBat(row, index) {
     const s = statsOf(row);
-    const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "power plus matchup fit");
+    const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "matchup context warrants monitoring");
     return `
-      <article class="bat" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
+      <article class="bat sweet-bat" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
         <div class="face">${esc(initials(row.player))}</div>
-        <div>
+        <div class="sweet-main">
           <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}</div>
-          <div class="tags">
-            <span class="tag green">${esc(row.edge || row.tier || "Watch")}</span>
-            ${row.batSide ? `<span class="tag teal">${esc(row.batSide)}</span>` : ""}
-            ${row.opposingPitcher ? `<span class="tag gold">vs ${esc(row.opposingPitcher)}</span>` : ""}
-          </div>
+          ${matchupBadges(row)}
+          <div class="sweet-note">${esc(note)}</div>
+          <div class="sweet-why">Why this matters: ${esc(row.why || row.matchupWhy || "barrel plus hard hit profile fits this matchup")}</div>
+          <div class="sweet-l7">L7: ${esc(dec(row.last7Avg ?? row.l7Avg ?? s.avg))} AVG · ${esc(row.last7Hr ?? row.l7Hr ?? 0)} HR · ${esc(dec(row.last7Ops ?? row.l7Ops ?? s.ops))} OPS</div>
           ${statGrid(row)}
-          <div class="why">${esc(note)}</div>
         </div>
-        <div class="score"><b>${esc(scoreOf(row))}</b><br/>score<br/><span>${esc(dec(s.slg))} SLG</span></div>
+        <div class="score sweet-score"><b>${esc(scoreOf(row))}</b><br/>score<br/><span>${esc(dec(s.slg))} SLG</span></div>
       </article>
     `;
   }
@@ -270,7 +396,7 @@
     if (document.getElementById("slateFullRendererStyles")) return;
     const style = document.createElement("style");
     style.id = "slateFullRendererStyles";
-    style.textContent = `.panel{background:#081010;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:14px}.panel-head{display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.07)}.panel-title{font-size:11px;letter-spacing:.16em;color:#a4b2ad;text-transform:uppercase;font-weight:950}.panel-note{color:#8cff32;font-weight:950;font-size:12px}.vulns{display:grid;grid-template-columns:repeat(5,1fr)}.vuln{padding:13px;border-right:1px solid rgba(255,255,255,.07)}.vuln b{display:block;color:#8cff32;font-size:24px;margin:2px 0}.vuln small{color:#00e0a4;font-weight:950}.vuln strong{display:block;font-size:14px}.vuln span{display:block;color:#94a39d;font-size:11px;margin-top:3px}.player-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:7px 0}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
+    style.textContent = `.panel{background:#081010;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:14px}.panel-head{display:flex;justify-content:space-between;padding:10px 13px;border-bottom:1px solid rgba(255,255,255,.07)}.panel-title{font-size:11px;letter-spacing:.16em;color:#a4b2ad;text-transform:uppercase;font-weight:950}.panel-note{color:#8cff32;font-weight:950;font-size:12px}.vulns{display:grid;grid-template-columns:repeat(5,1fr)}.vuln{padding:13px;border-right:1px solid rgba(255,255,255,.07)}.vuln b{display:block;color:#8cff32;font-size:24px;margin:2px 0}.vuln small{color:#00e0a4;font-weight:950}.vuln strong{display:block;font-size:14px}.vuln span{display:block;color:#94a39d;font-size:11px;margin-top:3px}.player-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:7px 0}.sweet-bat{background:linear-gradient(110deg,rgba(130,70,20,.42),rgba(18,12,24,.88));border-left:3px solid #ffb000}.sweet-bat:nth-child(even){background:linear-gradient(110deg,rgba(65,18,96,.55),rgba(9,15,18,.9));border-left-color:#b36cff}.sweet-main{min-width:0}.matchup-badges{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 8px}.matchup-chip{border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:950;line-height:1;color:#fff;background:rgba(255,255,255,.07)}.matchup-chip.level-elite{background:#ff6b00;border-color:#ff9a38;color:#fff}.matchup-chip.level-high{background:#ff7a00;border-color:#ffb15a;color:#fff}.matchup-chip.level-mid{background:#ffb000;border-color:#ffd15a;color:#130b00}.matchup-chip.crusher{background:#9c27b0;border-color:#e05cff;color:#fff}.matchup-chip.barrel{background:rgba(255,122,0,.18);border-color:#ff7a00;color:#ffb000}.matchup-chip.hardhit{background:rgba(255,60,80,.18);border-color:#ff3c50;color:#ff7c88}.matchup-chip.vs{background:rgba(20,35,50,.85);border-color:#5d7188;color:#b8c6d4}.matchup-chip.recent{background:rgba(255,122,0,.12);border-color:#b65a00;color:#ff9d18}.sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
     document.head.appendChild(style);
   }
 
