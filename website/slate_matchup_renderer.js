@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, active: "all" };
+  const state = { games: [], spray: {}, active: "all", last7: {} };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -62,6 +62,75 @@
 
   function scoreOf(row) {
     return row?.score ?? row?.hrConfidence ?? row?.powerScore ?? "N/A";
+  }
+
+  async function fetchLast7(playerId) {
+    const id = String(playerId || "");
+    if (!id) return null;
+    if (state.last7[id]) return state.last7[id];
+
+    const season = new Date().getFullYear();
+    const url = `https://statsapi.mlb.com/api/v1/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("MLB game log failed");
+
+      const data = await response.json();
+      const splits = data?.stats?.[0]?.splits || [];
+
+      const games = splits
+        .filter(split => split?.stat)
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+        .slice(0, 7);
+
+      let hr = 0;
+      let hits = 0;
+      let ab = 0;
+      let bb = 0;
+      let hbp = 0;
+      let sf = 0;
+      let tb = 0;
+
+      for (const game of games) {
+        const s = game.stat || {};
+        hr += num(s.homeRuns);
+        hits += num(s.hits);
+        ab += num(s.atBats);
+        bb += num(s.baseOnBalls);
+        hbp += num(s.hitByPitch);
+        sf += num(s.sacFlies);
+        tb += num(s.totalBases);
+      }
+
+      const avg = ab ? hits / ab : 0;
+      const obpDen = ab + bb + hbp + sf;
+      const obp = obpDen ? (hits + bb + hbp) / obpDen : 0;
+      const slg = ab ? tb / ab : 0;
+      const ops = obp + slg;
+
+      state.last7[id] = { hr, avg, ops, games: games.length };
+      return state.last7[id];
+    } catch {
+      state.last7[id] = null;
+      return null;
+    }
+  }
+
+  async function hydrateLast7() {
+    const nodes = [...document.querySelectorAll(".sweet-l7[data-player-id]")];
+
+    await Promise.all(nodes.map(async node => {
+      const playerId = node.dataset.playerId;
+      const l7 = await fetchLast7(playerId);
+
+      if (!l7) {
+        node.remove();
+        return;
+      }
+
+      node.textContent = `L7: ${dec(l7.avg)} AVG · ${Math.round(l7.hr)} HR · ${dec(l7.ops)} OPS`;
+    }));
   }
 
   function matchupLevel(row) {
@@ -295,7 +364,7 @@
           ${matchupBadges(row)}
           <div class="sweet-note">${esc(note)}</div>
           ${(row.why || row.matchupWhy) ? `<div class="sweet-why">Why this matters: ${esc(row.why || row.matchupWhy)}</div>` : ""}
-          ${(row.last7Avg !== undefined || row.l7Avg !== undefined || row.last7Hr !== undefined || row.l7Hr !== undefined || row.last7Ops !== undefined || row.l7Ops !== undefined) ? `<div class="sweet-l7">L7: ${esc(dec(row.last7Avg ?? row.l7Avg))} AVG · ${esc(row.last7Hr ?? row.l7Hr)} HR · ${esc(dec(row.last7Ops ?? row.l7Ops))} OPS</div>` : ""}
+          <div class="sweet-l7" data-player-id="${esc(row.playerId || "")}">L7 loading</div>
           ${statGrid(row)}
         </div>
         <div class="score sweet-score"><b>${esc(scoreOf(row))}</b><br/>score<br/><span>${esc(dec(s.slg))} SLG</span></div>
@@ -347,6 +416,7 @@
     const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
     document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
     wireCards();
+    hydrateLast7();
   }
 
   function wireCards() {
