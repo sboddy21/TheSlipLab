@@ -174,11 +174,11 @@
 
   function renderSide(game, side) {
     const away = side === "away";
-    const team = away ? game.awayTeam : game.homeTeam;
-    const opponent = away ? game.homeTeam : game.awayTeam;
+    const pitcherTeam = away ? game.awayTeam : game.homeTeam;
+    const hitterTeam = away ? game.homeTeam : game.awayTeam;
     const pitcher = away ? game.awayPitcher : game.homePitcher;
-    const hitters = away ? game.hitters?.away || [] : game.hitters?.home || [];
-    const lineup = away ? game.awayBattingOrder || [] : game.homeBattingOrder || [];
+    const hitters = away ? game.hitters?.home || [] : game.hitters?.away || [];
+    const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
@@ -186,10 +186,10 @@
       <article class="side">
         <div class="side-top"><div>
           <div class="pitcher">${esc(pitcherLabel)}</div>
-          <div class="pitcher-sub">${esc(code(team))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(opponent))}</div>
-          <div class="mini"><div><label>Team</label><b>${esc(code(team))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${lineup.length ? lineup.length + "/9" : "Pending"}</b></div><div><label>Vuln</label><b>${whole(vuln)}</b></div></div>
+          <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
+          <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${lineup.length ? lineup.length + "/9" : "Pending"}</b></div><div><label>Vuln</label><b>${whole(vuln)}</b></div></div>
         </div><div class="vbox"><b>${whole(vuln)}</b><span>VULN</span></div></div>
-        <div class="danger"><div class="danger-head"><span>Danger Batters</span><span>${hitters.length} bats</span></div><div class="bats">${hitters.slice(0, 8).map(renderBat).join("") || `<div class="empty">No hitter data yet for ${esc(team)}</div>`}</div></div>
+        <div class="danger"><div class="danger-head"><span>Danger Batters</span><span>${hitters.length} bats</span></div><div class="bats">${hitters.slice(0, 8).map(renderBat).join("") || `<div class="empty">No hitter data yet for ${esc(hitterTeam)}</div>`}</div></div>
       </article>
     `;
   }
