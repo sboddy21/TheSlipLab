@@ -329,6 +329,11 @@ function fmt(v){
   return Number.isFinite(n) ? n.toFixed(1) : "0.0";
 }
 
+function dec(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n.toFixed(3).replace(/^0/, "") : "N/A";
+}
+
 function parkDims(venue){
   return PARKS[venue] || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
 }
