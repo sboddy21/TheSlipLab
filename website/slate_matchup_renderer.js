@@ -294,7 +294,7 @@
           <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}</div>
           ${matchupBadges(row)}
           <div class="sweet-note">${esc(note)}</div>
-          <div class="sweet-why">Why this matters: ${esc(row.why || row.matchupWhy || "barrel plus hard hit profile fits this matchup")}</div>
+          ${(row.why || row.matchupWhy) ? `<div class="sweet-why">Why this matters: ${esc(row.why || row.matchupWhy)}</div>` : ""}
           <div class="sweet-l7">L7: ${esc(dec(row.last7Avg ?? row.l7Avg ?? s.avg))} AVG · ${esc(row.last7Hr ?? row.l7Hr ?? 0)} HR · ${esc(dec(row.last7Ops ?? row.l7Ops ?? s.ops))} OPS</div>
           ${statGrid(row)}
         </div>
