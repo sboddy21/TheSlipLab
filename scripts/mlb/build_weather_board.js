@@ -15,6 +15,7 @@ const PARKS = {
   "Coors Field": { city: "Denver", lat: 39.7561, lon: -104.9942 },
   "Daikin Park": { city: "Houston", lat: 29.7573, lon: -95.3555 },
   "Dodger Stadium": { city: "Los Angeles", lat: 34.0739, lon: -118.24 },
+  "UNIQLO Field at Dodger Stadium": { city: "Los Angeles", lat: 34.0739, lon: -118.24 },
   "Fenway Park": { city: "Boston", lat: 42.3467, lon: -71.0972 },
   "George M. Steinbrenner Field": { city: "Tampa", lat: 27.9803, lon: -82.5067 },
   "Globe Life Field": { city: "Arlington", lat: 32.7473, lon: -97.0842 },
@@ -37,6 +38,21 @@ const PARKS = {
   "Wrigley Field": { city: "Chicago", lat: 41.9484, lon: -87.6553 },
   "Yankee Stadium": { city: "New York", lat: 40.8296, lon: -73.9262 }
 };
+
+function normalizeVenue(venue) {
+  const value = String(venue || "").trim();
+
+  const aliases = {
+    "Camden Yards": "Oriole Park at Camden Yards",
+    "Guaranteed Rate Field": "Rate Field",
+    "U.S. Cellular Field": "Rate Field",
+    "US Cellular Field": "Rate Field",
+    "Miller Park": "American Family Field",
+    "UNIQLO Field at Dodger Stadium": "Dodger Stadium"
+  };
+
+  return aliases[value] || value;
+}
 
 function readJson(file, fallback) {
   try {
@@ -95,16 +111,17 @@ async function main() {
   const gamesData = readJson(GAMES_FILE, { games: [] });
   const games = Array.isArray(gamesData.games) ? gamesData.games : [];
 
-  const venues = [...new Set(games.map(game => game.venue).filter(Boolean))];
+  const venues = [...new Set(games.map(game => normalizeVenue(game.venue)).filter(Boolean))];
 
   const rows = [];
 
   for (const venue of venues) {
-    const park = PARKS[venue];
+    const normalizedVenue = normalizeVenue(venue);
+    const park = PARKS[normalizedVenue];
 
     if (!park) {
       rows.push({
-        venue,
+        venue: normalizedVenue,
         city: null,
         temp: null,
         humidity: null,
@@ -123,7 +140,7 @@ async function main() {
       const weather = await fetchWeather(park);
 
       rows.push({
-        venue,
+        venue: normalizedVenue,
         city: park.city,
         lat: park.lat,
         lon: park.lon,
@@ -134,7 +151,7 @@ async function main() {
       });
     } catch (error) {
       rows.push({
-        venue,
+        venue: normalizedVenue,
         city: park.city,
         lat: park.lat,
         lon: park.lon,
