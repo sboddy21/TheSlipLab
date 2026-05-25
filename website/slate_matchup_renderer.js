@@ -156,23 +156,28 @@
   }
 
   function recentLabel(row) {
-    const s = statsOf(row);
     const recentHr =
       row.last7Hr ??
       row.l7Hr ??
       row.recentHr ??
       row.trends?.last7?.hr ??
       row.recent?.last7?.hr ??
-      0;
+      null;
 
     const recentSlg =
       row.last7Slg ??
       row.l7Slg ??
       row.trends?.last7?.slg ??
       row.recent?.last7?.slg ??
-      s.slg;
+      null;
 
-    return Math.round(num(recentHr)) + " HR LAST 7G · " + dec(recentSlg) + " SLG";
+    if (recentHr === null && recentSlg === null) return "";
+
+    const parts = [];
+    if (recentHr !== null) parts.push(Math.round(num(recentHr)) + " HR LAST 7G");
+    if (recentSlg !== null) parts.push(dec(recentSlg) + " SLG");
+
+    return parts.join(" · ");
   }
 
   function matchupBadges(row) {
@@ -187,7 +192,7 @@
         <span class="matchup-chip barrel">${esc(barrelLabel(row))}</span>
         <span class="matchup-chip hardhit">${esc(hardHitLabel(row))}</span>
         ${hand ? `<span class="matchup-chip vs">${esc(hand)}</span>` : ""}
-        <span class="matchup-chip recent">${esc(recentLabel(row))}</span>
+        ${recentLabel(row) ? `<span class="matchup-chip recent">${esc(recentLabel(row))}</span>` : ""}
       </div>
     `;
   }
