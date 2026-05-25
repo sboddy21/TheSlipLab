@@ -126,18 +126,21 @@ function renderGame(game, index) {
 }
 
 function renderSide(game, side) {
-  const isAway = side === "away";
-  const team = isAway ? game.awayTeam : game.homeTeam;
-  const opponent = isAway ? game.homeTeam : game.awayTeam;
-  const pitcher = isAway ? game.awayPitcher : game.homePitcher;
-  const lineup = isAway ? game.awayBattingOrder : game.homeBattingOrder;
-  const hitters = isAway ? game.hitters.away : game.hitters.home;
+  const isAwayPitcherCard = side === "away";
+
+  const pitcherTeam = isAwayPitcherCard ? game.awayTeam : game.homeTeam;
+  const hitterTeam = isAwayPitcherCard ? game.homeTeam : game.awayTeam;
+
+  const pitcher = isAwayPitcherCard ? game.awayPitcher : game.homePitcher;
+  const lineup = isAwayPitcherCard ? game.homeBattingOrder : game.awayBattingOrder;
+  const hitters = isAwayPitcherCard ? game.hitters.home : game.hitters.away;
+
   const pitcherName = pitcher.name || pitcher.pitcher || "TBD";
   const pitcherSide = pitcher.side || pitcher.throws || "";
 
-  return '<article class="pitcher-card matchup-side"><div class="card-top"><div><div class="pitcher-name">' + html(pitcherName) + '</div><div class="pitcher-team">' + html(teamCode(team)) + (pitcherSide ? ' • ' + html(pitcherSide) : '') + ' • vs ' + html(teamCode(opponent)) + '</div></div><div class="score-pill">' + html((hitters[0] && (hitters[0].score || hitters[0].hrConfidence || hitters[0].powerScore)) || hitters.length) + '</div></div>' +
-    '<div class="stats-grid">' + stat('Team', teamCode(team)) + stat('Bats', hitters.length) + stat('Lineup', lineup.length ? lineup.length + '/9' : 'Pending') + stat('SP', pitcherName) + '</div>' +
-    '<div class="danger-head"><span>Danger Bats</span><strong>' + hitters.length + ' bats</strong></div><div class="threats">' + (hitters.slice(0, 8).map(renderThreat).join("") || '<div class="empty-box">No hitter data yet for ' + html(team) + '</div>') + '</div></article>';
+  return '<article class="pitcher-card matchup-side"><div class="card-top"><div><div class="pitcher-name">' + html(pitcherName) + '</div><div class="pitcher-team">' + html(teamCode(pitcherTeam)) + (pitcherSide ? ' • ' + html(pitcherSide) : '') + ' • vs ' + html(teamCode(hitterTeam)) + '</div></div><div class="score-pill">' + html((hitters[0] && (hitters[0].score || hitters[0].hrConfidence || hitters[0].powerScore)) || hitters.length) + '</div></div>' +
+    '<div class="stats-grid">' + stat('Pitcher Team', teamCode(pitcherTeam)) + stat('Target Bats', hitters.length) + stat('Lineup', lineup.length ? lineup.length + '/9' : 'Pending') + stat('SP', pitcherName) + '</div>' +
+    '<div class="danger-head"><span>Danger Bats vs ' + html(pitcherName) + '</span><strong>' + html(teamCode(hitterTeam)) + ' • ' + hitters.length + ' bats</strong></div><div class="threats">' + (hitters.slice(0, 8).map(renderThreat).join("") || '<div class="empty-box">No hitter data yet for ' + html(hitterTeam) + '</div>') + '</div></article>';
 }
 
 function renderThreat(row, index) {
