@@ -472,7 +472,10 @@ async function load(){
     const matchupRes = await fetch("./data/game_pitcher_matchups.json?v=" + Date.now());
     const matchupJson = await matchupRes.json();
     const games = matchupJson.matchups || matchupJson.games || [];
-    window.__weatherHitters = games.flatMap(game => [...(game.hitters?.away || []), ...(game.hitters?.home || [])]);
+    window.__weatherHitters = games.flatMap(game => [
+      ...(game.hitters?.away || []).map(player => ({...player, venue: game.venue, gameVenue: game.venue})),
+      ...(game.hitters?.home || []).map(player => ({...player, venue: game.venue, gameVenue: game.venue}))
+    ]);
   } catch {
     window.__weatherHitters = [];
   }
