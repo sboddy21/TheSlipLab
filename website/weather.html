@@ -113,6 +113,31 @@
     .fit-row b{color:#fff}
     .fit-row span{color:#93ff2d;font-weight:950}
 
+    .boost-bar{
+      height:10px;
+      background:#141a20;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:7px;
+    }
+
+    .boost-fill{
+      height:100%;
+      background:linear-gradient(90deg,#00d084,#93ff2d,#ffc400,#ff6b2d);
+      border-radius:999px;
+    }
+
+    .boost-caption{
+      display:flex;
+      justify-content:space-between;
+      color:#8e98a3;
+      font-size:10px;
+      font-weight:900;
+      margin-top:5px;
+      text-transform:uppercase;
+    }
+
     .card-top{
       padding:14px;
       display:flex;
@@ -347,8 +372,16 @@ function statNumber(row, key){
 }
 
 function bestFitsForPark(venue){
+  const target = clean(venue);
+
   return allSlateHitters()
-    .filter(row => clean(row.venue) === venue || clean(row.game).includes(venue))
+    .filter(row => {
+      return clean(row.venue) === target ||
+        clean(row.gameVenue) === target ||
+        clean(row.ballpark) === target ||
+        clean(row.park) === target ||
+        clean(row.game).includes(target);
+    })
     .map(row => {
       const hr = statNumber(row,"hr");
       const slg = statNumber(row,"slg");
@@ -380,13 +413,18 @@ function openPark(row){
     <div class="metric"><div class="metric-label">CF</div><div class="metric-value">${dims.cf}</div></div>
     <div class="metric"><div class="metric-label">RF</div><div class="metric-value">${dims.rf}</div></div>
   `;
-  document.getElementById("parkNote").textContent = p.note;
+  document.getElementById("parkNote").innerHTML = `
+    <div><strong>Home Run Boost:</strong> ${fmt(p.boost)}%</div>
+    <div class="boost-bar"><div class="boost-fill" style="width:${Math.max(0, Math.min(100, p.boost))}%"></div></div>
+    <div class="boost-caption"><span>Pitcher park</span><span>Neutral</span><span>HR boost</span></div>
+    <div style="margin-top:10px">${p.note}</div>
+  `;
 
   const fits = bestFitsForPark(venue);
   document.getElementById("parkFits").innerHTML = fits.length ? fits.map(player => `
     <div class="fit-row">
       <b>${clean(player.player)}</b>
-      <span>${Math.round(player.fitScore)} fit</span>
+      <span>${Math.round(player.fitScore)} fit · ${statNumber(player,"hr")} HR · ${dec(statNumber(player,"slg"))} SLG</span>
     </div>
   `).join("") : `<div class="park-note">No matching slate hitters were found for this venue yet.</div>`;
 
