@@ -2,6 +2,7 @@
   let PLAYERS = [];
   let SPRAY = {};
   let ZONES = {};
+  let CARD_DATA = {};
   let activePlayer = null;
   const l7Cache = {};
 
@@ -100,7 +101,22 @@
 
   function findPlayer(name, id) {
     const found = PLAYERS.find(x => id && String(x.playerId || "") === String(id)) || PLAYERS.find(x => key(x.player) === key(name));
-    return found ? enrich(found) : null;
+    if (!found) return null;
+
+    const extra =
+      CARD_DATA?.byId?.[String(found.playerId || "")] ||
+      CARD_DATA?.byName?.[key(found.player)] ||
+      {};
+
+    return enrich({
+      ...found,
+      cardData: extra,
+      last7: extra.last7 || found.last7,
+      last15: extra.last15 || found.last15,
+      gameLogs: extra.gameLogs || found.gameLogs,
+      enrichedTags: extra.tags || found.enrichedTags,
+      season: extra.season || found.season
+    });
   }
 
   function zones(title, values, field, mode) {
@@ -439,11 +455,22 @@
 
     const decision = await getJSON("./data/hr_decision_center.json", {});
     const homeRuns = await getJSON("./data/mlb_home_runs.json", []);
+    const cardDataRaw = await getJSON("./data/player_card_data.json", { players: [] });
     ZONES = await getJSON("./data/statcast_zones.json", {});
     SPRAY = await getJSON("./data/player_spray_charts.json", {});
 
+    CARD_DATA = {
+      byId: {},
+      byName: {}
+    };
+
+    arr(cardDataRaw).forEach(row => {
+      if (row.playerId) CARD_DATA.byId[String(row.playerId)] = row;
+      if (row.player) CARD_DATA.byName[key(row.player)] = row;
+    });
+
     const map = new Map();
-    [...arr(decision), ...arr(homeRuns)].forEach(row => {
+    [...arr(decision), ...arr(homeRuns), ...arr(cardDataRaw)].forEach(row => {
       if (row?.player) map.set(key(row.player), { ...(map.get(key(row.player)) || {}), ...row });
     });
 

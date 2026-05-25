@@ -5,6 +5,7 @@ const steps = [
   "scripts/mlb/build_weather_board.js",
   "scripts/mlb/build_hr_results.js",
   "scripts/build_advanced_player_intelligence.js",
+  "scripts/build_player_card_data.js",
   "scripts/run_live_intelligence.js"
 ];
 
