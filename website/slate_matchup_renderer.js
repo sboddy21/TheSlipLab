@@ -295,7 +295,7 @@
           ${matchupBadges(row)}
           <div class="sweet-note">${esc(note)}</div>
           ${(row.why || row.matchupWhy) ? `<div class="sweet-why">Why this matters: ${esc(row.why || row.matchupWhy)}</div>` : ""}
-          <div class="sweet-l7">L7: ${esc(dec(row.last7Avg ?? row.l7Avg ?? s.avg))} AVG · ${esc(row.last7Hr ?? row.l7Hr ?? 0)} HR · ${esc(dec(row.last7Ops ?? row.l7Ops ?? s.ops))} OPS</div>
+          ${(row.last7Avg !== undefined || row.l7Avg !== undefined || row.last7Hr !== undefined || row.l7Hr !== undefined || row.last7Ops !== undefined || row.l7Ops !== undefined) ? `<div class="sweet-l7">L7: ${esc(dec(row.last7Avg ?? row.l7Avg))} AVG · ${esc(row.last7Hr ?? row.l7Hr)} HR · ${esc(dec(row.last7Ops ?? row.l7Ops))} OPS</div>` : ""}
           ${statGrid(row)}
         </div>
         <div class="score sweet-score"><b>${esc(scoreOf(row))}</b><br/>score<br/><span>${esc(dec(s.slg))} SLG</span></div>
