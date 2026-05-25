@@ -16,6 +16,7 @@
   const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
   const dec = v => Number.isFinite(Number(v)) ? Number(v).toFixed(3).replace(/^0/, "") : "N/A";
   const one = v => Number.isFinite(Number(v)) ? Number(v).toFixed(1) : "N/A";
+  const pct = v => Number.isFinite(Number(v)) ? Math.round(Number(v)) + "%" : "N/A";
   const key = v => String(v || "").toLowerCase().trim();
 
   async function getJSON(path, fallback) {
@@ -40,12 +41,33 @@
       SLG: h.slg ?? row.slg,
       OPS: h.ops ?? row.ops,
       RBI: h.rbi ?? row.rbi,
-      Hits: h.hits ?? row.hits
+      Hits: h.hits ?? row.hits,
+      K: h.strikeOuts ?? row.strikeOuts,
+      PA: h.plateAppearances ?? row.plateAppearances,
+      AB: h.atBats ?? row.atBats
     };
+  }
+
+  function getVal(row, names, fallback = 0) {
+    for (const name of names) {
+      const parts = name.split(".");
+      let cur = row;
+      for (const part of parts) cur = cur?.[part];
+      if (cur !== undefined && cur !== null && cur !== "") return cur;
+    }
+    return fallback;
   }
 
   function metric(label, value) {
     return `<div class="pcm"><label>${esc(label)}</label><b>${esc(value ?? "N/A")}</b></div>`;
+  }
+
+  function bar(label, value, max = 100, sub = "") {
+    const n = Math.max(0, Math.min(100, max ? num(value) / max * 100 : num(value)));
+    return `<div class="pcbar">
+      <div class="pcbar-top"><span>${esc(label)}</span><b>${esc(one(value))}${sub}</b></div>
+      <div class="pcbar-track"><div class="pcbar-fill" style="width:${n}%"></div></div>
+    </div>`;
   }
 
   function zoneFor(row) {
@@ -100,8 +122,32 @@
     return `<svg class="pcs" viewBox="0 0 360 300">
       <path d="M180 280 L55 110 Q180 35 305 110 Z" fill="rgba(147,255,45,.08)" stroke="rgba(147,255,45,.4)"/>
       <path d="M180 280 L180 55 M180 280 L95 120 M180 280 L265 120" stroke="rgba(255,255,255,.18)"/>
-      ${pts.slice(-180).map(p => `<circle cx="${Math.max(20, Math.min(340, num(p.x) * 1.2))}" cy="${Math.max(20, Math.min(280, num(p.y) * 1.15))}" r="${p.type === "hr" ? 5 : 3}" fill="${p.type === "hr" ? "#ff6374" : p.type === "xbh" ? "#ffd25a" : p.type === "hit" ? "#00e0a4" : "#6eb7ff"}"/>`).join("")}
+      ${pts.slice(-220).map(p => `<circle cx="${Math.max(20, Math.min(340, num(p.x) * 1.2))}" cy="${Math.max(20, Math.min(280, num(p.y) * 1.15))}" r="${p.type === "hr" ? 5 : 3}" fill="${p.type === "hr" ? "#ff6374" : p.type === "xbh" ? "#ffd25a" : p.type === "hit" ? "#00e0a4" : "#6eb7ff"}"/>`).join("")}
     </svg>`;
+  }
+
+  function grade(row) {
+    const score = num(row.hrConfidence ?? row.score);
+    const h = stats(row);
+    if (score >= 55 || num(h.SLG) >= .550 || num(h.OPS) >= .900) return "ELITE";
+    if (score >= 42 || num(h.SLG) >= .480 || num(h.OPS) >= .820) return "HIGH";
+    if (score >= 28 || num(h.SLG) >= .430 || num(h.OPS) >= .760) return "MID";
+    return "WATCH";
+  }
+
+  function chips(row) {
+    const h = stats(row);
+    const out = [grade(row)];
+
+    if (num(h.HR) >= 10) out.push(`${h.HR} HR`);
+    if (num(h.SLG) >= .500) out.push("POWER");
+    if (num(h.OPS) >= .850) out.push("OPS");
+    if (num(row.hotZoneCount) >= 4) out.push("HOT ZONES");
+    if (num(row.hitterZonePower) >= 50) out.push("ZONE EDGE");
+    if (num(row.weather) > 0) out.push("WEATHER");
+    if (num(row.bullpen) > 0) out.push("BULLPEN");
+
+    return out.slice(0, 8).map((x, i) => `<span class="pcchip c${i}">${esc(x)}</span>`).join("");
   }
 
   function whyText(row) {
@@ -111,11 +157,13 @@
     if (num(h.SLG) >= .500) bits.push(`Strong power profile with ${dec(h.SLG)} SLG`);
     else if (num(h.SLG) >= .430) bits.push(`Playable power profile with ${dec(h.SLG)} SLG`);
 
-    if (num(h.OPS) >= .800) bits.push(`${dec(h.OPS)} OPS gives him a real run producing ceiling`);
+    if (num(h.OPS) >= .800) bits.push(`${dec(h.OPS)} OPS gives him real run producing ceiling`);
     if (num(h.HR) > 0) bits.push(`${h.HR} HR on the season keeps him live`);
     if (row.opposingPitcher) bits.push(`Matchup is against ${row.opposingPitcher}`);
     if (num(row.hitterZonePower) > 0) bits.push(`Zone power grades at ${one(row.hitterZonePower)}`);
-    if (num(row.weather) > 0) bits.push(`Weather carry adds ${one(row.weather)}`);
+    if (num(row.hotZoneCount) > 0) bits.push(`${row.hotZoneCount} hot zones show where his damage profile is strongest`);
+    if (num(row.weather) > 0) bits.push(`Weather carry adds ${one(row.weather)} to the profile`);
+    if (num(row.bullpen) > 0) bits.push(`Bullpen risk adds late game upside`);
 
     return bits.length ? bits.join(". ") + "." : "Matchup breakdown is building because this player is missing matchup detail fields.";
   }
@@ -132,7 +180,7 @@
       const data = await (await fetch(url)).json();
       const games = (data?.stats?.[0]?.splits || []).sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 7);
 
-      let hr = 0, hits = 0, ab = 0, bb = 0, hbp = 0, sf = 0, tb = 0, k = 0;
+      let hr = 0, hits = 0, ab = 0, bb = 0, hbp = 0, sf = 0, tb = 0, k = 0, rbi = 0;
       for (const g of games) {
         const s = g.stat || {};
         hr += num(s.homeRuns);
@@ -143,6 +191,7 @@
         sf += num(s.sacFlies);
         tb += num(s.totalBases);
         k += num(s.strikeOuts);
+        rbi += num(s.rbi);
       }
 
       const avg = ab ? hits / ab : 0;
@@ -151,7 +200,7 @@
       const slg = ab ? tb / ab : 0;
       const ops = obp + slg;
 
-      l7Cache[id] = { games, hr, avg, slg, ops, k };
+      l7Cache[id] = { games, hr, avg, slg, ops, k, rbi, ab, hits };
       return l7Cache[id];
     } catch {
       l7Cache[id] = null;
@@ -163,7 +212,7 @@
     return `<button class="pctab" data-tab="${id}" type="button">${esc(name)}</button>`;
   }
 
-  function renderTabShell(row) {
+  function renderTabShell() {
     return `
       <div class="pctabs">
         ${tabButton("Zones", "zones")}
@@ -177,6 +226,44 @@
         ${tabButton("BP", "bp")}
       </div>
       <div id="pcTabBody"></div>
+    `;
+  }
+
+  function renderHero(row) {
+    const h = stats(row);
+    const conf = num(row.hrConfidence ?? row.score);
+    const prob = Math.max(3, Math.min(25, conf / 4));
+
+    return `
+      <div class="pcheader">
+        <div>
+          <h2>${esc(row.player)}</h2>
+          <p>${esc(row.team)} vs ${esc(row.opponent)}${row.opposingPitcher ? " • vs " + esc(row.opposingPitcher) : ""}</p>
+          <div class="pcchips">${chips(row)}</div>
+        </div>
+        <div class="pcprob">
+          <b>${one(prob)}%</b>
+          <span>HR Chance</span>
+        </div>
+      </div>
+
+      <div class="pcbiggrid">
+        ${metric("ISO", dec(num(h.SLG) - num(h.AVG)))}
+        ${metric("SLG", dec(h.SLG))}
+        ${metric("HR", h.HR)}
+        ${metric("OPS", dec(h.OPS))}
+        ${metric("HR Confidence", one(conf))}
+        ${metric("Power", one(row.powerScore))}
+        ${metric("Pitch Edge", one(row.pitchEdge))}
+        ${metric("Weather", one(row.weather))}
+      </div>
+
+      <div class="pcbars">
+        ${bar("HR Confidence", conf, 100)}
+        ${bar("Power Score", row.powerScore, 100)}
+        ${bar("Zone Power", row.hitterZonePower, 100)}
+        ${bar("Pitcher Risk", row.pitcherRisk, 100)}
+      </div>
     `;
   }
 
@@ -199,7 +286,16 @@
     }
 
     if (id === "stats") {
-      body.innerHTML = `<h3>Hitter Stats</h3><div class="pcgrid">${Object.entries(h).map(([k, v]) => metric(k, ["AVG", "OBP", "SLG", "OPS"].includes(k) ? dec(v) : v)).join("")}</div>`;
+      body.innerHTML = `
+        <h3>Percentile Style Profile</h3>
+        <div class="pcprofile">
+          ${bar("Season HR", h.HR, 40)}
+          ${bar("SLG", num(h.SLG) * 100, 70)}
+          ${bar("OPS", num(h.OPS) * 100, 110)}
+          ${bar("Contact", num(h.AVG) * 100, 35)}
+        </div>
+        <div class="pcgrid">${Object.entries(h).map(([k, v]) => metric(k, ["AVG", "OBP", "SLG", "OPS"].includes(k) ? dec(v) : v)).join("")}</div>
+      `;
       return;
     }
 
@@ -214,12 +310,16 @@
     }
 
     if (id === "hist") {
-      body.innerHTML = `<h3>History</h3><div class="pcgrid">${metric("Season HR", h.HR)}${metric("Season SLG", dec(h.SLG))}${metric("Season OPS", dec(h.OPS))}${metric("RBI", h.RBI)}</div>`;
+      body.innerHTML = `<h3>History</h3><div class="pcgrid">${metric("Season HR", h.HR)}${metric("Season SLG", dec(h.SLG))}${metric("Season OPS", dec(h.OPS))}${metric("RBI", h.RBI)}${metric("Hits", h.Hits)}${metric("PA", h.PA)}</div>`;
       return;
     }
 
     if (id === "pitches") {
-      body.innerHTML = `<h3>Pitch Matchup</h3><div class="pcgrid">${metric("Best Pitch", row.bestPitch)}${metric("Pitch Edge", one(row.pitchEdge))}${metric("Pitcher Risk", one(row.pitcherRisk))}${metric("Zone Overlap", one(row.zoneOverlap))}</div>`;
+      body.innerHTML = `
+        <h3>Pitch Matchup</h3>
+        <div class="pcgrid">${metric("Best Pitch", row.bestPitch)}${metric("Pitch Edge", one(row.pitchEdge))}${metric("Pitcher Risk", one(row.pitcherRisk))}${metric("Zone Overlap", one(row.zoneOverlap))}${metric("Hitter Zone Power", one(row.hitterZonePower))}${metric("Hot Zones", row.hotZoneCount)}</div>
+        <div class="pcwhy">${esc(row.bestPitch ? "Best pitch matchup is attached to this profile." : "Pitch mix detail is ready for connection when the pitch type file is available.")}</div>
+      `;
       return;
     }
 
@@ -238,7 +338,13 @@
 
         body.innerHTML = `
           <h3>Last 7 Games</h3>
-          <div class="pcgrid">${metric("Games", l7.games.length)}${metric("HR", l7.hr)}${metric("AVG", dec(l7.avg))}${metric("SLG", dec(l7.slg))}${metric("OPS", dec(l7.ops))}${metric("K", l7.k)}</div>
+          <div class="pcl7hero">
+            <div><b>${l7.hr}</b><span>HR</span></div>
+            <div><b>${dec(l7.avg)}</b><span>AVG</span></div>
+            <div><b>${dec(l7.slg)}</b><span>SLG</span></div>
+            <div><b>${dec(l7.ops)}</b><span>OPS</span></div>
+            <div><b>${l7.rbi}</b><span>RBI</span></div>
+          </div>
           <div class="pctable">
             <div>Date</div><div>AB</div><div>H</div><div>HR</div><div>RBI</div>
             ${l7.games.map(g => `<div>${esc(g.date || "")}</div><div>${esc(g.stat?.atBats ?? 0)}</div><div>${esc(g.stat?.hits ?? 0)}</div><div>${esc(g.stat?.homeRuns ?? 0)}</div><div>${esc(g.stat?.rbi ?? 0)}</div>`).join("")}
@@ -250,7 +356,6 @@
 
   function open(row) {
     activePlayer = enrich(row);
-    const h = stats(activePlayer);
 
     let modal = document.getElementById("pcFull");
     if (!modal) {
@@ -263,20 +368,8 @@
 
     document.getElementById("pcBox").innerHTML = `
       <button id="pcClose">Close</button>
-      <h2>${esc(activePlayer.player)}</h2>
-      <p>${esc(activePlayer.team)} vs ${esc(activePlayer.opponent)}${activePlayer.opposingPitcher ? " • vs " + esc(activePlayer.opposingPitcher) : ""}</p>
-      <h3>Model Card</h3>
-      <div class="pcgrid">
-        ${metric("HR Confidence", one(activePlayer.hrConfidence ?? activePlayer.score))}
-        ${metric("Power", one(activePlayer.powerScore))}
-        ${metric("Pitch Edge", one(activePlayer.pitchEdge))}
-        ${metric("Pitcher Risk", one(activePlayer.pitcherRisk))}
-        ${metric("Weather Carry", one(activePlayer.weather))}
-        ${metric("Bullpen Risk", one(activePlayer.bullpen))}
-        ${metric("Due Score", one(activePlayer.due))}
-        ${metric("Tier", activePlayer.tier || activePlayer.edge)}
-      </div>
-      ${renderTabShell(activePlayer)}
+      ${renderHero(activePlayer)}
+      ${renderTabShell()}
     `;
 
     document.getElementById("pcClose").onclick = () => modal.classList.remove("on");
@@ -295,32 +388,48 @@
     const style = document.createElement("style");
     style.id = "pcPatchCss";
     style.textContent = `
-      #pcFull{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999999;padding:18px;overflow:auto}
+      #pcFull{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:999999;padding:18px;overflow:auto}
       #pcFull.on{display:block}
-      #pcBox{max-width:920px;margin:auto;background:#090d12;border:1px solid rgba(147,255,45,.3);border-radius:12px;padding:10px;color:#f3f3f3}
-      #pcBox h2{font-size:22px;line-height:1.05;margin:0}
-      #pcBox p{font-size:12px;margin:4px 0 8px;color:#a8b0ba}
-      #pcBox h3{font-size:13px;line-height:1;margin:12px 0 8px;text-transform:uppercase;letter-spacing:.08em}
-      #pcClose{float:right;background:#111820;color:#fff;border:1px solid #333;border-radius:8px;padding:7px 10px;font-size:11px;font-weight:900;cursor:pointer}
-      .pcgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
-      .pcm{background:#0d1318;border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px;min-height:42px}
-      .pcm label{display:block;color:#8e98a3;font-size:8px;font-weight:900;text-transform:uppercase;line-height:1;margin-bottom:4px}
-      .pcm b{font-size:13px;line-height:1;color:#93ff2d}
-      .pctabs{display:flex;gap:6px;overflow:auto;background:#151a20;border-radius:10px;padding:7px;margin:12px 0}
-      .pctab{background:transparent;color:#8e98a3;border:0;border-radius:9px;padding:10px 14px;font-size:15px;font-weight:900;cursor:pointer}
+      #pcBox{max-width:980px;margin:auto;background:radial-gradient(circle at 20% 0%,rgba(255,106,0,.22),transparent 34%),linear-gradient(180deg,#120b09,#070a0f 45%,#080d12);border:1px solid rgba(255,116,72,.35);border-radius:18px;padding:14px;color:#f3f3f3;box-shadow:0 0 42px rgba(255,106,0,.16)}
+      #pcBox h2{font-size:28px;line-height:1.05;margin:0;color:#fff}
+      #pcBox p{font-size:13px;margin:6px 0 10px;color:#b9c0ca}
+      #pcBox h3{font-size:13px;line-height:1;margin:14px 0 10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2}
+      #pcClose{float:right;background:#111820;color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:8px 11px;font-size:11px;font-weight:900;cursor:pointer}
+      .pcheader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:14px;border-radius:16px;background:linear-gradient(90deg,rgba(255,106,0,.22),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);margin-bottom:10px}
+      .pcprob{width:110px;height:84px;border-radius:16px;border:1px solid rgba(255,116,72,.55);display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.25)}
+      .pcprob b{font-size:28px;color:#ff8a00}
+      .pcprob span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}
+      .pcchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+      .pcchip{border-radius:7px;padding:5px 8px;font-size:10px;font-weight:950;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07)}
+      .pcchip.c0{background:#ff6b00;border-color:#ff9a38}.pcchip.c1,.pcchip.c2{color:#ffb000;border-color:#ff8a00}.pcchip.c3,.pcchip.c4{color:#00e0a4;border-color:#00a981}
+      .pcbiggrid,.pcgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+      .pcm{background:rgba(13,19,24,.86);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;min-height:48px}
+      .pcm label{display:block;color:#8e98a3;font-size:9px;font-weight:900;text-transform:uppercase;line-height:1;margin-bottom:5px}
+      .pcm b{font-size:15px;line-height:1;color:#93ff2d}
+      .pcbars,.pcprofile{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+      .pcbar{background:rgba(13,19,24,.7);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:8px}
+      .pcbar-top{display:flex;justify-content:space-between;font-size:11px;font-weight:900;color:#aeb6c2;margin-bottom:6px}
+      .pcbar-top b{color:#ff8a00}
+      .pcbar-track{height:8px;background:#151a20;border-radius:999px;overflow:hidden}
+      .pcbar-fill{height:100%;background:linear-gradient(90deg,#ff6b00,#ffb000,#93ff2d);border-radius:999px}
+      .pctabs{display:flex;gap:6px;overflow:auto;background:#151a20;border-radius:12px;padding:7px;margin:12px 0}
+      .pctab{background:transparent;color:#8e98a3;border:0;border-radius:10px;padding:11px 15px;font-size:15px;font-weight:900;cursor:pointer}
       .pctab.on{color:#fff;background:#080b0f;border:2px solid #ff7448}
-      #pcTabBody{min-height:180px}
-      .pczones{display:grid;grid-template-columns:repeat(3,max-content);gap:7px;align-items:start}
-      .pcz{background:#0d1318;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:5px;width:max-content}
-      .pcz h4{font-size:11px;line-height:1;margin:0 0 4px}
-      .pcz div{display:grid;grid-template-columns:repeat(5,28px);gap:1px}
-      .pcz span{width:28px;height:28px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:#141922}
+      #pcTabBody{min-height:210px}
+      .pczones{display:grid;grid-template-columns:repeat(3,max-content);gap:8px;align-items:start}
+      .pcz{background:rgba(13,19,24,.86);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px;width:max-content}
+      .pcz h4{font-size:11px;line-height:1;margin:0 0 5px}
+      .pcz div{display:grid;grid-template-columns:repeat(5,30px);gap:1px}
+      .pcz span{width:30px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:#141922}
       .z2{background:#183d34!important}.z3{background:#496315!important}.z4{background:#9a6b11!important}.z5{background:#ffb423!important}
-      .pcs{width:100%;height:260px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:10px}
-      .pcwhy{background:#0d1318;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;line-height:1.45;color:#dce3ea}
+      .pcs{width:100%;height:300px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:12px}
+      .pcwhy{background:rgba(13,19,24,.86);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px;line-height:1.5;color:#dce3ea}
+      .pcl7hero{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+      .pcl7hero div{background:rgba(255,106,0,.10);border:1px solid rgba(255,116,72,.28);border-radius:12px;padding:12px;text-align:center}
+      .pcl7hero b{display:block;color:#ffb000;font-size:24px}.pcl7hero span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}
       .pctable{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#182026;border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-top:10px}
       .pctable div{background:#0d1318;padding:8px;font-size:12px}
-      @media(max-width:850px){#pcBox{max-width:94vw}.pcgrid{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}}
+      @media(max-width:850px){#pcBox{max-width:94vw}.pcbiggrid,.pcgrid,.pcbars,.pcprofile{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}.pcl7hero{grid-template-columns:repeat(2,1fr)}}
     `;
     document.head.appendChild(style);
   }
