@@ -1,0 +1,36 @@
+name: Update HR Results
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-hr-results:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build today's HR results
+        run: node scripts/mlb/build_hr_results.js
+
+      - name: Commit updated HR results
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add website/data/mlb_results.json data/mlb_results.json
+          git commit -m "Auto update HR results" || echo "No HR results changes"
+          git push
