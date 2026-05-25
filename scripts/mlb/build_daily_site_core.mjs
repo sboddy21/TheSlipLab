@@ -22,7 +22,13 @@ function writeJson(name, payload) {
 function rows(payload) {
   if (Array.isArray(payload)) return payload;
   if (!payload || typeof payload !== "object") return [];
-  return payload.players || payload.rows || payload.data || payload.allPlayers || payload.games || payload.matchups || [];
+  if (Array.isArray(payload.allPlayers)) return payload.allPlayers;
+  if (Array.isArray(payload.players)) return payload.players;
+  if (Array.isArray(payload.rows)) return payload.rows;
+  if (Array.isArray(payload.data)) return payload.data;
+  if (Array.isArray(payload.games)) return payload.games;
+  if (Array.isArray(payload.matchups)) return payload.matchups;
+  return [];
 }
 
 function text(value) {
@@ -34,7 +40,7 @@ function norm(value) {
 }
 
 function scoreOf(row) {
-  return Number(row.score || row.hrConfidence || row.powerScore || 0);
+  return Number(row.score ?? row.hrConfidence ?? row.powerScore ?? 0);
 }
 
 const gamesPayload = readJson("mlb_games_today.json", {});
@@ -48,27 +54,25 @@ function weatherFor(game) {
   return weatherRows.find(w => norm(w.venue) === norm(game.venue)) || null;
 }
 
-function hittersFor(team, opponent, pitcher) {
-  const teamKey = norm(team);
-  const opponentKey = norm(opponent);
-  const seen = new Set();
+function convertHitter(row, team, opponent, pitcher) {
+  return {
+    rank: row.rank || null,
+    player: row.player || row.name || "",
+    playerId: row.playerId || null,
+    team: row.team || team,
+    opponent: row.opponent || opponent,
+    batSide: row.batSide || row.batSideDescription || "",
+    opposingPitcher: row.opposingPitcher || row.pitcher || pitcher || "",
+    score: row.score ?? row.hrConfidence ?? row.powerScore ?? null,
+    edge: row.edge || row.tier || "Watch",
+    note: Array.isArray(row.reasons) ? row.reasons.join(" + ") : row.note || "power plus matchup fit",
+    stats: row.stats || {}
+  };
+}
 
-  return [...hrRows, ...decisionRows]
-    .filter(row => norm(row.team) === teamKey)
-    .filter(row => !opponentKey || norm(row.opponent) === opponentKey || norm(row.game).includes(opponentKey))
-    .map(row => ({
-      rank: row.rank || null,
-      player: row.player || row.name || "",
-      playerId: row.playerId || null,
-      team: row.team || team,
-      opponent: row.opponent || opponent,
-      batSide: row.batSide || row.batSideDescription || "",
-      opposingPitcher: row.opposingPitcher || row.pitcher || pitcher || "",
-      score: row.score ?? row.hrConfidence ?? row.powerScore ?? null,
-      edge: row.edge || row.tier || "Watch",
-      note: Array.isArray(row.reasons) ? row.reasons.join(" + ") : row.note || "power plus matchup fit",
-      stats: row.stats || {}
-    }))
+function uniqueAndSort(list) {
+  const seen = new Set();
+  return list
     .filter(row => {
       const key = norm(row.player);
       if (!key || seen.has(key)) return false;
@@ -79,9 +83,28 @@ function hittersFor(team, opponent, pitcher) {
     .slice(0, 13);
 }
 
+function hittersFor(team, opponent, pitcher) {
+  const teamKey = norm(team);
+  const opponentKey = norm(opponent);
+  const source = [...hrRows, ...decisionRows].filter(row => norm(row.team) === teamKey);
+
+  const opponentMatched = source.filter(row => {
+    const rowOpponent = norm(row.opponent);
+    const rowGame = norm(row.game || row.matchup);
+    return opponentKey && (rowOpponent === opponentKey || rowGame.includes(opponentKey));
+  });
+
+  const chosen = opponentMatched.length ? opponentMatched : source;
+
+  return uniqueAndSort(chosen.map(row => convertHitter(row, team, opponent, pitcher)));
+}
+
 const matchups = games.map(game => {
   const awayPitcherName = game.awayProbablePitcher || "TBD";
   const homePitcherName = game.homeProbablePitcher || "TBD";
+  const awayHitters = hittersFor(game.awayTeam, game.homeTeam, homePitcherName);
+  const homeHitters = hittersFor(game.homeTeam, game.awayTeam, awayPitcherName);
+  const topScore = Math.max(scoreOf(awayHitters[0] || {}), scoreOf(homeHitters[0] || {}));
 
   return {
     gamePk: game.gamePk,
@@ -112,9 +135,10 @@ const matchups = games.map(game => {
     awayBattingOrder: game.awayBattingOrder || [],
     homeBattingOrder: game.homeBattingOrder || [],
     weather: weatherFor(game),
+    topVulnerability: topScore,
     hitters: {
-      away: hittersFor(game.awayTeam, game.homeTeam, homePitcherName),
-      home: hittersFor(game.homeTeam, game.awayTeam, awayPitcherName)
+      away: awayHitters,
+      home: homeHitters
     }
   };
 });
@@ -144,4 +168,5 @@ writeJson("site_last_updated.json", {
 console.log("DAILY SITE CORE COMPLETE");
 console.log("Date:", today);
 console.log("Games:", matchups.length);
+console.log("Hitters attached:", matchups.reduce((sum, game) => sum + game.hitters.away.length + game.hitters.home.length, 0));
 console.log("Saved: website/data/game_pitcher_matchups.json");
