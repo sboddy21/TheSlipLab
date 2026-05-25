@@ -396,6 +396,8 @@
     const pitcher = away ? game.awayPitcher : game.homePitcher;
     const hitters = away ? game.hitters?.home || [] : game.hitters?.away || [];
     const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
+    const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
+    const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("POSTED") ? "Posted" : hitters.length ? "Projected" : "Pending");
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
@@ -404,7 +406,7 @@
         <div class="side-top"><div>
           <div class="pitcher">${esc(pitcherLabel)}</div>
           <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
-          <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${lineup.length ? lineup.length + "/9" : "Pending"}</b></div><div><label>Vuln</label><b>${whole(vuln)}</b></div></div>
+          <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${esc(lineupText)}</b></div><div><label>Vuln</label><b>${whole(vuln)}</b></div></div>
         </div><div class="vbox"><b>${whole(vuln)}</b><span>VULN</span></div></div>
         <div class="danger"><div class="danger-head"><span>Danger Batters</span><span>${hitters.length} bats</span></div><div class="bats">${hitters.slice(0, 8).map(renderBat).join("") || `<div class="empty">No hitter data yet for ${esc(hitterTeam)}</div>`}</div></div>
       </article>
