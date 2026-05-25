@@ -28,10 +28,6 @@ function readJson(file) {
   }
 }
 
-function cleanName(value = "") {
-  return String(value).replace(/\s+/g, " ").trim();
-}
-
 function getArray(raw) {
   if (Array.isArray(raw)) return raw;
   if (Array.isArray(raw?.players)) return raw.players;
@@ -40,13 +36,13 @@ function getArray(raw) {
   return [];
 }
 
+function cleanName(value = "") {
+  return String(value).replace(/\s+/g, " ").trim();
+}
+
 function collectPlayers() {
   const seen = new Map();
-
-  const sources = [
-    getArray(readJson(PLAYER_POOL_FILE)),
-    getArray(readJson(HR_FILE))
-  ];
+  const sources = [getArray(readJson(PLAYER_POOL_FILE)), getArray(readJson(HR_FILE))];
 
   for (const rows of sources) {
     for (const row of rows) {
@@ -146,45 +142,38 @@ async function fetchBatterStatcast(playerId) {
   params.set("position", "");
   params.set("hfOutfield", "");
   params.set("hfRO", "");
-  params.set("home_road", "");
-  params.set("batters_lookup[]", String(playerId));
+  params.append("batters_lookup[]", String(playerId));
   params.set("hfFlag", "");
   params.set("metric_1", "");
   params.set("hfInn", "");
   params.set("min_pitches", "0");
   params.set("min_results", "0");
-  params.set("group_by", "name");
-  params.set("sort_col", "pitches");
+  params.set("group_by", "");
+  params.set("sort_col", "game_date");
   params.set("player_event_sort", "api_p_release_speed");
   params.set("sort_order", "desc");
   params.set("min_pas", "0");
   params.set("type", "details");
 
-  const urls = [
-    `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`,
-    `https://baseballsavant.mlb.com/statcast_search/csv-docs?${params.toString()}`
-  ];
+  const url = `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`;
 
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          "accept": "text/csv,*/*",
-          "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
-        }
-      });
+  try {
+    const res = await fetch(url, {
+      headers: {
+        accept: "text/csv,*/*",
+        "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
+      }
+    });
 
-      if (!res.ok) continue;
+    if (!res.ok) return [];
 
-      const text = await res.text();
+    const text = await res.text();
+    if (!text || !text.includes("pitch_type")) return [];
 
-      if (!text || !text.includes("pitch_type")) continue;
-
-      return parseCsv(text);
-    } catch {}
+    return parseCsv(text).filter(row => row.plate_x !== undefined || row.zone !== undefined);
+  } catch {
+    return [];
   }
-
-  return [];
 }
 
 function number(value) {
@@ -192,7 +181,7 @@ function number(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-function zoneIndex(px, pz) {
+function zoneIndexFromLocation(px, pz) {
   if (px === null || pz === null) return null;
 
   if (px < -1.75 || px > 1.75) return null;
@@ -202,6 +191,26 @@ function zoneIndex(px, pz) {
   const row = Math.min(4, Math.max(0, Math.floor(((4.25 - pz) / 3.5) * 5)));
 
   return row * 5 + col;
+}
+
+function zoneIndexFromSavantZone(zone) {
+  const z = Number(zone);
+  if (!Number.isFinite(z)) return null;
+
+  const map = {
+    1: 6, 2: 7, 3: 8,
+    4: 11, 5: 12, 6: 13,
+    7: 16, 8: 17, 9: 18,
+    11: 0, 12: 4, 13: 20, 14: 24
+  };
+
+  return map[z] ?? null;
+}
+
+function zoneIndex(row) {
+  const fromLocation = zoneIndexFromLocation(number(row.plate_x), number(row.plate_z));
+  if (fromLocation !== null) return fromLocation;
+  return zoneIndexFromSavantZone(row.zone);
 }
 
 function isHit(event = "") {
@@ -247,17 +256,13 @@ function buildMetricZones(rows) {
   }));
 
   for (const row of rows) {
-    const px = number(row.plate_x);
-    const pz = number(row.plate_z);
-    const idx = zoneIndex(px, pz);
-
+    const idx = zoneIndex(row);
     if (idx === null) continue;
 
     const cell = cells[idx];
     const event = row.events || "";
 
     cell.pitches++;
-
     if (isAtBat(event)) cell.ab++;
     if (isHit(event)) cell.hits++;
     if (isStrikeout(event)) cell.k++;
@@ -290,17 +295,7 @@ function buildMetricZones(rows) {
   const hardHit = cells.map(c => c.bbe ? c.hardHit / c.bbe : 0);
   const barrel = cells.map(c => c.bbe ? c.barrels / c.bbe : 0);
 
-  return {
-    avg,
-    iso,
-    slg,
-    xwoba,
-    hr,
-    k,
-    hardHit,
-    barrel,
-    raw: cells
-  };
+  return { avg, iso, slg, xwoba, hr, k, hardHit, barrel, raw: cells };
 }
 
 async function main() {
@@ -313,7 +308,7 @@ async function main() {
     generatedAt: new Date().toISOString(),
     season: SEASON,
     playerCount: players.length,
-    source: "Baseball Savant Statcast CSV plus MLB player pool",
+    source: "Baseball Savant Statcast pitch detail CSV",
     players: {}
   };
 
@@ -321,6 +316,8 @@ async function main() {
   console.log("Players queued:", players.length);
 
   let done = 0;
+  let withRows = 0;
+  let withZones = 0;
 
   for (const player of players) {
     done++;
@@ -329,24 +326,38 @@ async function main() {
 
     const statcastRows = await fetchBatterStatcast(player.playerId);
     const zones = buildMetricZones(statcastRows);
+    const zonePitchCount = zones.raw.reduce((sum, cell) => sum + cell.pitches, 0);
 
-    output.players[player.player] = {
+    if (statcastRows.length) withRows++;
+    if (zonePitchCount) withZones++;
+
+    const card = {
       player: player.player,
       mlbId: player.playerId,
+      playerId: player.playerId,
       team: player.team,
       batSide: player.batSide,
       rows: statcastRows.length,
+      zonePitchCount,
       zones
     };
 
+    output.players[player.player] = card;
+    output.players[String(player.playerId)] = card;
+
     await new Promise(resolve => setTimeout(resolve, 250));
   }
+
+  output.playersWithRows = withRows;
+  output.playersWithZones = withZones;
 
   fs.writeFileSync(OUT_DATA, JSON.stringify(output, null, 2));
   fs.writeFileSync(OUT_WEB, JSON.stringify(output, null, 2));
 
   console.log("STATCAST ZONE ENGINE COMPLETE");
-  console.log("Players:", Object.keys(output.players).length);
+  console.log("Players:", players.length);
+  console.log("Players with Statcast rows:", withRows);
+  console.log("Players with zone pitches:", withZones);
   console.log("Saved:", OUT_WEB);
 }
 
