@@ -199,7 +199,7 @@ for (const [gameName, bats] of grouped.entries()) {
 }
 
 writeJSON(
-  "mlb_game_pitcher_matchups.json",
+  "game_pitcher_matchups.json",
   {
     updatedAt:new Date().toISOString(),
     count:finalGames.length,
