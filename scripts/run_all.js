@@ -1,6 +1,8 @@
 import { spawnSync } from "child_process";
 
 const steps = [
+  "scripts/mlb/fetch_mlb_today.js",
+  "scripts/mlb/build_game_pitcher_matchups.mjs",
   "scripts/mlb/build_team_stacks.js",
   "scripts/mlb/build_weather_board.js",
   "scripts/mlb/build_hr_results.js",
