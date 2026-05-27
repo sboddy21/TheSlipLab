@@ -134,6 +134,44 @@
     }).join("")}</div></div>`;
   }
 
+
+  function dangerZones(row) {
+    const iso = Array.isArray(row.isoZones) ? row.isoZones : [];
+    const slg = Array.isArray(row.slgZones) ? row.slgZones : [];
+    const hr = Array.isArray(row.hrZones) ? row.hrZones : [];
+    const overlap = Array.isArray(row.zoneCells) ? row.zoneCells : [];
+
+    const cells = Array.from({ length: 25 }, (_, i) => {
+      const isoScore = num(iso[i]) * 100;
+      const slgScore = num(slg[i]) * 100;
+      const hrScore = num(hr[i]) * 18;
+      const pitcherScore = num(overlap[i]?.pitcher || overlap[i]?.overlap || overlap[i]?.value) * 100;
+
+      const danger = Math.max(
+        isoScore,
+        slgScore,
+        hrScore,
+        pitcherScore,
+        isoScore * 0.35 + slgScore * 0.35 + hrScore * 0.15 + pitcherScore * 0.15
+      );
+
+      return {
+        value: danger,
+        label: danger >= 75 ? "HOT" : danger >= 55 ? "EDGE" : danger >= 35 ? "LIVE" : ""
+      };
+    });
+
+    return `<div class="pcz pcz-danger"><h4>Danger vs Pitcher</h4><div>${cells.map(cell => {
+      const cls =
+        cell.value >= 75 ? "zdanger" :
+        cell.value >= 55 ? "zwarn" :
+        cell.value >= 35 ? "zlive" :
+        "zsafe";
+
+      return `<span class="${cls}">${esc(cell.label)}</span>`;
+    }).join("")}</div></div>`;
+  }
+
   function sprayChart(row) {
     const s = SPRAY?.byPlayerId?.[String(row.playerId || "")] || SPRAY?.players?.[row.player];
     const pts = s?.points || [];
@@ -434,7 +472,7 @@
     const h = stats(row);
 
     if (id === "zones") {
-      body.innerHTML = `<div class="pczones">${zones("AVG", row.avgZones, null, "dec")}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("Pitcher Leak", row.zoneCells, "pitcher")}${zones("Zone Overlap", row.zoneCells, "overlap")}</div>`;
+      body.innerHTML = `<div class="pczones">${dangerZones(row)}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("AVG", row.avgZones, null, "dec")}${zones("Pitcher Leak", row.zoneCells, "pitcher")}${zones("Zone Overlap", row.zoneCells, "overlap")}</div>`;
       return;
     }
 
