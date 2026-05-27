@@ -128,49 +128,12 @@
     return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(cell => {
       const raw = field ? cell?.[field] : cell;
       const score = mode === "dec" ? num(raw) * 100 : mode === "cnt" ? num(raw) * 25 : num(raw) * 100;
-      const cls = score >= 80 ? "z5" : score >= 60 ? "z4" : score >= 40 ? "z3" : score >= 20 ? "z2" : "z1";
+      const cls = score >= 75 ? "zdanger" : score >= 58 ? "z5" : score >= 42 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
       const txt = mode === "dec" ? dec(raw) : String(Math.round(num(raw)));
       return `<span class="${cls}">${txt}</span>`;
     }).join("")}</div></div>`;
   }
 
-
-  function dangerZones(row) {
-    const iso = Array.isArray(row.isoZones) ? row.isoZones : [];
-    const slg = Array.isArray(row.slgZones) ? row.slgZones : [];
-    const hr = Array.isArray(row.hrZones) ? row.hrZones : [];
-    const overlap = Array.isArray(row.zoneCells) ? row.zoneCells : [];
-
-    const cells = Array.from({ length: 25 }, (_, i) => {
-      const isoScore = num(iso[i]) * 100;
-      const slgScore = num(slg[i]) * 100;
-      const hrScore = num(hr[i]) * 18;
-      const pitcherScore = num(overlap[i]?.pitcher || overlap[i]?.overlap || overlap[i]?.value) * 100;
-
-      const danger = Math.max(
-        isoScore,
-        slgScore,
-        hrScore,
-        pitcherScore,
-        isoScore * 0.35 + slgScore * 0.35 + hrScore * 0.15 + pitcherScore * 0.15
-      );
-
-      return {
-        value: danger,
-        label: danger >= 75 ? "HOT" : danger >= 55 ? "EDGE" : danger >= 35 ? "LIVE" : ""
-      };
-    });
-
-    return `<div class="pcz pcz-danger"><h4>Danger vs Pitcher</h4><div>${cells.map(cell => {
-      const cls =
-        cell.value >= 75 ? "zdanger" :
-        cell.value >= 55 ? "zwarn" :
-        cell.value >= 35 ? "zlive" :
-        "zsafe";
-
-      return `<span class="${cls}">${esc(cell.label)}</span>`;
-    }).join("")}</div></div>`;
-  }
 
   function sprayChart(row) {
     const s = SPRAY?.byPlayerId?.[String(row.playerId || "")] || SPRAY?.players?.[row.player];
@@ -252,7 +215,7 @@
     return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(v => {
       const raw = num(v);
       const score = mode === "dec" ? raw / max * 100 : raw;
-      const cls = score >= 80 ? "z5" : score >= 60 ? "z4" : score >= 40 ? "z3" : score >= 20 ? "z2" : "z1";
+      const cls = score >= 75 ? "zdanger" : score >= 58 ? "z5" : score >= 42 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
       const txt = mode === "dec" ? dec(raw) : Math.round(raw);
       return `<span class="${cls}">${txt}</span>`;
     }).join("")}</div></div>`;
@@ -472,7 +435,7 @@
     const h = stats(row);
 
     if (id === "zones") {
-      body.innerHTML = `<div class="pczones">${dangerZones(row)}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("AVG", row.avgZones, null, "dec")}${zones("Pitcher Leak", row.zoneCells, "pitcher")}${zones("Zone Overlap", row.zoneCells, "overlap")}</div>`;
+      body.innerHTML = `<div class="pczones">${zones("AVG", row.avgZones, null, "dec")}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("Pitcher Leak", row.zoneCells, "pitcher")}${zones("Zone Overlap", row.zoneCells, "overlap")}</div>`;
       return;
     }
 
