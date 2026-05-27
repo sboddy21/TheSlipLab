@@ -354,7 +354,11 @@
     document.getElementById("avgVuln").textContent = ` | ${avg.toFixed(1)} proj HRs   ${highValue} high-value games`;
 
     document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
-      const label = row.score >= 80 ? "TARGET" : row.score >= 55 ? "STRONG" : "WATCH";
+      const label =
+            row.score >= 55 ? "HIGH" :
+            row.score >= 40 ? "MED HIGH" :
+            row.score >= 25 ? "MEDIUM" :
+            "LOW";
       return `
         <button class="vuln" data-game="${state.games.indexOf(row.game)}" type="button">
           <div class="vuln-line">
@@ -438,7 +442,11 @@
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
-    const vulnClass = vuln >= 55 ? "vuln-high" : vuln >= 40 ? "vuln-medhigh" : vuln >= 25 ? "vuln-medium" : "vuln-low";
+    const vulnClass =
+      vuln >= 55 ? "vuln-high" :
+      vuln >= 40 ? "vuln-medhigh" :
+      vuln >= 25 ? "vuln-medium" :
+      "vuln-low";
     return `
       <article class="side ${vulnClass}">
         <div class="side-top"><div>
