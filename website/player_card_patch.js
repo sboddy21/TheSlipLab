@@ -454,7 +454,7 @@
           <div class="pcchips">${chips(row)}</div>
         </div>
         <div class="pcprob">
-          <b>${one(prob)}%</b>
+          <b>${one(hrChance(row))}%</b>
           <span>HR Chance</span>
         </div>
       </div>
