@@ -16,6 +16,7 @@ const steps = [
   ["Decision Center", "scripts/mlb/build_hr_decision_center.js"],
   ["Decision Pitcher Enrichment", "scripts/mlb/enrich_hr_decision_pitchers.js"],
   ["Decision Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
+  ["Pitch Type Destruction Engine", "scripts/mlb/build_pitch_type_destruction_engine.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
   "scripts/mlb/build_batting_spot_profiles.js",
