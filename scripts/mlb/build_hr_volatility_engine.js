@@ -259,7 +259,15 @@ function volatility(row) {
   const env = environment(row);
 
   const archetype = hrArchetype(row);
-  const lineupBoost = lineupAttackBoost(row, hrRowsGlobal);
+
+  const rawLineupBoost = lineupAttackBoost(row, hrRowsGlobal);
+  const lineupMultiplier =
+    archetype >= 70 ? 1.00 :
+    archetype >= 50 ? 0.70 :
+    archetype >= 35 ? 0.45 :
+    0.18;
+
+  const lineupBoost = rawLineupBoost * lineupMultiplier;
 
   const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
   const hotHrBoost =
@@ -293,6 +301,7 @@ function volatility(row) {
     hotZoneAttack: Math.round(zonePower * 10) / 10,
     recentHRTrend: Math.round(recent * 10) / 10,
     hrEnvironmentScore: Math.round(env * 10) / 10,
+    rawLineupAttackBoost: Math.round(rawLineupBoost * 10) / 10,
     lineupAttackBoost: Math.round(lineupBoost * 10) / 10,
     hrArchetypeScore: Math.round(archetype * 10) / 10,
     hrVolatilityScore: Math.round(score * 10) / 10,
