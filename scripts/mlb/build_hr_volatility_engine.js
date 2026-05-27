@@ -107,6 +107,62 @@ function environment(row) {
   );
 }
 
+
+function hrArchetype(row) {
+  const hr = stat(row, "hr");
+  const avg = stat(row, "avg");
+  const slg = stat(row, "slg");
+  const ops = stat(row, "ops");
+  const iso = num(row.iso ?? Math.max(0, slg - avg));
+
+  const barrel =
+    num(row.barrelRate ?? row.barrelPct ?? row.brlPct ?? row.brl);
+
+  const hh =
+    num(row.hardHitRate ?? row.hardHitPct ?? row.hhPct ?? row.hh);
+
+  const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
+
+  let score = 0;
+
+  // Pure HR hitters
+  if (hr >= 12) score += 26;
+  else if (hr >= 8) score += 18;
+  else if (hr >= 5) score += 10;
+
+  // Low AVG + high power archetype
+  if (avg <= .255 && iso >= .185) score += 18;
+  if (avg <= .245 && slg >= .440) score += 12;
+
+  // Barrel monsters
+  if (barrel >= 14) score += 24;
+  else if (barrel >= 11) score += 18;
+  else if (barrel >= 8) score += 10;
+
+  // Hard hit power profile
+  if (hh >= 52) score += 16;
+  else if (hh >= 47) score += 10;
+
+  // Hot HR streaks
+  if (hr7 >= 4) score += 24;
+  else if (hr7 >= 3) score += 18;
+  else if (hr7 >= 2) score += 12;
+
+  // Three true outcome style boost
+  if (ops < .820 && iso >= .210) score += 14;
+
+  // Schwarber/Burger/Olson type profile
+  if (
+    avg <= .255 &&
+    slg >= .430 &&
+    hr >= 8
+  ) {
+    score += 22;
+  }
+
+  return clamp(score);
+}
+
 function volatility(row) {
   const hr = stat(row, "hr");
   const slg = stat(row, "slg");
@@ -145,6 +201,8 @@ function volatility(row) {
   const recent = recentScore(row);
   const env = environment(row);
 
+  const archetype = hrArchetype(row);
+
   const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
   const hotHrBoost =
     hr7 >= 4 ? 24 :
@@ -153,14 +211,15 @@ function volatility(row) {
     hr7 >= 1 ? 6 : 0;
 
   const score = clamp(
-    barrelScore * 0.28 +
-    hardHitScore * 0.22 +
-    rawPower * 0.20 +
-    recent * 0.14 +
-    pitchScore * 0.10 +
-    hotHrBoost * 0.04 +
-    leakScore * 0.01 +
-    env * 0.01
+    archetype * 0.24 +
+    barrelScore * 0.24 +
+    hardHitScore * 0.18 +
+    rawPower * 0.16 +
+    recent * 0.10 +
+    pitchScore * 0.06 +
+    hotHrBoost * 0.01 +
+    leakScore * 0.005 +
+    env * 0.005
   );
 
   const current = num(row.hrConfidence ?? row.score ?? row.powerScore, 0);
@@ -175,6 +234,7 @@ function volatility(row) {
     hotZoneAttack: Math.round(zonePower * 10) / 10,
     recentHRTrend: Math.round(recent * 10) / 10,
     hrEnvironmentScore: Math.round(env * 10) / 10,
+    hrArchetypeScore: Math.round(archetype * 10) / 10,
     hrVolatilityScore: Math.round(score * 10) / 10,
     oldScore: current,
     score: Math.round(finalScore),
