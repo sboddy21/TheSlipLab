@@ -320,6 +320,7 @@ function buildCard(row) {
   const bullpen = round(bullpenScore(opponent));
 
   const due = round(hardHit * 0.24 + barrel * 0.28 + iso * 20 + powerScore * 0.18);
+  const seasonHr = round(num(pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
 
   const hrConfidence = round(
     powerScore * 0.30 +
@@ -343,6 +344,7 @@ function buildCard(row) {
     weather,
     bullpen,
     due,
+    seasonHr,
 
     bestPitch: pitchProfile.pitch,
     tier: tier(hrConfidence),
@@ -395,19 +397,22 @@ const output = {
       cards.map(card => ({
         ...card,
         valueScore:
-          card.pitchEdge * 0.30 +
-          card.pitcherRisk * 0.22 +
-          card.powerScore * 0.18 +
-          card.due * 0.12 +
+          card.pitchEdge * 0.34 +
+          card.pitcherRisk * 0.24 +
+          card.zoneOverlap * 0.16 +
+          card.bullpen * 0.10 +
           card.weather * 0.08 +
-          card.bullpen * 0.10 -
-          (card.hrConfidence * 0.12)
+          card.due * 0.08 -
+          card.seasonHr * 2.2 -
+          Math.max(0, card.hrConfidence - 48) * 1.6 -
+          Math.max(0, card.powerScore - 58) * 1.2
       }))
       .filter(card =>
-        card.pitchEdge >= 28 &&
-        card.pitcherRisk >= 22 &&
-        card.powerScore >= 30 &&
-        card.hrConfidence <= 72
+        card.seasonHr <= 10 &&
+        card.pitchEdge >= 35 &&
+        card.pitcherRisk >= 35 &&
+        card.hrConfidence <= 52 &&
+        card.powerScore <= 58
       ),
       "valueScore"
     ),

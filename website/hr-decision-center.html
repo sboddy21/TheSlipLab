@@ -109,15 +109,23 @@ function rowsFor(key){
       .map(r => ({
         ...r,
         valueScore:
-          num(r.pitchEdge) * 0.30 +
-          num(r.pitcherRisk) * 0.22 +
-          num(r.powerScore) * 0.18 +
-          num(r.due) * 0.12 +
+          num(r.pitchEdge) * 0.34 +
+          num(r.pitcherRisk) * 0.24 +
+          num(r.zoneOverlap) * 0.16 +
+          num(r.bullpen) * 0.10 +
           num(r.weather) * 0.08 +
-          num(r.bullpen) * 0.10 -
-          num(r.hrConfidence) * 0.12
+          num(r.due) * 0.08 -
+          num(r.seasonHr) * 2.2 -
+          Math.max(0, num(r.hrConfidence) - 48) * 1.6 -
+          Math.max(0, num(r.powerScore) - 58) * 1.2
       }))
-      .filter(r => num(r.pitchEdge) >= 20 && num(r.powerScore) >= 25 && num(r.hrConfidence) <= 75)
+      .filter(r =>
+        num(r.seasonHr) <= 10 &&
+        num(r.pitchEdge) >= 35 &&
+        num(r.pitcherRisk) >= 35 &&
+        num(r.hrConfidence) <= 52 &&
+        num(r.powerScore) <= 58
+      )
       .sort((a,b) => num(b.valueScore) - num(a.valueScore))
       .slice(0, 40);
   }
