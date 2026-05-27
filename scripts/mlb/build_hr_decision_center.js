@@ -390,6 +390,28 @@ const output = {
   sections: {
     bestPicks: topUnique(cards, "hrConfidence"),
     safestPlays: topUnique(cards, "powerScore"),
+
+    bestValue: topUnique(
+      cards.map(card => ({
+        ...card,
+        valueScore:
+          card.pitchEdge * 0.30 +
+          card.pitcherRisk * 0.22 +
+          card.powerScore * 0.18 +
+          card.due * 0.12 +
+          card.weather * 0.08 +
+          card.bullpen * 0.10 -
+          (card.hrConfidence * 0.12)
+      }))
+      .filter(card =>
+        card.pitchEdge >= 40 &&
+        card.pitcherRisk >= 35 &&
+        card.powerScore >= 40 &&
+        card.hrConfidence <= 65
+      ),
+      "valueScore"
+    ),
+
     lottoBombs: topUnique(cards, "due"),
     pitchTypeEdges: topUnique(cards, "pitchEdge"),
     weatherCarry: topUnique(cards, "weather"),
