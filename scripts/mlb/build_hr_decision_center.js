@@ -320,7 +320,7 @@ function buildCard(row) {
   const bullpen = round(bullpenScore(opponent));
 
   const due = round(hardHit * 0.24 + barrel * 0.28 + iso * 20 + powerScore * 0.18);
-  const seasonHr = round(num(pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
+  const seasonHr = round(num(row?.stats?.hitter?.hr ?? pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
 
   const hrConfidence = round(
     powerScore * 0.30 +
