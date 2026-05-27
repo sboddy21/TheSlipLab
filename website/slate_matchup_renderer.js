@@ -91,18 +91,25 @@
     return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
 
-  function lineupStatusLabel(value) {
-    const raw = String(value || "").trim().toUpperCase();
+  function lineupStatusLabel(game) {
+    const raw = String(game?.lineupLockStatus || "").trim().toUpperCase();
 
-    if (!raw || raw === "NOT POSTED" || raw === "PENDING" || raw === "LINEUPS UPDATING") {
-      return "PROJECTED";
-    }
+    const awayConfirmed =
+      game?.awayConfirmedLineup === true ||
+      game?.awayLineupStatus === "CONFIRMED" ||
+      game?.awayLineupCount >= 9;
 
-    if (raw === "POSTED" || raw === "CONFIRMED" || raw.includes("POSTED")) {
-      return "CONFIRMED";
-    }
+    const homeConfirmed =
+      game?.homeConfirmedLineup === true ||
+      game?.homeLineupStatus === "CONFIRMED" ||
+      game?.homeLineupCount >= 9;
 
-    return raw;
+    if (awayConfirmed && homeConfirmed) return "CONFIRMED";
+    if (awayConfirmed || homeConfirmed) return "PARTIAL";
+
+    if (raw.includes("CONFIRMED") || raw.includes("POSTED")) return "CONFIRMED";
+
+    return "PROJECTED";
   }
 
 
@@ -515,7 +522,7 @@
   function renderGame(game, index) {
     return `
       <section class="game-card" data-game="${index}">
-        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(lineupStatusLabel(game.lineupLockStatus))}</div></div>
+        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(lineupStatusLabel(game))}</div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
         ${renderWeather(game.weather)}
       </section>
