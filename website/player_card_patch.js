@@ -641,9 +641,12 @@
 
     if (id === "bp") {
       body.innerHTML = renderBullpenTab(row, []);
+
       getBullpenData().then(bpRows => {
-        body.innerHTML = renderBullpenTab(row, bpRows);
+        const filtered = bullpenRowsFor(row);
+        body.innerHTML = renderBullpenTab(row, filtered);
       });
+
       return;
     }
 
