@@ -62,14 +62,22 @@ function recentScore(row) {
 
   let score = 0;
 
-  if (text.includes("hot")) score += 18;
-  if (text.includes("due")) score += 12;
-  if (text.includes("hr")) score += 10;
-  if (text.includes("barrel")) score += 10;
-  if (text.includes("hard")) score += 8;
+  if (text.includes("hot")) score += 26;
+  if (text.includes("due")) score += 18;
+  if (text.includes("hr")) score += 14;
+  if (text.includes("barrel")) score += 16;
+  if (text.includes("hard")) score += 12;
+  if (text.includes("pull")) score += 10;
+  if (text.includes("flyball")) score += 10;
+  if (text.includes("crush")) score += 14;
 
-  score += num(row.last7Hr ?? row.l7Hr ?? row.recentHr) * 12;
-  score += scale(row.last7Ops ?? row.l7Ops, 0.650, 1.100) * 0.35;
+  const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
+  const slg7 = num(row.last7Slg ?? row.l7Slg ?? row.slgLast7);
+  const ops7 = num(row.last7Ops ?? row.l7Ops);
+
+  score += hr7 * 20;
+  score += scale(slg7, 0.320, 0.950) * 0.65;
+  score += scale(ops7, 0.650, 1.300) * 0.45;
 
   return clamp(score);
 }
@@ -120,8 +128,8 @@ function volatility(row) {
     bestZone(row, ["hrZones"]) * 10
   );
 
-  const barrelScore = clamp(barrel * 6.8);
-  const hardHitScore = clamp(hardHit * 1.65);
+  const barrelScore = clamp(barrel * 8.8);
+  const hardHitScore = clamp(hardHit * 2.25);
   const rawPower = clamp(
     scale(hr, 0, 30) * 0.32 +
     scale(slg, 0.330, 0.620) * 0.28 +
@@ -135,17 +143,17 @@ function volatility(row) {
   const env = environment(row);
 
   const score = clamp(
-    barrelScore * 0.30 +
-    hardHitScore * 0.22 +
-    pitchScore * 0.18 +
-    recent * 0.13 +
-    leakScore * 0.10 +
-    zonePower * 0.05 +
-    env * 0.02
+    barrelScore * 0.34 +
+    hardHitScore * 0.25 +
+    pitchScore * 0.17 +
+    recent * 0.16 +
+    leakScore * 0.05 +
+    zonePower * 0.02 +
+    env * 0.01
   );
 
   const current = num(row.hrConfidence ?? row.score ?? row.powerScore, 0);
-  const finalScore = clamp(current * 0.15 + score * 0.85);
+  const finalScore = clamp(current * 0.08 + score * 0.92);
 
   return {
     ...row,
@@ -214,8 +222,8 @@ if (dc?.allPlayers) {
     updatedAt: new Date().toISOString(),
     scoringMode: "HR volatility weighted",
     volatilityWeights: {
-      currentModel: 15,
-      hrVolatility: 85
+      currentModel: 8,
+      hrVolatility: 92
     },
     sections: rebuildDecisionSections(rows),
     allPlayers: rows
