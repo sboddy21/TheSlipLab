@@ -130,11 +130,14 @@ function volatility(row) {
 
   const barrelScore = clamp(barrel * 8.8);
   const hardHitScore = clamp(hardHit * 2.25);
+  const hrScore = scale(hr, 0, 30);
+  const isoScore = scale(iso, 0.090, 0.340);
+
   const rawPower = clamp(
-    scale(hr, 0, 30) * 0.32 +
-    scale(slg, 0.330, 0.620) * 0.28 +
-    scale(ops, 0.650, 1.000) * 0.18 +
-    scale(iso, 0.090, 0.320) * 0.22
+    hrScore * 0.48 +
+    isoScore * 0.32 +
+    scale(slg, 0.360, 0.700) * 0.14 +
+    scale(ops, 0.720, 1.100) * 0.06
   );
 
   const pitchScore = pitchPunishment(row);
@@ -142,18 +145,26 @@ function volatility(row) {
   const recent = recentScore(row);
   const env = environment(row);
 
+  const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
+  const hotHrBoost =
+    hr7 >= 4 ? 24 :
+    hr7 >= 3 ? 18 :
+    hr7 >= 2 ? 12 :
+    hr7 >= 1 ? 6 : 0;
+
   const score = clamp(
-    barrelScore * 0.34 +
-    hardHitScore * 0.25 +
-    pitchScore * 0.17 +
-    recent * 0.16 +
-    leakScore * 0.05 +
-    zonePower * 0.02 +
+    barrelScore * 0.28 +
+    hardHitScore * 0.22 +
+    rawPower * 0.20 +
+    recent * 0.14 +
+    pitchScore * 0.10 +
+    hotHrBoost * 0.04 +
+    leakScore * 0.01 +
     env * 0.01
   );
 
   const current = num(row.hrConfidence ?? row.score ?? row.powerScore, 0);
-  const finalScore = clamp(current * 0.08 + score * 0.92);
+  const finalScore = clamp(current * 0.03 + score * 0.97);
 
   return {
     ...row,
@@ -169,10 +180,10 @@ function volatility(row) {
     score: Math.round(finalScore),
     hrConfidence: Math.round(finalScore * 10) / 10,
     volatilityTier:
-      finalScore >= 58 ? "Nuclear" :
-      finalScore >= 48 ? "Explosive" :
-      finalScore >= 40 ? "Strong HR Spot" :
-      finalScore >= 32 ? "Live HR Spot" :
+      finalScore >= 54 ? "Nuclear" :
+      finalScore >= 45 ? "Explosive" :
+      finalScore >= 36 ? "Strong HR Spot" :
+      finalScore >= 28 ? "Live HR Spot" :
       "Watchlist"
   };
 }
@@ -222,8 +233,8 @@ if (dc?.allPlayers) {
     updatedAt: new Date().toISOString(),
     scoringMode: "HR volatility weighted",
     volatilityWeights: {
-      currentModel: 8,
-      hrVolatility: 92
+      currentModel: 3,
+      hrVolatility: 97
     },
     sections: rebuildDecisionSections(rows),
     allPlayers: rows
