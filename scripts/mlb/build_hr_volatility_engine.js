@@ -135,18 +135,17 @@ function volatility(row) {
   const env = environment(row);
 
   const score = clamp(
-    barrelScore * 0.26 +
-    hardHitScore * 0.20 +
-    pitchScore * 0.16 +
-    leakScore * 0.13 +
-    recent * 0.11 +
-    zonePower * 0.08 +
-    env * 0.04 +
-    rawPower * 0.02
+    barrelScore * 0.30 +
+    hardHitScore * 0.22 +
+    pitchScore * 0.18 +
+    recent * 0.13 +
+    leakScore * 0.10 +
+    zonePower * 0.05 +
+    env * 0.02
   );
 
   const current = num(row.hrConfidence ?? row.score ?? row.powerScore, 0);
-  const finalScore = clamp(current * 0.25 + score * 0.75);
+  const finalScore = clamp(current * 0.15 + score * 0.85);
 
   return {
     ...row,
@@ -162,10 +161,10 @@ function volatility(row) {
     score: Math.round(finalScore),
     hrConfidence: Math.round(finalScore * 10) / 10,
     volatilityTier:
-      finalScore >= 60 ? "Nuclear" :
-      finalScore >= 50 ? "Explosive" :
-      finalScore >= 42 ? "Strong HR Spot" :
-      finalScore >= 34 ? "Live HR Spot" :
+      finalScore >= 58 ? "Nuclear" :
+      finalScore >= 48 ? "Explosive" :
+      finalScore >= 40 ? "Strong HR Spot" :
+      finalScore >= 32 ? "Live HR Spot" :
       "Watchlist"
   };
 }
@@ -215,8 +214,8 @@ if (dc?.allPlayers) {
     updatedAt: new Date().toISOString(),
     scoringMode: "HR volatility weighted",
     volatilityWeights: {
-      currentModel: 25,
-      hrVolatility: 75
+      currentModel: 15,
+      hrVolatility: 85
     },
     sections: rebuildDecisionSections(rows),
     allPlayers: rows
