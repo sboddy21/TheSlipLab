@@ -171,49 +171,38 @@ function hrArchetype(row) {
   const iso = num(row.iso ?? Math.max(0, slg - avg));
 
   const barrel =
-    num(row.barrelRate ?? row.barrelPct ?? row.brlPct ?? row.brl);
+    num(row.barrelRate ?? row.barrelPct ?? row.brlPct ?? row.brl) ||
+    scale(iso, 0.090, 0.340) * 0.75 ||
+    scale(slg, 0.360, 0.680) * 0.55;
 
   const hh =
-    num(row.hardHitRate ?? row.hardHitPct ?? row.hhPct ?? row.hh);
+    num(row.hardHitRate ?? row.hardHitPct ?? row.hhPct ?? row.hh) ||
+    scale(ops, 0.680, 1.050) * 0.55;
 
   const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
+  const slg7 = num(row.last7Slg ?? row.l7Slg ?? row.slgLast7);
+  const ops7 = num(row.last7Ops ?? row.l7Ops);
 
   let score = 0;
 
-  // Pure HR hitters
-  if (hr >= 12) score += 26;
-  else if (hr >= 8) score += 18;
-  else if (hr >= 5) score += 10;
+  score += scale(hr, 0, 24) * 0.26;
+  score += scale(iso, 0.090, 0.340) * 0.22;
+  score += scale(slg, 0.340, 0.660) * 0.14;
+  score += scale(barrel, 4, 16) * 0.16;
+  score += scale(hh, 35, 58) * 0.10;
+  score += scale(hr7, 0, 4) * 0.07;
+  score += scale(slg7, 0.320, 0.950) * 0.03;
+  score += scale(ops7, 0.650, 1.250) * 0.02;
 
-  // Low AVG + high power archetype
-  if (avg <= .255 && iso >= .185) score += 18;
-  if (avg <= .245 && slg >= .440) score += 12;
-
-  // Barrel monsters
-  if (barrel >= 14) score += 24;
-  else if (barrel >= 11) score += 18;
-  else if (barrel >= 8) score += 10;
-
-  // Hard hit power profile
-  if (hh >= 52) score += 16;
-  else if (hh >= 47) score += 10;
-
-  // Hot HR streaks
-  if (hr7 >= 4) score += 24;
-  else if (hr7 >= 3) score += 18;
-  else if (hr7 >= 2) score += 12;
-
-  // Three true outcome style boost
-  if (ops < .820 && iso >= .210) score += 14;
-
-  // Schwarber/Burger/Olson type profile
-  if (
-    avg <= .255 &&
-    slg >= .430 &&
-    hr >= 8
-  ) {
-    score += 22;
-  }
+  if (avg <= .255 && iso >= .185) score += 6;
+  if (avg <= .245 && slg >= .430) score += 5;
+  if (ops < .820 && iso >= .210) score += 5;
+  if (hr >= 8 && slg >= .420) score += 6;
+  if (hr >= 12) score += 6;
+  if (barrel >= 12) score += 5;
+  if (hh >= 50) score += 4;
+  if (hr7 >= 2) score += 7;
+  if (hr7 >= 3) score += 5;
 
   return clamp(score);
 }
