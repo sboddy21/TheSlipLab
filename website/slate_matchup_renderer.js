@@ -270,24 +270,61 @@
     return [...(game.hitters?.away || []), ...(game.hitters?.home || [])];
   }
 
-  function pitcherVulnerability(game, side) {
-    const pitcher = side === "away" ? game.awayPitcher : game.homePitcher;
-    if (pitcher && pitcher.vulnerability !== undefined) return num(pitcher.vulnerability);
-    const hitters = side === "away" ? game.hitters?.home || [] : game.hitters?.away || [];
-    const top = hitters.slice(0, 5);
-    return top.length ? top.reduce((sum, row) => sum + num(scoreOf(row)), 0) / top.length : 0;
+  function pitcherObj(game, side) {
+    return side === "away" ? game.awayPitcher : game.homePitcher;
   }
 
   function pitcherName(game, side) {
-    const pitcher = side === "away" ? game.awayPitcher : game.homePitcher;
-    return pitcher?.name || pitcher?.pitcher || "TBD";
+    const pitcher = pitcherObj(game, side);
+    const name = pitcher?.name || pitcher?.pitcher || "";
+    return name && name !== "TBD" ? name : "";
+  }
+
+  function hasRealPitcher(game, side) {
+    return pitcherName(game, side).length > 0;
+  }
+
+  function pitcherStatsFor(game, side) {
+    const pitcher = pitcherObj(game, side);
+    const sideStats = side === "away" ? game.awayPitcherStats : game.homePitcherStats;
+    const hitters = side === "away" ? game.hitters?.home || [] : game.hitters?.away || [];
+    const hitterPitcherStats = hitters.find(row => row?.stats?.pitcher)?.stats?.pitcher || null;
+
+    return pitcher?.stats || sideStats || hitterPitcherStats || {};
+  }
+
+  function pitcherEra(game, side) {
+    const pitcher = pitcherObj(game, side);
+    const stats = pitcherStatsFor(game, side);
+
+    const value =
+      pitcher?.era ??
+      pitcher?.pitcherEra ??
+      stats?.era ??
+      stats?.ERA ??
+      null;
+
+    return Number.isFinite(Number(value)) ? Number(value).toFixed(2) : "Pending";
+  }
+
+  function pitcherVulnerability(game, side) {
+    const pitcher = pitcherObj(game, side);
+    if (pitcher && pitcher.vulnerability !== undefined) return num(pitcher.vulnerability);
+
+    const hitters = side === "away" ? game.hitters?.home || [] : game.hitters?.away || [];
+    const top = hitters.slice(0, 5);
+
+    return top.length ? top.reduce((sum, row) => sum + num(scoreOf(row)), 0) / top.length : 0;
   }
 
   function topPitcherRows() {
     return state.games.flatMap(game => [
       { game, side: "away", pitcher: pitcherName(game, "away"), team: game.awayTeam, opponent: game.homeTeam, score: pitcherVulnerability(game, "away") },
       { game, side: "home", pitcher: pitcherName(game, "home"), team: game.homeTeam, opponent: game.awayTeam, score: pitcherVulnerability(game, "home") }
-    ]).sort((a, b) => b.score - a.score).slice(0, 5);
+    ])
+    .filter(row => row.pitcher && row.pitcher !== "TBD" && row.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
   }
 
   function injectShell() {
@@ -316,7 +353,7 @@
 
     document.getElementById("avgVuln").textContent = ` | ${avg.toFixed(1)} proj HRs   ${highValue} high-value games`;
 
-    document.getElementById("vulns").innerHTML = rows.map((row, index) => {
+    document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
       const label = row.score >= 80 ? "TARGET" : row.score >= 55 ? "STRONG" : "WATCH";
       return `
         <button class="vuln" data-game="${state.games.indexOf(row.game)}" type="button">
@@ -326,10 +363,10 @@
             <span>${label}</span>
           </div>
           <strong>${esc(row.pitcher)}</strong>
-          <em>${esc(code(row.team))} vs ${esc(code(row.opponent))} · ERA ${esc(row.game?.[row.side + "Pitcher"]?.era || row.game?.[row.side + "Pitcher"]?.stats?.era || "N/A")}</em>
+          <em>${esc(code(row.team))} vs ${esc(code(row.opponent))} · ERA ${esc(pitcherEra(row.game, row.side))}</em>
         </button>
       `;
-    }).join("");
+    }).join("") : `<div class="empty">Pitcher vulnerability data is still updating.</div>`;
 
     document.querySelectorAll(".vuln[data-game]").forEach(button => {
       button.addEventListener("click", () => {
