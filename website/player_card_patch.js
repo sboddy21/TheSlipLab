@@ -338,20 +338,19 @@
 
       <div class="pcspottable">
         <div class="pcpitchrow head">
-          <span>Reliever</span><span>Hand</span><span>HR Risk</span><span>Tag</span><span>Matchup</span>
+          <span>Bullpen</span><span>Grade</span><span>HR Risk</span><span>Tag</span><span>Matchup</span>
         </div>
 
         ${relievers.length ? relievers.map(bp => {
           const risk = bullpenRisk(bp);
           const tag = bullpenTag(risk);
-          const cls = risk >= 60 ? "hot" : risk >= 42 ? "good" : "";
           return `
             <div class="pcpitchrow">
-              <strong>${esc(bullpenName(bp))}</strong>
-              <span>${esc(bullpenHand(bp) || "N/A")}</span>
-              <span class="${cls}">${one(risk)}</span>
-              <span class="${cls}">${esc(tag)}</span>
-              <span>${risk >= 60 ? "Attack" : risk >= 42 ? "Live" : "Neutral"}</span>
+              <strong>${esc(bp.team || bp.Team || team)}</strong>
+              <span>${esc(bp.grade || "Team BP")}</span>
+              <span class="${risk >= 60 ? "hot" : risk >= 42 ? "good" : ""}">${one(risk)}</span>
+              <span>${esc(tag)}</span>
+              <span>${risk >= 60 ? "Attack bullpen" : risk >= 42 ? "Live late" : "Neutral"}</span>
             </div>
           `;
         }).join("") : `
