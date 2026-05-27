@@ -438,8 +438,9 @@
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
+    const vulnClass = vuln >= 55 ? "vuln-high" : vuln >= 40 ? "vuln-medhigh" : vuln >= 25 ? "vuln-medium" : "vuln-low";
     return `
-      <article class="side">
+      <article class="side ${vulnClass}">
         <div class="side-top"><div>
           <div class="pitcher">${esc(pitcherLabel)}</div>
           <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
