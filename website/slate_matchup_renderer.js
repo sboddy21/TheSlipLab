@@ -26,6 +26,39 @@
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
 
+  function injectVulnerabilityStyles() {
+    if (document.getElementById("vulnerability-color-styles")) return;
+
+    document.head.insertAdjacentHTML("beforeend", `
+      <style id="vulnerability-color-styles">
+        .side.vuln-high,
+        .side.vuln-high .side-top {
+          background: linear-gradient(135deg, rgba(255, 55, 55, .28), rgba(35, 6, 8, .98)) !important;
+          border-color: rgba(255, 55, 55, .45) !important;
+        }
+
+        .side.vuln-medhigh,
+        .side.vuln-medhigh .side-top {
+          background: linear-gradient(135deg, rgba(255, 145, 0, .26), rgba(35, 18, 4, .98)) !important;
+          border-color: rgba(255, 145, 0, .45) !important;
+        }
+
+        .side.vuln-medium,
+        .side.vuln-medium .side-top {
+          background: linear-gradient(135deg, rgba(255, 210, 80, .22), rgba(32, 27, 5, .98)) !important;
+          border-color: rgba(255, 210, 80, .42) !important;
+        }
+
+        .side.vuln-low,
+        .side.vuln-low .side-top {
+          background: linear-gradient(135deg, rgba(80, 255, 100, .18), rgba(5, 26, 12, .98)) !important;
+          border-color: rgba(80, 255, 100, .35) !important;
+        }
+      </style>
+    `);
+  }
+
+
   async function json(path, fallback) {
     try {
       const response = await fetch(path + "?v=" + Date.now());
@@ -475,6 +508,7 @@
   }
 
   function render() {
+    injectVulnerabilityStyles();
     renderTopVulnerabilities();
     renderTabs();
     document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
