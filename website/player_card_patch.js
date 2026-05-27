@@ -550,13 +550,24 @@
     `;
   }
 
+  function pcTheme(row) {
+    const tags = Array.isArray(row.tags) ? row.tags.join(" ") : "";
+    const prob = Number(row.realHrProbability || row.projectedHrProbability || 0);
+    const power = Number(row.truePowerScore || row.hrPowerIndex || row.score || 0);
+
+    if (prob >= 16 || power >= 74 || tags.includes("NUCLEAR") || tags.includes("ELITE POWER")) return "fire";
+    if (prob <= 3.5 && power <= 32) return "ice";
+    return "neutral";
+  }
+
   function renderHero(row) {
     const h = stats(row);
     const conf = hrChance(row);
     const prob = Math.max(3, Math.min(25, conf / 4));
+    const theme = pcTheme(row);
 
     return `
-      <div class="pcheader">
+      <div class="pcheader pctheme-${theme}">
         <div>
           <h2>${esc(row.player)}</h2>
           <p>${esc(row.team)} vs ${esc(row.opponent)}${row.opposingPitcher ? " • vs " + esc(row.opposingPitcher) : ""}</p>
@@ -713,12 +724,18 @@
     style.textContent = `
       #pcFull{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:999999;padding:18px;overflow:auto}
       #pcFull.on{display:block}
-      #pcBox{max-width:980px;margin:auto;background:radial-gradient(circle at 20% 0%,rgba(255,106,0,.22),transparent 34%),linear-gradient(180deg,#120b09,#070a0f 45%,#080d12);border:1px solid rgba(255,116,72,.35);border-radius:18px;padding:14px;color:#f3f3f3;box-shadow:0 0 42px rgba(255,106,0,.16)}
+      #pcBox{max-width:980px;margin:auto;background:linear-gradient(180deg,#080d12,#070a0f 45%,#080d12);border:1px solid rgba(255,255,255,.14);border-radius:18px;padding:14px;color:#f3f3f3;box-shadow:0 0 42px rgba(0,0,0,.36)}
       #pcBox h2{font-size:28px;line-height:1.05;margin:0;color:#fff}
       #pcBox p{font-size:13px;margin:6px 0 10px;color:#b9c0ca}
       #pcBox h3{font-size:13px;line-height:1;margin:14px 0 10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2}
       #pcClose{float:right;background:#111820;color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:10px;padding:8px 11px;font-size:11px;font-weight:900;cursor:pointer}
-      .pcheader{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:14px;border-radius:16px;background:linear-gradient(90deg,rgba(255,106,0,.22),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);margin-bottom:10px}
+      .pcheader{position:relative;overflow:hidden;display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:14px;border-radius:16px;background:linear-gradient(90deg,rgba(255,255,255,.05),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);margin-bottom:10px}
+      .pcheader>*{position:relative;z-index:2}
+      .pcheader.pctheme-fire::before,.pcheader.pctheme-ice::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.55}
+      .pcheader.pctheme-fire::before{background:radial-gradient(circle at 15% 18%,rgba(255,115,24,.95),transparent 34%),radial-gradient(circle at 84% 48%,rgba(255,45,35,.55),transparent 31%),linear-gradient(135deg,rgba(255,128,0,.42),transparent 62%)}
+      .pcheader.pctheme-ice::before{background:radial-gradient(circle at 15% 18%,rgba(95,210,255,.95),transparent 34%),radial-gradient(circle at 84% 48%,rgba(220,248,255,.62),transparent 31%),linear-gradient(135deg,rgba(75,160,255,.42),transparent 62%)}
+      .pcheader.pctheme-fire{border-color:rgba(255,126,35,.46)}
+      .pcheader.pctheme-ice{border-color:rgba(110,215,255,.42)}
       .pcprob{width:110px;height:84px;border-radius:16px;border:1px solid rgba(255,116,72,.55);display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.25)}
       .pcprob b{font-size:28px;color:#ff8a00}
       .pcprob span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}

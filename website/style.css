@@ -5060,3 +5060,104 @@ PLAYER SEARCH FILTERS
   border:1px solid rgba(156,255,87,.45);
   background:rgba(156,255,87,.08);
 }
+
+.threat-row {
+  position: relative;
+  overflow: hidden;
+}
+
+.threat-row > * {
+  position: relative;
+  z-index: 2;
+}
+
+.threat-row.theme-fire::before,
+.threat-row.theme-ice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .18;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.threat-row.theme-fire::before {
+  background:
+    radial-gradient(circle at 18% 25%, rgba(255, 124, 45, .55), transparent 34%),
+    radial-gradient(circle at 85% 65%, rgba(255, 48, 48, .28), transparent 32%),
+    linear-gradient(135deg, rgba(255, 149, 0, .18), transparent 60%);
+}
+
+.threat-row.theme-ice::before {
+  background:
+    radial-gradient(circle at 18% 25%, rgba(122, 216, 255, .42), transparent 34%),
+    radial-gradient(circle at 85% 65%, rgba(180, 235, 255, .24), transparent 32%),
+    linear-gradient(135deg, rgba(80, 170, 255, .14), transparent 60%);
+}
+
+.threat-row.theme-fire {
+  border-color: rgba(255, 132, 45, .42);
+}
+
+.threat-row.theme-ice {
+  border-color: rgba(122, 216, 255, .32);
+}
+
+.profile-wrap {
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-wrap > * {
+  position: relative;
+  z-index: 2;
+}
+
+.profile-wrap.profile-theme-fire::before,
+.profile-wrap.profile-theme-ice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: .22;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.profile-wrap.profile-theme-fire::before {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 128, 35, .75), transparent 34%),
+    radial-gradient(circle at 82% 36%, rgba(255, 55, 55, .34), transparent 30%),
+    linear-gradient(135deg, rgba(255, 119, 0, .22), transparent 62%);
+}
+
+.profile-wrap.profile-theme-ice::before {
+  background:
+    radial-gradient(circle at 16% 18%, rgba(110, 215, 255, .58), transparent 34%),
+    radial-gradient(circle at 82% 36%, rgba(210, 245, 255, .32), transparent 30%),
+    linear-gradient(135deg, rgba(70, 160, 255, .20), transparent 62%);
+}
+
+.profile-wrap.profile-theme-fire {
+  border-color: rgba(255, 128, 35, .45);
+}
+
+.profile-wrap.profile-theme-ice {
+  border-color: rgba(110, 215, 255, .42);
+}
+
+.profile-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.profile-tags span {
+  border: 1px solid rgba(255,255,255,.16);
+  background: rgba(10,15,18,.46);
+  color: #f5fff8;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 950;
+}

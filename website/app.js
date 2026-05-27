@@ -143,11 +143,23 @@ function renderSide(game, side) {
     '<div class="danger-head"><span>Danger Bats vs ' + html(pitcherName) + '</span><strong>' + html(teamCode(hitterTeam)) + ' • ' + hitters.length + ' bats</strong></div><div class="threats">' + (hitters.slice(0, 8).map(renderThreat).join("") || '<div class="empty-box">No hitter data yet for ' + html(hitterTeam) + '</div>') + '</div></article>';
 }
 
+function cardTheme(row) {
+  const tags = Array.isArray(row.tags) ? row.tags.join(" ") : "";
+  const prob = Number(row.realHrProbability || 0);
+  const power = Number(row.truePowerScore || 0);
+
+  if (prob >= 16 || power >= 74 || tags.includes("NUCLEAR") || tags.includes("ELITE POWER")) return "fire";
+  if (prob <= 3.5 && power <= 32) return "ice";
+  return "neutral";
+}
+
 function renderThreat(row, index) {
   const score = row.score || row.hrConfidence || row.powerScore || "--";
-  const edge = row.edge || row.tier || "Watch";
-  const note = Array.isArray(row.reasons) ? row.reasons.join(" • ") : row.note || "";
-  return '<button class="threat-row player-card" data-player-name="' + html(row.player) + '" type="button"><div><strong>#' + html(row.rank || index + 1) + ' ' + html(row.player) + '</strong><small>' + html(edge) + (row.batSide ? ' • ' + html(row.batSide) : '') + (row.opposingPitcher ? ' • vs ' + html(row.opposingPitcher) : '') + '</small><em>' + html(note) + '</em></div><span>' + html(score) + '</span></button>';
+  const edge = row.edge || row.tier || row.probabilityTier || "Watch";
+  const note = Array.isArray(row.tags) && row.tags.length ? row.tags.slice(0, 4).join(" • ") : Array.isArray(row.reasons) ? row.reasons.join(" • ") : row.note || "";
+  const theme = cardTheme(row);
+
+  return '<button class="threat-row player-card theme-' + html(theme) + '" data-player-name="' + html(row.player) + '" type="button"><div><strong>#' + html(row.rank || index + 1) + ' ' + html(row.player) + '</strong><small>' + html(edge) + (row.batSide ? ' • ' + html(row.batSide) : '') + (row.opposingPitcher ? ' • vs ' + html(row.opposingPitcher) : '') + '</small><em>' + html(note) + '</em></div><span>' + html(score) + '</span></button>';
 }
 
 function renderWeather(weather) {
@@ -186,7 +198,19 @@ function openProfile(row) {
   const modal = document.getElementById("profile-modal");
   const body = document.getElementById("profile-body");
   if (!modal || !body) return;
-  body.innerHTML = '<div class="profile-wrap"><div class="profile-head"><div><h2>' + html(profile.player) + '</h2><p>' + html(profile.team) + ' vs ' + html(profile.opponent) + '</p></div><div class="profile-score">' + html(profile.score || profile.hrConfidence || profile.powerScore) + '</div></div><div class="stats-grid">' + stat('HR', profile.hitterStats?.hr || profile.stats?.hitter?.hr) + stat('AVG', profile.hitterStats?.avg || profile.stats?.hitter?.avg) + stat('OBP', profile.hitterStats?.obp || profile.stats?.hitter?.obp) + stat('SLG', profile.hitterStats?.slg || profile.stats?.hitter?.slg) + stat('OPS', profile.hitterStats?.ops || profile.stats?.hitter?.ops) + stat('Pitcher', profile.opposingPitcher || profile.pitcher) + stat('Edge', profile.edge || profile.tier) + stat('Pitch Matchup', profile.pitchMatchup?.bestPitch || profile.bestPitch) + '</div></div>';
+
+  const merged = {
+    ...row,
+    ...profile,
+    tags: profile.tags || row.tags || [],
+    realHrProbability: profile.realHrProbability || row.realHrProbability,
+    truePowerScore: profile.truePowerScore || row.truePowerScore,
+    score: profile.score || row.score
+  };
+
+  const theme = cardTheme(merged);
+
+  body.innerHTML = '<div class="profile-wrap profile-theme-' + html(theme) + '"><div class="profile-head"><div><h2>' + html(merged.player) + '</h2><p>' + html(merged.team) + ' vs ' + html(merged.opponent) + (merged.opposingPitcher ? ' • vs ' + html(merged.opposingPitcher) : '') + '</p><div class="profile-tags">' + (Array.isArray(merged.tags) ? merged.tags.slice(0, 7).map(tag => '<span>' + html(tag) + '</span>').join("") : "") + '</div></div><div class="profile-score">' + html(merged.realHrProbability ? merged.realHrProbability + "%" : merged.score || merged.hrConfidence || merged.powerScore) + '</div></div><div class="stats-grid">' + stat('HR', merged.hitterStats?.hr || merged.stats?.hitter?.hr) + stat('AVG', merged.hitterStats?.avg || merged.stats?.hitter?.avg) + stat('OBP', merged.hitterStats?.obp || merged.stats?.hitter?.obp) + stat('SLG', merged.hitterStats?.slg || merged.stats?.hitter?.slg) + stat('OPS', merged.hitterStats?.ops || merged.stats?.hitter?.ops) + stat('Pitcher', merged.opposingPitcher || merged.pitcher) + stat('Edge', merged.edge || merged.tier || merged.probabilityTier) + stat('Pitch Matchup', merged.pitchMatchup?.bestPitch || merged.bestPitch || 'Pending') + '</div></div>';
   modal.classList.add("show");
 }
 

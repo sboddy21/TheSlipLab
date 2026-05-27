@@ -5,6 +5,7 @@ import path from "path";
 const steps = [
   ["Slate", "scripts/mlb/fetch_mlb_today.js"],
   ["Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
+  ["HR Power Profiles", "scripts/mlb/build_hr_power_profiles.js"],
   ["Full Board", "scripts/mlb/build_home_run_board.js"],
   ["HR Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
   ["Game Pitcher Matchups", "scripts/mlb/build_game_pitcher_matchups.mjs"],
