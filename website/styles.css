@@ -157,3 +157,128 @@
     grid-template-rows: repeat(5, 38px);
   }
 }
+
+.spot-lab {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(255, 132, 0, 0.25);
+  border-radius: 18px;
+  background: rgba(5, 8, 13, 0.86);
+}
+
+.spot-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.spot-head h3 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.spot-head p {
+  color: #9aa3b2;
+  margin: 4px 0 0;
+}
+
+.spot-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.spot-summary span {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 132, 0, 0.12);
+  border: 1px solid rgba(255, 132, 0, 0.24);
+  color: #ffd21f;
+  font-weight: 800;
+}
+
+.spot-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.spot-row {
+  display: grid;
+  grid-template-columns: 48px 1fr 170px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 20, 28, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.spot-row.current-spot {
+  border-color: rgba(255, 210, 31, 0.75);
+  box-shadow: 0 0 14px rgba(255, 210, 31, 0.18);
+}
+
+.spot-num {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 132, 0, 0.18);
+  color: #ffd21f;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.spot-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.spot-title span,
+.spot-stats span,
+.spot-bars small {
+  color: #aeb7c7;
+  font-size: 12px;
+}
+
+.spot-bars {
+  display: grid;
+  gap: 6px;
+}
+
+.spot-bars div {
+  display: grid;
+  gap: 4px;
+}
+
+.spot-bars i {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff7a1a, #ffd21f);
+}
+
+.spot-stats {
+  display: grid;
+  gap: 5px;
+  text-align: right;
+}
+
+@media (max-width: 800px) {
+  .spot-row {
+    grid-template-columns: 42px 1fr;
+  }
+
+  .spot-stats {
+    grid-column: 1 / -1;
+    text-align: left;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
