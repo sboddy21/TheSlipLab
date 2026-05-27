@@ -23,6 +23,40 @@
   const pct = v => Number.isFinite(Number(v)) ? Math.round(Number(v)) + "%" : "N/A";
   const key = v => String(v || "").toLowerCase().trim();
 
+  function hrChance(row) {
+    const score = num(
+      row.hrConfidence ??
+      row.score ??
+      row.hrVolatilityScore ??
+      row.powerScore
+    );
+
+    const archetype = num(row.hrArchetypeScore);
+    const ceiling = num(row.multiHrCeilingScore);
+    const launch = num(row.launchHrProfileScore);
+    const pitch = num(row.pitchTypeDestructionScore);
+    const pitcherRisk = num(row.pitcherRisk);
+
+    let chance =
+      2.2 +
+      score * 0.145 +
+      archetype * 0.020 +
+      ceiling * 0.018 +
+      launch * 0.014 +
+      pitch * 0.012 +
+      pitcherRisk * 0.010;
+
+    if (score >= 80) chance += 2.5;
+    else if (score >= 70) chance += 1.7;
+    else if (score >= 60) chance += 1.0;
+
+    if (ceiling >= 75) chance += 1.2;
+    if (archetype >= 85) chance += 1.0;
+
+    return Math.max(1.5, Math.min(24, chance));
+  }
+
+
   async function getJSON(path, fallback) {
     try {
       const res = await fetch(path + "?v=" + Date.now());
@@ -409,7 +443,7 @@
 
   function renderHero(row) {
     const h = stats(row);
-    const conf = num(row.hrConfidence ?? row.score);
+    const conf = hrChance(row);
     const prob = Math.max(3, Math.min(25, conf / 4));
 
     return `
@@ -437,7 +471,7 @@
       </div>
 
       <div class="pcbars">
-        ${bar("HR Confidence", conf, 100)}
+        ${bar("HR Chance", conf, 24, "%")}
         ${bar("Power Score", row.powerScore, 100)}
         ${bar("Zone Power", row.hitterZonePower, 100)}
         ${bar("Pitcher Risk", row.pitcherRisk, 100)}
