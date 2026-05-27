@@ -20,6 +20,7 @@ const steps = [
   ["Pull Wind HR Engine", "scripts/mlb/build_pull_wind_hr_engine.js"],
   ["Launch HR Profile Engine", "scripts/mlb/build_launch_hr_profile_engine.js"],
   ["Bullpen Inheritance Engine", "scripts/mlb/build_bullpen_inheritance_engine.js"],
+  ["Bullpen Relievers", "scripts/mlb/build_bullpen_relievers.js"],
   ["Multi HR Ceiling Engine", "scripts/mlb/build_multi_hr_ceiling_engine.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],

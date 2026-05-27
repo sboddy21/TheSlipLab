@@ -267,10 +267,9 @@
 
   function bullpenRowsFor(row) {
     const opponent = key(row.opponent);
-    const rows = arr(SPOT_DATA?.bullpen || []);
     const collapseRows = arr(window.__SLIP_BULLPEN_DATA__ || []);
 
-    return [...rows, ...collapseRows].filter(bp => {
+    return collapseRows.filter(bp => {
       const bpTeam =
         key(bp.team) ||
         key(bp.Team) ||
@@ -283,7 +282,8 @@
 
   async function getBullpenData() {
     if (window.__SLIP_BULLPEN_DATA__) return window.__SLIP_BULLPEN_DATA__;
-    window.__SLIP_BULLPEN_DATA__ = await getJSON("./data/bullpen_collapse_engine.json", []);
+    const relievers = await getJSON("./data/bullpen_relievers.json", { players: [] });
+    window.__SLIP_BULLPEN_DATA__ = relievers.players || [];
     return window.__SLIP_BULLPEN_DATA__;
   }
 
@@ -341,19 +341,20 @@
 
       <div class="pcspottable">
         <div class="pcpitchrow head">
-          <span>Bullpen</span><span>Grade</span><span>HR Risk</span><span>Tag</span><span>Matchup</span>
+          <span>Reliever</span><span>Hand</span><span>HR Risk</span><span>HR/9</span><span>Tag</span>
         </div>
 
         ${relievers.length ? relievers.map(bp => {
           const risk = bullpenRisk(bp);
           const tag = bullpenTag(risk);
+          const cls = risk >= 60 ? "hot" : risk >= 42 ? "good" : "";
           return `
             <div class="pcpitchrow">
-              <strong>${esc(bp.team || bp.Team || team)}</strong>
-              <span>${esc(bp.grade || "Team BP")}</span>
-              <span class="${risk >= 60 ? "hot" : risk >= 42 ? "good" : ""}">${one(risk)}</span>
-              <span>${esc(tag)}</span>
-              <span>${risk >= 60 ? "Attack bullpen" : risk >= 42 ? "Live late" : "Neutral"}</span>
+              <strong>${esc(bullpenName(bp))}</strong>
+              <span>${esc(bullpenHand(bp) || "N/A")}</span>
+              <span class="${cls}">${one(risk)}</span>
+              <span>${esc(bp.hr9 ?? "N/A")}</span>
+              <span class="${cls}">${esc(bp.tag || tag)}</span>
             </div>
           `;
         }).join("") : `
