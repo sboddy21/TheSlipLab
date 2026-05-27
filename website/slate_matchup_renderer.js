@@ -105,7 +105,7 @@
   }
 
   function scoreOf(row) {
-    return row?.score ?? row?.hrConfidence ?? row?.powerScore ?? "N/A";
+    return row?.hrVolatilityScore ?? row?.hrConfidence ?? row?.score ?? row?.powerScore ?? "N/A";
   }
 
   async function fetchLast7(playerId) {
@@ -475,7 +475,9 @@
     const pitcherTeam = away ? game.awayTeam : game.homeTeam;
     const hitterTeam = away ? game.homeTeam : game.awayTeam;
     const pitcher = away ? game.awayPitcher : game.homePitcher;
-    const hitters = away ? game.hitters?.home || [] : game.hitters?.away || [];
+    const hitters = (away ? game.hitters?.home || [] : game.hitters?.away || [])
+      .slice()
+      .sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
     const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
     const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
     const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("POSTED") ? "Posted" : hitters.length ? "Projected" : "Pending");

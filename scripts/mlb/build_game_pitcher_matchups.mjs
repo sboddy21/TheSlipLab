@@ -41,8 +41,9 @@ function norm(v = "") {
 
 function scoreOf(h) {
   return Number(
-    h.score ??
+    h.hrVolatilityScore ??
     h.hrConfidence ??
+    h.score ??
     h.powerScore ??
     0
   );
