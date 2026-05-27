@@ -4,6 +4,7 @@ import path from "path";
 const ROOT = process.cwd();
 const POOL_FILE = path.join(ROOT, "website", "data", "mlb_player_pool.json");
 const OUT_FILE = path.join(ROOT, "website", "data", "mlb_home_runs.json");
+const POWER_PROFILE_FILE = path.join(ROOT, "website", "data", "hr_power_profiles.json");
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -77,32 +78,45 @@ async function getPitcherStats(playerId) {
   };
 }
 
-function scorePlayer(hitter, pitcher) {
-  const powerScore =
-    scale(hitter.hr, 0, 35) * 0.35 +
-    scale(hitter.slg, 0.320, 0.650) * 0.35 +
-    scale(hitter.ops, 0.650, 1.050) * 0.20 +
-    scale(hitter.doubles + hitter.triples, 0, 40) * 0.10;
+function scorePlayer(hitter, pitcher, powerProfile = null) {
+  const pa = Math.max(1, num(hitter.plateAppearances));
+  const hrRate = num(hitter.hr) / pa;
+  const xbhRate =
+    (num(hitter.doubles) + num(hitter.triples) + num(hitter.hr)) / pa;
 
-  const contactScore =
-    scale(hitter.avg, 0.190, 0.330) * 0.45 +
-    scale(hitter.obp, 0.260, 0.420) * 0.30 +
-    scale(hitter.hits, 20, 150) * 0.25;
+  const fallbackPower =
+    scale(hrRate, 0.005, 0.09) * 0.38 +
+    scale(hitter.slg, 0.320, 0.700) * 0.28 +
+    scale(hitter.ops, 0.650, 1.100) * 0.18 +
+    scale(xbhRate, 0.035, 0.150) * 0.16;
+
+  const truePower = num(powerProfile?.truePowerScore, fallbackPower);
+  const hrPower = num(powerProfile?.hrPowerIndex, fallbackPower);
+  const launchPower = num(powerProfile?.launchPowerScore, fallbackPower);
+  const contactDamage = num(powerProfile?.contactDamageScore, fallbackPower);
 
   const pitcherRisk = pitcher
-    ? scale(pitcher.homeRuns, 0, 30) * 0.45 +
-      scale(pitcher.era, 2.50, 6.50) * 0.30 +
+    ? scale(pitcher.homeRuns, 0, 30) * 0.50 +
+      scale(pitcher.era, 2.50, 6.50) * 0.25 +
       scale(pitcher.whip, 0.95, 1.60) * 0.25
     : 50;
 
-  const samplePenalty = hitter.plateAppearances < 40 ? 10 : hitter.plateAppearances < 80 ? 5 : 0;
+  const samplePenalty =
+    num(powerProfile?.samplePenalty) ||
+    (hitter.plateAppearances < 40 ? 10 : hitter.plateAppearances < 80 ? 5 : 0);
 
-  return Math.round(
-    powerScore * 0.55 +
-    contactScore * 0.15 +
-    pitcherRisk * 0.30 -
-    samplePenalty
-  );
+  const strikeoutDrag = num(powerProfile?.strikeoutDrag);
+
+  const score =
+    truePower * 0.42 +
+    hrPower * 0.24 +
+    launchPower * 0.16 +
+    contactDamage * 0.08 +
+    pitcherRisk * 0.10 -
+    samplePenalty -
+    strikeoutDrag;
+
+  return Math.round(Math.max(0, Math.min(100, score)));
 }
 
 function edgeLabel(score) {
@@ -120,6 +134,17 @@ async function main() {
 
   const poolData = readJson(POOL_FILE);
   const players = poolData.players || [];
+
+  const powerProfileData = fs.existsSync(POWER_PROFILE_FILE)
+    ? readJson(POWER_PROFILE_FILE)
+    : { players: [] };
+
+  const powerProfiles = new Map(
+    (powerProfileData.players || []).map(profile => [
+      String(profile.playerId || profile.player).toLowerCase(),
+      profile
+    ])
+  );
 
   const pitcherCache = new Map();
   const rows = [];
@@ -142,7 +167,12 @@ async function main() {
       pitcher = pitcherCache.get(pitcherId);
     }
 
-    const score = scorePlayer(hitter, pitcher);
+    const powerProfile =
+      powerProfiles.get(String(player.playerId).toLowerCase()) ||
+      powerProfiles.get(String(player.player).toLowerCase()) ||
+      null;
+
+    const score = scorePlayer(hitter, pitcher, powerProfile);
 
     rows.push({
       rank: 0,
@@ -156,6 +186,11 @@ async function main() {
       venue: player.venue,
       opposingPitcher: player.opposingProbablePitcher || "TBD",
       score,
+      truePowerScore: powerProfile?.truePowerScore ?? null,
+      hrPowerIndex: powerProfile?.hrPowerIndex ?? null,
+      launchPowerScore: powerProfile?.launchPowerScore ?? null,
+      contactDamageScore: powerProfile?.contactDamageScore ?? null,
+      powerTier: powerProfile?.powerTier ?? null,
       odds: "N/A",
       edge: edgeLabel(score),
       note: `HR ${hitter.hr} • SLG ${hitter.slg || "--"} • OPS ${hitter.ops || "--"}`,

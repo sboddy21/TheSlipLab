@@ -31,7 +31,7 @@ function clamp(v, min, max) {
 
 function logisticProbability(score) {
   const k = 0.055;
-  const midpoint = 82;
+  const midpoint = 98;
   return 1 / (1 + Math.exp(-k * (score - midpoint)));
 }
 
@@ -70,10 +70,10 @@ function archetypeModifier(row) {
 
 function calculateEventScore(row) {
   const modelScore =
-    num(row.score) ||
-    num(row.hr_score) ||
-    num(row.modelScore) ||
-    num(row.final_score) ||
+    row.score !== undefined && row.score !== null ? num(row.score) :
+    row.hr_score !== undefined && row.hr_score !== null ? num(row.hr_score) :
+    row.modelScore !== undefined && row.modelScore !== null ? num(row.modelScore) :
+    row.final_score !== undefined && row.final_score !== null ? num(row.final_score) :
     50;
 
   const ceiling = num(row.multiHrCeiling) || num(row.ceilingScore);
