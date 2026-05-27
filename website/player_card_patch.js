@@ -128,7 +128,12 @@
     return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(cell => {
       const raw = field ? cell?.[field] : cell;
       const score = mode === "dec" ? num(raw) * 100 : mode === "cnt" ? num(raw) * 25 : num(raw) * 100;
-      const cls = score >= 75 ? "zdanger" : score >= 58 ? "z5" : score >= 42 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
+      const cls =
+        mode === "dec"
+          ? score >= 60 ? "zdanger" : score >= 50 ? "z5" : score >= 40 ? "z4" : score >= 30 ? "z3" : score >= 20 ? "z2" : "z1"
+          : mode === "cnt"
+            ? score >= 50 ? "zdanger" : score >= 35 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1"
+            : score >= 70 ? "zdanger" : score >= 55 ? "z5" : score >= 40 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
       const txt = mode === "dec" ? dec(raw) : String(Math.round(num(raw)));
       return `<span class="${cls}">${txt}</span>`;
     }).join("")}</div></div>`;
@@ -215,7 +220,12 @@
     return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(v => {
       const raw = num(v);
       const score = mode === "dec" ? raw / max * 100 : raw;
-      const cls = score >= 75 ? "zdanger" : score >= 58 ? "z5" : score >= 42 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
+      const cls =
+        mode === "dec"
+          ? score >= 60 ? "zdanger" : score >= 50 ? "z5" : score >= 40 ? "z4" : score >= 30 ? "z3" : score >= 20 ? "z2" : "z1"
+          : mode === "cnt"
+            ? score >= 50 ? "zdanger" : score >= 35 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1"
+            : score >= 70 ? "zdanger" : score >= 55 ? "z5" : score >= 40 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
       const txt = mode === "dec" ? dec(raw) : Math.round(raw);
       return `<span class="${cls}">${txt}</span>`;
     }).join("")}</div></div>`;
