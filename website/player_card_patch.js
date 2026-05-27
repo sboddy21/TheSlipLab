@@ -264,6 +264,105 @@
       null;
   }
 
+
+  function bullpenRowsFor(row) {
+    const opponent = key(row.opponent);
+    const rows = arr(SPOT_DATA?.bullpen || []);
+    const collapseRows = arr(window.__SLIP_BULLPEN_DATA__ || []);
+
+    return [...rows, ...collapseRows].filter(bp => {
+      return key(bp.team) === opponent ||
+        key(bp.Team) === opponent ||
+        key(bp.opponent) === opponent ||
+        key(bp.pitchingTeam) === opponent;
+    });
+  }
+
+  async function getBullpenData() {
+    if (window.__SLIP_BULLPEN_DATA__) return window.__SLIP_BULLPEN_DATA__;
+    window.__SLIP_BULLPEN_DATA__ = await getJSON("./data/bullpen_collapse_engine.json", []);
+    return window.__SLIP_BULLPEN_DATA__;
+  }
+
+  function bullpenName(bp) {
+    return bp.name || bp.pitcher || bp.player || bp.reliever || bp.fullName || "Reliever";
+  }
+
+  function bullpenHand(bp) {
+    return bp.hand || bp.throws || bp.pitchHand || bp.pitcherHand || "";
+  }
+
+  function bullpenRisk(bp) {
+    return Math.max(
+      num(bp.hrRiskScore),
+      num(bp.collapseScore),
+      num(bp.dangerScore),
+      num(bp.bullpenScore),
+      num(bp.hr9) * 25,
+      num(bp.homeRunsAllowed) * 6,
+      num(bp.barrelRate) * 7,
+      num(bp.hardHitRate) * 1.4
+    );
+  }
+
+  function bullpenTag(score) {
+    if (score >= 75) return "HR Leak";
+    if (score >= 60) return "Danger";
+    if (score >= 42) return "Watch";
+    return "Stable";
+  }
+
+  function renderBullpenTab(row, rows = []) {
+    const team = row.opponent || "Opponent";
+    const inherited = num(row.bullpenInheritanceScore || row.bullpen);
+    const relievers = rows
+      .slice()
+      .sort((a, b) => bullpenRisk(b) - bullpenRisk(a))
+      .slice(0, 6);
+
+    return `
+      <div class="pcsection-head">
+        <div>
+          <h3>Bullpen Inheritance</h3>
+          <p>Late game HR risk after the starter exits</p>
+        </div>
+        <span>${esc(row.bullpenInheritanceTag || "Bullpen Edge")}</span>
+      </div>
+
+      <div class="pcgrid">
+        ${metric("Opponent Bullpen", team)}
+        ${metric("Inheritance Score", one(inherited))}
+        ${metric("Bullpen Boost", one(row.bullpenInheritanceBonus))}
+        ${metric("Late HR Tag", row.bullpenInheritanceTag || "Neutral")}
+      </div>
+
+      <div class="pcspottable">
+        <div class="pcpitchrow head">
+          <span>Reliever</span><span>Hand</span><span>HR Risk</span><span>Tag</span><span>Matchup</span>
+        </div>
+
+        ${relievers.length ? relievers.map(bp => {
+          const risk = bullpenRisk(bp);
+          const tag = bullpenTag(risk);
+          const cls = risk >= 60 ? "hot" : risk >= 42 ? "good" : "";
+          return `
+            <div class="pcpitchrow">
+              <strong>${esc(bullpenName(bp))}</strong>
+              <span>${esc(bullpenHand(bp) || "N/A")}</span>
+              <span class="${cls}">${one(risk)}</span>
+              <span class="${cls}">${esc(tag)}</span>
+              <span>${risk >= 60 ? "Attack" : risk >= 42 ? "Live" : "Neutral"}</span>
+            </div>
+          `;
+        }).join("") : `
+          <div class="pcwhy">
+            Specific reliever data is still building. Current bullpen score is based on team bullpen risk, starter risk, HR leak, and late game power profile.
+          </div>
+        `}
+      </div>
+    `;
+  }
+
   function miniZone(title, values, mode = "score") {
     const cells = Array.isArray(values) ? values.slice(0, 25) : Array.from({ length: 25 }, () => 0);
     const max = Math.max(...cells.map(v => num(v)), 1);
@@ -539,7 +638,10 @@
     }
 
     if (id === "bp") {
-      body.innerHTML = `<h3>Bullpen and Late Game</h3><div class="pcgrid">${metric("Bullpen Risk", one(row.bullpen))}${metric("Due Score", one(row.due))}${metric("Tier", row.tier || row.edge)}${metric("Weather Carry", one(row.weather))}</div>`;
+      body.innerHTML = renderBullpenTab(row, []);
+      getBullpenData().then(bpRows => {
+        body.innerHTML = renderBullpenTab(row, bpRows);
+      });
       return;
     }
 
