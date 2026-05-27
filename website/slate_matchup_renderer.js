@@ -26,6 +26,17 @@
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
 
+  function vulnerabilityTier(score) {
+    const v = num(score);
+
+    if (v >= 45) return { label: "HIGH", className: "vuln-high" };
+    if (v >= 35) return { label: "MED HIGH", className: "vuln-medhigh" };
+    if (v >= 25) return { label: "MEDIUM", className: "vuln-medium" };
+
+    return { label: "LOW", className: "vuln-low" };
+  }
+
+
   function injectVulnerabilityStyles() {
     if (document.getElementById("vulnerability-color-styles")) return;
 
@@ -387,11 +398,7 @@
     document.getElementById("avgVuln").textContent = ` | ${avg.toFixed(1)} proj HRs   ${highValue} high-value games`;
 
     document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
-      const label =
-            row.score >= 45 ? "HIGH" :
-            row.score >= 35 ? "MED HIGH" :
-            row.score >= 25 ? "MEDIUM" :
-            "LOW";
+      const label = vulnerabilityTier(row.score).label;
       return `
         <button class="vuln" data-game="${state.games.indexOf(row.game)}" type="button">
           <div class="vuln-line">
@@ -475,11 +482,7 @@
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
-    const vulnClass =
-      vuln >= 45 ? "vuln-high" :
-      vuln >= 35 ? "vuln-medhigh" :
-      vuln >= 25 ? "vuln-medium" :
-      "vuln-low";
+    const vulnClass = vulnerabilityTier(vuln).className;
     return `
       <article class="side ${vulnClass}">
         <div class="side-top"><div>
