@@ -271,10 +271,13 @@
     const collapseRows = arr(window.__SLIP_BULLPEN_DATA__ || []);
 
     return [...rows, ...collapseRows].filter(bp => {
-      return key(bp.team) === opponent ||
-        key(bp.Team) === opponent ||
-        key(bp.opponent) === opponent ||
-        key(bp.pitchingTeam) === opponent;
+      const bpTeam =
+        key(bp.team) ||
+        key(bp.Team) ||
+        key(bp.opponent) ||
+        key(bp.pitchingTeam);
+
+      return bpTeam === opponent;
     });
   }
 
