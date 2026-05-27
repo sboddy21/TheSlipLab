@@ -107,7 +107,8 @@
     if (awayConfirmed && homeConfirmed) return "CONFIRMED";
     if (awayConfirmed || homeConfirmed) return "PARTIAL";
 
-    if (raw.includes("CONFIRMED") || raw.includes("POSTED")) return "CONFIRMED";
+    if (raw.includes("CONFIRMED")) return "CONFIRMED";
+    if (raw === "POSTED" || raw === "BOTH POSTED") return "CONFIRMED";
 
     return "PROJECTED";
   }
