@@ -99,6 +99,61 @@ function hrLeak(row) {
   );
 }
 
+
+function lineupAttackBoost(row, allRows) {
+  const pitcher =
+    row.opposingPitcher ||
+    row.pitcher ||
+    row.vsPitcher ||
+    "";
+
+  if (!pitcher) return 0;
+
+  const samePitcher = allRows.filter(r => {
+    const p =
+      r.opposingPitcher ||
+      r.pitcher ||
+      r.vsPitcher ||
+      "";
+
+    return p === pitcher;
+  });
+
+  if (!samePitcher.length) return 0;
+
+  const avgLeak =
+    samePitcher.reduce((sum, r) => {
+      return sum + num(r.pitcherRisk ?? r.pitcherLeak ?? 0);
+    }, 0) / samePitcher.length;
+
+  const strongBats = samePitcher.filter(r => {
+    const hr = stat(r, "hr");
+    const iso = num(r.iso ?? 0);
+    return hr >= 5 || iso >= .170;
+  }).length;
+
+  const archetypes = samePitcher.filter(r => {
+    return num(r.hrArchetypeScore ?? 0) >= 40;
+  }).length;
+
+  let boost = 0;
+
+  // weak pitcher environment
+  boost += scale(avgLeak, 20, 80) * 0.45;
+
+  // many power bats attacking same pitcher
+  boost += strongBats * 4.5;
+
+  // multiple HR archetypes in lineup
+  boost += archetypes * 6;
+
+  // full stack attack
+  if (strongBats >= 4) boost += 12;
+  if (archetypes >= 3) boost += 14;
+
+  return clamp(boost);
+}
+
 function environment(row) {
   return clamp(
     num(row.weather) * 0.45 +
@@ -163,6 +218,8 @@ function hrArchetype(row) {
   return clamp(score);
 }
 
+let hrRowsGlobal = [];
+
 function volatility(row) {
   const hr = stat(row, "hr");
   const slg = stat(row, "slg");
@@ -202,6 +259,7 @@ function volatility(row) {
   const env = environment(row);
 
   const archetype = hrArchetype(row);
+  const lineupBoost = lineupAttackBoost(row, hrRowsGlobal);
 
   const hr7 = num(row.last7Hr ?? row.l7Hr ?? row.recentHr);
   const hotHrBoost =
@@ -217,6 +275,7 @@ function volatility(row) {
     rawPower * 0.16 +
     recent * 0.10 +
     pitchScore * 0.06 +
+    lineupBoost * 0.05 +
     hotHrBoost * 0.01 +
     leakScore * 0.005 +
     env * 0.005
@@ -234,6 +293,7 @@ function volatility(row) {
     hotZoneAttack: Math.round(zonePower * 10) / 10,
     recentHRTrend: Math.round(recent * 10) / 10,
     hrEnvironmentScore: Math.round(env * 10) / 10,
+    lineupAttackBoost: Math.round(lineupBoost * 10) / 10,
     hrArchetypeScore: Math.round(archetype * 10) / 10,
     hrVolatilityScore: Math.round(score * 10) / 10,
     oldScore: current,
@@ -279,6 +339,8 @@ function rebuildDecisionSections(rows) {
 
 const hrRows = read("mlb_home_runs.json", []);
 if (Array.isArray(hrRows)) {
+  hrRowsGlobal = hrRows;
+
   const fixed = hrRows.map(volatility).sort((a, b) => num(b.hrConfidence) - num(a.hrConfidence));
   write("mlb_home_runs.json", fixed.map((row, index) => ({ ...row, rank: index + 1 })));
   console.log("Updated mlb_home_runs.json:", fixed.length);
