@@ -92,23 +92,30 @@
   }
 
   function lineupStatusLabel(game) {
-    const raw = String(game?.lineupLockStatus || "").trim().toUpperCase();
+    const awayCount = Number(game?.awayLineupCount || 0);
+    const homeCount = Number(game?.homeLineupCount || 0);
+
+    const awayStatus = String(game?.awayLineupStatus || "").toUpperCase();
+    const homeStatus = String(game?.homeLineupStatus || "").toUpperCase();
+    const lock = String(game?.lineupLockStatus || "").toUpperCase();
 
     const awayConfirmed =
-      game?.awayConfirmedLineup === true ||
-      game?.awayLineupStatus === "CONFIRMED" ||
-      game?.awayLineupCount >= 9;
+      awayCount >= 9 ||
+      awayStatus === "CONFIRMED" ||
+      awayStatus === "POSTED" ||
+      game?.awayConfirmedLineup === true;
 
     const homeConfirmed =
-      game?.homeConfirmedLineup === true ||
-      game?.homeLineupStatus === "CONFIRMED" ||
-      game?.homeLineupCount >= 9;
+      homeCount >= 9 ||
+      homeStatus === "CONFIRMED" ||
+      homeStatus === "POSTED" ||
+      game?.homeConfirmedLineup === true;
 
     if (awayConfirmed && homeConfirmed) return "CONFIRMED";
     if (awayConfirmed || homeConfirmed) return "PARTIAL";
 
-    if (raw.includes("CONFIRMED")) return "CONFIRMED";
-    if (raw === "POSTED" || raw === "BOTH POSTED") return "CONFIRMED";
+    if (lock === "BOTH CONFIRMED") return "CONFIRMED";
+    if (lock === "PARTIAL CONFIRMED") return "PARTIAL";
 
     return "PROJECTED";
   }
@@ -523,7 +530,7 @@
   function renderGame(game, index) {
     return `
       <section class="game-card" data-game="${index}">
-        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(lineupStatusLabel(game))}</div></div>
+        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill ${lineupStatusLabel(game).toLowerCase()}">${esc(lineupStatusLabel(game))}</div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
         ${renderWeather(game.weather)}
       </section>
