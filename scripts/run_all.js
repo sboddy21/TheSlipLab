@@ -18,6 +18,7 @@ const steps = [
   ["Decision Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
   ["Pitch Type Destruction Engine", "scripts/mlb/build_pitch_type_destruction_engine.js"],
   ["Pull Wind HR Engine", "scripts/mlb/build_pull_wind_hr_engine.js"],
+  ["Launch HR Profile Engine", "scripts/mlb/build_launch_hr_profile_engine.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
   "scripts/mlb/build_batting_spot_profiles.js",
