@@ -269,13 +269,13 @@ function volatility(row) {
     hr7 >= 1 ? 6 : 0;
 
   const score = clamp(
-    archetype * 0.24 +
+    archetype * 0.28 +
     barrelScore * 0.24 +
     hardHitScore * 0.18 +
     rawPower * 0.16 +
     recent * 0.10 +
     pitchScore * 0.06 +
-    lineupBoost * 0.05 +
+    lineupBoost * 0.03 +
     hotHrBoost * 0.01 +
     leakScore * 0.005 +
     env * 0.005
