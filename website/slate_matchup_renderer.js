@@ -480,7 +480,7 @@
       .sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
     const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
     const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
-    const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("POSTED") ? "Posted" : hitters.length ? "Projected" : "Pending");
+    const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("CONFIRMED") ? "Posted" : hitters.length ? "Projected" : "Pending");
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
@@ -500,7 +500,7 @@
   function renderGame(game, index) {
     return `
       <section class="game-card" data-game="${index}">
-        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(game.lineupLockStatus || "Lineups Updating")}</div></div>
+        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(game.lineupLockStatus === "PROJECTED" ? "PROJECTED" : game.lineupLockStatus || "Lineups Updating")}</div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
         ${renderWeather(game.weather)}
       </section>
