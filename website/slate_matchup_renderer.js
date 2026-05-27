@@ -382,14 +382,14 @@
   function renderTopVulnerabilities() {
     const rows = topPitcherRows();
     const avg = rows.length ? rows.reduce((sum, row) => sum + row.score, 0) / rows.length : 0;
-    const highValue = rows.filter(row => row.score >= 55).length;
+    const highValue = rows.filter(row => row.score >= 45).length;
 
     document.getElementById("avgVuln").textContent = ` | ${avg.toFixed(1)} proj HRs   ${highValue} high-value games`;
 
     document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
       const label =
-            row.score >= 55 ? "HIGH" :
-            row.score >= 40 ? "MED HIGH" :
+            row.score >= 45 ? "HIGH" :
+            row.score >= 35 ? "MED HIGH" :
             row.score >= 25 ? "MEDIUM" :
             "LOW";
       return `
@@ -476,8 +476,8 @@
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
     const vulnClass =
-      vuln >= 55 ? "vuln-high" :
-      vuln >= 40 ? "vuln-medhigh" :
+      vuln >= 45 ? "vuln-high" :
+      vuln >= 35 ? "vuln-medhigh" :
       vuln >= 25 ? "vuln-medium" :
       "vuln-low";
     return `
