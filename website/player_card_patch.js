@@ -127,14 +127,23 @@
 
     return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(cell => {
       const raw = field ? cell?.[field] : cell;
-      const score = mode === "dec" ? num(raw) * 100 : mode === "cnt" ? num(raw) * 25 : num(raw) * 100;
-      const cls =
-        mode === "dec"
-          ? score >= 60 ? "zdanger" : score >= 50 ? "z5" : score >= 40 ? "z4" : score >= 30 ? "z3" : score >= 20 ? "z2" : "z1"
-          : mode === "cnt"
-            ? score >= 50 ? "zdanger" : score >= 35 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1"
-            : score >= 70 ? "zdanger" : score >= 55 ? "z5" : score >= 40 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
-      const txt = mode === "dec" ? dec(raw) : String(Math.round(num(raw)));
+      const n = num(raw);
+
+      let cls = "z1";
+      if (title === "AVG") {
+        cls = n >= .330 ? "zdanger" : n >= .290 ? "z5" : n >= .260 ? "z4" : n >= .230 ? "z3" : n >= .200 ? "z2" : "z1";
+      } else if (title === "ISO") {
+        cls = n >= .300 ? "zdanger" : n >= .220 ? "z5" : n >= .170 ? "z4" : n >= .120 ? "z3" : n >= .080 ? "z2" : "z1";
+      } else if (title === "SLG") {
+        cls = n >= .560 ? "zdanger" : n >= .480 ? "z5" : n >= .400 ? "z4" : n >= .330 ? "z3" : n >= .260 ? "z2" : "z1";
+      } else if (title === "HR") {
+        cls = n >= 2 ? "zdanger" : n >= 1 ? "z5" : "z1";
+      } else {
+        const score = n > 1 ? n : n * 100;
+        cls = score >= 55 ? "zdanger" : score >= 40 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1";
+      }
+
+      const txt = mode === "dec" ? dec(raw) : String(Math.round(n));
       return `<span class="${cls}">${txt}</span>`;
     }).join("")}</div></div>`;
   }
@@ -586,7 +595,7 @@
       .pcz h4{font-size:11px;line-height:1;margin:0 0 5px}
       .pcz div{display:grid;grid-template-columns:repeat(5,30px);gap:1px}
       .pcz span{width:30px;height:30px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;background:#141922}
-      .z2{background:#183d34!important}.z3{background:#496315!important}.z4{background:#9a6b11!important}.z5{background:#ffb423!important}
+      .z2{background:#183d34!important}.z3{background:#496315!important}.z4{background:#9a6b11!important}.z5{background:#ffb423!important}.zdanger{background:#ff2f2f!important;color:#fff!important;box-shadow:0 0 12px rgba(255,47,47,.55)!important}
       .pcs{width:100%;height:300px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:12px}
       .pcwhy{background:rgba(13,19,24,.86);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:13px;line-height:1.5;color:#dce3ea}
       .pcl7hero{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
