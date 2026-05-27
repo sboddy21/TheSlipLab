@@ -618,7 +618,7 @@
     PLAYERS = [...map.values()];
 
     document.addEventListener("click", event => {
-      const target = event.target.closest(".bat[data-player],tr[data-player],.player-card[data-player-name]");
+      const target = event.target.closest(".bat[data-player],tr[data-player],.player-card[data-player-name],.card[data-player-name],[data-player-name]");
       if (!target) return;
 
       const row = findPlayer(target.dataset.player || target.dataset.playerName, target.dataset.playerId);
