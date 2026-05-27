@@ -45,6 +45,18 @@ async function getJson(url) {
   return res.json();
 }
 
+async function pitcherInfo(playerId) {
+  try {
+    const data = await getJson(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+    const person = data?.people?.[0] || {};
+    return {
+      hand: person?.pitchHand?.code || person?.pitchHand?.description || ""
+    };
+  } catch {
+    return { hand: "" };
+  }
+}
+
 async function pitcherStats(playerId) {
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching&season=${season}`;
@@ -110,6 +122,7 @@ async function teamRelievers(team) {
 
   for (const p of pitchers) {
     try {
+      const info = await pitcherInfo(p.person.id);
       const stats = await pitcherStats(p.person.id);
 
       const reliever = {
@@ -118,7 +131,7 @@ async function teamRelievers(team) {
         playerId: p.person.id,
         pitcher: p.person.fullName,
         name: p.person.fullName,
-        hand: p.person.pitchHand?.code || p.person.pitchHand?.description || "",
+        hand: info.hand || p.person.pitchHand?.code || p.person.pitchHand?.description || "",
         position: p.position?.abbreviation || "P",
         ...stats
       };
@@ -133,7 +146,7 @@ async function teamRelievers(team) {
         playerId: p.person.id,
         pitcher: p.person.fullName,
         name: p.person.fullName,
-        hand: p.person.pitchHand?.code || p.person.pitchHand?.description || "",
+        hand: "",
         position: p.position?.abbreviation || "P",
         hrRiskScore: 0,
         tag: "Stats Pending"
