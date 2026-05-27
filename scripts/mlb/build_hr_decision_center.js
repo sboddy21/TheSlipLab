@@ -404,10 +404,10 @@ const output = {
           (card.hrConfidence * 0.12)
       }))
       .filter(card =>
-        card.pitchEdge >= 40 &&
-        card.pitcherRisk >= 35 &&
-        card.powerScore >= 40 &&
-        card.hrConfidence <= 65
+        card.pitchEdge >= 28 &&
+        card.pitcherRisk >= 22 &&
+        card.powerScore >= 30 &&
+        card.hrConfidence <= 72
       ),
       "valueScore"
     ),
