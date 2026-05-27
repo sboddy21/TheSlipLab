@@ -70,8 +70,12 @@ async function publish(api, post) {
 }
 
 async function main() {
-  const queue = readJson(QUEUE_FILE, { posts: [] });
-  const posts = Array.isArray(queue.posts) ? queue.posts : [];
+  const queue = readJson(QUEUE_FILE, []);
+  const posts = Array.isArray(queue)
+    ? queue
+    : Array.isArray(queue.posts)
+      ? queue.posts
+      : [];
 
   if (!posts.length) {
     console.log("No queued posts.");
