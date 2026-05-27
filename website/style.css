@@ -4778,3 +4778,105 @@ PLAYER SEARCH FILTERS
   }
 }
 
+
+.pcpitchgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.pcpitch {
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 20, 28, .92);
+  border: 1px solid rgba(255, 132, 0, .22);
+  display: grid;
+  gap: 5px;
+}
+
+.pcpitch b {
+  color: #ffd25a;
+}
+
+.pcpitch span {
+  color: #aeb7c7;
+  font-size: 12px;
+}
+
+.pcspotlist {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.pcspot {
+  display: grid;
+  grid-template-columns: 44px 1fr 135px;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(15, 20, 28, .92);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.pcspot.on {
+  border-color: rgba(255, 210, 31, .75);
+  box-shadow: 0 0 14px rgba(255, 210, 31, .18);
+}
+
+.pcspotnum {
+  height: 42px;
+  width: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: rgba(255, 132, 0, .18);
+  color: #ffd25a;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.pcspotmid {
+  display: grid;
+  gap: 5px;
+}
+
+.pcspotmid div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pcspotmid span,
+.pcspotmid label,
+.pcspotstats span {
+  color: #aeb7c7;
+  font-size: 12px;
+}
+
+.pcspotmid i {
+  display: block;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff7a1a, #ffd25a);
+}
+
+.pcspotstats {
+  display: grid;
+  gap: 5px;
+  text-align: right;
+}
+
+@media (max-width: 760px) {
+  .pcspot {
+    grid-template-columns: 44px 1fr;
+  }
+
+  .pcspotstats {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, 1fr);
+    text-align: left;
+  }
+}

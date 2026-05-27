@@ -3,6 +3,9 @@
   let SPRAY = {};
   let ZONES = {};
   let CARD_DATA = {};
+  let PITCH_DAMAGE = {};
+  let ATTACK_ZONES = {};
+  let SPOT_DATA = {};
   let activePlayer = null;
   const l7Cache = {};
 
@@ -184,6 +187,123 @@
     return bits.length ? bits.join(". ") + "." : "Matchup breakdown is building because this player is missing matchup detail fields.";
   }
 
+
+  function playerLookup(store, row) {
+    const players = store?.players || store || {};
+    return players[String(row.playerId || "")] || players[row.player] || players[key(row.player)] || null;
+  }
+
+  function pitchDamageFor(row) {
+    return playerLookup(PITCH_DAMAGE, row)?.pitchDamage || {};
+  }
+
+  function attackFor(row) {
+    return playerLookup(ATTACK_ZONES, row);
+  }
+
+  function spotFor(row) {
+    const rows = arr(SPOT_DATA);
+    return rows.find(x => String(x.playerId || "") === String(row.playerId || "")) ||
+      rows.find(x => key(x.player) === key(row.player)) ||
+      null;
+  }
+
+  function miniZone(title, values, mode = "score") {
+    const cells = Array.isArray(values) ? values.slice(0, 25) : Array.from({ length: 25 }, () => 0);
+    const max = Math.max(...cells.map(v => num(v)), 1);
+    return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(v => {
+      const raw = num(v);
+      const score = mode === "dec" ? raw / max * 100 : raw;
+      const cls = score >= 80 ? "z5" : score >= 60 ? "z4" : score >= 40 ? "z3" : score >= 20 ? "z2" : "z1";
+      const txt = mode === "dec" ? dec(raw) : Math.round(raw);
+      return `<span class="${cls}">${txt}</span>`;
+    }).join("")}</div></div>`;
+  }
+
+  function renderPitchTab(row) {
+    const damage = pitchDamageFor(row);
+    const attack = attackFor(row);
+    const attackRows = attack?.zones?.zones || attack?.zones || [];
+    const attackValues = Array.from({ length: 25 }, (_, i) => {
+      const found = attackRows.find(z => Number(z.zone) === i + 1 || Number(z.index) === i);
+      return found?.danger ?? found?.value ?? 0;
+    });
+
+    const pitchCards = Object.values(damage).map(p => `
+      <div class="pcpitch">
+        <b>${esc(p.label || "Pitch")}</b>
+        <span>AVG ${dec(p.avg)}</span>
+        <span>SLG ${dec(p.slg)}</span>
+        <span>HR ${esc(p.hr ?? 0)}</span>
+        <span>Crush ${one(p.crush)}</span>
+      </div>
+    `).join("");
+
+    return `
+      <h3>Pitch Matchup</h3>
+      <div class="pcpitchgrid">
+        ${pitchCards || `<div class="pcwhy">Pitch type damage is building for this player.</div>`}
+      </div>
+      <div class="pczones">
+        ${miniZone("Pitcher Attack Zones", attackValues)}
+        ${zones("Hitter ISO", row.isoZones, null, "dec")}
+        ${zones("Hitter SLG", row.slgZones, null, "dec")}
+        ${zones("HR Zones", row.hrZones, null, "cnt")}
+      </div>
+      <div class="pcgrid">
+        ${metric("Best Pitch", row.bestPitch)}
+        ${metric("Pitch Edge", one(row.pitchEdge))}
+        ${metric("Pitcher Risk", one(row.pitcherRisk))}
+        ${metric("Zone Overlap", one(row.zoneOverlap))}
+        ${metric("Hitter Zone Power", one(row.hitterZonePower))}
+        ${metric("Hot Zones", row.hotZoneCount)}
+      </div>
+    `;
+  }
+
+  function renderSpotTab(row) {
+    const spot = spotFor(row);
+
+    if (!spot?.spots) {
+      return `<h3>Spot Lab</h3><div class="pcwhy">Batting spot history is building for this player.</div>`;
+    }
+
+    const rows = Object.values(spot.spots).sort((a, b) => Number(a.lineupSpot) - Number(b.lineupSpot));
+    const maxOps = Math.max(...rows.map(r => num(r.ops)), 1);
+    const maxHr = Math.max(...rows.map(r => num(r.hr)), 1);
+
+    return `
+      <h3>Spot Lab</h3>
+      <div class="pcgrid">
+        ${metric("Projected Spot", "#" + spot.projectedSpot)}
+        ${metric("Best Spot", "#" + spot.bestSpot)}
+        ${metric("Worst Spot", "#" + spot.worstSpot)}
+      </div>
+      <div class="pcspotlist">
+        ${rows.map(r => {
+          const current = Number(r.lineupSpot) === Number(spot.projectedSpot);
+          const opsWidth = Math.max(4, Math.round(num(r.ops) / maxOps * 100));
+          const hrWidth = Math.max(4, Math.round(num(r.hr) / maxHr * 100));
+          return `
+            <div class="pcspot ${current ? "on" : ""}">
+              <div class="pcspotnum">${esc(r.lineupSpot)}</div>
+              <div class="pcspotmid">
+                <div><b>${current ? "Projected lineup spot" : "Lineup spot"}</b><span>${esc(r.pa || 0)} PA</span></div>
+                <label>OPS ${dec(r.ops)}</label><i style="width:${opsWidth}%"></i>
+                <label>HR ${esc(r.hr || 0)}</label><i style="width:${hrWidth}%"></i>
+              </div>
+              <div class="pcspotstats">
+                <span>AVG ${dec(r.avg)}</span>
+                <span>SLG ${dec(r.slg)}</span>
+                <span>TB ${esc(r.tb || 0)}</span>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
   async function fetchL7(row) {
     const id = String(row.playerId || "");
     if (!id) return null;
@@ -316,7 +436,7 @@
     }
 
     if (id === "spot") {
-      body.innerHTML = `<h3>Why It Matters</h3><p class="pcwhy">${esc(whyText(row))}</p>`;
+      body.innerHTML = renderSpotTab(row);
       return;
     }
 
@@ -331,11 +451,7 @@
     }
 
     if (id === "pitches") {
-      body.innerHTML = `
-        <h3>Pitch Matchup</h3>
-        <div class="pcgrid">${metric("Best Pitch", row.bestPitch)}${metric("Pitch Edge", one(row.pitchEdge))}${metric("Pitcher Risk", one(row.pitcherRisk))}${metric("Zone Overlap", one(row.zoneOverlap))}${metric("Hitter Zone Power", one(row.hitterZonePower))}${metric("Hot Zones", row.hotZoneCount)}</div>
-        <div class="pcwhy">${esc(row.bestPitch ? "Best pitch matchup is attached to this profile." : "Pitch mix detail is ready for connection when the pitch type file is available.")}</div>
-      `;
+      body.innerHTML = renderPitchTab(row);
       return;
     }
 
@@ -457,7 +573,10 @@
     const homeRuns = await getJSON("./data/mlb_home_runs.json", []);
     const cardDataRaw = await getJSON("./data/player_card_data.json", { players: [] });
     ZONES = await getJSON("./data/statcast_zones.json", {});
-    SPRAY = await getJSON("./data/player_spray_charts.json", {});
+    PITCH_DAMAGE = await getJSON("./data/pitch_type_damage.json", {});
+      ATTACK_ZONES = await getJSON("./data/pitcher_attack_zones.json", {});
+      SPOT_DATA = await getJSON("./data/batting_spot_profiles.json", { players: [] });
+      SPRAY = await getJSON("./data/player_spray_charts.json", {});
 
     CARD_DATA = {
       byId: {},
