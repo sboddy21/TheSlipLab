@@ -23,6 +23,7 @@ const steps = [
   ["Bullpen Relievers", "scripts/mlb/build_bullpen_relievers.js"],
   ["Multi HR Ceiling Engine", "scripts/mlb/build_multi_hr_ceiling_engine.js"],
   ["Real HR Probability Engine", "scripts/mlb/build_real_hr_probability_engine.js"],
+  ["HR Calibration Report", "scripts/mlb/build_hr_calibration_report.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
   "scripts/mlb/build_batting_spot_profiles.js",

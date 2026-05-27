@@ -23,6 +23,8 @@ function rowsOf(data) {
   if (Array.isArray(data)) return data;
   if (Array.isArray(data?.players)) return data.players;
   if (Array.isArray(data?.rows)) return data.rows;
+  if (Array.isArray(data?.homeRuns)) return data.homeRuns;
+  if (Array.isArray(data?.results)) return data.results;
   return [];
 }
 
