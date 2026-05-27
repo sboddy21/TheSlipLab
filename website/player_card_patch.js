@@ -36,24 +36,31 @@
     const launch = num(row.launchHrProfileScore);
     const pitch = num(row.pitchTypeDestructionScore);
     const pitcherRisk = num(row.pitcherRisk);
+    const pullWind = num(row.pullWindHrScore);
+    const bullpen = num(row.bullpenInheritanceScore);
 
     let chance =
-      2.2 +
-      score * 0.145 +
-      archetype * 0.020 +
-      ceiling * 0.018 +
-      launch * 0.014 +
-      pitch * 0.012 +
-      pitcherRisk * 0.010;
+      3.5 +
+      score * 0.205 +
+      archetype * 0.028 +
+      ceiling * 0.025 +
+      launch * 0.020 +
+      pitch * 0.018 +
+      pitcherRisk * 0.018 +
+      pullWind * 0.014 +
+      bullpen * 0.010;
 
-    if (score >= 80) chance += 2.5;
-    else if (score >= 70) chance += 1.7;
-    else if (score >= 60) chance += 1.0;
+    if (score >= 85) chance += 4.0;
+    else if (score >= 75) chance += 3.0;
+    else if (score >= 65) chance += 2.0;
+    else if (score >= 55) chance += 1.0;
 
-    if (ceiling >= 75) chance += 1.2;
-    if (archetype >= 85) chance += 1.0;
+    if (ceiling >= 80) chance += 2.0;
+    if (archetype >= 90) chance += 2.0;
+    if (pitcherRisk >= 85) chance += 1.5;
+    if (launch >= 75) chance += 1.2;
 
-    return Math.max(1.5, Math.min(24, chance));
+    return Math.max(2.5, Math.min(32, chance));
   }
 
 
