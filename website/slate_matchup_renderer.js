@@ -91,6 +91,21 @@
     return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
   }
 
+  function lineupStatusLabel(value) {
+    const raw = String(value || "").trim().toUpperCase();
+
+    if (!raw || raw === "NOT POSTED" || raw === "PENDING" || raw === "LINEUPS UPDATING") {
+      return "PROJECTED";
+    }
+
+    if (raw === "POSTED" || raw === "CONFIRMED" || raw.includes("POSTED")) {
+      return "CONFIRMED";
+    }
+
+    return raw;
+  }
+
+
   function statsOf(row) {
     const stats = row?.hitterStats || row?.stats?.hitter || row?.stats || {};
     return {
@@ -500,7 +515,7 @@
   function renderGame(game, index) {
     return `
       <section class="game-card" data-game="${index}">
-        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(game.lineupLockStatus === "PROJECTED" ? "PROJECTED" : game.lineupLockStatus || "Lineups Updating")}</div></div>
+        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill">${esc(lineupStatusLabel(game.lineupLockStatus))}</div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
         ${renderWeather(game.weather)}
       </section>
