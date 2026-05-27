@@ -229,27 +229,17 @@
       return found?.danger ?? found?.value ?? 0;
     });
 
-    const pitchCards = Object.values(damage).map(p => `
-      <div class="pcpitch">
-        <b>${esc(p.label || "Pitch")}</b>
-        <span>AVG ${dec(p.avg)}</span>
-        <span>SLG ${dec(p.slg)}</span>
-        <span>HR ${esc(p.hr ?? 0)}</span>
-        <span>Crush ${one(p.crush)}</span>
-      </div>
-    `).join("");
+    const pitchRows = Object.values(damage);
 
     return `
-      <h3>Pitch Matchup</h3>
-      <div class="pcpitchgrid">
-        ${pitchCards || `<div class="pcwhy">Pitch type damage is building for this player.</div>`}
+      <div class="pcsection-head">
+        <div>
+          <h3>Pitch Matchup</h3>
+          <p>How this hitter performs against the pitcher mix</p>
+        </div>
+        <span>${esc(row.bestPitch || "Best pitch loading")}</span>
       </div>
-      <div class="pczones">
-        ${miniZone("Pitcher Attack Zones", attackValues)}
-        ${zones("Hitter ISO", row.isoZones, null, "dec")}
-        ${zones("Hitter SLG", row.slgZones, null, "dec")}
-        ${zones("HR Zones", row.hrZones, null, "cnt")}
-      </div>
+
       <div class="pcgrid">
         ${metric("Best Pitch", row.bestPitch)}
         ${metric("Pitch Edge", one(row.pitchEdge))}
@@ -257,6 +247,28 @@
         ${metric("Zone Overlap", one(row.zoneOverlap))}
         ${metric("Hitter Zone Power", one(row.hitterZonePower))}
         ${metric("Hot Zones", row.hotZoneCount)}
+      </div>
+
+      <div class="pcpitchtable">
+        <div class="pcpitchrow head">
+          <span>Pitch</span><span>AVG</span><span>SLG</span><span>HR</span><span>Crush</span>
+        </div>
+        ${pitchRows.map(p => `
+          <div class="pcpitchrow">
+            <strong>${esc(p.label || "Pitch")}</strong>
+            <span>${dec(p.avg)}</span>
+            <span class="good">${dec(p.slg)}</span>
+            <span class="hot">${esc(p.hr ?? 0)}</span>
+            <span><i style="width:${Math.max(4, Math.min(100, num(p.crush)))}%"></i>${one(p.crush)}</span>
+          </div>
+        `).join("") || `<div class="pcwhy">Pitch type damage is building for this player.</div>`}
+      </div>
+
+      <div class="pczones">
+        ${miniZone("Pitcher Attack Zones", attackValues)}
+        ${zones("Hitter ISO", row.isoZones, null, "dec")}
+        ${zones("Hitter SLG", row.slgZones, null, "dec")}
+        ${zones("HR Zones", row.hrZones, null, "cnt")}
       </div>
     `;
   }
@@ -273,29 +285,39 @@
     const maxHr = Math.max(...rows.map(r => num(r.hr)), 1);
 
     return `
-      <h3>Spot Lab</h3>
+      <div class="pcsection-head">
+        <div>
+          <h3>Spot Lab</h3>
+          <p>Production by batting order spot this season</p>
+        </div>
+        <span>Projected #${esc(spot.projectedSpot)}</span>
+      </div>
+
       <div class="pcgrid">
         ${metric("Projected Spot", "#" + spot.projectedSpot)}
         ${metric("Best Spot", "#" + spot.bestSpot)}
         ${metric("Worst Spot", "#" + spot.worstSpot)}
       </div>
-      <div class="pcspotlist">
+
+      <div class="pcspottable">
         ${rows.map(r => {
           const current = Number(r.lineupSpot) === Number(spot.projectedSpot);
           const opsWidth = Math.max(4, Math.round(num(r.ops) / maxOps * 100));
           const hrWidth = Math.max(4, Math.round(num(r.hr) / maxHr * 100));
           return `
-            <div class="pcspot ${current ? "on" : ""}">
-              <div class="pcspotnum">${esc(r.lineupSpot)}</div>
-              <div class="pcspotmid">
-                <div><b>${current ? "Projected lineup spot" : "Lineup spot"}</b><span>${esc(r.pa || 0)} PA</span></div>
-                <label>OPS ${dec(r.ops)}</label><i style="width:${opsWidth}%"></i>
-                <label>HR ${esc(r.hr || 0)}</label><i style="width:${hrWidth}%"></i>
+            <div class="pcspotrow ${current ? "on" : ""}">
+              <div class="pcspotleft">
+                <b>${current ? "★" : "#" + esc(r.lineupSpot)}</b>
+                <span>${esc(r.pa || 0)} PA</span>
               </div>
-              <div class="pcspotstats">
-                <span>AVG ${dec(r.avg)}</span>
-                <span>SLG ${dec(r.slg)}</span>
-                <span>TB ${esc(r.tb || 0)}</span>
+              <div class="pcspotbars">
+                <div><label>OPS ${dec(r.ops)}</label><i class="opsbar" style="width:${opsWidth}%"></i></div>
+                <div><label>HR ${esc(r.hr || 0)}</label><i class="hrbar" style="width:${hrWidth}%"></i></div>
+              </div>
+              <div class="pcspotright">
+                <span>${dec(r.avg)} AVG</span>
+                <span>${dec(r.slg)} SLG</span>
+                <span>${esc(r.tb || 0)} TB</span>
               </div>
             </div>
           `;
