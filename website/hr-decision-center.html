@@ -85,14 +85,57 @@ let active = "bestPicks";
 let data = null;
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
-function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
+function score(v){return num(v).toFixed(1)}
+
+function allRows(){
+  const map = new Map();
+  Object.values(data?.sections || {}).flat().forEach(row => {
+    const key = `${row.player}|${row.team}|${row.opponent}`;
+    if (!map.has(key)) map.set(key, row);
+  });
+  return [...map.values()];
+}
+
+function rowsFor(key){
+  const direct = data?.sections?.[key] || [];
+  if (direct.length) return direct;
+
+  const rows = allRows();
+
+  if (key === "pitchTypeEdges") {
+    return rows
+      .filter(r => num(r.pitchEdge) > 0)
+      .sort((a,b) => num(b.pitchEdge) - num(a.pitchEdge))
+      .slice(0, 40);
+  }
+
+  if (key === "weatherCarry") {
+    return rows
+      .filter(r => num(r.weather) > 0)
+      .sort((a,b) => num(b.weather) - num(a.weather))
+      .slice(0, 40);
+  }
+
+  if (key === "bullpenBoosts") {
+    return rows
+      .filter(r => num(r.bullpen) > 0)
+      .sort((a,b) => num(b.bullpen) - num(a.bullpen))
+      .slice(0, 40);
+  }
+
+  return direct;
+}
 
 function renderTabs(){
-  document.getElementById("tabs").innerHTML = sections.map(([key,label]) => `
-    <button class="tab ${key === active ? "active" : ""}" data-key="${key}">
-      ${label}
-    </button>
-  `).join("");
+  document.getElementById("tabs").innerHTML = sections.map(([key,label]) => {
+    const count = rowsFor(key).length;
+    return `
+      <button class="tab ${key === active ? "active" : ""}" data-key="${key}">
+        ${label} ${count ? `<span style="opacity:.65">(${count})</span>` : ""}
+      </button>
+    `;
+  }).join("");
 
   document.querySelectorAll(".tab").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -104,7 +147,17 @@ function renderTabs(){
 }
 
 function renderGrid(){
-  const rows = data?.sections?.[active] || [];
+  const rows = rowsFor(active);
+
+  if (!rows.length) {
+    document.getElementById("grid").innerHTML = `
+      <div class="card">
+        <div class="name">No plays in this bucket yet</div>
+        <div class="why">This tab has no qualified players from the current data run.</div>
+      </div>
+    `;
+    return;
+  }
 
   document.getElementById("grid").innerHTML = rows.map(row => `
     <article class="card">
@@ -123,39 +176,16 @@ function renderGrid(){
       </div>
 
       <div class="meter">
-        <div class="fill" style="width:${Math.min(100, Number(row.hrConfidence || 0))}%"></div>
+        <div class="fill" style="width:${Math.min(100, num(row.hrConfidence))}%"></div>
       </div>
 
       <div class="metrics">
-        <div class="metric">
-          <div class="metric-label">Power</div>
-          <div class="metric-value">${score(row.powerScore)}</div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-label">Pitch Edge</div>
-          <div class="metric-value">${score(row.pitchEdge)}</div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-label">Pitcher Risk</div>
-          <div class="metric-value">${score(row.pitcherRisk)}</div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-label">Weather</div>
-          <div class="metric-value">${score(row.weather)}</div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-label">Bullpen</div>
-          <div class="metric-value">${score(row.bullpen)}</div>
-        </div>
-
-        <div class="metric">
-          <div class="metric-label">Due</div>
-          <div class="metric-value">${score(row.due)}</div>
-        </div>
+        <div class="metric"><div class="metric-label">Power</div><div class="metric-value">${score(row.powerScore)}</div></div>
+        <div class="metric"><div class="metric-label">Pitch Edge</div><div class="metric-value">${score(row.pitchEdge)}</div></div>
+        <div class="metric"><div class="metric-label">Pitcher Risk</div><div class="metric-value">${score(row.pitcherRisk)}</div></div>
+        <div class="metric"><div class="metric-label">Weather</div><div class="metric-value">${score(row.weather)}</div></div>
+        <div class="metric"><div class="metric-label">Bullpen</div><div class="metric-value">${score(row.bullpen)}</div></div>
+        <div class="metric"><div class="metric-label">Due</div><div class="metric-value">${score(row.due)}</div></div>
       </div>
 
       <div class="pitch">
