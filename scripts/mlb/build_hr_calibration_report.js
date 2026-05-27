@@ -51,6 +51,7 @@ function teamName(row) {
 
 function didHitHr(row) {
   return Boolean(
+    row.did_homer === true ||
     row.actualHr === true ||
     row.actual_hr === true ||
     row.hitHr === true ||
