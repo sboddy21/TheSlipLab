@@ -93,7 +93,20 @@
     .mini-value{font-size:22px;font-weight:950;color:#ffc400}
     .mini-sub{font-size:11px;color:#8e98a3;margin-top:2px}
 
-    .tabs{display:flex;gap:8px;margin-bottom:14px}
+    .search-wrap{margin:0 0 14px}
+    .search-box{
+      width:100%;
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      color:#fff;
+      border-radius:12px;
+      padding:12px 14px;
+      font-weight:800;
+      outline:none;
+    }
+    .search-box::placeholder{color:#6f7b86}
+
+    .tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
     .tab{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:10px;padding:9px 12px;font-weight:900;font-size:12px}
 
     .table-wrap{overflow:auto;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:#090d12}
@@ -223,6 +236,10 @@
     </div>
   </div>
 
+  <div class="search-wrap">
+    <input class="search-box" id="resultSearch" placeholder="Search batter, team, pitcher, pitch type..." />
+  </div>
+
   <div class="tabs">
     <button class="tab active" data-filter="all" id="allTab">All HRs</button>
     <button class="tab" data-filter="top30" id="pickTab">Top 30</button>
@@ -264,6 +281,7 @@
 let results = [];
 let model = [];
 let activeFilter = "all";
+let searchTerm = "";
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
@@ -328,6 +346,17 @@ function filteredRows(rows){
     out = out
       .filter(r => n(r.exitVelocity) > 0)
       .sort((a,b) => n(b.exitVelocity) - n(a.exitVelocity));
+  }
+
+  if(searchTerm){
+    const q = searchTerm.toLowerCase();
+    out = out.filter(r =>
+      String(r.player || "").toLowerCase().includes(q) ||
+      String(r.team || "").toLowerCase().includes(q) ||
+      String(r.pitcher || "").toLowerCase().includes(q) ||
+      String(r.opponent || "").toLowerCase().includes(q) ||
+      String(r.pitchType || "").toLowerCase().includes(q)
+    );
   }
 
   return out;
@@ -466,6 +495,13 @@ function toggleDetail(index){
   const el = document.getElementById(`detail-${index}`);
   if(el) el.classList.toggle("open");
 }
+
+document.addEventListener("input", e => {
+  if(e.target && e.target.id === "resultSearch"){
+    searchTerm = e.target.value || "";
+    render();
+  }
+});
 
 document.addEventListener("click", e => {
   const btn = e.target.closest("[data-filter]");
