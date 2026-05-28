@@ -45,6 +45,25 @@ function isHomeRun(play) {
   return event === "home run" || eventType === "home_run" || event.includes("home run");
 }
 
+function uniquePlays(feed) {
+  const allPlays = feed?.liveData?.plays?.allPlays || [];
+  const scoringIndexes = feed?.liveData?.plays?.scoringPlays || [];
+
+  const plays = [...allPlays];
+  const seen = new Set(allPlays.map(p => String(p?.about?.atBatIndex ?? "")));
+
+  for (const idx of scoringIndexes) {
+    const p = allPlays[idx];
+    const key = String(p?.about?.atBatIndex ?? idx);
+    if (p && !seen.has(key)) {
+      plays.push(p);
+      seen.add(key);
+    }
+  }
+
+  return plays;
+}
+
 function getInning(play) {
   const half = safe(play?.about?.halfInning);
   const inning = safe(play?.about?.inning);
@@ -105,7 +124,7 @@ async function main() {
     checkedGames += 1;
 
     const feed = await getJSON(`${LIVE_FEED_BASE}/${gamePk}/feed/live`);
-    const plays = feed?.liveData?.plays?.allPlays || [];
+    const plays = uniquePlays(feed);
     const gameLabel = getGameLabel(feed, game);
     const score = getScore(feed);
 
