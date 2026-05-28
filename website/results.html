@@ -215,7 +215,36 @@
     .detail-pill{background:#0f1720;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px}
     .detail-label{font-size:10px;text-transform:uppercase;color:#94a3b8;font-weight:900;letter-spacing:.08em;margin-bottom:5px}
     .detail-value{font-size:13px;font-weight:800;color:#f8fafc}
-    @media(max-width:900px){.detail-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
+    /* RESULTS MOBILE OPTIMIZATION */
+    @media(max-width:900px){
+      main{padding:16px}
+      .top-row{gap:14px}
+      .title{font-size:30px}
+      .sub{font-size:13px;line-height:1.45}
+      .summary-grid{grid-template-columns:repeat(2,1fr)}
+      .leader-grid{grid-template-columns:repeat(2,1fr)}
+      .tracker-grid{grid-template-columns:repeat(2,1fr)}
+      .tabs{overflow-x:auto;padding-bottom:4px}
+      .tab{white-space:nowrap;padding:9px 11px}
+      .detail-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}
+      table{min-width:1180px}
+      th,td{padding:11px 10px;font-size:12px}
+      .batter{font-size:14px}
+      .small{font-size:11px}
+      .traj-badge,.spray-mini,.newest-pill{transform:scale(.9);transform-origin:left center}
+    }
+
+    @media(max-width:600px){
+      main{padding:12px}
+      .summary-top{flex-wrap:wrap}
+      .big-count{font-size:26px}
+      .leader-grid{grid-template-columns:1fr}
+      .tracker-grid{grid-template-columns:1fr}
+      .detail-grid{grid-template-columns:1fr}
+      .date-box{font-size:12px}
+      .search-box{font-size:13px}
+      .table-wrap{border-radius:12px}
+    }
     table{width:100%;border-collapse:collapse;min-width:980px}
     th{background:#10141a;color:#8e98a3;font-size:11px;text-transform:uppercase;letter-spacing:.10em;text-align:left;padding:13px;border-bottom:1px solid rgba(255,255,255,.07)}
     td{padding:14px 13px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:#dce3ea;vertical-align:middle}
