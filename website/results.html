@@ -421,6 +421,20 @@ function modelMap(){
   return map;
 }
 
+function sprayDirection(row){
+  const d = String(row.description || "").toLowerCase();
+
+  if(d.includes("left center")) return "LCF";
+  if(d.includes("right center")) return "RCF";
+  if(d.includes("center")) return "CF";
+  if(d.includes("left field")) return "LF";
+  if(d.includes("right field")) return "RF";
+  if(d.includes("left")) return "LF";
+  if(d.includes("right")) return "RF";
+
+  return "FIELD";
+}
+
 function trajectoryBadge(row){
   const t = String(row.trajectory || row.description || "").toLowerCase();
   const dist = n(row.distance);
@@ -590,7 +604,7 @@ function render(){
     <tr class="result-row ${index === 0 ? "newest-row" : ""}" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
-        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
+        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> <span class="spray-mini">${sprayDirection(row)}</span> ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
         <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
       </td>
       <td class="team">${clean(row.team)}</td>
@@ -625,6 +639,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">Inning</div><div class="detail-value">${clean(row.inning)}</div></div>
             <div class="detail-pill"><div class="detail-label">RBI</div><div class="detail-value">${clean(row.rbi)}</div></div>
             <div class="detail-pill"><div class="detail-label">Status</div><div class="detail-value">${clean(row.status)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Spray Direction</div><div class="detail-value">${sprayDirection(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
           </div>
         </div>
