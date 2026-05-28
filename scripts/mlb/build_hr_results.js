@@ -29,67 +29,62 @@ async function getJSON(url) {
 }
 
 function safe(v, fallback = "") {
-  return v === undefined || v === null ? fallback : v;
+  return v === undefined || v === null || v === "" ? fallback : v;
+}
+
+function num(v) {
+  if (v === undefined || v === null || v === "") return "";
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "";
+  return Math.round(n * 10) / 10;
 }
 
 function isHomeRun(play) {
   const event = String(play?.result?.event || "").toLowerCase();
   const eventType = String(play?.result?.eventType || "").toLowerCase();
-
-  return (
-    event === "home run" ||
-    eventType === "home_run" ||
-    event.includes("home run")
-  );
-}
-
-function getRbi(play) {
-  return Number(play?.result?.rbi || 0);
+  return event === "home run" || eventType === "home_run" || event.includes("home run");
 }
 
 function getInning(play) {
-  const about = play?.about || {};
-  const half = about.halfInning ? String(about.halfInning) : "";
-  const inning = about.inning ? String(about.inning) : "";
-
+  const half = safe(play?.about?.halfInning);
+  const inning = safe(play?.about?.inning);
   if (!inning) return "";
-  if (!half) return inning;
-
-  return `${half[0].toUpperCase()}${half.slice(1)} ${inning}`;
+  return `${half ? half[0].toUpperCase() + half.slice(1) : ""} ${inning}`.trim();
 }
 
-function getPitcher(play) {
-  const matchup = play?.matchup || {};
-  return safe(matchup?.pitcher?.fullName);
+function getLastPitch(play) {
+  const events = Array.isArray(play?.playEvents) ? play.playEvents : [];
+  return [...events].reverse().find(e => e?.isPitch || e?.type === "pitch") || {};
 }
 
-function getBatter(play) {
-  const matchup = play?.matchup || {};
-  return safe(matchup?.batter?.fullName);
+function getCount(play, pitch) {
+  const balls = pitch?.count?.balls ?? play?.count?.balls;
+  const strikes = pitch?.count?.strikes ?? play?.count?.strikes;
+  if (balls === undefined || strikes === undefined) return "";
+  return `${balls}-${strikes}`;
 }
 
-function getTeam(play, liveData) {
-  const battingSide = play?.about?.isTopInning ? "away" : "home";
-  return safe(liveData?.boxscore?.teams?.[battingSide]?.team?.name);
-}
-
-function getOpponent(play, liveData) {
-  const oppSide = play?.about?.isTopInning ? "home" : "away";
-  return safe(liveData?.boxscore?.teams?.[oppSide]?.team?.name);
-}
-
-function getGameLabel(gameData) {
-  const away = safe(gameData?.teams?.away?.team?.name);
-  const home = safe(gameData?.teams?.home?.team?.name);
+function getGameLabel(feed, game) {
+  const away = safe(feed?.gameData?.teams?.away?.name || game?.teams?.away?.team?.name);
+  const home = safe(feed?.gameData?.teams?.home?.name || game?.teams?.home?.team?.name);
   return away && home ? `${away} @ ${home}` : "";
 }
 
-function getScore(liveData) {
-  const away = liveData?.linescore?.teams?.away?.runs;
-  const home = liveData?.linescore?.teams?.home?.runs;
-
+function getScore(feed) {
+  const away = feed?.liveData?.linescore?.teams?.away?.runs;
+  const home = feed?.liveData?.linescore?.teams?.home?.runs;
   if (away === undefined || home === undefined) return "";
   return `${away}-${home}`;
+}
+
+function getTeam(play, feed) {
+  const side = play?.about?.isTopInning ? "away" : "home";
+  return safe(feed?.liveData?.boxscore?.teams?.[side]?.team?.name);
+}
+
+function getOpponent(play, feed) {
+  const side = play?.about?.isTopInning ? "home" : "away";
+  return safe(feed?.liveData?.boxscore?.teams?.[side]?.team?.name);
 }
 
 async function main() {
@@ -102,26 +97,28 @@ async function main() {
   let checkedGames = 0;
 
   for (const game of games) {
-    const status = safe(game?.status?.detailedState);
     const gamePk = game?.gamePk;
+    const status = safe(game?.status?.detailedState);
 
-    if (!gamePk) continue;
-    if (!VALID_STATUSES.has(status)) continue;
+    if (!gamePk || !VALID_STATUSES.has(status)) continue;
 
     checkedGames += 1;
 
     const feed = await getJSON(`${LIVE_FEED_BASE}/${gamePk}/feed/live`);
     const plays = feed?.liveData?.plays?.allPlays || [];
-    const gameLabel = getGameLabel(feed?.gameData || game);
-    const score = getScore(feed?.liveData || {});
+    const gameLabel = getGameLabel(feed, game);
+    const score = getScore(feed);
 
     for (const play of plays) {
       if (!isHomeRun(play)) continue;
 
-      const batter = getBatter(play);
-      const pitcher = getPitcher(play);
-      const team = getTeam(play, feed?.liveData || {});
-      const opponent = getOpponent(play, feed?.liveData || {});
+      const pitch = getLastPitch(play);
+      const hitData = pitch?.hitData || {};
+      const pitchData = pitch?.pitchData || {};
+      const details = pitch?.details || {};
+
+      const batter = safe(play?.matchup?.batter?.fullName);
+      const pitcher = safe(play?.matchup?.pitcher?.fullName);
 
       homeRuns.push({
         gamePk,
@@ -130,45 +127,48 @@ async function main() {
         inning: getInning(play),
         batter,
         player: batter,
-        team,
-        opponent,
+        team: getTeam(play, feed),
+        opponent: getOpponent(play, feed),
         pitcher,
-        rbi: getRbi(play),
+        rbi: Number(play?.result?.rbi || 0),
         description: safe(play?.result?.description),
         event: safe(play?.result?.event),
         eventType: safe(play?.result?.eventType),
         score,
         playId: safe(play?.about?.atBatIndex),
         startTime: safe(play?.about?.startTime),
-        endTime: safe(play?.about?.endTime)
+        endTime: safe(play?.about?.endTime),
+
+        exitVelocity: num(hitData?.launchSpeed),
+        launchAngle: num(hitData?.launchAngle),
+        distance: num(hitData?.totalDistance),
+        trajectory: safe(hitData?.trajectory),
+        hardness: safe(hitData?.hardness),
+        pitchType: safe(details?.type?.description || details?.type?.code),
+        pitchCode: safe(details?.type?.code),
+        pitchVelocity: num(pitchData?.startSpeed),
+        count: getCount(play, pitch)
       });
     }
   }
 
-  homeRuns.sort((a, b) => {
-    const at = a.endTime || a.startTime || "";
-    const bt = b.endTime || b.startTime || "";
-    return String(bt).localeCompare(String(at));
-  });
+  homeRuns.sort((a, b) => String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || "")));
 
-  const out = {
+  fs.writeFileSync(OUT_FILE, JSON.stringify({
     updatedAt: new Date().toISOString(),
     date: todayET,
     mode: "live_and_final_games",
-    source: "MLB Stats API schedule plus live feed",
+    source: "MLB Stats API live feed",
     totalScheduledGames: games.length,
     checkedGames,
     count: homeRuns.length,
     homeRuns
-  };
-
-  fs.writeFileSync(OUT_FILE, JSON.stringify(out, null, 2));
+  }, null, 2));
 
   console.log("HR RESULTS COMPLETE");
   console.log("Mode: live_and_final_games");
   console.log("Date:", todayET);
-  console.log("Scheduled Games:", games.length);
-  console.log("Checked Games:", checkedGames);
+  console.log("Games:", checkedGames);
   console.log("Home Runs:", homeRuns.length);
   console.log("Saved:", OUT_FILE);
 }
