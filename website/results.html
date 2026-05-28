@@ -140,8 +140,13 @@
   </section>
 
   <div class="tabs">
-    <div class="tab" id="allTab">All HRs</div>
-    <div class="tab" id="pickTab">Slip Lab Tags</div>
+    <button class="tab active" data-filter="all" id="allTab">All HRs</button>
+    <button class="tab" data-filter="top30" id="pickTab">Top 30</button>
+    <button class="tab" data-filter="strong">Strong</button>
+    <button class="tab" data-filter="pitch">Pitch Edge</button>
+    <button class="tab" data-filter="power">Power Zone</button>
+    <button class="tab" data-filter="longest">Longest</button>
+    <button class="tab" data-filter="hardest">Hardest Hit</button>
   </div>
 
   <div class="table-wrap">
@@ -174,6 +179,7 @@
 <script>
 let results = [];
 let model = [];
+let activeFilter = "all";
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
@@ -218,6 +224,29 @@ function buildTags(row, m, rank){
   if(tags.length === 0) tags.push("HR");
 
   return tags.slice(0,6);
+}
+
+function filteredRows(rows){
+  let out = [...rows];
+
+  if(activeFilter === "top30") out = out.filter(r => r.modelRank <= 30);
+  if(activeFilter === "strong") out = out.filter(r => r.tags.includes("STRONG"));
+  if(activeFilter === "pitch") out = out.filter(r => r.tags.includes("PITCH EDGE"));
+  if(activeFilter === "power") out = out.filter(r => r.tags.includes("POWER ZONE"));
+
+  if(activeFilter === "longest") {
+    out = out
+      .filter(r => n(r.distance) > 0)
+      .sort((a,b) => n(b.distance) - n(a.distance));
+  }
+
+  if(activeFilter === "hardest") {
+    out = out
+      .filter(r => n(r.exitVelocity) > 0)
+      .sort((a,b) => n(b.exitVelocity) - n(a.exitVelocity));
+  }
+
+  return out;
 }
 
 function render(){
@@ -267,7 +296,13 @@ function render(){
   document.getElementById("dangerPct").textContent = total ? Math.round(danger / total * 100) + "%" : "0%";
   document.getElementById("topPct").textContent = total ? Math.round(top / total * 100) + "%" : "0%";
 
-  document.getElementById("tbody").innerHTML = rows.map((row,index) => `
+  const displayRows = filteredRows(rows);
+
+  document.querySelectorAll(".tab").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.filter === activeFilter);
+  });
+
+  document.getElementById("tbody").innerHTML = displayRows.map((row,index) => `
     <tr class="result-row" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
@@ -318,6 +353,13 @@ function toggleDetail(index){
   const el = document.getElementById(`detail-${index}`);
   if(el) el.classList.toggle("open");
 }
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest("[data-filter]");
+  if(!btn) return;
+  activeFilter = btn.dataset.filter || "all";
+  render();
+});
 
 async function load(){
   const res = await fetch("./data/mlb_results.json?v=" + Date.now());
