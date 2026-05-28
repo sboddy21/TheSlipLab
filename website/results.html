@@ -173,6 +173,50 @@
     .mini-value{font-size:22px;font-weight:950;color:#ffc400}
     .mini-sub{font-size:11px;color:#8e98a3;margin-top:2px}
 
+    .timeline{
+      background:#090d12;
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:14px;
+      padding:14px;
+      margin:18px 0;
+    }
+
+    .timeline-title{
+      color:#ffc400;
+      font-size:12px;
+      font-weight:950;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:10px;
+    }
+
+    .timeline-list{
+      display:flex;
+      gap:10px;
+      overflow-x:auto;
+      padding-bottom:3px;
+    }
+
+    .timeline-item{
+      min-width:190px;
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      padding:10px;
+    }
+
+    .timeline-player{
+      color:#fff;
+      font-size:14px;
+      font-weight:950;
+    }
+
+    .timeline-meta{
+      color:#8e98a3;
+      font-size:11px;
+      margin-top:4px;
+    }
+
     .search-wrap{margin:0 0 14px}
     .search-box{
       width:100%;
@@ -385,6 +429,11 @@
       <div class="leader-stat" id="topRate">0%</div>
       <div class="leader-sub">Model Conversion</div>
     </div>
+  </div>
+
+  <div class="timeline">
+    <div class="timeline-title">Latest HRs</div>
+    <div class="timeline-list" id="timelineList"></div>
   </div>
 
   <div class="search-wrap">
@@ -668,6 +717,16 @@ function render(){
   document.getElementById("trackPower").textContent =
     rows.filter(r => r.tags.includes("POWER ZONE") || r.tags.includes("ZONE 5+")).length;
   document.getElementById("trackStrong").textContent = strong;
+
+  const latest = [...rows].slice(0, 8);
+
+  document.getElementById("timelineList").innerHTML = latest.map(r => `
+    <div class="timeline-item">
+      <div class="timeline-player">${clean(r.player)}</div>
+      <div class="timeline-meta">${clean(r.team)} • ${clean(r.inning)}</div>
+      <div class="timeline-meta">${clean(r.exitVelocity)} EV • ${clean(r.distance)} FT • ${clean(r.pitchType)}</div>
+    </div>
+  `).join("");
 
   const displayRows = filteredRows(rows);
 
