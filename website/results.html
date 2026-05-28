@@ -299,6 +299,19 @@ function modelMap(){
   return map;
 }
 
+function trajectoryBadge(row){
+  const t = String(row.trajectory || row.description || "").toLowerCase();
+  const dist = n(row.distance);
+  const ev = n(row.exitVelocity);
+
+  if(dist >= 440 || ev >= 110) return "NO DOUBTER";
+  if(t.includes("line")) return "LINE DRIVE";
+  if(t.includes("fly")) return "FLY BALL";
+  if(t.includes("popup") || t.includes("pop")) return "HIGH ARC";
+  if(dist >= 400) return "DEEP SHOT";
+  return "HR FLIGHT";
+}
+
 function tagClass(tag){
   const t = String(tag || "").toLowerCase();
   if(t.includes("strong") || t.includes("elite")) return "strong";
@@ -448,7 +461,7 @@ function render(){
     <tr class="result-row" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
-        <div class="batter">${clean(row.player)}</div>
+        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span></div>
         <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
       </td>
       <td class="team">${clean(row.team)}</td>
