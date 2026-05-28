@@ -147,6 +147,10 @@ async function main() {
         pitchType: safe(details?.type?.description || details?.type?.code),
         pitchCode: safe(details?.type?.code),
         pitchVelocity: num(pitchData?.startSpeed),
+        plateX: num(pitchData?.coordinates?.pX),
+        plateZ: num(pitchData?.coordinates?.pZ),
+        strikeZoneTop: num(pitchData?.strikeZoneTop),
+        strikeZoneBottom: num(pitchData?.strikeZoneBottom),
         count: getCount(play, pitch)
       });
     }
