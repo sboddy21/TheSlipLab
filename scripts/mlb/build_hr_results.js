@@ -2,173 +2,179 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const OUTFILE = path.join(ROOT, "website", "data", "mlb_results.json");
+const OUT_FILE = path.join(ROOT, "website", "data", "mlb_results.json");
 
-function datePartsInNY(date = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    hour12: false
-  }).formatToParts(date);
+const todayET = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/New_York",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit"
+}).format(new Date());
 
-  const obj = Object.fromEntries(parts.map(p => [p.type, p.value]));
+const SCHEDULE_URL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${todayET}`;
+const LIVE_FEED_BASE = "https://statsapi.mlb.com/api/v1.1/game";
 
-  return {
-    year: obj.year,
-    month: obj.month,
-    day: obj.day,
-    hour: Number(obj.hour)
-  };
-}
+const VALID_STATUSES = new Set([
+  "In Progress",
+  "Live",
+  "Final",
+  "Game Over",
+  "Completed Early"
+]);
 
-function ymdFromParts(p) {
-  return `${p.year}-${p.month}-${p.day}`;
-}
-
-function addDaysNY(dateString, days) {
-  const [y, m, d] = dateString.split("-").map(Number);
-  const utc = new Date(Date.UTC(y, m - 1, d + days, 12, 0, 0));
-  return ymdFromParts(datePartsInNY(utc));
-}
-
-function targetDate() {
-  const arg = process.argv[2];
-
-  if (arg && /^\d{4}-\d{2}-\d{2}$/.test(arg)) {
-    return {
-      date: arg,
-      mode: "manual"
-    };
-  }
-
-  const now = datePartsInNY();
-  const today = ymdFromParts(now);
-
-  if (now.hour < 10) {
-    return {
-      date: addDaysNY(today, -1),
-      mode: "yesterday_until_10am_et"
-    };
-  }
-
-  return {
-    date: today,
-    mode: "live_today_after_10am_et"
-  };
-}
-
-const TARGET = targetDate();
-
-async function getJson(url) {
+async function getJSON(url) {
   const res = await fetch(url);
-
-  if (!res.ok) {
-    throw new Error(`Request failed ${res.status}: ${url}`);
-  }
-
-  return await res.json();
+  if (!res.ok) throw new Error(`Request failed ${res.status}: ${url}`);
+  return res.json();
 }
 
 function safe(v, fallback = "") {
-  if (v === null || v === undefined) return fallback;
-  return String(v).trim();
-}
-
-function teamName(team) {
-  return safe(team?.team?.name || team?.name || team?.teamName);
+  return v === undefined || v === null ? fallback : v;
 }
 
 function isHomeRun(play) {
-  const event = safe(play?.result?.event).toLowerCase();
-  const eventType = safe(play?.result?.eventType).toLowerCase();
-  const description = safe(play?.result?.description).toLowerCase();
+  const event = String(play?.result?.event || "").toLowerCase();
+  const eventType = String(play?.result?.eventType || "").toLowerCase();
 
   return (
     event === "home run" ||
     eventType === "home_run" ||
-    description.includes(" homers") ||
-    description.includes("home run")
+    event.includes("home run")
   );
 }
 
-function parseHr(play, feed) {
-  const batter = play?.matchup?.batter || {};
-  const pitcher = play?.matchup?.pitcher || {};
-  const away = teamName(feed?.gameData?.teams?.away);
-  const home = teamName(feed?.gameData?.teams?.home);
-  const isTop = safe(play?.about?.halfInning).toLowerCase() === "top";
+function getRbi(play) {
+  return Number(play?.result?.rbi || 0);
+}
 
-  return {
-    player: safe(batter.fullName, "Unknown Player"),
-    playerId: batter.id || null,
-    team: isTop ? away : home,
-    opponent: isTop ? home : away,
-    game: `${away} at ${home}`,
-    pitcher: safe(pitcher.fullName),
-    pitcherId: pitcher.id || null,
-    inning: play?.about?.inning || "",
-    half: safe(play?.about?.halfInning),
-    result: "HR",
-    event: "Home Run",
-    description: safe(play?.result?.description),
-    did_homer: true
-  };
+function getInning(play) {
+  const about = play?.about || {};
+  const half = about.halfInning ? String(about.halfInning) : "";
+  const inning = about.inning ? String(about.inning) : "";
+
+  if (!inning) return "";
+  if (!half) return inning;
+
+  return `${half[0].toUpperCase()}${half.slice(1)} ${inning}`;
+}
+
+function getPitcher(play) {
+  const matchup = play?.matchup || {};
+  return safe(matchup?.pitcher?.fullName);
+}
+
+function getBatter(play) {
+  const matchup = play?.matchup || {};
+  return safe(matchup?.batter?.fullName);
+}
+
+function getTeam(play, liveData) {
+  const battingSide = play?.about?.isTopInning ? "away" : "home";
+  return safe(liveData?.boxscore?.teams?.[battingSide]?.team?.name);
+}
+
+function getOpponent(play, liveData) {
+  const oppSide = play?.about?.isTopInning ? "home" : "away";
+  return safe(liveData?.boxscore?.teams?.[oppSide]?.team?.name);
+}
+
+function getGameLabel(gameData) {
+  const away = safe(gameData?.teams?.away?.team?.name);
+  const home = safe(gameData?.teams?.home?.team?.name);
+  return away && home ? `${away} @ ${home}` : "";
+}
+
+function getScore(liveData) {
+  const away = liveData?.linescore?.teams?.away?.runs;
+  const home = liveData?.linescore?.teams?.home?.runs;
+
+  if (away === undefined || home === undefined) return "";
+  return `${away}-${home}`;
 }
 
 async function main() {
-  fs.mkdirSync(path.dirname(OUTFILE), { recursive: true });
+  fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
 
-  const schedule = await getJson(
-    `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${TARGET.date}&hydrate=team,linescore`
-  );
+  const schedule = await getJSON(SCHEDULE_URL);
+  const games = schedule?.dates?.flatMap(d => d.games || []) || [];
 
-  const games = schedule?.dates?.[0]?.games || [];
   const homeRuns = [];
+  let checkedGames = 0;
 
   for (const game of games) {
-    try {
-      const feed = await getJson(
-        `https://statsapi.mlb.com/api/v1.1/game/${game.gamePk}/feed/live`
-      );
+    const status = safe(game?.status?.detailedState);
+    const gamePk = game?.gamePk;
 
-      const plays = feed?.liveData?.plays?.allPlays || [];
+    if (!gamePk) continue;
+    if (!VALID_STATUSES.has(status)) continue;
 
-      for (const play of plays) {
-        if (isHomeRun(play)) {
-          homeRuns.push(parseHr(play, feed));
-        }
-      }
-    } catch (err) {
-      console.log("Skipped game:", game.gamePk, err.message);
+    checkedGames += 1;
+
+    const feed = await getJSON(`${LIVE_FEED_BASE}/${gamePk}/feed/live`);
+    const plays = feed?.liveData?.plays?.allPlays || [];
+    const gameLabel = getGameLabel(feed?.gameData || game);
+    const score = getScore(feed?.liveData || {});
+
+    for (const play of plays) {
+      if (!isHomeRun(play)) continue;
+
+      const batter = getBatter(play);
+      const pitcher = getPitcher(play);
+      const team = getTeam(play, feed?.liveData || {});
+      const opponent = getOpponent(play, feed?.liveData || {});
+
+      homeRuns.push({
+        gamePk,
+        game: gameLabel,
+        status,
+        inning: getInning(play),
+        batter,
+        player: batter,
+        team,
+        opponent,
+        pitcher,
+        rbi: getRbi(play),
+        description: safe(play?.result?.description),
+        event: safe(play?.result?.event),
+        eventType: safe(play?.result?.eventType),
+        score,
+        playId: safe(play?.about?.atBatIndex),
+        startTime: safe(play?.about?.startTime),
+        endTime: safe(play?.about?.endTime)
+      });
     }
   }
 
-  const output = {
+  homeRuns.sort((a, b) => {
+    const at = a.endTime || a.startTime || "";
+    const bt = b.endTime || b.startTime || "";
+    return String(bt).localeCompare(String(at));
+  });
+
+  const out = {
     updatedAt: new Date().toISOString(),
-    date: TARGET.date,
-    mode: TARGET.mode,
-    cutoff: "10:00 AM ET",
-    source: "MLB Stats API live feed",
-    games: games.length,
+    date: todayET,
+    mode: "live_and_final_games",
+    source: "MLB Stats API schedule plus live feed",
+    totalScheduledGames: games.length,
+    checkedGames,
     count: homeRuns.length,
-    homeRuns,
-    results: homeRuns
+    homeRuns
   };
 
-  fs.writeFileSync(OUTFILE, JSON.stringify(output, null, 2));
+  fs.writeFileSync(OUT_FILE, JSON.stringify(out, null, 2));
 
   console.log("HR RESULTS COMPLETE");
-  console.log("Mode:", TARGET.mode);
-  console.log("Date:", TARGET.date);
-  console.log("Games:", games.length);
+  console.log("Mode: live_and_final_games");
+  console.log("Date:", todayET);
+  console.log("Scheduled Games:", games.length);
+  console.log("Checked Games:", checkedGames);
   console.log("Home Runs:", homeRuns.length);
-  console.log("Saved:", OUTFILE);
+  console.log("Saved:", OUT_FILE);
 }
 
 main().catch(err => {
+  console.error("HR RESULTS FAILED");
   console.error(err);
   process.exit(1);
 });
