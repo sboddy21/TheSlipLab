@@ -50,6 +50,16 @@
     .tab{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:10px;padding:9px 12px;font-weight:900;font-size:12px}
 
     .table-wrap{overflow:auto;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:#090d12}
+    .result-row{cursor:pointer}
+    .result-row:hover{background:rgba(255,255,255,.025)}
+    .detail-row{display:none;background:#070b10}
+    .detail-row.open{display:table-row}
+    .detail-box{padding:18px 22px;border-top:1px solid rgba(255,255,255,.07);color:#cbd5e1}
+    .detail-grid{display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));gap:12px;margin-top:12px}
+    .detail-pill{background:#0f1720;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px}
+    .detail-label{font-size:10px;text-transform:uppercase;color:#94a3b8;font-weight:900;letter-spacing:.08em;margin-bottom:5px}
+    .detail-value{font-size:13px;font-weight:800;color:#f8fafc}
+    @media(max-width:900px){.detail-grid{grid-template-columns:repeat(2,minmax(120px,1fr))}}
     table{width:100%;border-collapse:collapse;min-width:980px}
     th{background:#10141a;color:#8e98a3;font-size:11px;text-transform:uppercase;letter-spacing:.10em;text-align:left;padding:13px;border-bottom:1px solid rgba(255,255,255,.07)}
     td{padding:14px 13px;border-bottom:1px solid rgba(255,255,255,.04);font-size:13px;color:#dce3ea;vertical-align:middle}
@@ -258,7 +268,7 @@ function render(){
   document.getElementById("topPct").textContent = total ? Math.round(top / total * 100) + "%" : "0%";
 
   document.getElementById("tbody").innerHTML = rows.map((row,index) => `
-    <tr>
+    <tr class="result-row" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
         <div class="batter">${clean(row.player)}</div>
@@ -282,7 +292,31 @@ function render(){
       <td><div class="sig ${row.sig >= 4 ? "good" : ""}">${row.sig}</div></td>
       <td><div class="tags">${row.tags.map(t => `<span class="tag ${tagClass(t)}">${t}</span>`).join("")}</div></td>
     </tr>
+    <tr class="detail-row" id="detail-${index}">
+      <td colspan="16">
+        <div class="detail-box">
+          <strong>${clean(row.description || "No HR description available.")}</strong>
+          <div class="detail-grid">
+            <div class="detail-pill"><div class="detail-label">EV</div><div class="detail-value">${clean(row.exitVelocity)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Distance</div><div class="detail-value">${clean(row.distance)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Launch Angle</div><div class="detail-value">${clean(row.launchAngle)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Pitch</div><div class="detail-value">${clean(row.pitchType)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Pitch Velo</div><div class="detail-value">${clean(row.pitchVelocity)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Count</div><div class="detail-value">${clean(row.count)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Inning</div><div class="detail-value">${clean(row.inning)}</div></div>
+            <div class="detail-pill"><div class="detail-label">RBI</div><div class="detail-value">${clean(row.rbi)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Status</div><div class="detail-value">${clean(row.status)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
+          </div>
+        </div>
+      </td>
+    </tr>
   `).join("");
+}
+
+function toggleDetail(index){
+  const el = document.getElementById(`detail-${index}`);
+  if(el) el.classList.toggle("open");
 }
 
 async function load(){
