@@ -112,6 +112,22 @@
     .table-wrap{overflow:auto;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:#090d12}
     .result-row{cursor:pointer}
     .result-row:hover{background:rgba(255,255,255,.025)}
+    .newest-row td{
+      background:rgba(255,196,0,.075);
+      box-shadow:inset 4px 0 0 #ffc400;
+    }
+    .newest-pill{
+      display:inline-flex;
+      margin-left:6px;
+      background:rgba(255,196,0,.14);
+      border:1px solid rgba(255,196,0,.35);
+      color:#ffc400;
+      border-radius:999px;
+      padding:4px 7px;
+      font-size:9px;
+      font-weight:950;
+      vertical-align:middle;
+    }
     .detail-row{display:none;background:#070b10}
     .detail-row.open{display:table-row}
     .detail-box{padding:18px 22px;border-top:1px solid rgba(255,255,255,.07);color:#cbd5e1}
@@ -458,10 +474,10 @@ function render(){
   });
 
   document.getElementById("tbody").innerHTML = displayRows.map((row,index) => `
-    <tr class="result-row" onclick="toggleDetail(${index})">
+    <tr class="result-row ${index === 0 ? "newest-row" : ""}" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
-        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span></div>
+        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
         <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
       </td>
       <td class="team">${clean(row.team)}</td>
