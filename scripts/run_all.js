@@ -13,6 +13,7 @@ const steps = [
   ["Weather", "scripts/mlb/build_weather_board.js"],
   ["Context Factors", "scripts/mlb/build_context_factors.js"],
   ["Results", "scripts/mlb/build_hr_results.js"],
+  ["Results X Content", "scripts/content/build_results_x_content.js"],
   ["Power Zones", "scripts/mlb/build_statcast_zones.js"],
   ["Pitcher Attack Zones", "scripts/mlb/build_pitcher_attack_zones.js"],
   ["Decision Center", "scripts/mlb/build_hr_decision_center.js"],
