@@ -691,14 +691,7 @@ function render(){
       score:m ? n(m.hrConfidence) : 0,
       barrel:m ? n(m.barrel || m.barrelRate || m.powerScore * .20) : 0,
       hardHit:m ? n(m.hardHit || m.powerScore * .65) : 0,
-      contextScoreValue: contextScore({
-        venueName: ctx?.venue?.name || "",
-        umpireName: ctx?.umpire?.name || "",
-        roofStatus: ctx?.roof?.roof || "",
-        weatherCondition: ctx?.weather?.condition || "",
-        weatherTemp: ctx?.weather?.temp || "",
-        weatherWind: ctx?.weather?.wind || ""
-      })
+      contextScoreValue: 0,
     };
   });
 
@@ -862,8 +855,17 @@ async function load(){
   const res = await fetch("./data/mlb_results.json?v=" + Date.now());
   const json = await res.json();
 
-  const modelRes = await fetch("./data/hr_decision_center.json?v=" + Date.now());
-  const modelJson = await modelRes.json();
+  console.log("MLB RESULTS LOADED", json);
+  console.log("HR ROWS", getRows(json));
+
+  let modelJson = { allPlayers: [] };
+
+  try {
+    const modelRes = await fetch("./data/hr_decision_center.json?v=" + Date.now());
+    modelJson = await modelRes.json();
+  } catch {
+    modelJson = { allPlayers: [] };
+  }
 
   try {
     const contextRes = await fetch("./data/mlb_context_factors.json?v=" + Date.now());
@@ -882,7 +884,29 @@ async function load(){
   render();
 }
 
-load();
+load().catch(err => {
+  console.error("RESULTS LOAD FAILED", err);
+
+  document.getElementById("dateLabel").textContent = "LOAD ERROR";
+
+  setTimeout(() => {
+    const box = document.getElementById("visibleError");
+    if(box) box.textContent = err && err.stack ? err.stack : String(err);
+  }, 0);
+
+  const tbody = document.getElementById("tbody");
+  if(tbody){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="16" style="padding:24px;color:#ff6b6b;font-weight:800">
+          RESULTS LOAD FAILED
+          <br>
+          <span id="visibleError">Error loading.</span>
+        </td>
+      </tr>
+    `;
+  }
+});
 </script>
 
 </body>
