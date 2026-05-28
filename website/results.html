@@ -43,6 +43,46 @@
 
     .summary-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
 
+    .tracker-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin:18px 0;
+    }
+
+    .tracker-card{
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .tracker-label{
+      font-size:10px;
+      color:#8e98a3;
+      text-transform:uppercase;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .tracker-value{
+      font-size:26px;
+      color:#00d9a0;
+      font-weight:950;
+    }
+
+    .tracker-sub{
+      font-size:11px;
+      color:#8e98a3;
+      margin-top:4px;
+    }
+
+    @media(max-width:1100px){
+      .tracker-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
     .leader-grid{
       display:grid;
       grid-template-columns:repeat(5,1fr);
@@ -85,7 +125,47 @@
     }
 
     @media(max-width:1100px){
-      .leader-grid{
+      .tracker-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin:18px 0;
+    }
+
+    .tracker-card{
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .tracker-label{
+      font-size:10px;
+      color:#8e98a3;
+      text-transform:uppercase;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .tracker-value{
+      font-size:26px;
+      color:#00d9a0;
+      font-weight:950;
+    }
+
+    .tracker-sub{
+      font-size:11px;
+      color:#8e98a3;
+      margin-top:4px;
+    }
+
+    @media(max-width:1100px){
+      .tracker-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    .leader-grid{
         grid-template-columns:repeat(2,1fr);
       }
     }
@@ -214,6 +294,32 @@
       <div><div class="mini-label">Avg Sig.</div><div class="mini-value" id="avgSig">0.0</div><div class="mini-sub">per hitter</div></div>
     </div>
   </section>
+
+  <div class="tracker-grid">
+    <div class="tracker-card">
+      <div class="tracker-label">Top 30 Hits</div>
+      <div class="tracker-value" id="trackTop30">0</div>
+      <div class="tracker-sub">HRs from ranked bats</div>
+    </div>
+
+    <div class="tracker-card">
+      <div class="tracker-label">Pitch Edge Hits</div>
+      <div class="tracker-value" id="trackPitch">0</div>
+      <div class="tracker-sub">Pitch matchup signal</div>
+    </div>
+
+    <div class="tracker-card">
+      <div class="tracker-label">Power Zone Hits</div>
+      <div class="tracker-value" id="trackPower">0</div>
+      <div class="tracker-sub">Zone 5 plus power</div>
+    </div>
+
+    <div class="tracker-card">
+      <div class="tracker-label">Strong Hits</div>
+      <div class="tracker-value" id="trackStrong">0</div>
+      <div class="tracker-sub">Strong model tags</div>
+    </div>
+  </div>
 
   <div class="leader-grid">
     <div class="leader-card">
@@ -466,6 +572,13 @@ function render(){
 
   document.getElementById("topRate").textContent =
     total ? Math.round((top / total) * 100) + "%" : "0%";
+
+  document.getElementById("trackTop30").textContent = top;
+  document.getElementById("trackPitch").textContent =
+    rows.filter(r => r.tags.includes("PITCH EDGE")).length;
+  document.getElementById("trackPower").textContent =
+    rows.filter(r => r.tags.includes("POWER ZONE") || r.tags.includes("ZONE 5+")).length;
+  document.getElementById("trackStrong").textContent = strong;
 
   const displayRows = filteredRows(rows);
 
