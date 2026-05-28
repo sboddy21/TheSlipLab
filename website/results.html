@@ -421,6 +421,25 @@ function modelMap(){
   return map;
 }
 
+function pitchZone(row){
+  const desc = String(row.description || "").toLowerCase();
+  const pitch = String(row.pitchType || "").toLowerCase();
+
+  if(desc.includes("left")) return 3;
+  if(desc.includes("center")) return 5;
+  if(desc.includes("right")) return 7;
+  if(pitch.includes("sinker")) return 6;
+  if(pitch.includes("slider") || pitch.includes("sweeper")) return 8;
+  if(pitch.includes("four") || pitch.includes("fastball")) return 2;
+
+  return 5;
+}
+
+function zoneMini(row){
+  const z = pitchZone(row);
+  return `<span class="zone-mini">${[1,2,3,4,5,6,7,8,9].map(i => `<span class="zone-dot ${i === z ? "hot" : ""}"></span>`).join("")}</span>`;
+}
+
 function sprayDirection(row){
   const d = String(row.description || "").toLowerCase();
 
@@ -604,7 +623,7 @@ function render(){
     <tr class="result-row ${index === 0 ? "newest-row" : ""}" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
-        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> <span class="spray-mini">${sprayDirection(row)}</span> ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
+        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> <span class="spray-mini">${sprayDirection(row)}</span> ${zoneMini(row)} ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
         <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
       </td>
       <td class="team">${clean(row.team)}</td>
@@ -640,6 +659,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">RBI</div><div class="detail-value">${clean(row.rbi)}</div></div>
             <div class="detail-pill"><div class="detail-label">Status</div><div class="detail-value">${clean(row.status)}</div></div>
             <div class="detail-pill"><div class="detail-label">Spray Direction</div><div class="detail-value">${sprayDirection(row)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Pitch Zone</div><div class="detail-value">${zoneMini(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
           </div>
         </div>
