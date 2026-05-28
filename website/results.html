@@ -402,6 +402,7 @@
 <script>
 let results = [];
 let model = [];
+let contextFactors = [];
 let activeFilter = "all";
 let searchTerm = "";
 
@@ -413,6 +414,14 @@ function norm(v){return String(v || "").trim().toLowerCase()}
 
 function getRows(json){
   return Array.isArray(json) ? json : json.homeRuns || json.results || json.data || json.rows || [];
+}
+
+function contextMap(){
+  const map = new Map();
+  contextFactors.forEach(c => {
+    if(c && c.gamePk) map.set(String(c.gamePk), c);
+  });
+  return map;
 }
 
 function modelMap(){
@@ -532,6 +541,7 @@ function filteredRows(rows){
 
 function render(){
   const map = modelMap();
+  const ctxMap = contextMap();
 
   const rows = results.map((row, index) => {
     const m = map.get(norm(row.player));
@@ -661,6 +671,11 @@ function render(){
             <div class="detail-pill"><div class="detail-label">Spray Direction</div><div class="detail-value">${sprayDirection(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Pitch Zone</div><div class="detail-value">${zoneMini(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Venue</div><div class="detail-value">${clean(row.venueName)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Home Plate Ump</div><div class="detail-value">${clean(row.umpireName)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Roof</div><div class="detail-value">${clean(row.roofStatus)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Weather</div><div class="detail-value">${clean(row.weatherCondition)} ${clean(row.weatherTemp)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Wind</div><div class="detail-value">${clean(row.weatherWind)}</div></div>
           </div>
         </div>
       </td>
@@ -693,6 +708,14 @@ async function load(){
 
   const modelRes = await fetch("./data/hr_decision_center.json?v=" + Date.now());
   const modelJson = await modelRes.json();
+
+  try {
+    const contextRes = await fetch("./data/mlb_context_factors.json?v=" + Date.now());
+    const contextJson = await contextRes.json();
+    contextFactors = contextJson.contexts || [];
+  } catch {
+    contextFactors = [];
+  }
 
   results = getRows(json);
   model = (modelJson.allPlayers || []).sort((a,b) => n(b.hrConfidence) - n(a.hrConfidence));
