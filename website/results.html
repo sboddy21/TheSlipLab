@@ -42,6 +42,53 @@
     .bar-fill{height:100%;background:linear-gradient(90deg,#00d084,#ffcc00,#4aa3ff);border-radius:999px}
 
     .summary-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+
+    .leader-grid{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:14px;
+      margin:18px 0 18px;
+    }
+
+    .leader-card{
+      background:#0d1318;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:14px;
+    }
+
+    .leader-label{
+      font-size:10px;
+      color:#8e98a3;
+      text-transform:uppercase;
+      font-weight:900;
+      margin-bottom:8px;
+    }
+
+    .leader-name{
+      font-size:16px;
+      font-weight:950;
+      color:#fff;
+      margin-bottom:4px;
+    }
+
+    .leader-stat{
+      font-size:24px;
+      font-weight:950;
+      color:#ffc400;
+    }
+
+    .leader-sub{
+      font-size:11px;
+      color:#8e98a3;
+      margin-top:4px;
+    }
+
+    @media(max-width:1100px){
+      .leader-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
     .mini-label{font-size:10px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
     .mini-value{font-size:22px;font-weight:950;color:#ffc400}
     .mini-sub{font-size:11px;color:#8e98a3;margin-top:2px}
@@ -138,6 +185,43 @@
       <div><div class="mini-label">Avg Sig.</div><div class="mini-value" id="avgSig">0.0</div><div class="mini-sub">per hitter</div></div>
     </div>
   </section>
+
+  <div class="leader-grid">
+    <div class="leader-card">
+      <div class="leader-label">Hardest Hit</div>
+      <div class="leader-name" id="hardestName">—</div>
+      <div class="leader-stat" id="hardestStat">—</div>
+      <div class="leader-sub">Exit Velocity</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-label">Longest HR</div>
+      <div class="leader-name" id="longestName">—</div>
+      <div class="leader-stat" id="longestStat">—</div>
+      <div class="leader-sub">Projected Distance</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-label">Best Slip Lab Hit</div>
+      <div class="leader-name" id="bestName">—</div>
+      <div class="leader-stat" id="bestStat">—</div>
+      <div class="leader-sub">HR Confidence</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-label">Most Signals</div>
+      <div class="leader-name" id="signalName">—</div>
+      <div class="leader-stat" id="signalStat">—</div>
+      <div class="leader-sub">Signal Count</div>
+    </div>
+
+    <div class="leader-card">
+      <div class="leader-label">Top 30 Hit Rate</div>
+      <div class="leader-name">Top 30</div>
+      <div class="leader-stat" id="topRate">0%</div>
+      <div class="leader-sub">Model Conversion</div>
+    </div>
+  </div>
 
   <div class="tabs">
     <button class="tab active" data-filter="all" id="allTab">All HRs</button>
@@ -295,6 +379,35 @@ function render(){
   document.getElementById("hotPct").textContent = total ? Math.round(hot / total * 100) + "%" : "0%";
   document.getElementById("dangerPct").textContent = total ? Math.round(danger / total * 100) + "%" : "0%";
   document.getElementById("topPct").textContent = total ? Math.round(top / total * 100) + "%" : "0%";
+
+  const hardest = [...rows]
+    .filter(r => n(r.exitVelocity) > 0)
+    .sort((a,b) => n(b.exitVelocity) - n(a.exitVelocity))[0];
+
+  const longest = [...rows]
+    .filter(r => n(r.distance) > 0)
+    .sort((a,b) => n(b.distance) - n(a.distance))[0];
+
+  const best = [...rows]
+    .sort((a,b) => n(b.score) - n(a.score))[0];
+
+  const signals = [...rows]
+    .sort((a,b) => n(b.sig) - n(a.sig))[0];
+
+  document.getElementById("hardestName").textContent = hardest ? clean(hardest.player) : "—";
+  document.getElementById("hardestStat").textContent = hardest ? clean(hardest.exitVelocity) : "—";
+
+  document.getElementById("longestName").textContent = longest ? clean(longest.player) : "—";
+  document.getElementById("longestStat").textContent = longest ? clean(longest.distance) : "—";
+
+  document.getElementById("bestName").textContent = best ? clean(best.player) : "—";
+  document.getElementById("bestStat").textContent = best ? score(best.score) : "—";
+
+  document.getElementById("signalName").textContent = signals ? clean(signals.player) : "—";
+  document.getElementById("signalStat").textContent = signals ? clean(signals.sig) : "—";
+
+  document.getElementById("topRate").textContent =
+    total ? Math.round((top / total) * 100) + "%" : "0%";
 
   const displayRows = filteredRows(rows);
 
