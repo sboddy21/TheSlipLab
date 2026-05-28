@@ -147,6 +147,10 @@
           <th>EV</th>
           <th>DIST</th>
           <th>LA</th>
+          <th>Pitch</th>
+          <th>Velo</th>
+          <th>Count</th>
+          <th>Inning</th>
           <th>Score</th>
           <th>Sig.</th>
           <th>Tags</th>
@@ -268,8 +272,12 @@ function render(){
       </td>
       <td class="hand">${clean(row.pitcherHand || row.hand || row.pitchHand || "RHP")}</td>
       <td class="era">${clean(row.exitVelocity || "N/A")}</td>
-      <td>${pct(row.barrel)}</td>
-      <td>${pct(row.hardHit)}</td>
+      <td>${clean(row.distance || "N/A")}</td>
+      <td>${clean(row.launchAngle || "N/A")}</td>
+      <td>${clean(row.pitchType || "N/A")}</td>
+      <td>${clean(row.pitchVelocity || "N/A")}</td>
+      <td>${clean(row.count || "N/A")}</td>
+      <td>${clean(row.inning || "N/A")}</td>
       <td class="score">${score(row.score)}</td>
       <td><div class="sig ${row.sig >= 4 ? "good" : ""}">${row.sig}</div></td>
       <td><div class="tags">${row.tags.map(t => `<span class="tag ${tagClass(t)}">${t}</span>`).join("")}</div></td>
