@@ -11,6 +11,7 @@ const steps = [
   ["Game Pitcher Matchups", "scripts/mlb/build_game_pitcher_matchups.mjs"],
   ["Team Stacks", "scripts/mlb/build_team_stacks.js"],
   ["Weather", "scripts/mlb/build_weather_board.js"],
+  ["Context Factors", "scripts/mlb/build_context_factors.js"],
   ["Results", "scripts/mlb/build_hr_results.js"],
   ["Power Zones", "scripts/mlb/build_statcast_zones.js"],
   ["Pitcher Attack Zones", "scripts/mlb/build_pitcher_attack_zones.js"],
