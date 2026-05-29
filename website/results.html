@@ -851,12 +851,42 @@ document.addEventListener("click", e => {
   render();
 });
 
+function isBeforeResultsRolloverET(){
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    hour: "2-digit",
+    hour12: false
+  }).formatToParts(new Date());
+
+  const hour = Number(parts.find(part => part.type === "hour")?.value || 0);
+  return hour < 10;
+}
+
+async function fetchResultsFile(file){
+  const res = await fetch(file + "?v=" + Date.now());
+  if (!res.ok) throw new Error(file + " failed");
+  return res.json();
+}
+
 async function load(){
-  const res = await fetch("./data/mlb_results.json?v=" + Date.now());
-  const json = await res.json();
+  let json = await fetchResultsFile("./data/mlb_results.json");
+  let resultsSource = "today";
+
+  if (isBeforeResultsRolloverET()) {
+    try {
+      const previousJson = await fetchResultsFile("./data/mlb_results_previous.json");
+      if (getRows(previousJson).length) {
+        json = previousJson;
+        resultsSource = "previous";
+      }
+    } catch {
+      resultsSource = "today";
+    }
+  }
 
   console.log("MLB RESULTS LOADED", json);
   console.log("HR ROWS", getRows(json));
+  console.log("RESULTS SOURCE", resultsSource);
 
   let modelJson = { allPlayers: [] };
 
