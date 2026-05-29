@@ -559,6 +559,25 @@ function fieldSvg(venue){
   `;
 }
 
+function weatherInsight(row){
+  const speed = num(row.windSpeed || row.wind_speed);
+  const temp = num(row.temp || row.temperature);
+  const impact = windImpactLabel(row);
+  const boost = hrBoost(row);
+  const venue = clean(row.venue);
+
+  if (speed < 3 && temp >= 75) return `Light wind, but warm air still gives ${venue} some carry support.`;
+  if (speed < 3) return `Light wind keeps this mostly park driven instead of weather driven.`;
+  if (impact.includes("out to RF")) return `Wind is helping balls carry toward right field, which favors left handed pull power.`;
+  if (impact.includes("out to LF")) return `Wind is helping balls carry toward left field, which favors right handed pull power.`;
+  if (impact.includes("out to CF")) return `Wind is helping straightaway carry, boosting well struck fly balls to the deepest part of the park.`;
+  if (impact.includes("in from")) return `Wind is working against carry, so only true barrel contact gets a real boost.`;
+  if (impact.includes("Crosswind")) return `Crosswind can move fly balls, but the HR impact is more neutral than direct outfield wind.`;
+  if (boost >= 72) return `${venue} is grading as one of the better HR environments on the slate.`;
+
+  return `${venue} is playing closer to neutral unless the hitter has strong raw power.`;
+}
+
 async function load(){
   const res = await fetch("./data/mlb_weather.json?v=" + Date.now());
   const json = await res.json();
