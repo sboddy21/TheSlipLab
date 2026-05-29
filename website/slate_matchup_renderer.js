@@ -86,6 +86,21 @@
     return payload.matchups || payload.games || payload.players || payload.rows || payload.data || payload.allPlayers || [];
   }
 
+  function gameSortTime(game) {
+    const raw = game.gameDate || game.officialDateTime || game.dateTime || game.startTime || game.firstPitch || game.gameTime || "";
+    const parsed = new Date(raw).getTime();
+
+    if (!Number.isNaN(parsed)) return parsed;
+
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  function sortGamesByFirstPitch(games) {
+    return rows(games)
+      .slice()
+      .sort((a, b) => gameSortTime(a) - gameSortTime(b));
+  }
+
   function gameTime(game) {
     const date = new Date(game.gameDate || "");
     return Number.isNaN(date.getTime()) ? "" : date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
@@ -612,7 +627,7 @@
   async function load() {
     injectStyles();
     injectShell();
-    state.games = rows(await json("./data/game_pitcher_matchups.json", null));
+    state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
     state.spray = await json("./data/player_spray_charts.json", {});
     render();
   }

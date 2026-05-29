@@ -88,9 +88,33 @@ async function boot() {
 
   const primary = list(matchups).map(normalizeGame);
   const fallback = list(fallbackGames).map(normalizeGame);
-  state.games = primary.length ? primary : fallback;
+  const loadedGames = primary.length ? primary : fallback;
+
+  state.games = loadedGames
+    .slice()
+    .sort((a, b) => gameSortTime(a) - gameSortTime(b));
 
   renderHomeRuns();
+}
+
+function gameSortTime(game) {
+  const raw = game.gameDate || game.officialDateTime || game.dateTime || game.startTime || game.firstPitch || game.gameTime || "";
+  const parsed = new Date(raw).getTime();
+
+  if (!Number.isNaN(parsed)) return parsed;
+
+  const label = clean(game.time || game.displayTime || "", "");
+  const match = label.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+
+  let hour = Number(match[1]);
+  const minute = Number(match[2]);
+  const meridiem = clean(match[3], "").toUpperCase();
+
+  if (meridiem === "PM" && hour !== 12) hour += 12;
+  if (meridiem === "AM" && hour === 12) hour = 0;
+
+  return hour * 60 + minute;
 }
 
 function teamCode(team) {
