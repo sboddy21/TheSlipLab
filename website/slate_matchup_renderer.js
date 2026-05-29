@@ -65,6 +65,89 @@
           background: linear-gradient(135deg, rgba(80, 255, 100, .18), rgba(5, 26, 12, .98)) !important;
           border-color: rgba(80, 255, 100, .35) !important;
         }
+
+        #avgVuln {
+          display: inline-flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .vuln-proj-number {
+          color: #ff6b2d;
+          font-weight: 950;
+        }
+
+        .vuln-env-tag {
+          display: inline-flex;
+          align-items: center;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 107, 45, .52);
+          background: rgba(255, 107, 45, .12);
+          color: #ffb000;
+          padding: 3px 8px;
+          font-size: 10px;
+          font-weight: 950;
+          letter-spacing: .12em;
+          animation: vulnEnvFade .75s ease both, vulnEnvPulse 2.8s ease-in-out infinite;
+        }
+
+        .vuln {
+          opacity: 0;
+          transform: translateY(12px);
+          animation: vulnCardRise .5s ease forwards;
+        }
+
+        .vuln:nth-child(1) { animation-delay: .05s; }
+        .vuln:nth-child(2) { animation-delay: .12s; }
+        .vuln:nth-child(3) { animation-delay: .19s; }
+        .vuln:nth-child(4) { animation-delay: .26s; }
+        .vuln:nth-child(5) { animation-delay: .33s; }
+
+        .vuln span {
+          box-shadow: 0 0 0 rgba(255, 107, 45, 0);
+        }
+
+        .vuln:nth-child(1) span,
+        .vuln:nth-child(2) span {
+          animation: vulnBadgeGlow 2.4s ease-in-out infinite;
+        }
+
+        @keyframes vulnCardRise {
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes vulnEnvFade {
+          from {
+            opacity: 0;
+            transform: translateY(5px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        @keyframes vulnEnvPulse {
+          0%, 100% {
+            box-shadow: 0 0 0 rgba(255, 107, 45, 0);
+          }
+          50% {
+            box-shadow: 0 0 18px rgba(255, 107, 45, .22);
+          }
+        }
+
+        @keyframes vulnBadgeGlow {
+          0%, 100% {
+            box-shadow: 0 0 0 rgba(255, 107, 45, 0);
+          }
+          50% {
+            box-shadow: 0 0 16px rgba(255, 107, 45, .36);
+          }
+        }
       </style>
     `);
   }
@@ -472,8 +555,11 @@
       environment = "AVERAGE HR ENVIRONMENT";
     }
 
-    document.getElementById("avgVuln").textContent =
-      ` | 🔥 ${projectedHRs.toFixed(1)} Projected Home Runs Today | ${environment} | ${avgPerGame.toFixed(2)} HR/Game • ${highValue} High Value Games`;
+    const avgVuln = document.getElementById("avgVuln");
+    avgVuln.innerHTML =
+      ` | 🔥 <span class="vuln-proj-number" data-target="${projectedHRs.toFixed(1)}">0.0</span> Projected Home Runs Today <span class="vuln-env-tag">${esc(environment)}</span> ${avgPerGame.toFixed(2)} HR/Game • ${highValue} High Value Games`;
+
+    animateProjectedHRNumber();
 
     document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
       const label = vulnerabilityTier(row.score).label;
@@ -497,6 +583,25 @@
         document.getElementById("games")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
+  }
+
+  function animateProjectedHRNumber() {
+    const node = document.querySelector(".vuln-proj-number[data-target]");
+    if (!node) return;
+
+    const target = Number(node.dataset.target || 0);
+    const start = performance.now();
+    const duration = 850;
+
+    function tick(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      node.textContent = (target * eased).toFixed(1);
+
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+
+    requestAnimationFrame(tick);
   }
 
   function renderTabs() {
