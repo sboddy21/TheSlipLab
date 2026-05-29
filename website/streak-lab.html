@@ -75,18 +75,71 @@ let players = [];
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
 
 function streakScore(row){
   return (
-    Number(row.hrConfidence || 0) * .30 +
-    Number(row.powerScore || 0) * .25 +
-    Number(row.pitchEdge || 0) * .20 +
-    Number(row.due || 0) * .25
+    num(row.hrConfidence) * .30 +
+    num(row.powerScore) * .25 +
+    num(row.pitchEdge) * .20 +
+    num(row.due) * .25
   );
 }
 
 function dotClass(value, threshold){
-  return Number(value || 0) >= threshold ? "dot hot" : "dot";
+  return num(value) >= threshold ? "dot hot" : "dot";
+}
+
+function strongestMetric(row){
+  const metrics = [
+    {key:"power", label:"power", value:num(row.powerScore)},
+    {key:"pitch", label:"pitch damage", value:num(row.pitchEdge)},
+    {key:"hr", label:"HR confidence", value:num(row.hrConfidence)},
+    {key:"due", label:"due pressure", value:num(row.due)},
+    {key:"env", label:"environment", value:num(row.weather)}
+  ];
+
+  return metrics.sort((a,b) => b.value - a.value)[0];
+}
+
+function streakSummary(row){
+  const player = clean(row.player);
+  const pitch = clean(row.bestPitch);
+  const power = num(row.powerScore);
+  const pitchEdge = num(row.pitchEdge);
+  const hr = num(row.hrConfidence);
+  const due = num(row.due);
+  const env = num(row.weather);
+  const top = strongestMetric(row);
+
+  const lead =
+    power >= 80 ? "Elite power profile" :
+    power >= 70 ? "Strong power profile" :
+    hr >= 60 ? "HR confidence is carrying the profile" :
+    due >= 55 ? "Due pressure is building" :
+    pitchEdge >= 55 ? "Pitch matchup is the main driver" :
+    "Balanced HR profile";
+
+  const pitchLine =
+    pitchEdge >= 70 ? `with major damage indicators against ${pitch}` :
+    pitchEdge >= 55 ? `with a strong pitch edge against ${pitch}` :
+    pitchEdge >= 40 ? `with usable pitch damage against ${pitch}` :
+    `with ${pitch} showing as the best available pitch angle`;
+
+  const second =
+    top.key === "power" ? `Power score leads the card at ${score(power)}.` :
+    top.key === "pitch" ? `Pitch edge is the strongest signal at ${score(pitchEdge)}.` :
+    top.key === "hr" ? `HR confidence is the top signal at ${score(hr)}.` :
+    top.key === "due" ? `Due score is elevated at ${score(due)}.` :
+    `Environment support is part of the profile at ${score(env)}.`;
+
+  const closer =
+    due >= 55 && pitchEdge >= 55 ? "Due pressure and pitch damage are both live." :
+    power >= 75 && hr >= 55 ? "Power and HR confidence are both supporting the look." :
+    env >= 30 ? "Weather adds some extra support to the setup." :
+    "Best used as a profile read, not a blind play.";
+
+  return `${lead} ${pitchLine}. ${second} ${closer}`;
 }
 
 function render(){
@@ -147,9 +200,7 @@ function render(){
         </div>
       </div>
 
-      <div class="why">
-        ${clean(row.player)} is tracking across the main HR indicators. Best pitch matchup: ${clean(row.bestPitch)}.
-      </div>
+      <div class="why">${streakSummary(row)}</div>
     </article>
   `).join("");
 }
