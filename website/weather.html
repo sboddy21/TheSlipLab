@@ -156,6 +156,8 @@
     .carry-tag.neutral{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#d9d9d9}
     .carry-tag.pitcher{background:rgba(80,160,255,.12);border-color:rgba(80,160,255,.22);color:#73b7ff}
     .carry-tag.dome{background:rgba(190,120,255,.12);border-color:rgba(190,120,255,.24);color:#c997ff}
+    .carry-meter{margin-top:8px;width:88px;height:8px;border-radius:999px;background:#151b22;border:1px solid rgba(255,255,255,.1);overflow:hidden}
+    .carry-meter-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#5aa7ff,#93ff2d,#ffc400,#ff6b2d)}
 
     .field-wrap{
       position:relative;
@@ -586,6 +588,7 @@ async function load(){
             <div class="carry-label">HR Carry</div>
             <div class="carry-score">${fmt(row.carry)}</div>
             <div class="carry-tag ${tag.cls}">${tag.label}</div>
+            <div class="carry-meter"><div class="carry-meter-fill" style="width:${Math.max(0, Math.min(100, hrBoost(row)))}%"></div></div>
           </div>
         </div>
 
