@@ -447,7 +447,7 @@ function openPark(row){
     <div class="metric"><div class="metric-label">Humidity</div><div class="metric-value">${p.humidity}</div></div>
     <div class="metric"><div class="metric-label">Temp</div><div class="metric-value">${temp}°</div></div>
     <div class="metric"><div class="metric-label">Wind</div><div class="metric-value">${wind} MPH</div></div>
-    <div class="metric"><div class="metric-label">Direction</div><div class="metric-value">${dir}</div></div>
+    <div class="metric"><div class="metric-label">Impact</div><div class="metric-value">${windImpactLabel(row)}</div></div>
     <div class="metric"><div class="metric-label">LF</div><div class="metric-value">${dims.lf}</div></div>
     <div class="metric"><div class="metric-label">CF</div><div class="metric-value">${dims.cf}</div></div>
     <div class="metric"><div class="metric-label">RF</div><div class="metric-value">${dims.rf}</div></div>
@@ -468,6 +468,24 @@ function openPark(row){
   `).join("") : `<div class="park-note">No matching slate hitters were found for this venue yet.</div>`;
 
   document.getElementById("parkModal").classList.add("open");
+}
+
+function windImpactLabel(row){
+  const speed = num(row.windSpeed || row.wind_speed);
+  const deg = num(row.arrowDegrees || row.windDirection);
+
+  if (speed < 3) return "Light wind";
+
+  const normalized = ((deg % 360) + 360) % 360;
+
+  if (normalized >= 330 || normalized < 30) return "Blowing out to CF";
+  if (normalized >= 30 && normalized < 75) return "Blowing out to RF";
+  if (normalized >= 75 && normalized < 120) return "Crosswind to RF";
+  if (normalized >= 120 && normalized < 165) return "Blowing in from RF";
+  if (normalized >= 165 && normalized < 195) return "Blowing in from CF";
+  if (normalized >= 195 && normalized < 240) return "Blowing in from LF";
+  if (normalized >= 240 && normalized < 285) return "Crosswind to LF";
+  return "Blowing out to LF";
 }
 
 function arrowRotation(row){
@@ -552,7 +570,7 @@ async function load(){
 
         <div class="field-wrap">
           ${fieldSvg(venue)}
-          <div class="wind-text">${wind} MPH ${dir}</div>
+          <div class="wind-text">${wind} MPH ${dir} · ${windImpactLabel(row)}</div>
           <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
         </div>
 
