@@ -435,28 +435,30 @@
     `);
   }
 
-  function projectedSlateHRs() {
-    const hitterRows = state.games.flatMap(game => [
-      ...(game.hitters?.away || []),
-      ...(game.hitters?.home || [])
-    ]);
+  function projectedSlateHRs(rows) {
+    const games = state.games.length || 0;
+    if (!games) return 0;
 
-    const projected = hitterRows.reduce((sum, row) => {
-      const score = num(scoreOf(row));
-      if (!score) return sum;
+    const avgVulnerability = rows.length
+      ? rows.reduce((sum, row) => sum + num(row.score), 0) / rows.length
+      : 50;
 
-      const probability = Math.max(0.003, Math.min(0.16, score / 1250));
-      return sum + probability;
-    }, 0);
+    const highValue = rows.filter(row => row.score >= 45).length;
 
-    return projected;
+    const baseline = games * 2.2;
+    const vulnerabilityBoost = Math.max(-4, Math.min(8, (avgVulnerability - 50) * 0.2));
+    const highValueBoost = highValue * 0.75;
+
+    const projected = baseline + vulnerabilityBoost + highValueBoost;
+
+    return Math.max(games * 1.6, Math.min(games * 3.2, projected));
   }
 
   function renderTopVulnerabilities() {
     const rows = topPitcherRows();
-    const projectedHRs = projectedSlateHRs();
-    const avgPerGame = state.games.length ? projectedHRs / state.games.length : 0;
     const highValue = rows.filter(row => row.score >= 45).length;
+    const projectedHRs = projectedSlateHRs(rows);
+    const avgPerGame = state.games.length ? projectedHRs / state.games.length : 0;
 
     document.getElementById("avgVuln").textContent = ` | ${projectedHRs.toFixed(1)} proj HRs   ${avgPerGame.toFixed(2)} per game   ${highValue} high-value games`;
 
