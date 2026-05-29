@@ -22,6 +22,16 @@
     .tab{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:10px 13px;font-size:12px;font-weight:900;cursor:pointer}
     .tab.active{background:#93ff2d;color:#05070b;border-color:#93ff2d}
     .status{color:#8e98a3;font-size:12px;margin-bottom:14px}
+    .top-targets{background:linear-gradient(135deg,rgba(255,107,45,.14),rgba(147,255,45,.06));border:1px solid rgba(255,107,45,.22);border-radius:18px;padding:16px;margin-bottom:18px}
+    .top-targets-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    .top-targets-title{font-size:15px;font-weight:950;color:#ffb000;text-transform:uppercase;letter-spacing:.14em}
+    .top-targets-sub{font-size:11px;color:#8e98a3;font-weight:800}
+    .top-targets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+    .top-target{background:#0b1015;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:11px;display:flex;justify-content:space-between;gap:10px}
+    .top-target-rank{color:#ff6b2d;font-weight:950;font-size:13px}
+    .top-target-name{font-weight:950;font-size:14px}
+    .top-target-meta{font-size:10px;color:#8e98a3;margin-top:3px}
+    .top-target-score{text-align:right;color:#93ff2d;font-weight:950;font-size:18px;text-shadow:0 0 14px rgba(147,255,45,.35)}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
     .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
 .card.player-card{cursor:pointer}
@@ -69,6 +79,7 @@
   <p class="sub">Fastest page for choosing HR candidates using confidence, pitch damage, pitcher risk, weather, and power profile.</p>
 
   <div class="status" id="status">Loading</div>
+  <section class="top-targets" id="topTargets"></section>
   <section class="tabs" id="tabs"></section>
   <section class="grid" id="grid"></section>
 </main>
@@ -227,6 +238,49 @@ function rowsFor(key){
   return direct;
 }
 
+function topTargetScore(row){
+  return (
+    num(row.hrConfidence) * 4.0 +
+    num(row.powerScore) * 0.35 +
+    num(row.pitcherRisk) * 0.22 +
+    num(row.pitchEdge) * 0.18 +
+    num(row.bullpen) * 0.12 +
+    num(row.due) * 1.25
+  );
+}
+
+function renderTopTargets(){
+  const rows = allRows()
+    .map(r => ({...r, topTargetScore: topTargetScore(r)}))
+    .sort((a,b) => num(b.topTargetScore) - num(a.topTargetScore))
+    .slice(0, 10);
+
+  document.getElementById("topTargets").innerHTML = `
+    <div class="top-targets-head">
+      <div>
+        <div class="top-targets-title">🔥 Today's Top 10 HR Targets</div>
+        <div class="top-targets-sub">Built from confidence, power, pitcher risk, pitch edge, bullpen and due signals.</div>
+      </div>
+      <div class="top-targets-sub">${rows.length} targets</div>
+    </div>
+    <div class="top-targets-grid">
+      ${rows.map((row,index) => `
+        <article class="top-target">
+          <div>
+            <div class="top-target-rank">#${index + 1}</div>
+            <div class="top-target-name">${clean(row.player)}</div>
+            <div class="top-target-meta">${clean(row.team)} vs ${clean(row.opponent)}</div>
+          </div>
+          <div>
+            <div class="top-target-score">${score(row.hrConfidence)}</div>
+            <div class="top-target-meta">HR Conf</div>
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderTabs(){
   document.getElementById("tabs").innerHTML = sections.map(([key,label]) => {
     const count = rowsFor(key).length;
@@ -307,6 +361,7 @@ async function load(){
   document.getElementById("status").textContent =
     `Updated ${new Date(data.updatedAt).toLocaleString()} • ${data.totalPlayers} HR candidates`;
 
+  renderTopTargets();
   renderTabs();
   renderGrid();
 }

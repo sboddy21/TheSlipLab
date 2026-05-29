@@ -930,6 +930,22 @@
     const trend = Math.round(num(row.recentHRTrend || 0));
     const volatility = Math.round(num(row.hrVolatilityScore || 0));
 
+    const pitcherStats = row?.stats?.pitcher || {};
+    const pEra = num(pitcherStats.era || pitcherStats.ERA);
+    const pWhip = num(pitcherStats.whip || pitcherStats.WHIP);
+    const pHr = num(pitcherStats.homeRuns || pitcherStats.hr);
+    const pIp = num(pitcherStats.inningsPitched || pitcherStats.ip);
+    const pHr9 = pIp ? ((pHr / pIp) * 9) : 0;
+
+    const weaknessNotes = [];
+
+    if (pHr9 >= 1.25) weaknessNotes.push("Elevated HR allowance");
+    if (pEra >= 4.50) weaknessNotes.push("Run prevention risk");
+    if (pWhip >= 1.35) weaknessNotes.push("Traffic on bases");
+    if (num(row.pitchPunishment) >= 8) weaknessNotes.push("Pitch type edge available");
+    if (num(row.hotZoneAttack) >= 8) weaknessNotes.push("Attack zone overlap");
+    if (!weaknessNotes.length) weaknessNotes.push("No major weakness flagged, rely on hitter power profile");
+
     document.getElementById("mContent").innerHTML = `
       <div class="section-title">Player Power Profile</div>
 
@@ -952,6 +968,19 @@
         <div class="player-stat"><label>Bat Side</label><b>${esc(row.batSide || "--")}</b></div>
         <div class="player-stat"><label>Rank</label><b>#${esc(row.rank || "--")}</b></div>
       </div>
+
+      <div class="section-title">Pitcher Weakness Summary</div>
+
+      <div class="player-stat-grid">
+        <div class="player-stat"><label>ERA</label><b>${pEra ? pEra.toFixed(2) : "--"}</b></div>
+        <div class="player-stat"><label>WHIP</label><b>${pWhip ? pWhip.toFixed(2) : "--"}</b></div>
+        <div class="player-stat"><label>HR Allowed</label><b>${pHr || "--"}</b></div>
+        <div class="player-stat"><label>IP</label><b>${pIp || "--"}</b></div>
+        <div class="player-stat"><label>HR/9</label><b>${pHr9 ? pHr9.toFixed(2) : "--"}</b></div>
+        <div class="player-stat"><label>Risk</label><b>${weaknessNotes.length}</b></div>
+      </div>
+
+      <div class="sweet-why">Attack notes: ${weaknessNotes.map(esc).join(" • ")}</div>
 
       <div class="section-title">Model Notes</div>
       <div class="sweet-note">${esc(row.note || "No additional notes available.")}</div>
