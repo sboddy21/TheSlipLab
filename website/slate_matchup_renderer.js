@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, active: "all", last7: {} };
+  const state = { games: [], spray: {}, weather: [], active: "all", last7: {} };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -453,6 +453,72 @@
     return "";
   }
 
+  function weatherForVenue(venue) {
+    const key = String(venue || "").toLowerCase().trim();
+    if (!key) return null;
+
+    return state.weather.find(row =>
+      String(row.venue || row.ballpark || row.stadium || "").toLowerCase().trim() === key
+    ) || null;
+  }
+
+  function windOutLabel(weather) {
+    const text = String(
+      weather?.windImpact ||
+      weather?.impact ||
+      weather?.windTag ||
+      weather?.carryTag ||
+      weather?.windCompass ||
+      weather?.windDirection ||
+      ""
+    ).toUpperCase();
+
+    if (text.includes("OUT TO LF")) return "WIND OUT LF";
+    if (text.includes("OUT TO RF")) return "WIND OUT RF";
+    if (text.includes("OUT TO CF")) return "WIND OUT CF";
+    if (text.includes("BLOWING OUT")) return "WIND OUT";
+    if (text.includes("CARRY")) return "WIND CARRY";
+
+    const degrees = num(weather?.arrowDegrees || weather?.windDirection);
+    if (degrees >= 330 || degrees < 30) return "WIND OUT CF";
+    if (degrees >= 30 && degrees < 75) return "WIND OUT RF";
+    if (degrees >= 285 && degrees < 330) return "WIND OUT LF";
+
+    return "";
+  }
+
+  function weatherTagsForRow(row) {
+    const tags = [];
+    const weather = weatherForVenue(row.venue || row.gameVenue);
+    if (!weather) return tags;
+
+    const roof = String(weather.roofStatus || weather.roof || "").toUpperCase();
+    const temp = num(weather.temp || weather.temperature);
+    const windSpeed = num(weather.windSpeed || weather.wind_speed);
+    const carry = num(weather.carry || weather.carryScore || weather.hrCarry || weather.hrBoost || weather.hrBoostScore);
+
+    if (roof.includes("DOME") || roof.includes("CLOSED")) {
+      tags.push(["DOME", "tag-dome"]);
+    }
+
+    const windLabel = windOutLabel(weather);
+    if (windSpeed >= 8 && windLabel) {
+      tags.push([windLabel, "tag-wind tag-glow"]);
+    }
+
+    if (temp >= 80) {
+      tags.push(["WARM AIR", "tag-warm tag-glow-soft"]);
+    }
+
+    if (carry >= 70) {
+      tags.push(["CARRY BOOST", "tag-carry tag-glow"]);
+    } else if (carry >= 60) {
+      tags.push(["WEATHER EDGE", "tag-carry tag-glow-soft"]);
+    }
+
+    return tags;
+  }
+
   function extraMatchupTags(row) {
     const tags = [];
     const s = statsOf(row);
@@ -561,7 +627,9 @@
     const windText = String(row.weatherWind || row.wind || row.windDirection || row.windTag || "").toUpperCase();
     if (windText.includes("OUT") || windText.includes("CARRY")) tags.push(["WIND OUT", "tag-wind tag-glow"]);
 
-    return tags.slice(0, 7);
+    tags.push(...weatherTagsForRow(row));
+
+    return tags.slice(0, 9);
   }
 
   function matchupBadges(row) {
@@ -1041,7 +1109,9 @@
 .matchup-chip.tag-leak{background:rgba(255,0,85,.18);border-color:#ff3c80;color:#ff9abc}
 .matchup-chip.tag-pitcher-vuln{background:rgba(255,122,0,.16);border-color:#ff8a00;color:#ffbd66}
 .matchup-chip.tag-bullpen{background:rgba(255,40,110,.18);border-color:#ff4f91;color:#ff9fc2}
-.matchup-chip.tag-wind{background:rgba(0,180,255,.18);border-color:#36c8ff;color:#9ee8ff}.matchup-chip.tag-due{background:rgba(255,0,90,.22);border-color:#ff3c80;color:#ffb0cc}
+.matchup-chip.tag-wind{background:rgba(0,180,255,.18);border-color:#36c8ff;color:#9ee8ff}.matchup-chip.tag-warm{background:rgba(255,120,30,.18);border-color:#ff8a00;color:#ffd0a0}
+.matchup-chip.tag-carry{background:rgba(255,176,0,.22);border-color:#ffd15a;color:#ffe08a}
+.matchup-chip.tag-dome{background:rgba(120,140,170,.16);border-color:#8da0ba;color:#dbe7f5}.matchup-chip.tag-due{background:rgba(255,0,90,.22);border-color:#ff3c80;color:#ffb0cc}
 .matchup-chip.tag-breakout{background:rgba(255,210,80,.18);border-color:#ffd250;color:#ffe7a0}
 .matchup-chip.tag-glow{box-shadow:0 0 10px currentColor,0 0 22px rgba(255,255,255,.18)}
 .matchup-chip.tag-glow-soft{box-shadow:0 0 8px currentColor,0 0 16px rgba(255,255,255,.12)}
@@ -1053,6 +1123,8 @@
     injectStyles();
     injectShell();
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
+    const weatherPayload = await json("./data/mlb_weather.json", []);
+    state.weather = Array.isArray(weatherPayload) ? weatherPayload : weatherPayload.weather || weatherPayload.rows || weatherPayload.data || [];
     state.spray = await json("./data/player_spray_charts.json", {});
     render();
   }
