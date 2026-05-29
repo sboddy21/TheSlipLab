@@ -3,6 +3,7 @@ import path from "path";
 
 const ROOT = process.cwd();
 const OUT_FILE = path.join(ROOT, "website", "data", "mlb_results.json");
+const PREVIOUS_FILE = path.join(ROOT, "website", "data", "mlb_results_previous.json");
 
 const todayET = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/New_York",
@@ -176,6 +177,23 @@ async function main() {
   }
 
   homeRuns.sort((a, b) => String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || "")));
+
+  if (fs.existsSync(OUT_FILE)) {
+    try {
+      const existing = JSON.parse(fs.readFileSync(OUT_FILE, "utf8"));
+      const existingDate = String(existing?.date || "");
+
+      if (existingDate && existingDate !== todayET && Array.isArray(existing?.homeRuns)) {
+        fs.writeFileSync(PREVIOUS_FILE, JSON.stringify({
+          ...existing,
+          archivedAt: new Date().toISOString(),
+          archiveReason: "previous_day_results_until_10am_et"
+        }, null, 2));
+      }
+    } catch {
+      // Keep building today's results even if previous archive parsing fails.
+    }
+  }
 
   fs.writeFileSync(OUT_FILE, JSON.stringify({
     updatedAt: new Date().toISOString(),
