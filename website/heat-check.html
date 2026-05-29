@@ -70,14 +70,50 @@ let players = [];
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
+function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
 
 function heatScore(row){
   return (
-    Number(row.due || 0) * .34 +
-    Number(row.powerScore || 0) * .28 +
-    Number(row.pitchEdge || 0) * .22 +
-    Number(row.hrConfidence || 0) * .16
+    num(row.due) * .34 +
+    num(row.powerScore) * .28 +
+    num(row.pitchEdge) * .22 +
+    num(row.hrConfidence) * .16
   );
+}
+
+function heatSummary(row){
+  const player = clean(row.player);
+  const bestPitch = clean(row.bestPitch);
+  const power = num(row.powerScore);
+  const due = num(row.due);
+  const pitch = num(row.pitchEdge);
+  const hr = num(row.hrConfidence);
+
+  const drivers = [
+    { label: "power", value: power },
+    { label: "due pressure", value: due * 4 },
+    { label: "pitch damage", value: pitch },
+    { label: "HR confidence", value: hr * 4 }
+  ].sort((a,b) => b.value - a.value);
+
+  const main = drivers[0].label;
+  const second = drivers[1].label;
+
+  let lead;
+  if (power >= 95) lead = `${player} is running hot because the raw power score is elite`;
+  else if (pitch >= 70) lead = `${player} is flashing a major pitch edge against ${bestPitch}`;
+  else if (due >= 18) lead = `${player} has elevated due pressure with HR indicators still active`;
+  else if (hr >= 16) lead = `${player} has a strong HR confidence base in this matchup`;
+  else lead = `${player} has a balanced heat profile`;
+
+  let support;
+  if (power >= 90 && pitch >= 60) support = `Power and ${bestPitch} damage are both supporting the card.`;
+  else if (due >= 18 && pitch >= 50) support = `Due pressure pairs with a usable ${bestPitch} matchup.`;
+  else if (power >= 90) support = `The biggest driver is ${main}, with ${second} as the secondary signal.`;
+  else if (pitch >= 55) support = `The best current pitch angle is ${bestPitch}, grading at ${score(pitch)}.`;
+  else support = `Main driver is ${main}, with ${second} adding support.`;
+
+  return `${lead}. ${support}`;
 }
 
 function render(){
@@ -124,9 +160,7 @@ function render(){
         </div>
       </div>
 
-      <div class="why">
-        ${clean(row.player)} is showing heat through power profile, due pressure, and pitch damage alignment.
-      </div>
+      <div class="why">${heatSummary(row)}</div>
     </article>
   `).join("");
 }
