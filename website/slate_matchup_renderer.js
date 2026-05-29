@@ -460,7 +460,20 @@
     const projectedHRs = projectedSlateHRs(rows);
     const avgPerGame = state.games.length ? projectedHRs / state.games.length : 0;
 
-    document.getElementById("avgVuln").textContent = ` | ${projectedHRs.toFixed(1)} proj HRs   ${avgPerGame.toFixed(2)} per game   ${highValue} high-value games`;
+    let environment = "LOW HR ENVIRONMENT";
+
+    if (projectedHRs >= 46) {
+      environment = "EXTREME HR ENVIRONMENT";
+    } else if (projectedHRs >= 40) {
+      environment = "HIGH HR ENVIRONMENT";
+    } else if (projectedHRs >= 34) {
+      environment = "ELEVATED HR ENVIRONMENT";
+    } else if (projectedHRs >= 28) {
+      environment = "AVERAGE HR ENVIRONMENT";
+    }
+
+    document.getElementById("avgVuln").textContent =
+      ` | 🔥 ${projectedHRs.toFixed(1)} Projected Home Runs Today | ${environment} | ${avgPerGame.toFixed(2)} HR/Game • ${highValue} High Value Games`;
 
     document.getElementById("vulns").innerHTML = rows.length ? rows.map((row, index) => {
       const label = vulnerabilityTier(row.score).label;
