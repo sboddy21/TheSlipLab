@@ -901,14 +901,71 @@
 
   function openModal(row) {
     ensureModal();
+
     const s = statsOf(row);
+
     document.getElementById("mFace").textContent = initials(row.player);
     document.getElementById("mName").textContent = row.player || "Player";
-    document.getElementById("mSub").textContent = `${row.team || ""} vs ${row.opponent || ""}${row.opposingPitcher ? " • vs " + row.opposingPitcher : ""}`;
+
+    document.getElementById("mSub").textContent =
+      `${row.team || ""} vs ${row.opponent || ""}${row.opposingPitcher ? " • vs " + row.opposingPitcher : ""}`;
+
     document.getElementById("mMetrics").innerHTML = [
-      ["HR", s.hr], ["AVG", dec(s.avg)], ["OBP", dec(s.obp)], ["SLG", dec(s.slg)], ["OPS", dec(s.ops)], ["RBI", s.rbi], ["Hits", s.hits], ["Score", scoreOf(row)]
-    ].map(item => `<div class="metric"><label>${esc(item[0])}</label><b>${esc(show(item[1]))}</b></div>`).join("");
-    document.getElementById("mContent").innerHTML = spraySvg(row);
+      ["HR", s.hr],
+      ["AVG", dec(s.avg)],
+      ["OBP", dec(s.obp)],
+      ["SLG", dec(s.slg)],
+      ["OPS", dec(s.ops)],
+      ["RBI", s.rbi],
+      ["Hits", s.hits],
+      ["Score", scoreOf(row)]
+    ].map(item =>
+      `<div class="metric"><label>${esc(item[0])}</label><b>${esc(show(item[1]))}</b></div>`
+    ).join("");
+
+    const confidence = Math.round(num(row.hrConfidence || row.score || 0));
+    const barrel = Math.round(num(row.barrelScore || 0));
+    const hardHit = Math.round(num(row.hardHitScore || 0));
+    const power = Math.round(num(row.truePowerScore || 0));
+    const trend = Math.round(num(row.recentHRTrend || 0));
+    const volatility = Math.round(num(row.hrVolatilityScore || 0));
+
+    document.getElementById("mContent").innerHTML = `
+      <div class="section-title">Player Power Profile</div>
+
+      <div class="metric-grid">
+        <div class="metric"><label>Confidence</label><b>${confidence}</b></div>
+        <div class="metric"><label>Power</label><b>${power}</b></div>
+        <div class="metric"><label>Barrel</label><b>${barrel}</b></div>
+        <div class="metric"><label>Hard Hit</label><b>${hardHit}</b></div>
+        <div class="metric"><label>Trend</label><b>${trend}</b></div>
+        <div class="metric"><label>Volatility</label><b>${volatility}</b></div>
+      </div>
+
+      <div class="section-title">Matchup Intelligence</div>
+
+      <div class="player-stat-grid">
+        <div class="player-stat"><label>Pitcher</label><b>${esc(row.opposingPitcher || "TBD")}</b></div>
+        <div class="player-stat"><label>Venue</label><b>${esc(row.venue || "--")}</b></div>
+        <div class="player-stat"><label>Tier</label><b>${esc(row.powerTier || "--")}</b></div>
+        <div class="player-stat"><label>Edge</label><b>${esc(row.edge || "--")}</b></div>
+        <div class="player-stat"><label>Bat Side</label><b>${esc(row.batSide || "--")}</b></div>
+        <div class="player-stat"><label>Rank</label><b>#${esc(row.rank || "--")}</b></div>
+      </div>
+
+      <div class="section-title">Model Notes</div>
+      <div class="sweet-note">${esc(row.note || "No additional notes available.")}</div>
+
+      ${row.why || row.matchupWhy
+        ? `<div class="sweet-why">${esc(row.why || row.matchupWhy)}</div>`
+        : ""
+      }
+
+      <div class="section-title">Spray Chart</div>
+
+      ${spraySvg(row)}
+    `;
+
     document.getElementById("modalBg").classList.add("open");
   }
 
