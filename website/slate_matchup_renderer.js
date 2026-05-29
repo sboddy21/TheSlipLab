@@ -494,7 +494,41 @@
     if (String(splitLabel).toLowerCase().includes("lefty")) tags.push(["LEFTY KILLER", "tag-split tag-glow"]);
     if (String(splitLabel).toLowerCase().includes("righty")) tags.push(["RIGHTY KILLER", "tag-split tag-glow"]);
 
-    return tags.slice(0, 5);
+    const pitcherStats = row?.stats?.pitcher || {};
+    const pitcherEra = num(pitcherStats.era || pitcherStats.ERA);
+    const pitcherWhip = num(pitcherStats.whip || pitcherStats.WHIP);
+    const pitcherHr = num(pitcherStats.homeRuns || pitcherStats.hr);
+    const pitcherIp = num(pitcherStats.inningsPitched || pitcherStats.ip);
+    const hrPerNine = pitcherIp ? (pitcherHr / pitcherIp) * 9 : 0;
+
+    const parkBoost = num(row.hrEnvironmentScore) >= 8 || [
+      "Daikin Park",
+      "Great American Ball Park",
+      "Yankee Stadium",
+      "Citizens Bank Park",
+      "Coors Field",
+      "Oriole Park at Camden Yards",
+      "Fenway Park"
+    ].includes(String(row.venue || ""));
+
+    if (parkBoost) tags.push(["PARK BOOST", "tag-park tag-glow"]);
+    if (num(row.pitchPunishment) >= 8) tags.push(["PITCH TYPE EDGE", "tag-pitch-edge tag-glow"]);
+    if (num(row.hotZoneAttack) >= 8) tags.push(["HOT ZONE EDGE", "tag-hot-zone tag-glow"]);
+    if (num(row.hrLeakFactor) >= 8 || hrPerNine >= 1.15) tags.push(["HR LEAK", "tag-leak tag-glow"]);
+    if (pitcherEra >= 4.50 || pitcherWhip >= 1.35) tags.push(["PITCHER VULN", "tag-pitcher-vuln tag-glow-soft"]);
+
+    const bullpen =
+      num(row.bullpenBoost) ||
+      num(row.bullpenScore) ||
+      num(row.bullpenCollapseScore) ||
+      num(row.weakBullpenScore);
+
+    if (bullpen >= 8) tags.push(["WEAK BULLPEN", "tag-bullpen tag-glow"]);
+
+    const windText = String(row.weatherWind || row.wind || row.windDirection || row.windTag || "").toUpperCase();
+    if (windText.includes("OUT") || windText.includes("CARRY")) tags.push(["WIND OUT", "tag-wind tag-glow"]);
+
+    return tags.slice(0, 7);
   }
 
   function matchupBadges(row) {
@@ -521,7 +555,7 @@
         seen.add(key);
         return true;
       })
-      .slice(0, 10)
+      .slice(0, 12)
       .map(([label, className]) => tagChip(label, className))
       .join("");
 
@@ -882,7 +916,13 @@
 .matchup-chip.tag-contact{background:rgba(0,224,164,.12);border-color:#00a77b;color:#8fffe0}
 .matchup-chip.tag-rbi{background:rgba(255,80,130,.14);border-color:#ff5082;color:#ff9abb}
 .matchup-chip.tag-hot{background:rgba(255,70,40,.18);border-color:#ff6b2d;color:#ffb199}
-.matchup-chip.tag-split{background:rgba(179,108,255,.18);border-color:#b36cff;color:#d9b8ff}
+.matchup-chip.tag-split{background:rgba(179,108,255,.18);border-color:#b36cff;color:#d9b8ff}.matchup-chip.tag-park{background:rgba(255,176,0,.20);border-color:#ffd15a;color:#ffe08a}
+.matchup-chip.tag-pitch-edge{background:rgba(255,70,40,.20);border-color:#ff6b2d;color:#ffc1a8}
+.matchup-chip.tag-hot-zone{background:rgba(255,55,70,.18);border-color:#ff3c50;color:#ff9aa5}
+.matchup-chip.tag-leak{background:rgba(255,0,85,.18);border-color:#ff3c80;color:#ff9abc}
+.matchup-chip.tag-pitcher-vuln{background:rgba(255,122,0,.16);border-color:#ff8a00;color:#ffbd66}
+.matchup-chip.tag-bullpen{background:rgba(255,40,110,.18);border-color:#ff4f91;color:#ff9fc2}
+.matchup-chip.tag-wind{background:rgba(0,180,255,.18);border-color:#36c8ff;color:#9ee8ff}
 .matchup-chip.tag-glow{box-shadow:0 0 10px currentColor,0 0 22px rgba(255,255,255,.18)}
 .matchup-chip.tag-glow-soft{box-shadow:0 0 8px currentColor,0 0 16px rgba(255,255,255,.12)}
 .sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
