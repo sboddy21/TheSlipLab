@@ -445,7 +445,7 @@
       const score = num(scoreOf(row));
       if (!score) return sum;
 
-      const probability = Math.max(0.015, Math.min(0.42, score / 225));
+      const probability = Math.max(0.003, Math.min(0.16, score / 1250));
       return sum + probability;
     }, 0);
 
