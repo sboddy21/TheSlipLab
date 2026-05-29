@@ -304,6 +304,7 @@
 </div>
 
 <script>
+let PARK_GEOMETRY = {};
 const PARK_SHAPES = {
   "Great American Ball Park": "M60 96 Q105 55 165 47 Q220 36 285 54 Q330 67 360 96",
   "Nationals Park": "M60 96 Q115 56 210 42 Q305 56 360 96",
@@ -338,24 +339,13 @@ const PARK_SHAPES = {
   "Sutter Health Park": "M60 96 Q113 56 210 42 Q307 56 360 96"
 };
 
-const PARKS = {
-  "Great American Ball Park": {lf:328, lcf:379, cf:404, rcf:370, rf:325},
-  "Yankee Stadium": {lf:318, lcf:399, cf:408, rcf:385, rf:314},
-  "Fenway Park": {lf:310, lcf:379, cf:390, rcf:380, rf:302},
-  "Wrigley Field": {lf:355, lcf:368, cf:400, rcf:368, rf:353},
-  "Citizens Bank Park": {lf:329, lcf:374, cf:401, rcf:369, rf:330},
-  "Camden Yards": {lf:333, lcf:384, cf:410, rcf:373, rf:318},
-  "Oriole Park at Camden Yards": {lf:333, lcf:384, cf:410, rcf:373, rf:318},
-  "Chase Field": {lf:330, lcf:374, cf:407, rcf:374, rf:334},
-  "Kauffman Stadium": {lf:330, lcf:387, cf:410, rcf:387, rf:330},
-  "Oracle Park": {lf:339, lcf:364, cf:391, rcf:415, rf:309},
-  "Rogers Centre": {lf:328, lcf:375, cf:400, rcf:375, rf:328},
-  "loanDepot park": {lf:344, lcf:386, cf:407, rcf:392, rf:335},
-  "Petco Park": {lf:336, lcf:390, cf:396, rcf:391, rf:322},
-  "Angel Stadium": {lf:347, lcf:390, cf:396, rcf:370, rf:350},
-  "Truist Park": {lf:335, lcf:385, cf:400, rcf:375, rf:325},
-  "American Family Field": {lf:344, lcf:371, cf:400, rcf:374, rf:345}
-};
+function parkShape(venue){
+  return PARK_GEOMETRY[venue] || PARK_GEOMETRY.default || {
+    dimensions: {lf:330, lcf:375, cf:400, rcf:375, rf:330},
+    wallPath: "M70 101 L114 62 L169 47 L210 40 L251 47 L306 62 L350 101"
+  };
+}
+
 
 function clean(v){
   if(v === null || v === undefined || v === "") return "N/A";
@@ -386,7 +376,7 @@ function dec(v){
 }
 
 function parkDims(venue){
-  return PARKS[venue] || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
+  return parkShape(venue).dimensions || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
 }
 
 function hrBoost(row){
@@ -527,8 +517,9 @@ function arrowRotation(row){
 }
 
 function fieldSvg(venue){
-  const d = parkDims(venue);
-  const wallPath = PARK_SHAPES[venue] || "M60 96 Q115 56 210 42 Q305 56 360 96";
+  const shape = parkShape(venue);
+  const d = shape.dimensions || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
+  const wallPath = shape.wallPath || "M70 101 L114 62 L169 47 L210 40 L251 47 L306 62 L350 101";
   const grassPath = `${wallPath} L210 230 Z`;
 
   return `
@@ -536,8 +527,8 @@ function fieldSvg(venue){
       <path class="grass" d="${grassPath}"></path>
       <path class="dirt" d="M210 230 L165 190 L210 150 L255 190 Z"></path>
 
-      <line class="line" x1="210" y1="230" x2="60" y2="96"></line>
-      <line class="line" x1="210" y1="230" x2="360" y2="96"></line>
+      <line class="line" x1="210" y1="230" x2="70" y2="101"></line>
+      <line class="line" x1="210" y1="230" x2="350" y2="101"></line>
 
       <path class="wall" d="${wallPath}"></path>
 
@@ -546,39 +537,27 @@ function fieldSvg(venue){
       <circle cx="210" cy="150" r="3" fill="#f3f3f3" opacity=".75"></circle>
       <circle cx="255" cy="190" r="3" fill="#f3f3f3" opacity=".75"></circle>
 
-      <text class="dim" x="55" y="88">${d.lf}</text>
-      <text class="dim" x="120" y="52">${d.lcf}</text>
-      <text class="dim" x="198" y="34">${d.cf}</text>
-      <text class="dim" x="285" y="52">${d.rcf}</text>
-      <text class="dim" x="352" y="88">${d.rf}</text>
+      <text class="dim" x="60" y="92">${d.lf}</text>
+      <text class="dim" x="120" y="56">${d.lcf}</text>
+      <text class="dim" x="198" y="35">${d.cf}</text>
+      <text class="dim" x="285" y="56">${d.rcf}</text>
+      <text class="dim" x="342" y="92">${d.rf}</text>
 
-      <text class="label" x="42" y="112">LF</text>
-      <text class="label" x="194" y="56">CF</text>
-      <text class="label" x="360" y="112">RF</text>
+      <text class="label" x="42" y="116">LF</text>
+      <text class="label" x="194" y="58">CF</text>
+      <text class="label" x="360" y="116">RF</text>
     </svg>
   `;
 }
 
-function weatherInsight(row){
-  const speed = num(row.windSpeed || row.wind_speed);
-  const temp = num(row.temp || row.temperature);
-  const impact = windImpactLabel(row);
-  const boost = hrBoost(row);
-  const venue = clean(row.venue);
-
-  if (speed < 3 && temp >= 75) return `Light wind, but warm air still gives ${venue} some carry support.`;
-  if (speed < 3) return `Light wind keeps this mostly park driven instead of weather driven.`;
-  if (impact.includes("out to RF")) return `Wind is helping balls carry toward right field, which favors left handed pull power.`;
-  if (impact.includes("out to LF")) return `Wind is helping balls carry toward left field, which favors right handed pull power.`;
-  if (impact.includes("out to CF")) return `Wind is helping straightaway carry, boosting well struck fly balls to the deepest part of the park.`;
-  if (impact.includes("in from")) return `Wind is working against carry, so only true barrel contact gets a real boost.`;
-  if (impact.includes("Crosswind")) return `Crosswind can move fly balls, but the HR impact is more neutral than direct outfield wind.`;
-  if (boost >= 72) return `${venue} is grading as one of the better HR environments on the slate.`;
-
-  return `${venue} is playing closer to neutral unless the hitter has strong raw power.`;
-}
-
 async function load(){
+  try {
+    const shapeRes = await fetch("./data/mlb_park_shapes.json?v=" + Date.now());
+    PARK_GEOMETRY = await shapeRes.json();
+  } catch {
+    PARK_GEOMETRY = {};
+  }
+
   const res = await fetch("./data/mlb_weather.json?v=" + Date.now());
   const json = await res.json();
   const rows = Array.isArray(json) ? json : json.weather || [];
