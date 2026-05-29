@@ -421,22 +421,113 @@
     return parts.join(" · ");
   }
 
+  function tagChip(label, className) {
+    return `<span class="matchup-chip ${esc(className)}">${esc(label)}</span>`;
+  }
+
+  function lineupSpotOf(row) {
+    const value =
+      row.lineupSpot ??
+      row.battingOrder ??
+      row.lineupOrder ??
+      row.order ??
+      row.projectedLineupSpot ??
+      row.battingOrderSpot ??
+      row.spot;
+
+    return Number.isFinite(Number(value)) ? Number(value) : 0;
+  }
+
+  function pitcherHandTag(row) {
+    const raw = String(
+      row.pitcherHand ??
+      row.opposingPitcherHand ??
+      row.pitcherThrows ??
+      row.throws ??
+      row.vsHand ??
+      ""
+    ).toUpperCase();
+
+    if (raw.includes("L")) return "VS LHP";
+    if (raw.includes("R")) return "VS RHP";
+    return "";
+  }
+
+  function extraMatchupTags(row) {
+    const tags = [];
+    const s = statsOf(row);
+    const score = num(scoreOf(row));
+    const hr = num(s.hr);
+    const slg = num(s.slg);
+    const ops = num(s.ops);
+    const obp = num(s.obp);
+    const rbi = num(s.rbi);
+    const spot = lineupSpotOf(row);
+
+    if (score >= 70 || hr >= 18 || slg >= .540 || ops >= .900) tags.push(["POWER", "tag-power tag-glow"]);
+    if (slg >= .520 || ops >= .880) tags.push(["HIGH ISO", "tag-iso tag-glow"]);
+    if (score >= 68 && slg >= .500) tags.push(["BARREL KING", "tag-barrel-king tag-glow"]);
+
+    if (spot === 1) tags.push(["LEADOFF", "tag-speed tag-glow-soft"]);
+    if (spot >= 1 && spot <= 3) tags.push(["TOP 3", "tag-top-order tag-glow-soft"]);
+    if (spot === 4) tags.push(["CLEANUP", "tag-cleanup tag-glow"]);
+    if (spot >= 3 && spot <= 5) tags.push(["HEART ORDER", "tag-cleanup tag-glow-soft"]);
+
+    if (obp >= .360) tags.push(["HIGH OBP", "tag-contact"]);
+    if (rbi >= 30) tags.push(["RBI SPOT", "tag-rbi"]);
+    if (ops >= .850) tags.push(["OPS HEATER", "tag-hot tag-glow-soft"]);
+
+    const speed =
+      num(row.stolenBases) ||
+      num(row.sb) ||
+      num(row.stats?.hitter?.stolenBases) ||
+      num(row.stats?.hitter?.sb);
+
+    if (speed >= 8) tags.push(["SPEED", "tag-speed tag-glow-soft"]);
+
+    const splitLabel =
+      row.splitTag ||
+      row.platoonTag ||
+      row.handednessTag ||
+      "";
+
+    if (String(splitLabel).toLowerCase().includes("lefty")) tags.push(["LEFTY KILLER", "tag-split tag-glow"]);
+    if (String(splitLabel).toLowerCase().includes("righty")) tags.push(["RIGHTY KILLER", "tag-split tag-glow"]);
+
+    return tags.slice(0, 5);
+  }
+
   function matchupBadges(row) {
     const level = matchupLevel(row);
     const previous = previousHrVsPitcher(row);
-    const hand = handMatchupLabel(row);
+    const hand = pitcherHandTag(row);
+    const recent = recentLabel(row);
 
-    return `
-      <div class="matchup-badges">
-        <span class="matchup-chip level-${level.toLowerCase()}">${esc(level)}</span>
-        ${previous > 0 ? `<span class="matchup-chip crusher">CRUSHER</span>` : ""}
-        <span class="matchup-chip barrel">${esc(barrelLabel(row))}</span>
-        <span class="matchup-chip hardhit">${esc(hardHitLabel(row))}</span>
-        ${hand ? `<span class="matchup-chip vs">${esc(hand)}</span>` : ""}
-        ${recentLabel(row) ? `<span class="matchup-chip recent">${esc(recentLabel(row))}</span>` : ""}
-      </div>
-    `;
+    const chips = [
+      [level, "level-" + level.toLowerCase()],
+      ...(previous > 0 ? [["CRUSHER", "crusher tag-glow"]] : []),
+      [barrelLabel(row), "barrel"],
+      [hardHitLabel(row), "hardhit"],
+      ...(hand ? [[hand, "vs"]] : []),
+      ...(recent ? [[recent, "recent tag-glow-soft"]] : []),
+      ...extraMatchupTags(row)
+    ];
+
+    const seen = new Set();
+    const html = chips
+      .filter(([label]) => {
+        const key = String(label || "").toUpperCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .slice(0, 10)
+      .map(([label, className]) => tagChip(label, className))
+      .join("");
+
+    return `<div class="matchup-badges">${html}</div>`;
   }
+
 
   function allHitters(game) {
     return [...(game.hitters?.away || []), ...(game.hitters?.home || [])];
@@ -781,7 +872,20 @@
           transform: scale(1.24);
         }
 
-        .vuln b{color:#ff4d63;font-size:23px;line-height:1;font-weight:950}.vuln span{border:1px solid #ff4d63;color:#ff4d63;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:950;letter-spacing:.18em}.vuln:nth-child(n+2) b{color:#ff8a00}.vuln:nth-child(n+2) small{color:#ffc400}.vuln:nth-child(n+2) span{border-color:#ff8a00;color:#ff8a00}.vuln strong{display:block;font-size:15px;color:#f2f2f2;margin-bottom:5px}.vuln em{display:block;color:#555b66;font-style:normal;font-size:11px;font-weight:800}.player-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:7px 0}.sweet-bat{background:linear-gradient(110deg,rgba(130,70,20,.42),rgba(18,12,24,.88));border-left:3px solid #ffb000}.sweet-bat:nth-child(even){background:linear-gradient(110deg,rgba(65,18,96,.55),rgba(9,15,18,.9));border-left-color:#b36cff}.sweet-main{min-width:0}.matchup-badges{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 8px}.matchup-chip{border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:950;line-height:1;color:#fff;background:rgba(255,255,255,.07)}.matchup-chip.level-elite{background:#ff6b00;border-color:#ff9a38;color:#fff}.matchup-chip.level-high{background:#ff7a00;border-color:#ffb15a;color:#fff}.matchup-chip.level-mid{background:#ffb000;border-color:#ffd15a;color:#130b00}.matchup-chip.crusher{background:#9c27b0;border-color:#e05cff;color:#fff}.matchup-chip.barrel{background:rgba(255,122,0,.18);border-color:#ff7a00;color:#ffb000}.matchup-chip.hardhit{background:rgba(255,60,80,.18);border-color:#ff3c50;color:#ff7c88}.matchup-chip.vs{background:rgba(20,35,50,.85);border-color:#5d7188;color:#b8c6d4}.matchup-chip.recent{background:rgba(255,122,0,.12);border-color:#b65a00;color:#ff9d18}.sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
+        .vuln b{color:#ff4d63;font-size:23px;line-height:1;font-weight:950}.vuln span{border:1px solid #ff4d63;color:#ff4d63;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:950;letter-spacing:.18em}.vuln:nth-child(n+2) b{color:#ff8a00}.vuln:nth-child(n+2) small{color:#ffc400}.vuln:nth-child(n+2) span{border-color:#ff8a00;color:#ff8a00}.vuln strong{display:block;font-size:15px;color:#f2f2f2;margin-bottom:5px}.vuln em{display:block;color:#555b66;font-style:normal;font-size:11px;font-weight:800}.player-stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:7px 0}.sweet-bat{background:linear-gradient(110deg,rgba(130,70,20,.42),rgba(18,12,24,.88));border-left:3px solid #ffb000}.sweet-bat:nth-child(even){background:linear-gradient(110deg,rgba(65,18,96,.55),rgba(9,15,18,.9));border-left-color:#b36cff}.sweet-main{min-width:0}.matchup-badges{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0 8px}.matchup-chip{border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:3px 7px;font-size:10px;font-weight:950;line-height:1;color:#fff;background:rgba(255,255,255,.07)}.matchup-chip.level-elite{background:#ff6b00;border-color:#ff9a38;color:#fff}.matchup-chip.level-high{background:#ff7a00;border-color:#ffb15a;color:#fff}.matchup-chip.level-mid{background:#ffb000;border-color:#ffd15a;color:#130b00}.matchup-chip.crusher{background:#9c27b0;border-color:#e05cff;color:#fff}.matchup-chip.barrel{background:rgba(255,122,0,.18);border-color:#ff7a00;color:#ffb000}.matchup-chip.hardhit{background:rgba(255,60,80,.18);border-color:#ff3c50;color:#ff7c88}.matchup-chip.vs{background:rgba(20,35,50,.85);border-color:#5d7188;color:#b8c6d4}.matchup-chip.recent{background:rgba(255,122,0,.12);border-color:#b65a00;color:#ff9d18}
+.matchup-chip.tag-power{background:rgba(255,55,70,.18);border-color:#ff3c50;color:#ff7c88}
+.matchup-chip.tag-iso{background:rgba(255,122,0,.20);border-color:#ff8a00;color:#ffb000}
+.matchup-chip.tag-barrel-king{background:rgba(255,176,0,.20);border-color:#ffd15a;color:#ffe08a}
+.matchup-chip.tag-cleanup{background:rgba(255,176,0,.18);border-color:#ffc400;color:#ffd95a}
+.matchup-chip.tag-speed{background:rgba(0,224,164,.16);border-color:#00e0a4;color:#42ffd7}
+.matchup-chip.tag-top-order{background:rgba(0,140,255,.16);border-color:#2296ff;color:#74c7ff}
+.matchup-chip.tag-contact{background:rgba(0,224,164,.12);border-color:#00a77b;color:#8fffe0}
+.matchup-chip.tag-rbi{background:rgba(255,80,130,.14);border-color:#ff5082;color:#ff9abb}
+.matchup-chip.tag-hot{background:rgba(255,70,40,.18);border-color:#ff6b2d;color:#ffb199}
+.matchup-chip.tag-split{background:rgba(179,108,255,.18);border-color:#b36cff;color:#d9b8ff}
+.matchup-chip.tag-glow{box-shadow:0 0 10px currentColor,0 0 22px rgba(255,255,255,.18)}
+.matchup-chip.tag-glow-soft{box-shadow:0 0 8px currentColor,0 0 16px rgba(255,255,255,.12)}
+.sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
     document.head.appendChild(style);
   }
 
