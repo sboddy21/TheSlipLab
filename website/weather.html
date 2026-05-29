@@ -287,6 +287,40 @@
 </div>
 
 <script>
+const PARK_SHAPES = {
+  "Great American Ball Park": "M60 96 Q105 55 165 47 Q220 36 285 54 Q330 67 360 96",
+  "Nationals Park": "M60 96 Q115 56 210 42 Q305 56 360 96",
+  "PNC Park": "M60 96 Q100 48 170 37 Q238 31 315 55 Q360 96",
+  "Yankee Stadium": "M60 96 Q112 55 178 44 Q235 37 305 54 Q360 96",
+  "Fenway Park": "M60 96 Q92 67 155 51 Q220 44 300 60 Q360 96",
+  "Wrigley Field": "M60 96 Q112 58 210 42 Q308 58 360 96",
+  "Citizens Bank Park": "M60 96 Q116 54 210 39 Q304 54 360 96",
+  "Camden Yards": "M60 96 Q102 49 165 40 Q235 33 315 55 Q360 96",
+  "Oriole Park at Camden Yards": "M60 96 Q102 49 165 40 Q235 33 315 55 Q360 96",
+  "Chase Field": "M60 96 Q114 57 210 42 Q306 57 360 96",
+  "Kauffman Stadium": "M60 96 Q106 45 168 35 Q210 30 252 35 Q314 45 360 96",
+  "Oracle Park": "M60 96 Q118 58 190 47 Q255 39 315 60 Q360 96",
+  "Rogers Centre": "M60 96 Q115 56 210 42 Q305 56 360 96",
+  "loanDepot park": "M60 96 Q108 47 170 36 Q230 34 300 50 Q360 96",
+  "Petco Park": "M60 96 Q104 48 174 38 Q238 40 305 55 Q360 96",
+  "Angel Stadium": "M60 96 Q110 50 180 40 Q230 39 300 55 Q360 96",
+  "Truist Park": "M60 96 Q112 53 210 40 Q300 55 360 96",
+  "American Family Field": "M60 96 Q114 56 210 42 Q306 56 360 96",
+  "Coors Field": "M60 96 Q100 43 165 31 Q210 25 255 31 Q320 43 360 96",
+  "T-Mobile Park": "M60 96 Q112 55 190 42 Q248 42 314 58 Q360 96",
+  "Dodger Stadium": "M60 96 Q112 54 210 40 Q308 54 360 96",
+  "Busch Stadium": "M60 96 Q110 53 210 39 Q310 53 360 96",
+  "Target Field": "M60 96 Q102 51 172 41 Q242 38 312 57 Q360 96",
+  "Comerica Park": "M60 96 Q98 43 160 34 Q215 31 292 49 Q360 96",
+  "Progressive Field": "M60 96 Q110 54 205 41 Q298 54 360 96",
+  "Globe Life Field": "M60 96 Q112 54 210 41 Q308 54 360 96",
+  "Minute Maid Park": "M60 96 Q96 57 165 46 Q235 39 315 59 Q360 96",
+  "Guaranteed Rate Field": "M60 96 Q112 55 210 41 Q308 55 360 96",
+  "Rate Field": "M60 96 Q112 55 210 41 Q308 55 360 96",
+  "Tropicana Field": "M60 96 Q116 57 210 43 Q304 57 360 96",
+  "Sutter Health Park": "M60 96 Q113 56 210 42 Q307 56 360 96"
+};
+
 const PARKS = {
   "Great American Ball Park": {lf:328, lcf:379, cf:404, rcf:370, rf:325},
   "Yankee Stadium": {lf:318, lcf:399, cf:408, rcf:385, rf:314},
@@ -444,16 +478,22 @@ function arrowRotation(row){
 
 function fieldSvg(venue){
   const d = parkDims(venue);
+  const wallPath = PARK_SHAPES[venue] || "M60 96 Q115 56 210 42 Q305 56 360 96";
 
   return `
     <svg class="field-svg" viewBox="0 0 420 250" preserveAspectRatio="none">
-      <path class="grass" d="M210 230 L60 95 Q210 18 360 95 Z"></path>
+      <path class="grass" d="M210 230 L60 96 Q115 56 210 42 Q305 56 360 96 Z"></path>
       <path class="dirt" d="M210 230 L165 190 L210 150 L255 190 Z"></path>
 
-      <line class="line" x1="210" y1="230" x2="60" y2="95"></line>
-      <line class="line" x1="210" y1="230" x2="360" y2="95"></line>
+      <line class="line" x1="210" y1="230" x2="60" y2="96"></line>
+      <line class="line" x1="210" y1="230" x2="360" y2="96"></line>
 
-      <path class="wall" d="M60 95 Q120 45 210 38 Q300 45 360 95"></path>
+      <path class="wall" d="${wallPath}"></path>
+
+      <circle cx="210" cy="230" r="4" fill="#f3f3f3" opacity=".9"></circle>
+      <circle cx="165" cy="190" r="3" fill="#f3f3f3" opacity=".75"></circle>
+      <circle cx="210" cy="150" r="3" fill="#f3f3f3" opacity=".75"></circle>
+      <circle cx="255" cy="190" r="3" fill="#f3f3f3" opacity=".75"></circle>
 
       <text class="dim" x="55" y="88">${d.lf}</text>
       <text class="dim" x="120" y="52">${d.lcf}</text>
