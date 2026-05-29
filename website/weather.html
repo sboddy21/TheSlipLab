@@ -152,6 +152,10 @@
     .carry{text-align:right}
     .carry-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900}
     .carry-score{font-size:28px;font-weight:950;color:#93ff2d}
+    .carry-tag{display:inline-flex;margin-top:4px;border-radius:999px;padding:4px 7px;font-size:9px;font-weight:950;background:rgba(147,255,45,.12);border:1px solid rgba(147,255,45,.24);color:#93ff2d}
+    .carry-tag.neutral{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#d9d9d9}
+    .carry-tag.pitcher{background:rgba(80,160,255,.12);border-color:rgba(80,160,255,.22);color:#73b7ff}
+    .carry-tag.dome{background:rgba(190,120,255,.12);border-color:rgba(190,120,255,.24);color:#c997ff}
 
     .field-wrap{
       position:relative;
@@ -383,6 +387,21 @@ function hrBoost(row){
   return Math.max(0, Math.min(100, base + carry));
 }
 
+function carryTag(row){
+  const venue = clean(row.venue);
+  const status = clean(row.status).toLowerCase();
+  const roof = clean(row.roof || row.roofStatus || row.dome).toLowerCase();
+  const boost = hrBoost(row);
+
+  if (status.includes("dome") || roof.includes("dome") || roof.includes("closed")) {
+    return { label: "DOME", cls: "dome" };
+  }
+
+  if (boost >= 72) return { label: "HR BOOST", cls: "" };
+  if (boost >= 55) return { label: "NEUTRAL PLUS", cls: "neutral" };
+  return { label: "PITCHER LEAN", cls: "pitcher" };
+}
+
 function parkProfile(row){
   const venue = clean(row.venue);
   const wind = clean(row.windSpeed || row.wind_speed);
@@ -553,6 +572,7 @@ async function load(){
     const temp = clean(row.temp || row.temperature);
     const dir = clean(row.windCompass || row.windDirection || "Unknown");
     const rotation = arrowRotation(row);
+    const tag = carryTag(row);
 
     return `
       <article class="card" data-venue="${venue}">
@@ -565,6 +585,7 @@ async function load(){
           <div class="carry">
             <div class="carry-label">HR Carry</div>
             <div class="carry-score">${fmt(row.carry)}</div>
+            <div class="carry-tag ${tag.cls}">${tag.label}</div>
           </div>
         </div>
 
