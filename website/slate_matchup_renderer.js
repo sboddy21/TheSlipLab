@@ -525,6 +525,39 @@
 
     if (bullpen >= 8) tags.push(["WEAK BULLPEN", "tag-bullpen tag-glow"]);
 
+    const recentTrend = num(row.recentHRTrend);
+    const barrelScore = num(row.barrelScore);
+    const hardHitScore = num(row.hardHitScore);
+    const truePower = num(row.truePowerScore);
+    const volatility = num(row.hrVolatilityScore);
+    const confidence = num(row.hrConfidence);
+
+    if (
+      barrelScore >= 80 &&
+      hardHitScore >= 75 &&
+      recentTrend <= 8 &&
+      hr <= 12
+    ) {
+      tags.push(["DUE", "tag-due tag-glow"]);
+    }
+
+    if (
+      truePower >= 45 &&
+      volatility >= 55 &&
+      confidence >= 50 &&
+      recentTrend <= 10
+    ) {
+      tags.push(["POWER DUE", "tag-due tag-glow"]);
+    }
+
+    if (
+      barrelScore >= 90 &&
+      hardHitScore >= 90 &&
+      recentTrend <= 14
+    ) {
+      tags.push(["BREAKOUT WATCH", "tag-breakout tag-glow-soft"]);
+    }
+
     const windText = String(row.weatherWind || row.wind || row.windDirection || row.windTag || "").toUpperCase();
     if (windText.includes("OUT") || windText.includes("CARRY")) tags.push(["WIND OUT", "tag-wind tag-glow"]);
 
@@ -922,7 +955,8 @@
 .matchup-chip.tag-leak{background:rgba(255,0,85,.18);border-color:#ff3c80;color:#ff9abc}
 .matchup-chip.tag-pitcher-vuln{background:rgba(255,122,0,.16);border-color:#ff8a00;color:#ffbd66}
 .matchup-chip.tag-bullpen{background:rgba(255,40,110,.18);border-color:#ff4f91;color:#ff9fc2}
-.matchup-chip.tag-wind{background:rgba(0,180,255,.18);border-color:#36c8ff;color:#9ee8ff}
+.matchup-chip.tag-wind{background:rgba(0,180,255,.18);border-color:#36c8ff;color:#9ee8ff}.matchup-chip.tag-due{background:rgba(255,0,90,.22);border-color:#ff3c80;color:#ffb0cc}
+.matchup-chip.tag-breakout{background:rgba(255,210,80,.18);border-color:#ffd250;color:#ffe7a0}
 .matchup-chip.tag-glow{box-shadow:0 0 10px currentColor,0 0 22px rgba(255,255,255,.18)}
 .matchup-chip.tag-glow-soft{box-shadow:0 0 8px currentColor,0 0 16px rgba(255,255,255,.12)}
 .sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
