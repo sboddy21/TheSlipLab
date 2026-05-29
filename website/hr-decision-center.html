@@ -81,7 +81,10 @@ const sections = [
   ["lottoBombs","Live Longshots"],
   ["pitchTypeEdges","Pitch Edges"],
   ["weatherCarry","Weather Carry"],
-  ["bullpenBoosts","Bullpen Boosts"]
+  ["bullpenBoosts","Bullpen Boosts"],
+  ["dueForHr","Due For HR"],
+  ["perfectStorm","Perfect Storm"],
+  ["nuclearSpots","Nuclear Spots"]
 ];
 
 let active = "bestPicks";
@@ -151,6 +154,60 @@ function rowsFor(key){
       .filter(r => num(r.bullpen) > 0)
       .sort((a,b) => num(b.bullpen) - num(a.bullpen))
       .slice(0, 40);
+  }
+
+  if (key === "dueForHr") {
+    return rows
+      .map(r => ({
+        ...r,
+        dueScore:
+          num(r.due) * 0.45 +
+          num(r.powerScore) * 0.25 +
+          num(r.pitcherRisk) * 0.15 +
+          num(r.weather) * 0.15
+      }))
+      .filter(r =>
+        num(r.due) >= 40 ||
+        (num(r.powerScore) >= 55 && num(r.hrConfidence) >= 45)
+      )
+      .sort((a,b) => num(b.dueScore) - num(a.dueScore))
+      .slice(0, 40);
+  }
+
+  if (key === "perfectStorm") {
+    return rows
+      .map(r => ({
+        ...r,
+        stormScore:
+          num(r.powerScore) * 0.25 +
+          num(r.pitchEdge) * 0.20 +
+          num(r.pitcherRisk) * 0.20 +
+          num(r.weather) * 0.15 +
+          num(r.bullpen) * 0.10 +
+          num(r.due) * 0.10
+      }))
+      .sort((a,b) => num(b.stormScore) - num(a.stormScore))
+      .slice(0, 40);
+  }
+
+  if (key === "nuclearSpots") {
+    return rows
+      .filter(r =>
+        num(r.hrConfidence) >= 60 &&
+        num(r.powerScore) >= 55 &&
+        num(r.pitcherRisk) >= 40
+      )
+      .map(r => ({
+        ...r,
+        nuclearScore:
+          num(r.hrConfidence) * 0.35 +
+          num(r.powerScore) * 0.25 +
+          num(r.pitcherRisk) * 0.20 +
+          num(r.weather) * 0.10 +
+          num(r.pitchEdge) * 0.10
+      }))
+      .sort((a,b) => num(b.nuclearScore) - num(a.nuclearScore))
+      .slice(0, 30);
   }
 
   return direct;
