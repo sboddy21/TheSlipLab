@@ -89,20 +89,20 @@
           font-size: 10px;
           font-weight: 950;
           letter-spacing: .12em;
-          animation: vulnEnvFade .75s ease both, vulnEnvPulse 2.8s ease-in-out infinite;
+          animation: vulnEnvFade 1.2s ease both, vulnEnvPulse 3.2s ease-in-out infinite;
         }
 
         .vuln {
           opacity: 0;
-          transform: translateY(12px);
-          animation: vulnCardRise .5s ease forwards;
+          transform: translateY(22px);
+          animation: vulnCardRise .9s ease forwards;
         }
 
-        .vuln:nth-child(1) { animation-delay: .05s; }
-        .vuln:nth-child(2) { animation-delay: .12s; }
-        .vuln:nth-child(3) { animation-delay: .19s; }
-        .vuln:nth-child(4) { animation-delay: .26s; }
-        .vuln:nth-child(5) { animation-delay: .33s; }
+        .vuln:nth-child(1) { animation-delay: .15s; }
+        .vuln:nth-child(2) { animation-delay: .35s; }
+        .vuln:nth-child(3) { animation-delay: .55s; }
+        .vuln:nth-child(4) { animation-delay: .75s; }
+        .vuln:nth-child(5) { animation-delay: .95s; }
 
         .vuln span {
           box-shadow: 0 0 0 rgba(255, 107, 45, 0);
@@ -591,7 +591,7 @@
 
     const target = Number(node.dataset.target || 0);
     const start = performance.now();
-    const duration = 850;
+    const duration = 1800;
 
     function tick(now) {
       const progress = Math.min(1, (now - start) / duration);
