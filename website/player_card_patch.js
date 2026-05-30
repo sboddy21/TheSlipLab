@@ -392,51 +392,24 @@
 
   function attackCellsFor(row) {
     const attack = attackFor(row) || {};
-    const raw =
-      attack.zones ||
-      attack.zoneCells ||
-      attack.attackZones ||
-      attack.cells ||
-      attack.grid ||
-      [];
+    const z = attack.zones || {};
+    const raw = Array.isArray(z.zones) ? z.zones : [];
 
-    const hitterCells = Array.isArray(row.zoneCells) ? row.zoneCells : [];
+    const hitterPower = num(z.hitterPower || row.hitterZonePower || row.truePowerScore || row.powerScore);
+    const pitcherLeak = num(z.pitcherLeak || row.pitcherRisk || row.hrLeakFactor);
 
     return Array.from({ length: 25 }, (_, i) => {
-      const src = Array.isArray(raw) ? raw[i] : raw[String(i + 1)] || raw[String(i)];
-      const hitter = hitterCells[i] || {};
+      const cell = raw[i] || {};
+      const danger = num(cell.danger);
 
-      const pitcher = Math.max(
-        num(src?.pitcher),
-        num(src?.pitcherLeak),
-        num(src?.leak),
-        num(src?.danger),
-        num(src?.attack),
-        num(src?.score),
-        num(src?.value),
-        num(hitter?.pitcher)
-      );
-
-      const hitterPower = Math.max(
-        num(src?.hitterPower),
-        num(src?.power),
-        num(src?.hitter),
-        num(hitter?.value),
-        num(hitter?.overlap)
-      );
-
-      const overlap = Math.max(
-        num(src?.overlap),
-        num(src?.matchup),
-        num(src?.matchupScore),
-        Math.min(pitcher, hitterPower || pitcher),
-        num(hitter?.overlap)
-      );
+      const pitcher = danger || pitcherLeak;
+      const overlap = danger;
+      const value = Math.max(danger, hitterPower, pitcherLeak);
 
       return {
         pitcher,
         overlap,
-        value: hitterPower || overlap || pitcher
+        value
       };
     });
   }
