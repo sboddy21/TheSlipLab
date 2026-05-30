@@ -503,6 +503,49 @@
   fill:#ff4c4c;
 }
 
+
+.park-top-fits-mini{
+  margin:10px 12px 0;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  padding:10px 11px;
+}
+
+.park-top-fits-title{
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#9aa6ad;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.park-top-fit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:12px;
+}
+
+.park-top-fit-row:first-of-type{
+  border-top:0;
+}
+
+.park-top-fit-row span{
+  color:#fff;
+  font-weight:800;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.park-top-fit-row b{
+  color:#8cff32;
+}
+
 </style>
 </head>
 
@@ -1057,6 +1100,37 @@ function hitterFitScore(player, row){
   return Math.round(power + bonus);
 }
 
+function parkTopFitMini(row){
+  const venue = clean(row.venue);
+  const hitters = Array.isArray(window.__weatherHitters) ? window.__weatherHitters : [];
+
+  const fits = hitters
+    .filter(p => clean(p.venue || p.gameVenue) === venue)
+    .map(p => ({
+      name: p.player || p.name || p.hitter || "Unknown",
+      team: p.team || "",
+      bats: p.bats || p.hand || "",
+      score: hitterFitScore(p, row)
+    }))
+    .filter(p => p.name !== "Unknown")
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+
+  if (!fits.length) return "";
+
+  return `
+    <div class="park-top-fits-mini">
+      <div class="park-top-fits-title">Top weather fits</div>
+      ${fits.map(p => `
+        <div class="park-top-fit-row">
+          <span>${clean(p.name)}</span>
+          <b>${p.score}</b>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
 function weatherHitterFits(row){
   const venue = clean(row.venue);
   const hitters = Array.isArray(window.__weatherHitters) ? window.__weatherHitters : [];
@@ -1170,6 +1244,7 @@ async function load(){
 
         ${parkLaneChips(row)}
         ${parkAttackSummary(row)}
+        ${parkTopFitMini(row)}
 
         <div class="weather-stat-grid">
           <div class="weather-stat">
@@ -1426,6 +1501,49 @@ load();
   fill:#ff4c4c;
 }
 
+
+.park-top-fits-mini{
+  margin:10px 12px 0;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  padding:10px 11px;
+}
+
+.park-top-fits-title{
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#9aa6ad;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.park-top-fit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:12px;
+}
+
+.park-top-fit-row:first-of-type{
+  border-top:0;
+}
+
+.park-top-fit-row span{
+  color:#fff;
+  font-weight:800;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.park-top-fit-row b{
+  color:#8cff32;
+}
+
 </style>
 
 <style id="attack-zone-pill-final">
@@ -1455,6 +1573,49 @@ load();
 .realistic-park-svg .attack-rf text:last-of-type{
   fill:#ff4c4c;
 }
+
+.park-top-fits-mini{
+  margin:10px 12px 0;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  padding:10px 11px;
+}
+
+.park-top-fits-title{
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#9aa6ad;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.park-top-fit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:12px;
+}
+
+.park-top-fit-row:first-of-type{
+  border-top:0;
+}
+
+.park-top-fit-row span{
+  color:#fff;
+  font-weight:800;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.park-top-fit-row b{
+  color:#8cff32;
+}
+
 </style>
 
 <style id="attack-zone-clean-position-final">
@@ -1487,4 +1648,47 @@ load();
 .realistic-park-svg .attack-rf text:last-of-type{
   fill:#ff4c4c !important;
 }
+
+.park-top-fits-mini{
+  margin:10px 12px 0;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  padding:10px 11px;
+}
+
+.park-top-fits-title{
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#9aa6ad;
+  font-weight:900;
+  margin-bottom:7px;
+}
+
+.park-top-fit-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:12px;
+}
+
+.park-top-fit-row:first-of-type{
+  border-top:0;
+}
+
+.park-top-fit-row span{
+  color:#fff;
+  font-weight:800;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.park-top-fit-row b{
+  color:#8cff32;
+}
+
 </style>
