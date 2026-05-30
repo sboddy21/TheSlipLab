@@ -1100,61 +1100,60 @@ async function load(){
 
   document.getElementById("grid").innerHTML = sorted.map(row => {
     const venue = clean(row.venue);
-    const wind = clean(row.windSpeed || row.wind_speed);
-    const temp = clean(row.temp || row.temperature);
-    const dir = clean(row.windCompass || row.windDirection || "Unknown");
-    const rotation = arrowRotation(row);
-    const tag = carryTag(row);
+    const city = clean(row.city || row.location || "");
+    const carry = carryScore(row);
+    const temp = num(row.temp || row.temperature);
+    const wind = num(row.windSpeed || row.wind_speed);
+    const direction = clean(row.windDirectionText || row.windDirection || row.direction);
+    const impact = windImpactLabel(row);
+    const boostLabel = carry >= 22 ? "HR BOOST" : "NEUTRAL PLUS";
 
     return `
-      <article class="card" data-venue="${venue}">
-        <div class="card-top">
+      <article class="weather-card" onclick="openParkModal('${venue.replace(/'/g, "\\'")}')">
+        <div class="weather-card-head">
           <div>
-            <div class="venue">${venue}</div>
-            <div class="city">${clean(row.city)}</div>
+            <h2>${venue}</h2>
+            <span>${city}</span>
           </div>
-
-          <div class="carry">
-            <div class="carry-label">HR Carry</div>
-            <div class="carry-score">${fmt(row.carry)}</div>
-            <div class="carry-tag ${tag.cls}">${tag.label}</div>
-            <div class="carry-meter"><div class="carry-meter-fill" style="width:${Math.max(0, Math.min(100, hrBoost(row)))}%"></div></div>
+          <div class="carry-box">
+            <small>HR Carry</small>
+            <strong>${carry.toFixed(1)}</strong>
+            <em>${boostLabel}</em>
           </div>
         </div>
 
-        <div class="field-wrap">
+        <div class="wind-pill">${wind ? wind + " MPH" : "Calm"} ${direction} • ${impact}</div>
+
+        <div class="weather-field-wrap">
           ${fieldSvg(venue, row)}
-          ${parkLaneChips(row)}
-          <div class="wind-text">${wind} MPH ${dir} · ${windImpactLabel(row)}</div>
-          <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
         </div>
 
-        <div class="metrics">
-          <div class="metric">
-            <div class="metric-label">Temp</div>
-            <div class="metric-value">${temp}°</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Wind</div>
-            <div class="metric-value">${wind} MPH</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Direction</div>
-            <div class="metric-value">${dir}</div>
-          </div>
-
-          <div class="metric">
-            <div class="metric-label">Carry</div>
-            <div class="metric-value boost">${fmt(row.carry)}</div>
-          </div>
-        </div>
-
+        ${parkLaneChips(row)}
         ${parkAttackSummary(row)}
+
+        <div class="weather-stat-grid">
+          <div class="weather-stat">
+            <span>Temp</span>
+            <strong>${temp ? temp + "°" : "—"}</strong>
+          </div>
+          <div class="weather-stat">
+            <span>Wind</span>
+            <strong>${wind ? wind + " MPH" : "Calm"}</strong>
+          </div>
+          <div class="weather-stat">
+            <span>Direction</span>
+            <strong>${direction || "—"}</strong>
+          </div>
+          <div class="weather-stat">
+            <span>Carry</span>
+            <strong>${carry.toFixed(1)}</strong>
+          </div>
+        </div>
+
         <div class="weather-insight">${weatherInsight(row)}</div>
       </article>
     `;
+
   }).join("");
 
   document.querySelectorAll(".card[data-venue]").forEach(card => {
