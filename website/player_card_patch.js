@@ -244,6 +244,145 @@
   }
 
 
+  function reasonList(row) {
+    const h = stats(row);
+    const reasons = [];
+
+    if (num(h.HR) > 0) reasons.push(`${h.HR} season HR`);
+    if (num(h.SLG) >= .500) reasons.push(`${dec(h.SLG)} SLG power profile`);
+    if (num(h.OPS) >= .850) reasons.push(`${dec(h.OPS)} OPS run producing ceiling`);
+    if (num(row.hotZoneCount) > 0) reasons.push(`${row.hotZoneCount} hot zones`);
+    if (num(row.hitterZonePower) > 0) reasons.push(`${one(row.hitterZonePower)} zone power`);
+    if (num(row.pitcherRisk) > 0) reasons.push(`${one(row.pitcherRisk)} pitcher risk`);
+    if (num(row.pitchTypeDestructionScore) > 0) reasons.push(`${one(row.pitchTypeDestructionScore)} pitch type edge`);
+    if (num(row.pullWindHrScore || row.weather) > 0) reasons.push(`Weather carry boost active`);
+    if (num(row.bullpenInheritanceScore || row.bullpen) > 0) reasons.push(`Bullpen HR risk active`);
+
+    return reasons.slice(0, 7);
+  }
+
+  function edgeStrength(row) {
+    const h = stats(row);
+    const score = (
+      hrChance(row) * 1.7 +
+      num(row.hitterZonePower) * .015 +
+      num(row.pitcherRisk) * .018 +
+      num(row.pitchTypeDestructionScore) * .018 +
+      num(row.hotZoneCount) * .32 +
+      num(h.SLG) * 3.5 +
+      num(h.OPS) * 1.6 +
+      num(row.pullWindHrScore || row.weather) * .014 +
+      num(row.bullpenInheritanceScore || row.bullpen) * .012
+    );
+
+    return Math.max(1, Math.min(10, score / 8.5));
+  }
+
+  function renderHrCase(row) {
+    const reasons = reasonList(row);
+    const strength = edgeStrength(row);
+
+    return `
+      <section class="pccase">
+        <div class="pccase-main">
+          <div>
+            <span>HR Case</span>
+            <h3>Why ${esc(row.player)}</h3>
+            <p>${esc(whyText(row))}</p>
+          </div>
+          <div class="pccase-score">
+            <strong>${one(strength)}</strong>
+            <small>Edge Strength</small>
+          </div>
+        </div>
+
+        <div class="pcreasons">
+          ${reasons.length ? reasons.map(r => `<div class="pcreason">✓ ${esc(r)}</div>`).join("") : `<div class="pcreason">Building matchup reasons</div>`}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderMatchupIntel(row) {
+    const h = stats(row);
+    const pitcher = row.opposingPitcher || row.pitcher || "Projected pitcher";
+    const pitcherHand = row.pitcherHand || row.throwingHand || row.opposingPitcherHand || "N/A";
+    const matchupGrade = grade(row);
+
+    return `
+      <section class="pcintel">
+        <div class="pcsection-head">
+          <div>
+            <h3>Matchup Intel</h3>
+            <p>Quick read on hitter power, pitcher risk, weather, and late game boost</p>
+          </div>
+          <span>${esc(matchupGrade)}</span>
+        </div>
+
+        <div class="pcintel-grid">
+          ${metric("Pitcher", pitcher)}
+          ${metric("Throws", pitcherHand)}
+          ${metric("SLG", dec(h.SLG))}
+          ${metric("OPS", dec(h.OPS))}
+          ${metric("Pitcher Risk", one(row.pitcherRisk))}
+          ${metric("Pitch Edge", one(row.pitchTypeDestructionScore))}
+          ${metric("Weather Edge", one(row.pullWindHrScore || row.weather))}
+          ${metric("Bullpen Edge", one(row.bullpenInheritanceScore || row.bullpen))}
+        </div>
+      </section>
+    `;
+  }
+
+  function renderWhyTab(row) {
+    const reasons = reasonList(row);
+    const strength = edgeStrength(row);
+
+    return `
+      <div class="pcwhy">
+        <div class="pcwhy-hero">
+          <div>
+            <h3>Why This Bat</h3>
+            <p>${esc(whyText(row))}</p>
+          </div>
+          <div class="pcwhy-score">
+            <strong>${one(strength)}</strong>
+            <span>HR Case</span>
+          </div>
+        </div>
+
+        <div class="pcwhy-list">
+          ${reasons.length ? reasons.map((r, i) => `
+            <div class="pcwhy-row">
+              <b>${i + 1}</b>
+              <span>${esc(r)}</span>
+            </div>
+          `).join("") : `<div class="pcwhy-row"><b>1</b><span>Matchup detail is still building</span></div>`}
+        </div>
+
+        ${renderMatchupIntel(row)}
+      </div>
+    `;
+  }
+
+  function renderZoneOverlapCard(row) {
+    const overlap = Math.max(
+      num(row.zoneOverlap),
+      num(row.hotZoneCount),
+      num(row.hitterZonePower) / 12
+    );
+
+    const label = overlap >= 7 ? "Elite" : overlap >= 5 ? "Strong" : overlap >= 3 ? "Live" : "Building";
+
+    return `
+      <div class="pcoverlap-card">
+        <span>Zone Overlap</span>
+        <strong>${one(overlap)}</strong>
+        <em>${label}</em>
+      </div>
+    `;
+  }
+
+
   function playerLookup(store, row) {
     const players = store?.players || store || {};
     return players[String(row.playerId || "")] || players[row.player] || players[key(row.player)] || null;
@@ -590,6 +729,9 @@
         ${metric("Weather", one(row.weather))}
       </div>
 
+      ${renderHrCase(row)}
+      ${renderMatchupIntel(row)}
+
       <div class="pcbars">
         ${bar("HR Chance", conf, 24, "%")}
         ${bar("Power Score", row.powerScore, 100)}
@@ -769,6 +911,35 @@
       .pcl7hero b{display:block;color:#ffb000;font-size:24px}.pcl7hero span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}
       .pctable{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:#182026;border:1px solid rgba(255,255,255,.08);border-radius:10px;overflow:hidden;margin-top:10px}
       .pctable div{background:#0d1318;padding:8px;font-size:12px}
+
+      .pccase{margin:12px 0;border:1px solid rgba(255,122,35,.28);border-radius:16px;background:linear-gradient(135deg,rgba(255,122,35,.12),rgba(140,255,50,.045));padding:13px}
+      .pccase-main{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
+      .pccase-main span{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ffb000;font-weight:950}
+      .pccase-main h3{margin:4px 0 7px!important;color:#fff!important;font-size:17px!important;letter-spacing:0!important;text-transform:none!important}
+      .pccase-main p{margin:0!important;color:#d7dde4!important;line-height:1.4!important}
+      .pccase-score{min-width:86px;text-align:center;border:1px solid rgba(140,255,50,.24);border-radius:14px;background:rgba(0,0,0,.22);padding:10px}
+      .pccase-score strong{display:block;color:#8cff32;font-size:28px;line-height:1}
+      .pccase-score small{display:block;margin-top:5px;color:#aeb6c2;font-size:10px;text-transform:uppercase;font-weight:900}
+      .pcreasons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
+      .pcreason{border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.045);padding:8px 9px;font-size:12px;color:#fff;font-weight:850}
+      .pcintel{margin:12px 0;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:rgba(255,255,255,.035);padding:12px}
+      .pcintel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+      .pcwhy-hero{display:flex;justify-content:space-between;gap:14px;border:1px solid rgba(140,255,50,.20);border-radius:16px;background:rgba(140,255,50,.05);padding:14px;margin-bottom:12px}
+      .pcwhy-hero h3{margin:0 0 7px!important;color:#8cff32!important}
+      .pcwhy-hero p{margin:0!important;color:#d8dee6!important;line-height:1.45!important}
+      .pcwhy-score{min-width:96px;text-align:center;border:1px solid rgba(140,255,50,.24);border-radius:14px;background:rgba(0,0,0,.22);padding:12px}
+      .pcwhy-score strong{display:block;color:#8cff32;font-size:32px;line-height:1}
+      .pcwhy-score span{display:block;margin-top:5px;color:#aeb6c2;font-size:10px;text-transform:uppercase;font-weight:900}
+      .pcwhy-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}
+      .pcwhy-row{display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.04);padding:10px}
+      .pcwhy-row b{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,122,35,.18);color:#ff9b2f}
+      .pcwhy-row span{font-size:13px;color:#fff;font-weight:850}
+      .pcoverlap-card{border:1px solid rgba(140,255,50,.22);border-radius:14px;background:rgba(140,255,50,.06);padding:12px;text-align:center;align-self:start}
+      .pcoverlap-card span,.pcoverlap-card em{display:block;text-transform:uppercase;font-size:10px;font-weight:950;color:#aeb6c2}
+      .pcoverlap-card strong{display:block;color:#8cff32;font-size:36px;line-height:1.05;margin:7px 0}
+      .pcoverlap-card em{color:#ffb000}
+      @media(max-width:850px){.pcreasons,.pcintel-grid,.pcwhy-list{grid-template-columns:1fr}.pccase-main,.pcwhy-hero{flex-direction:column}.pccase-score,.pcwhy-score{width:100%}}
+
       @media(max-width:850px){#pcBox{max-width:94vw}.pcbiggrid,.pcgrid,.pcbars,.pcprofile{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}.pcl7hero{grid-template-columns:repeat(2,1fr)}}
     `;
     document.head.appendChild(style);
