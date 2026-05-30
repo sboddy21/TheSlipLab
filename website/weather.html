@@ -481,6 +481,28 @@
   color:#c9d8d2;
 }
 
+
+.realistic-park-svg .attack-zone-label text:first-child{
+  fill:rgba(255,255,255,.80);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.realistic-park-svg .attack-zone-label text:last-child{
+  fill:#ffcf32;
+  font-size:13px;
+  font-weight:950;
+}
+
+.realistic-park-svg .attack-cf text:last-child{
+  fill:#8cff32;
+}
+
+.realistic-park-svg .attack-rf text:last-child{
+  fill:#ff4c4c;
+}
+
 </style>
 </head>
 
@@ -884,6 +906,21 @@ function fieldSvg(venue, row = {}){
 
       <path d="${grassPath}" fill="url(#grassGlow-${id})" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
       <path d="${trackPath}" fill="url(#trackGlow-${id})" opacity=".72"></path>
+
+      <g class="attack-zone-label attack-lf">
+        <text x="102" y="121" text-anchor="middle">LF</text>
+        <text x="102" y="137" text-anchor="middle">${danger.lf.label}</text>
+      </g>
+
+      <g class="attack-zone-label attack-cf">
+        <text x="210" y="91" text-anchor="middle">CF</text>
+        <text x="210" y="107" text-anchor="middle">${danger.cf.label}</text>
+      </g>
+
+      <g class="attack-zone-label attack-rf">
+        <text x="318" y="121" text-anchor="middle">RF</text>
+        <text x="318" y="137" text-anchor="middle">${danger.rf.label}</text>
+      </g>
 
       <path d="M210 230 L70 101 L135 76 L182 69 L210 66 Z" fill="${attackZoneFill(danger.lf)}" stroke="${attackZoneStroke(danger.lf)}" stroke-width="1.1"></path>
       <path d="M210 230 L182 69 L210 52 L238 69 Z" fill="${attackZoneFill(danger.cf)}" stroke="${attackZoneStroke(danger.cf)}" stroke-width="1.1"></path>
@@ -1364,4 +1401,26 @@ load();
     padding:0 12px 30px;
   }
 }
+
+.realistic-park-svg .attack-zone-label text:first-child{
+  fill:rgba(255,255,255,.80);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+}
+
+.realistic-park-svg .attack-zone-label text:last-child{
+  fill:#ffcf32;
+  font-size:13px;
+  font-weight:950;
+}
+
+.realistic-park-svg .attack-cf text:last-child{
+  fill:#8cff32;
+}
+
+.realistic-park-svg .attack-rf text:last-child{
+  fill:#ff4c4c;
+}
+
 </style>
