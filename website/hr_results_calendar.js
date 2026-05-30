@@ -57,10 +57,8 @@
     const input = wrap.querySelector("#hrResultsDate");
     const list = wrap.querySelector(".hr-results-calendar-list");
 
-    if (dates.length) {
-      input.max = dates[0];
-      input.min = dates[dates.length - 1];
-    }
+    input.max = new Date().toISOString().slice(0, 10);
+    input.removeAttribute("min");
 
     function renderDay(date) {
       const day = days.find(d => d.date === date);
