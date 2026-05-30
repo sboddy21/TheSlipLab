@@ -278,6 +278,32 @@
     return Math.max(1, Math.min(10, score / 8.5));
   }
 
+  function decisionMetric(label, value, tag = "") {
+    const n = num(value);
+    const cls = n >= 75 ? "elite" : n >= 55 ? "strong" : n >= 35 ? "live" : "watch";
+
+    return `
+      <div class="pcdecision ${cls}">
+        <span>${esc(label)}</span>
+        <strong>${esc(one(value))}</strong>
+        <em>${esc(tag || cls.toUpperCase())}</em>
+      </div>
+    `;
+  }
+
+  function renderDecisionGrid(row) {
+    return `
+      <div class="pcdecision-grid">
+        ${decisionMetric("Hitter Power", row.powerScore || row.hitterZonePower, "Power")}
+        ${decisionMetric("Pitcher Attack", row.pitcherRisk, "Risk")}
+        ${decisionMetric("Zone Matchup", row.zoneOverlap || row.hotZoneCount * 12, "Overlap")}
+        ${decisionMetric("Pitch Edge", row.pitchTypeDestructionScore, "Pitch")}
+        ${decisionMetric("Weather Edge", row.pullWindHrScore || row.weather, "Carry")}
+        ${decisionMetric("Bullpen Edge", row.bullpenInheritanceScore || row.bullpen, "Late")}
+      </div>
+    `;
+  }
+
   function renderHrCase(row) {
     const reasons = reasonList(row);
     const strength = edgeStrength(row);
@@ -946,7 +972,33 @@
       .pchero-score{border:1px solid rgba(255,122,35,.40);border-radius:16px;background:rgba(0,0,0,.24);text-align:center;padding:13px 10px}
       .pchero-score strong{display:block;color:#ff9b2f;font-size:30px;line-height:1;font-weight:950}
       .pchero-score span{display:block;margin-top:6px;color:#d8dee6;font-size:10px;text-transform:uppercase;font-weight:900}
+
+      .pcdecision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+      .pcdecision{border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:11px}
+      .pcdecision span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2;font-weight:950}
+      .pcdecision strong{display:block;margin-top:5px;font-size:22px;color:#fff}
+      .pcdecision em{display:inline-block;margin-top:7px;font-style:normal;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.07);color:#d8dee6}
+      .pcdecision.elite{border-color:rgba(140,255,50,.28);background:rgba(140,255,50,.055)}
+      .pcdecision.elite strong{color:#8cff32}
+      .pcdecision.strong strong{color:#ffcf32}
+      .pcdecision.live strong{color:#ff9b2f}
+      .pcdecision.watch strong{color:#9aa6ad}
+      @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
+
       @media(max-width:850px){.pchead.upgraded{grid-template-columns:1fr}.pchero-score{text-align:left}.pcplayer-main{align-items:flex-start}}
+
+
+      .pcdecision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+      .pcdecision{border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:11px}
+      .pcdecision span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2;font-weight:950}
+      .pcdecision strong{display:block;margin-top:5px;font-size:22px;color:#fff}
+      .pcdecision em{display:inline-block;margin-top:7px;font-style:normal;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.07);color:#d8dee6}
+      .pcdecision.elite{border-color:rgba(140,255,50,.28);background:rgba(140,255,50,.055)}
+      .pcdecision.elite strong{color:#8cff32}
+      .pcdecision.strong strong{color:#ffcf32}
+      .pcdecision.live strong{color:#ff9b2f}
+      .pcdecision.watch strong{color:#9aa6ad}
+      @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
       @media(max-width:850px){.pcreasons,.pcintel-grid,.pcwhy-list{grid-template-columns:1fr}.pccase-main,.pcwhy-hero{flex-direction:column}.pccase-score,.pcwhy-score{width:100%}}
 
@@ -958,7 +1010,33 @@
       .pchero-score{border:1px solid rgba(255,122,35,.40);border-radius:16px;background:rgba(0,0,0,.24);text-align:center;padding:13px 10px}
       .pchero-score strong{display:block;color:#ff9b2f;font-size:30px;line-height:1;font-weight:950}
       .pchero-score span{display:block;margin-top:6px;color:#d8dee6;font-size:10px;text-transform:uppercase;font-weight:900}
+
+      .pcdecision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+      .pcdecision{border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:11px}
+      .pcdecision span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2;font-weight:950}
+      .pcdecision strong{display:block;margin-top:5px;font-size:22px;color:#fff}
+      .pcdecision em{display:inline-block;margin-top:7px;font-style:normal;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.07);color:#d8dee6}
+      .pcdecision.elite{border-color:rgba(140,255,50,.28);background:rgba(140,255,50,.055)}
+      .pcdecision.elite strong{color:#8cff32}
+      .pcdecision.strong strong{color:#ffcf32}
+      .pcdecision.live strong{color:#ff9b2f}
+      .pcdecision.watch strong{color:#9aa6ad}
+      @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
+
       @media(max-width:850px){.pchead.upgraded{grid-template-columns:1fr}.pchero-score{text-align:left}.pcplayer-main{align-items:flex-start}}
+
+
+      .pcdecision-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+      .pcdecision{border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:11px}
+      .pcdecision span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#aeb6c2;font-weight:950}
+      .pcdecision strong{display:block;margin-top:5px;font-size:22px;color:#fff}
+      .pcdecision em{display:inline-block;margin-top:7px;font-style:normal;font-size:10px;font-weight:950;border-radius:999px;padding:4px 8px;background:rgba(255,255,255,.07);color:#d8dee6}
+      .pcdecision.elite{border-color:rgba(140,255,50,.28);background:rgba(140,255,50,.055)}
+      .pcdecision.elite strong{color:#8cff32}
+      .pcdecision.strong strong{color:#ffcf32}
+      .pcdecision.live strong{color:#ff9b2f}
+      .pcdecision.watch strong{color:#9aa6ad}
+      @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
       @media(max-width:850px){#pcBox{max-width:94vw}.pcbiggrid,.pcgrid,.pcbars,.pcprofile{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}.pcl7hero{grid-template-columns:repeat(2,1fr)}}
     `;
