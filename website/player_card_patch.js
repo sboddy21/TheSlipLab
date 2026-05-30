@@ -718,6 +718,53 @@
     `;
   }
 
+  function renderRecentFormTab(row) {
+    const logs = Array.isArray(row.gameLogs) ? row.gameLogs : [];
+    const last7 = row.last7 || {};
+    const recent = logs.slice(0, 7);
+
+    const hr = num(last7.hr ?? last7.homeRuns ?? recent.reduce((s, g) => s + num(g.hr || g.homeRuns), 0));
+    const hits = num(last7.hits ?? recent.reduce((s, g) => s + num(g.hits), 0));
+    const tb = num(last7.tb ?? last7.totalBases ?? recent.reduce((s, g) => s + num(g.tb || g.totalBases), 0));
+    const ab = num(last7.ab ?? last7.atBats ?? recent.reduce((s, g) => s + num(g.ab || g.atBats), 0));
+    const avg = ab ? hits / ab : num(last7.avg);
+    const slg = ab ? tb / ab : num(last7.slg);
+
+    const trend =
+      hr >= 2 || slg >= .650 ? "Heating Up" :
+      hr >= 1 || slg >= .500 ? "Live" :
+      hits >= 6 ? "Contact Ready" :
+      "Building";
+
+    return `
+      <div class="pcrecent">
+        <div class="pcsection-head">
+          <div>
+            <h3>Recent Form</h3>
+            <p>Last 7 game power and contact trend</p>
+          </div>
+          <span>${trend}</span>
+        </div>
+
+        <div class="pcl7hero">
+          ${metric("Last 7 HR", hr)}
+          ${metric("Hits", hits)}
+          ${metric("Total Bases", tb)}
+          ${metric("AVG", dec(avg))}
+          ${metric("SLG", dec(slg))}
+          ${metric("Trend", trend)}
+        </div>
+
+        <div class="pcrecent-note">
+          ${hr >= 2 ? "Multiple recent HRs show the power is active right now." :
+            hr >= 1 ? "Recent HR keeps the bat live for another power spike." :
+            slg >= .500 ? "Extra base production is showing even without a recent HR." :
+            "Recent form is more neutral, so the case needs to come from matchup, zones, or weather."}
+        </div>
+      </div>
+    `;
+  }
+
   async function fetchL7(row) {
     const id = String(row.playerId || "");
     if (!id) return null;
@@ -1063,7 +1110,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1074,7 +1127,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -1094,7 +1153,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1105,7 +1170,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pchead.upgraded{grid-template-columns:1fr}.pchero-score{text-align:left}.pcplayer-main{align-items:flex-start}}
 
@@ -1136,7 +1207,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1147,7 +1224,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -1167,7 +1250,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1178,7 +1267,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pcreasons,.pcintel-grid,.pcwhy-list{grid-template-columns:1fr}.pccase-main,.pcwhy-hero{flex-direction:column}.pccase-score,.pcwhy-score{width:100%}}
 
@@ -1217,7 +1312,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1228,7 +1329,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -1248,7 +1355,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1259,7 +1372,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pchead.upgraded{grid-template-columns:1fr}.pchero-score{text-align:left}.pcplayer-main{align-items:flex-start}}
 
@@ -1290,7 +1409,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1301,7 +1426,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pcdecision-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -1321,7 +1452,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){.pczone-hero,.pczone-grid-upgraded{grid-template-columns:1fr}}
 
@@ -1332,7 +1469,13 @@
       .pcpitch-card strong{display:block;margin-top:6px;font-size:18px;color:#fff}
       .pcpitch-card.hot{border-color:rgba(255,122,35,.30);background:rgba(255,122,35,.08)}
       .pcpitch-card.hot strong{color:#ff9b2f}
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
+
       @media(max-width:850px){.pcpitch-summary{grid-template-columns:repeat(2,1fr)}}
+
+
+      .pcrecent-note{margin-top:10px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px;color:#d8dee6;font-size:13px;line-height:1.4}
 
       @media(max-width:850px){#pcBox{max-width:94vw}.pcbiggrid,.pcgrid,.pcbars,.pcprofile{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}.pcl7hero{grid-template-columns:repeat(2,1fr)}}
     `;
