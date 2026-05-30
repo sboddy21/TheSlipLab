@@ -16,7 +16,8 @@
     const date = new Date(y, m - 1, d);
     return date.toLocaleDateString("en-US", {
       month: "short",
-      day: "numeric"
+      day: "numeric",
+      year: "numeric"
     });
   }
 
@@ -30,7 +31,8 @@
     if (!target) return;
 
     const days = Array.isArray(data.days) ? data.days : [];
-    const recent = days.slice(0, 14);
+    const dates = days.map(d => d.date).filter(Boolean);
+    const latestDate = dates[0] || new Date().toISOString().slice(0, 10);
 
     const wrap = document.createElement("section");
     wrap.className = "hr-results-calendar-card";
@@ -40,18 +42,11 @@
           <div class="hr-results-calendar-kicker">HR Results Calendar</div>
           <h2>Previous Home Run Hitters</h2>
         </div>
-        <div class="hr-results-calendar-updated">
-          ${data.updatedAt ? "Updated " + esc(new Date(data.updatedAt).toLocaleString()) : ""}
-        </div>
-      </div>
 
-      <div class="hr-results-calendar-days">
-        ${recent.map((day, i) => `
-          <button class="hr-results-calendar-day ${i === 0 ? "active" : ""}" data-date="${esc(day.date)}">
-            <strong>${esc(prettyDate(day.date))}</strong>
-            <span>${Number(day.total || 0)} HR</span>
-          </button>
-        `).join("")}
+        <div class="hr-results-calendar-controls">
+          <label for="hrResultsDate">Select date</label>
+          <input id="hrResultsDate" type="date" value="${esc(latestDate)}">
+        </div>
       </div>
 
       <div class="hr-results-calendar-list"></div>
@@ -59,13 +54,25 @@
 
     target.prepend(wrap);
 
+    const input = wrap.querySelector("#hrResultsDate");
     const list = wrap.querySelector(".hr-results-calendar-list");
-    const buttons = Array.from(wrap.querySelectorAll(".hr-results-calendar-day"));
+
+    if (dates.length) {
+      input.max = dates[0];
+      input.min = dates[dates.length - 1];
+    }
 
     function renderDay(date) {
-      const day = days.find(d => d.date === date) || days[0];
+      const day = days.find(d => d.date === date);
+
       if (!day) {
-        list.innerHTML = `<div class="hr-results-empty">No HR history saved yet.</div>`;
+        list.innerHTML = `
+          <div class="hr-results-calendar-selected">
+            <strong>${esc(prettyDate(date))}</strong>
+            <span>0 hitters</span>
+          </div>
+          <div class="hr-results-empty">No saved HR results for this date yet.</div>
+        `;
         return;
       }
 
@@ -93,15 +100,8 @@
       `;
     }
 
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        renderDay(btn.dataset.date);
-      });
-    });
-
-    renderDay(recent[0]?.date);
+    input.addEventListener("change", () => renderDay(input.value));
+    renderDay(latestDate);
   }
 
   fetch(DATA_URL, { cache: "no-store" })
