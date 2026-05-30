@@ -390,6 +390,57 @@
     `;
   }
 
+  function attackCellsFor(row) {
+    const attack = attackFor(row) || {};
+    const raw =
+      attack.zones ||
+      attack.zoneCells ||
+      attack.attackZones ||
+      attack.cells ||
+      attack.grid ||
+      [];
+
+    const hitterCells = Array.isArray(row.zoneCells) ? row.zoneCells : [];
+
+    return Array.from({ length: 25 }, (_, i) => {
+      const src = Array.isArray(raw) ? raw[i] : raw[String(i + 1)] || raw[String(i)];
+      const hitter = hitterCells[i] || {};
+
+      const pitcher = Math.max(
+        num(src?.pitcher),
+        num(src?.pitcherLeak),
+        num(src?.leak),
+        num(src?.danger),
+        num(src?.attack),
+        num(src?.score),
+        num(src?.value),
+        num(hitter?.pitcher)
+      );
+
+      const hitterPower = Math.max(
+        num(src?.hitterPower),
+        num(src?.power),
+        num(src?.hitter),
+        num(hitter?.value),
+        num(hitter?.overlap)
+      );
+
+      const overlap = Math.max(
+        num(src?.overlap),
+        num(src?.matchup),
+        num(src?.matchupScore),
+        Math.min(pitcher, hitterPower || pitcher),
+        num(hitter?.overlap)
+      );
+
+      return {
+        pitcher,
+        overlap,
+        value: hitterPower || overlap || pitcher
+      };
+    });
+  }
+
   function renderZoneOverlapCard(row) {
     const overlap = Math.max(
       num(row.zoneOverlap),
@@ -776,7 +827,7 @@
     const h = stats(row);
 
     if (id === "zones") {
-      body.innerHTML = `<div class="pczones">${zones("AVG", row.avgZones, null, "dec")}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("Pitcher Leak", row.zoneCells, "pitcher")}${zones("Zone Overlap", row.zoneCells, "overlap")}</div>`;
+      body.innerHTML = `<div class="pczones">${zones("AVG", row.avgZones, null, "dec")}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}${zones("Zone Overlap", attackCellsFor(row), "overlap")}</div>`;
       return;
     }
 
