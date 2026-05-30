@@ -888,8 +888,35 @@
 
     const h = stats(row);
 
+    if (id === "why") {
+      body.innerHTML = renderWhyTab(row);
+      return;
+    }
+
+    if (id === "recent") {
+      body.innerHTML = renderRecentFormTab(row);
+      return;
+    }
+
     if (id === "zones") {
-      body.innerHTML = `<div class="pczones">${zones("AVG", row.avgZones, null, "dec")}${zones("ISO", row.isoZones, null, "dec")}${zones("SLG", row.slgZones, null, "dec")}${zones("HR", row.hrZones, null, "cnt")}${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}${zones("Zone Overlap", attackCellsFor(row), "overlap")}</div>`;
+      body.innerHTML = `
+        <div class="pczone-hero">
+          <div>
+            <h3>Zone Power Map</h3>
+            <p>Hitter damage zones, pitcher leak zones, and matchup overlap</p>
+          </div>
+          ${renderZoneOverlapCard(row)}
+        </div>
+
+        <div class="pczone-grid-upgraded">
+          ${zones("AVG", row.avgZones, null, "dec")}
+          ${zones("ISO", row.isoZones, null, "dec")}
+          ${zones("SLG", row.slgZones, null, "dec")}
+          ${zones("HR", row.hrZones, null, "cnt")}
+          ${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}
+          ${zones("Zone Overlap", attackCellsFor(row), "overlap")}
+        </div>
+      `;
       return;
     }
 
