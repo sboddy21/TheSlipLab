@@ -256,7 +256,66 @@
       font-size:12px;
       line-height:1.4;
     }
-  </style>
+  
+.weather-hitter-fits{
+  margin-top:12px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  padding:12px;
+}
+
+.weather-hitter-fits-title{
+  font-size:11px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#8cff32;
+  font-weight:900;
+  margin-bottom:9px;
+}
+
+.weather-hitter-fits-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+}
+
+.weather-hitter-fit{
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  padding:9px;
+  background:rgba(0,0,0,.16);
+}
+
+.weather-hitter-fit strong,
+.weather-hitter-fit span,
+.weather-hitter-fit b{
+  display:block;
+}
+
+.weather-hitter-fit strong{
+  font-size:12px;
+}
+
+.weather-hitter-fit span{
+  margin-top:3px;
+  font-size:10px;
+  opacity:.68;
+}
+
+.weather-hitter-fit b{
+  margin-top:6px;
+  color:#ffb000;
+  font-size:14px;
+}
+
+@media(max-width:760px){
+  .weather-hitter-fits-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+</style>
 </head>
 
 <body>
@@ -631,6 +690,54 @@ function fieldSvg(venue, row = {}){
       ${conePath ? `<text class="label" x="176" y="78">Wind carry</text>` : ""}
       <text class="label" x="164" y="242">${venue}</text>
     </svg>
+  `;
+}
+
+function hitterFitScore(player, row){
+  const power = num(player.hrScore || player.score || player.powerScore || player.hitterPower || player.barrelScore);
+  const bats = String(player.bats || player.hand || player.side || "").toUpperCase();
+  const impact = windImpactLabel(row);
+  let bonus = 0;
+
+  if (bats.startsWith("L") && impact.includes("RF")) bonus += 8;
+  if (bats.startsWith("R") && impact.includes("LF")) bonus += 8;
+  if (impact.includes("out to CF")) bonus += 5;
+  if (impact.includes("in from")) bonus -= 6;
+
+  return Math.round(power + bonus);
+}
+
+function weatherHitterFits(row){
+  const venue = clean(row.venue);
+  const hitters = Array.isArray(window.__weatherHitters) ? window.__weatherHitters : [];
+
+  const fits = hitters
+    .filter(p => clean(p.venue || p.gameVenue) === venue)
+    .map(p => ({
+      name: p.player || p.name || p.hitter || "Unknown",
+      team: p.team || "",
+      bats: p.bats || p.hand || "",
+      score: hitterFitScore(p, row)
+    }))
+    .filter(p => p.name !== "Unknown")
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+
+  if (!fits.length) return "";
+
+  return `
+    <div class="weather-hitter-fits">
+      <div class="weather-hitter-fits-title">Best park fits today</div>
+      <div class="weather-hitter-fits-grid">
+        ${fits.map(p => `
+          <div class="weather-hitter-fit">
+            <strong>${clean(p.name)}</strong>
+            <span>${clean(p.team)} ${p.bats ? "• " + clean(p.bats) : ""}</span>
+            <b>${p.score}</b>
+          </div>
+        `).join("")}
+      </div>
+    </div>
   `;
 }
 
