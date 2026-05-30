@@ -657,39 +657,65 @@ function safeId(value){
 function fieldDangerSections(row){
   const impact = windImpactLabel(row);
   const boost = hrBoost(row);
+  const speed = num(row.windSpeed || row.wind_speed);
 
-  let lf = 50;
-  let cf = 50;
-  let rf = 50;
+  let lf = 48;
+  let cf = 48;
+  let rf = 48;
 
-  if (impact.includes("out to LF")) lf += 22;
-  if (impact.includes("out to CF")) cf += 22;
-  if (impact.includes("out to RF")) rf += 22;
+  if (impact.includes("out to LF")) lf += 28;
+  if (impact.includes("out to CF")) cf += 28;
+  if (impact.includes("out to RF")) rf += 28;
 
-  if (impact.includes("Crosswind to LF")) lf += 10;
-  if (impact.includes("Crosswind to RF")) rf += 10;
+  if (impact.includes("Crosswind to LF")) lf += 12;
+  if (impact.includes("Crosswind to RF")) rf += 12;
 
-  if (impact.includes("in from LF")) lf -= 18;
-  if (impact.includes("in from CF")) cf -= 18;
-  if (impact.includes("in from RF")) rf -= 18;
+  if (impact.includes("in from LF")) lf -= 20;
+  if (impact.includes("in from CF")) cf -= 20;
+  if (impact.includes("in from RF")) rf -= 20;
 
-  const parkBonus = Math.max(-8, Math.min(12, Math.round((boost - 55) / 3)));
-  lf += parkBonus;
-  cf += parkBonus;
-  rf += parkBonus;
+  if (speed >= 12 && impact.includes("out")) {
+    lf += impact.includes("LF") ? 8 : 0;
+    cf += impact.includes("CF") ? 8 : 0;
+    rf += impact.includes("RF") ? 8 : 0;
+  }
 
-  const label = v => {
-    if (v >= 72) return "Hot";
-    if (v >= 60) return "Live";
-    if (v <= 42) return "Heavy";
-    return "Neutral";
-  };
+  const carryBonus = Math.max(-10, Math.min(16, Math.round((boost - 55) / 2.5)));
+  lf += carryBonus;
+  cf += carryBonus;
+  rf += carryBonus;
+
+  function zone(v){
+    if (v >= 78) return { label:"Elite", tier:"elite", opacity:.34 };
+    if (v >= 66) return { label:"Strong", tier:"strong", opacity:.25 };
+    if (v >= 55) return { label:"Live", tier:"live", opacity:.18 };
+    if (v <= 40) return { label:"Avoid", tier:"avoid", opacity:.12 };
+    return { label:"Neutral", tier:"neutral", opacity:.14 };
+  }
 
   return {
-    lf: label(lf),
-    cf: label(cf),
-    rf: label(rf)
+    lf: zone(lf),
+    cf: zone(cf),
+    rf: zone(rf)
   };
+}
+
+function attackZoneFill(zone){
+  if (!zone) return "rgba(255,255,255,.08)";
+  if (zone.tier === "elite") return "rgba(140,255,50,.36)";
+  if (zone.tier === "strong") return "rgba(140,255,50,.25)";
+  if (zone.tier === "live") return "rgba(255,176,0,.22)";
+  if (zone.tier === "avoid") return "rgba(255,70,70,.16)";
+  return "rgba(255,255,255,.09)";
+}
+
+function attackZoneStroke(zone){
+  if (!zone) return "rgba(255,255,255,.12)";
+  if (zone.tier === "elite") return "rgba(140,255,50,.70)";
+  if (zone.tier === "strong") return "rgba(140,255,50,.52)";
+  if (zone.tier === "live") return "rgba(255,176,0,.48)";
+  if (zone.tier === "avoid") return "rgba(255,70,70,.42)";
+  return "rgba(255,255,255,.18)";
 }
 
 function windConePath(row){
@@ -768,6 +794,10 @@ function fieldSvg(venue, row = {}){
       <path d="${grassPath}" fill="url(#grassGlow-${id})" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
       <path d="${trackPath}" fill="url(#trackGlow-${id})" opacity=".72"></path>
 
+      <path d="M210 230 L70 101 L135 76 L182 69 L210 66 Z" fill="${attackZoneFill(danger.lf)}" stroke="${attackZoneStroke(danger.lf)}" stroke-width="1.1"></path>
+      <path d="M210 230 L182 69 L210 52 L238 69 Z" fill="${attackZoneFill(danger.cf)}" stroke="${attackZoneStroke(danger.cf)}" stroke-width="1.1"></path>
+      <path d="M210 230 L238 69 L285 76 L350 101 Z" fill="${attackZoneFill(danger.rf)}" stroke="${attackZoneStroke(danger.rf)}" stroke-width="1.1"></path>
+
       ${conePath ? `<path d="${conePath}" fill="url(#carryCone-${id})" stroke="rgba(0,224,255,.28)" stroke-width="1.4"></path>` : ""}
       <path d="${rightyPull}" fill="url(#rightyLane-${id})" stroke="rgba(255,176,0,.26)" stroke-width="1.2"></path>
       <path d="${leftyPull}" fill="url(#leftyLane-${id})" stroke="rgba(140,255,50,.25)" stroke-width="1.2"></path>
@@ -802,17 +832,17 @@ function fieldSvg(venue, row = {}){
 
       <g class="danger-pill">
         <rect x="36" y="128" width="66" height="20" rx="10"></rect>
-        <text x="69" y="142" text-anchor="middle">${danger.lf}</text>
+        <text x="69" y="142" text-anchor="middle">${danger.lf.label}</text>
       </g>
 
       <g class="danger-pill">
         <rect x="177" y="70" width="66" height="20" rx="10"></rect>
-        <text x="210" y="84" text-anchor="middle">${danger.cf}</text>
+        <text x="210" y="84" text-anchor="middle">${danger.cf.label}</text>
       </g>
 
       <g class="danger-pill">
         <rect x="318" y="128" width="66" height="20" rx="10"></rect>
-        <text x="351" y="142" text-anchor="middle">${danger.rf}</text>
+        <text x="351" y="142" text-anchor="middle">${danger.rf.label}</text>
       </g>
       <text class="label" x="82" y="138">RHB pull</text>
       <text class="label" x="295" y="138">LHB pull</text>
