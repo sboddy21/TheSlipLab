@@ -315,6 +315,20 @@
   }
 }
 
+
+.realistic-park-svg .danger-pill rect{
+  fill:rgba(255,176,0,.16);
+  stroke:rgba(255,176,0,.38);
+}
+
+.realistic-park-svg .danger-pill text{
+  fill:#ffd15a;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
 </style>
 </head>
 
@@ -579,6 +593,44 @@ function safeId(value){
   return String(value || "park").replace(/[^a-zA-Z0-9]/g, "-");
 }
 
+function fieldDangerSections(row){
+  const impact = windImpactLabel(row);
+  const boost = hrBoost(row);
+
+  let lf = 50;
+  let cf = 50;
+  let rf = 50;
+
+  if (impact.includes("out to LF")) lf += 22;
+  if (impact.includes("out to CF")) cf += 22;
+  if (impact.includes("out to RF")) rf += 22;
+
+  if (impact.includes("Crosswind to LF")) lf += 10;
+  if (impact.includes("Crosswind to RF")) rf += 10;
+
+  if (impact.includes("in from LF")) lf -= 18;
+  if (impact.includes("in from CF")) cf -= 18;
+  if (impact.includes("in from RF")) rf -= 18;
+
+  const parkBonus = Math.max(-8, Math.min(12, Math.round((boost - 55) / 3)));
+  lf += parkBonus;
+  cf += parkBonus;
+  rf += parkBonus;
+
+  const label = v => {
+    if (v >= 72) return "Hot";
+    if (v >= 60) return "Live";
+    if (v <= 42) return "Heavy";
+    return "Neutral";
+  };
+
+  return {
+    lf: label(lf),
+    cf: label(cf),
+    rf: label(rf)
+  };
+}
+
 function windConePath(row){
   const deg = arrowRotation(row);
   const normalized = ((deg % 360) + 360) % 360;
@@ -617,6 +669,7 @@ function fieldSvg(venue, row = {}){
   const leftyPull = lanes.leftyPull || "M210 230 L350 101 L315 95 L277 79 L238 69 L210 66 L255 190 Z";
   const rightyPull = lanes.rightyPull || "M210 230 L70 101 L105 95 L143 79 L182 69 L210 66 L165 190 Z";
   const conePath = windConePath(row);
+  const danger = fieldDangerSections(row);
 
   return `
     <svg class="field-svg realistic-park-svg" viewBox="0 0 420 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${venue} park shape">
@@ -685,6 +738,21 @@ function fieldSvg(venue, row = {}){
       <text class="label" x="42" y="119">LF</text>
       <text class="label" x="194" y="58">CF</text>
       <text class="label" x="360" y="119">RF</text>
+
+      <g class="danger-pill">
+        <rect x="36" y="128" width="66" height="20" rx="10"></rect>
+        <text x="69" y="142" text-anchor="middle">${danger.lf}</text>
+      </g>
+
+      <g class="danger-pill">
+        <rect x="177" y="70" width="66" height="20" rx="10"></rect>
+        <text x="210" y="84" text-anchor="middle">${danger.cf}</text>
+      </g>
+
+      <g class="danger-pill">
+        <rect x="318" y="128" width="66" height="20" rx="10"></rect>
+        <text x="351" y="142" text-anchor="middle">${danger.rf}</text>
+      </g>
       <text class="label" x="82" y="138">RHB pull</text>
       <text class="label" x="295" y="138">LHB pull</text>
       ${conePath ? `<text class="label" x="176" y="78">Wind carry</text>` : ""}
