@@ -390,6 +390,43 @@
   }
 }
 
+
+.park-attack-summary{
+  margin-top:10px;
+  border:1px solid rgba(140,255,50,.16);
+  border-radius:14px;
+  background:rgba(140,255,50,.045);
+  padding:11px 12px;
+}
+
+.park-attack-summary div{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:center;
+}
+
+.park-attack-summary span{
+  font-size:10px;
+  letter-spacing:.13em;
+  text-transform:uppercase;
+  color:#8fa09a;
+  font-weight:900;
+}
+
+.park-attack-summary strong{
+  color:#8cff32;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+.park-attack-summary p{
+  margin:7px 0 0;
+  font-size:12px;
+  line-height:1.35;
+  color:#c9d8d2;
+}
+
 </style>
 </head>
 
@@ -852,6 +889,33 @@ function fieldSvg(venue, row = {}){
   `;
 }
 
+function parkAttackSummary(row){
+  const zones = fieldDangerSections(row);
+  const impact = windImpactLabel(row);
+  const boost = hrBoost(row);
+
+  const ranked = [
+    ["LF", zones.lf],
+    ["CF", zones.cf],
+    ["RF", zones.rf]
+  ].sort((a, b) => {
+    const score = { Elite: 5, Strong: 4, Live: 3, Neutral: 2, Avoid: 1 };
+    return score[b[1].label] - score[a[1].label];
+  });
+
+  const top = ranked[0];
+
+  return `
+    <div class="park-attack-summary">
+      <div>
+        <span>Best attack lane</span>
+        <strong>${top[0]} • ${top[1].label}</strong>
+      </div>
+      <p>${clean(impact)} with a ${Math.round(boost)} carry score. This makes ${top[0]} the best HR hunting lane in this park today.</p>
+    </div>
+  `;
+}
+
 function parkVisualLegend(row){
   const impact = windImpactLabel(row);
 
@@ -997,6 +1061,7 @@ async function load(){
 
         <div class="field-wrap">
           ${fieldSvg(venue, row)}
+          ${parkAttackSummary(row)}
           <div class="wind-text">${wind} MPH ${dir} · ${windImpactLabel(row)}</div>
           <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
         </div>
