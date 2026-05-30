@@ -812,6 +812,8 @@
   function renderTabShell() {
     return `
       <div class="pctabs">
+        ${tabButton("Why", "why")}
+        ${tabButton("Recent", "recent")}
         ${tabButton("Zones", "zones")}
         ${tabButton("Pitches", "pitches")}
         ${tabButton("Spot", "spot")}
