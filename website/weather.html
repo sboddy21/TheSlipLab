@@ -431,6 +431,56 @@
 .park-attack-copy b{
   color:#fff;
 }
+
+.park-lane-chips{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  padding:10px 12px 0;
+}
+
+.park-lane-chip{
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:12px;
+  padding:9px 10px;
+  background:rgba(255,255,255,.04);
+}
+
+.park-lane-chip span,
+.park-lane-chip strong{
+  display:block;
+}
+
+.park-lane-chip span{
+  font-size:10px;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+  color:#8fa09a;
+  font-weight:900;
+}
+
+.park-lane-chip strong{
+  margin-top:4px;
+  font-size:13px;
+}
+
+.park-lane-chip.elite strong,
+.park-lane-chip.strong strong{
+  color:#8cff32;
+}
+
+.park-lane-chip.live strong{
+  color:#ffb000;
+}
+
+.park-lane-chip.avoid strong{
+  color:#ff5a5a;
+}
+
+.park-lane-chip.neutral strong{
+  color:#c9d8d2;
+}
+
 </style>
 </head>
 
@@ -870,26 +920,32 @@ function fieldSvg(venue, row = {}){
       <text class="label" x="42" y="119">LF</text>
       <text class="label" x="194" y="58">CF</text>
       <text class="label" x="360" y="119">RF</text>
-
-      <g class="danger-pill">
-        <rect x="36" y="128" width="66" height="20" rx="10"></rect>
-        <text x="69" y="142" text-anchor="middle">${danger.lf.label}</text>
-      </g>
-
-      <g class="danger-pill">
-        <rect x="177" y="70" width="66" height="20" rx="10"></rect>
-        <text x="210" y="84" text-anchor="middle">${danger.cf.label}</text>
-      </g>
-
-      <g class="danger-pill">
-        <rect x="318" y="128" width="66" height="20" rx="10"></rect>
-        <text x="351" y="142" text-anchor="middle">${danger.rf.label}</text>
-      </g>
       <text class="label" x="82" y="138">RHB pull</text>
       <text class="label" x="295" y="138">LHB pull</text>
       ${conePath ? `<text class="label" x="176" y="78">Wind carry</text>` : ""}
       <text class="label" x="164" y="242">${venue}</text>
     </svg>
+  `;
+}
+
+function parkLaneChips(row){
+  const zones = fieldDangerSections(row);
+
+  return `
+    <div class="park-lane-chips">
+      <div class="park-lane-chip ${zones.lf.tier}">
+        <span>LF Lane</span>
+        <strong>${zones.lf.label}</strong>
+      </div>
+      <div class="park-lane-chip ${zones.cf.tier}">
+        <span>CF Lane</span>
+        <strong>${zones.cf.label}</strong>
+      </div>
+      <div class="park-lane-chip ${zones.rf.tier}">
+        <span>RF Lane</span>
+        <strong>${zones.rf.label}</strong>
+      </div>
+    </div>
   `;
 }
 
@@ -1068,6 +1124,7 @@ async function load(){
 
         <div class="field-wrap">
           ${fieldSvg(venue, row)}
+          ${parkLaneChips(row)}
           <div class="wind-text">${wind} MPH ${dir} · ${windImpactLabel(row)}</div>
           <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
         </div>
