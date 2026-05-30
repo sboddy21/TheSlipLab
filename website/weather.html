@@ -391,22 +391,24 @@
 }
 
 
+
 .park-attack-summary{
-  margin-top:10px;
-  border:1px solid rgba(140,255,50,.16);
+  margin:10px 12px 0;
+  border:1px solid rgba(140,255,50,.18);
   border-radius:14px;
-  background:rgba(140,255,50,.045);
+  background:linear-gradient(135deg, rgba(140,255,50,.06), rgba(0,224,255,.035));
   padding:11px 12px;
 }
 
-.park-attack-summary div{
+.park-attack-top{
   display:flex;
   justify-content:space-between;
   gap:12px;
   align-items:center;
+  margin-bottom:6px;
 }
 
-.park-attack-summary span{
+.park-attack-top span{
   font-size:10px;
   letter-spacing:.13em;
   text-transform:uppercase;
@@ -414,19 +416,21 @@
   font-weight:900;
 }
 
-.park-attack-summary strong{
+.park-attack-top strong{
   color:#8cff32;
   font-size:13px;
   white-space:nowrap;
 }
 
-.park-attack-summary p{
-  margin:7px 0 0;
+.park-attack-copy{
   font-size:12px;
   line-height:1.35;
   color:#c9d8d2;
 }
 
+.park-attack-copy b{
+  color:#fff;
+}
 </style>
 </head>
 
@@ -907,11 +911,14 @@ function parkAttackSummary(row){
 
   return `
     <div class="park-attack-summary">
-      <div>
+      <div class="park-attack-top">
         <span>Best attack lane</span>
         <strong>${top[0]} • ${top[1].label}</strong>
       </div>
-      <p>${clean(impact)} with a ${Math.round(boost)} carry score. This makes ${top[0]} the best HR hunting lane in this park today.</p>
+      <div class="park-attack-copy">
+        ${clean(impact)} with a ${Math.round(boost)} carry score.
+        <b>${top[0]}</b> is the best HR hunting lane in this park today.
+      </div>
     </div>
   `;
 }
@@ -1061,7 +1068,6 @@ async function load(){
 
         <div class="field-wrap">
           ${fieldSvg(venue, row)}
-          ${parkAttackSummary(row)}
           <div class="wind-text">${wind} MPH ${dir} · ${windImpactLabel(row)}</div>
           <div class="wind-arrow" style="transform:rotate(${rotation}deg)">↑</div>
         </div>
@@ -1088,6 +1094,7 @@ async function load(){
           </div>
         </div>
 
+        ${parkAttackSummary(row)}
         <div class="weather-insight">${weatherInsight(row)}</div>
       </article>
     `;
