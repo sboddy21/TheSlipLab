@@ -516,41 +516,63 @@ function arrowRotation(row){
   return num(row.windDirection);
 }
 
+function safeId(value){
+  return String(value || "park").replace(/[^a-zA-Z0-9]/g, "-");
+}
+
 function fieldSvg(venue){
   const shape = parkShape(venue);
   const d = shape.dimensions || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
   const wallPath = shape.wallPath || "M70 101 L114 62 L169 47 L210 40 L251 47 L306 62 L350 101";
   const grassPath = `${wallPath} L210 230 Z`;
   const trackPath = `${wallPath} L350 114 L315 95 L277 79 L238 69 L210 66 L182 69 L143 79 L105 95 L70 114 Z`;
+  const id = safeId(venue);
+  const lanes = shape.lanes || {};
+  const leftyPull = lanes.leftyPull || "M210 230 L350 101 L315 95 L277 79 L238 69 L210 66 L255 190 Z";
+  const rightyPull = lanes.rightyPull || "M210 230 L70 101 L105 95 L143 79 L182 69 L210 66 L165 190 Z";
 
   return `
     <svg class="field-svg realistic-park-svg" viewBox="0 0 420 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${venue} park shape">
       <defs>
-        <radialGradient id="grassGlow-${venue.replaceAll(" ", "-")}" cx="50%" cy="88%" r="78%">
+        <radialGradient id="grassGlow-${id}" cx="50%" cy="88%" r="78%">
           <stop offset="0%" stop-color="#123d24"/>
           <stop offset="55%" stop-color="#0b281b"/>
           <stop offset="100%" stop-color="#06130e"/>
         </radialGradient>
-        <linearGradient id="trackGlow-${venue.replaceAll(" ", "-")}" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="trackGlow-${id}" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#6b3418"/>
           <stop offset="50%" stop-color="#9b5a28"/>
           <stop offset="100%" stop-color="#5a2b16"/>
         </linearGradient>
-        <filter id="parkWallGlow-${venue.replaceAll(" ", "-")}" x="-40%" y="-40%" width="180%" height="180%">
+        <linearGradient id="leftyLane-${id}" x1="55%" y1="70%" x2="100%" y2="20%">
+          <stop offset="0%" stop-color="#8cff32" stop-opacity=".02"/>
+          <stop offset="62%" stop-color="#8cff32" stop-opacity=".14"/>
+          <stop offset="100%" stop-color="#8cff32" stop-opacity=".26"/>
+        </linearGradient>
+        <linearGradient id="rightyLane-${id}" x1="45%" y1="70%" x2="0%" y2="20%">
+          <stop offset="0%" stop-color="#ffb000" stop-opacity=".02"/>
+          <stop offset="62%" stop-color="#ffb000" stop-opacity=".14"/>
+          <stop offset="100%" stop-color="#ffb000" stop-opacity=".26"/>
+        </linearGradient>
+        <filter id="parkWallGlow-${id}" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffb000" flood-opacity=".65"/>
         </filter>
       </defs>
 
-      <path d="${grassPath}" fill="url(#grassGlow-${venue.replaceAll(" ", "-")})" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
-      <path d="${trackPath}" fill="url(#trackGlow-${venue.replaceAll(" ", "-")})" opacity=".72"></path>
+      <path d="${grassPath}" fill="url(#grassGlow-${id})" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
+      <path d="${trackPath}" fill="url(#trackGlow-${id})" opacity=".72"></path>
+
+      <path d="${rightyPull}" fill="url(#rightyLane-${id})" stroke="rgba(255,176,0,.26)" stroke-width="1.2"></path>
+      <path d="${leftyPull}" fill="url(#leftyLane-${id})" stroke="rgba(140,255,50,.25)" stroke-width="1.2"></path>
 
       <path d="M210 230 L165 190 L210 150 L255 190 Z" fill="#8f4d22" opacity=".88" stroke="rgba(255,255,255,.12)" stroke-width="1.5"></path>
       <path d="M210 230 L190 210 L210 190 L230 210 Z" fill="#a9632b" opacity=".95"></path>
 
       <line x1="210" y1="230" x2="70" y2="101" stroke="rgba(255,255,255,.55)" stroke-width="1.5"></line>
       <line x1="210" y1="230" x2="350" y2="101" stroke="rgba(255,255,255,.55)" stroke-width="1.5"></line>
+      <line x1="210" y1="230" x2="210" y2="50" stroke="rgba(255,255,255,.08)" stroke-width="1"></line>
 
-      <path d="${wallPath}" fill="none" stroke="#ffb000" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#parkWallGlow-${venue.replaceAll(" ", "-")})"></path>
+      <path d="${wallPath}" fill="none" stroke="#ffb000" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#parkWallGlow-${id})"></path>
       <path d="${wallPath}" fill="none" stroke="rgba(255,255,255,.78)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"></path>
 
       <line x1="70" y1="101" x2="70" y2="84" stroke="#ffd15a" stroke-width="3"></line>
@@ -570,6 +592,8 @@ function fieldSvg(venue){
       <text class="label" x="42" y="119">LF</text>
       <text class="label" x="194" y="58">CF</text>
       <text class="label" x="360" y="119">RF</text>
+      <text class="label" x="82" y="138">RHB pull</text>
+      <text class="label" x="295" y="138">LHB pull</text>
       <text class="label" x="164" y="242">${venue}</text>
     </svg>
   `;
