@@ -520,7 +520,34 @@ function safeId(value){
   return String(value || "park").replace(/[^a-zA-Z0-9]/g, "-");
 }
 
-function fieldSvg(venue){
+function windConePath(row){
+  const deg = arrowRotation(row);
+  const normalized = ((deg % 360) + 360) % 360;
+
+  if (normalized >= 330 || normalized < 30) {
+    return "M210 230 L170 58 Q210 35 250 58 Z";
+  }
+
+  if (normalized >= 30 && normalized < 75) {
+    return "M210 230 L238 65 Q295 70 350 101 Z";
+  }
+
+  if (normalized >= 285 && normalized < 330) {
+    return "M210 230 L182 65 Q125 70 70 101 Z";
+  }
+
+  if (normalized >= 75 && normalized < 120) {
+    return "M210 230 L255 95 Q305 130 350 160 Z";
+  }
+
+  if (normalized >= 240 && normalized < 285) {
+    return "M210 230 L165 95 Q115 130 70 160 Z";
+  }
+
+  return "";
+}
+
+function fieldSvg(venue, row = {}){
   const shape = parkShape(venue);
   const d = shape.dimensions || {lf:330, lcf:375, cf:400, rcf:375, rf:330};
   const wallPath = shape.wallPath || "M70 101 L114 62 L169 47 L210 40 L251 47 L306 62 L350 101";
@@ -530,6 +557,7 @@ function fieldSvg(venue){
   const lanes = shape.lanes || {};
   const leftyPull = lanes.leftyPull || "M210 230 L350 101 L315 95 L277 79 L238 69 L210 66 L255 190 Z";
   const rightyPull = lanes.rightyPull || "M210 230 L70 101 L105 95 L143 79 L182 69 L210 66 L165 190 Z";
+  const conePath = windConePath(row);
 
   return `
     <svg class="field-svg realistic-park-svg" viewBox="0 0 420 250" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${venue} park shape">
@@ -554,6 +582,11 @@ function fieldSvg(venue){
           <stop offset="62%" stop-color="#ffb000" stop-opacity=".14"/>
           <stop offset="100%" stop-color="#ffb000" stop-opacity=".26"/>
         </linearGradient>
+        <linearGradient id="carryCone-${id}" x1="50%" y1="90%" x2="50%" y2="10%">
+          <stop offset="0%" stop-color="#00e0ff" stop-opacity=".04"/>
+          <stop offset="55%" stop-color="#00e0ff" stop-opacity=".15"/>
+          <stop offset="100%" stop-color="#00e0ff" stop-opacity=".32"/>
+        </linearGradient>
         <filter id="parkWallGlow-${id}" x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffb000" flood-opacity=".65"/>
         </filter>
@@ -562,6 +595,7 @@ function fieldSvg(venue){
       <path d="${grassPath}" fill="url(#grassGlow-${id})" stroke="rgba(255,255,255,.05)" stroke-width="1"></path>
       <path d="${trackPath}" fill="url(#trackGlow-${id})" opacity=".72"></path>
 
+      ${conePath ? `<path d="${conePath}" fill="url(#carryCone-${id})" stroke="rgba(0,224,255,.28)" stroke-width="1.4"></path>` : ""}
       <path d="${rightyPull}" fill="url(#rightyLane-${id})" stroke="rgba(255,176,0,.26)" stroke-width="1.2"></path>
       <path d="${leftyPull}" fill="url(#leftyLane-${id})" stroke="rgba(140,255,50,.25)" stroke-width="1.2"></path>
 
@@ -594,6 +628,7 @@ function fieldSvg(venue){
       <text class="label" x="360" y="119">RF</text>
       <text class="label" x="82" y="138">RHB pull</text>
       <text class="label" x="295" y="138">LHB pull</text>
+      ${conePath ? `<text class="label" x="176" y="78">Wind carry</text>` : ""}
       <text class="label" x="164" y="242">${venue}</text>
     </svg>
   `;
