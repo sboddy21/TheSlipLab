@@ -329,6 +329,67 @@
   text-transform:uppercase;
 }
 
+
+.park-visual-legend{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+
+.park-legend-item{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:12px;
+  background:rgba(255,255,255,.04);
+  padding:8px;
+  min-width:0;
+}
+
+.park-legend-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  flex:0 0 auto;
+}
+
+.park-legend-dot.wind{
+  background:#00e0ff;
+  box-shadow:0 0 12px rgba(0,224,255,.55);
+}
+
+.park-legend-dot.rhb{
+  background:#ffb000;
+  box-shadow:0 0 12px rgba(255,176,0,.55);
+}
+
+.park-legend-dot.lhb{
+  background:#8cff32;
+  box-shadow:0 0 12px rgba(140,255,50,.45);
+}
+
+.park-legend-item b{
+  font-size:11px;
+  color:#fff;
+  white-space:nowrap;
+}
+
+.park-legend-item small{
+  font-size:10px;
+  opacity:.68;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+@media(max-width:760px){
+  .park-visual-legend{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -758,6 +819,30 @@ function fieldSvg(venue, row = {}){
       ${conePath ? `<text class="label" x="176" y="78">Wind carry</text>` : ""}
       <text class="label" x="164" y="242">${venue}</text>
     </svg>
+  `;
+}
+
+function parkVisualLegend(row){
+  const impact = windImpactLabel(row);
+
+  return `
+    <div class="park-visual-legend">
+      <div class="park-legend-item">
+        <span class="park-legend-dot wind"></span>
+        <b>Blue</b>
+        <small>${clean(impact)}</small>
+      </div>
+      <div class="park-legend-item">
+        <span class="park-legend-dot rhb"></span>
+        <b>Orange</b>
+        <small>Right handed pull lane</small>
+      </div>
+      <div class="park-legend-item">
+        <span class="park-legend-dot lhb"></span>
+        <b>Green</b>
+        <small>Left handed pull lane</small>
+      </div>
+    </div>
   `;
 }
 
