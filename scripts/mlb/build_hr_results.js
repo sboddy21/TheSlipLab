@@ -2,17 +2,28 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const OUT_FILE = path.join(ROOT, "website", "data", "mlb_results.json");
-const PREVIOUS_FILE = path.join(ROOT, "website", "data", "mlb_results_previous.json");
+const DATA_DIR = path.join(ROOT, "website", "data");
+const OUT_FILE = path.join(DATA_DIR, "mlb_results.json");
 
-const todayET = new Intl.DateTimeFormat("en-CA", {
-  timeZone: "America/New_York",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit"
-}).format(new Date());
+function etDate(offsetDays = 0) {
+  const now = new Date();
+  now.setUTCDate(now.getUTCDate() + offsetDays);
 
-const SCHEDULE_URL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${todayET}`;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(now);
+}
+
+const argDate = process.argv.find(a => a.startsWith("--date="))?.split("=")[1];
+const argOut = process.argv.find(a => a.startsWith("--out="))?.split("=")[1];
+
+const targetDate = argDate || etDate(0);
+const outputFile = argOut ? path.join(ROOT, argOut) : OUT_FILE;
+
+const SCHEDULE_URL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${targetDate}`;
 const LIVE_FEED_BASE = "https://statsapi.mlb.com/api/v1.1/game";
 
 const VALID_STATUSES = new Set([
@@ -49,7 +60,6 @@ function isHomeRun(play) {
 function uniquePlays(feed) {
   const allPlays = feed?.liveData?.plays?.allPlays || [];
   const scoringIndexes = feed?.liveData?.plays?.scoringPlays || [];
-
   const plays = [...allPlays];
   const seen = new Set(allPlays.map(p => String(p?.about?.atBatIndex ?? "")));
 
@@ -107,20 +117,22 @@ function getOpponent(play, feed) {
   return safe(feed?.liveData?.boxscore?.teams?.[side]?.team?.name);
 }
 
-async function main() {
-  fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
-
+async function buildResults(date) {
   const schedule = await getJSON(SCHEDULE_URL);
   const games = schedule?.dates?.flatMap(d => d.games || []) || [];
 
   const homeRuns = [];
   let checkedGames = 0;
+  let skippedGames = 0;
 
   for (const game of games) {
     const gamePk = game?.gamePk;
     const status = safe(game?.status?.detailedState);
 
-    if (!gamePk || !VALID_STATUSES.has(status)) continue;
+    if (!gamePk || !VALID_STATUSES.has(status)) {
+      skippedGames += 1;
+      continue;
+    }
 
     checkedGames += 1;
 
@@ -141,6 +153,7 @@ async function main() {
       const pitcher = safe(play?.matchup?.pitcher?.fullName);
 
       homeRuns.push({
+        date,
         gamePk,
         game: gameLabel,
         status,
@@ -158,7 +171,6 @@ async function main() {
         playId: safe(play?.about?.atBatIndex),
         startTime: safe(play?.about?.startTime),
         endTime: safe(play?.about?.endTime),
-
         exitVelocity: num(hitData?.launchSpeed),
         launchAngle: num(hitData?.launchAngle),
         distance: num(hitData?.totalDistance),
@@ -176,42 +188,35 @@ async function main() {
     }
   }
 
-  homeRuns.sort((a, b) => String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || "")));
+  homeRuns.sort((a, b) =>
+    String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || ""))
+  );
 
-  if (fs.existsSync(OUT_FILE)) {
-    try {
-      const existing = JSON.parse(fs.readFileSync(OUT_FILE, "utf8"));
-      const existingDate = String(existing?.date || "");
-
-      if (existingDate && existingDate !== todayET && Array.isArray(existing?.homeRuns)) {
-        fs.writeFileSync(PREVIOUS_FILE, JSON.stringify({
-          ...existing,
-          archivedAt: new Date().toISOString(),
-          archiveReason: "previous_day_results_until_10am_et"
-        }, null, 2));
-      }
-    } catch {
-      // Keep building today's results even if previous archive parsing fails.
-    }
-  }
-
-  fs.writeFileSync(OUT_FILE, JSON.stringify({
+  return {
     updatedAt: new Date().toISOString(),
-    date: todayET,
+    date,
     mode: "live_and_final_games",
     source: "MLB Stats API live feed",
     totalScheduledGames: games.length,
     checkedGames,
+    skippedGames,
     count: homeRuns.length,
     homeRuns
-  }, null, 2));
+  };
+}
+
+async function main() {
+  fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+
+  const results = await buildResults(targetDate);
+  fs.writeFileSync(outputFile, JSON.stringify(results, null, 2));
 
   console.log("HR RESULTS COMPLETE");
-  console.log("Mode: live_and_final_games");
-  console.log("Date:", todayET);
-  console.log("Games:", checkedGames);
-  console.log("Home Runs:", homeRuns.length);
-  console.log("Saved:", OUT_FILE);
+  console.log("Date:", targetDate);
+  console.log("Games checked:", results.checkedGames);
+  console.log("Games skipped:", results.skippedGames);
+  console.log("Home Runs:", results.homeRuns.length);
+  console.log("Saved:", outputFile);
 }
 
 main().catch(err => {
