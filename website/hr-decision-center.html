@@ -52,7 +52,136 @@
     .pitch-label{font-size:9px;color:#93ff2d;text-transform:uppercase;font-weight:950;margin-bottom:4px}
     .pitch-value{font-size:14px;font-weight:950}
     .why{margin-top:10px;color:#c9d1d9;font-size:12px;line-height:1.45}
-  </style>
+  
+.pick-one-panel{
+  margin:18px auto 18px;
+  max-width:1320px;
+}
+
+.pick-one-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:end;
+  margin-bottom:10px;
+}
+
+.pick-one-head span{
+  display:block;
+  font-size:11px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:#8cff32;
+  font-weight:950;
+}
+
+.pick-one-head h2{
+  margin:4px 0 0;
+  font-size:28px;
+}
+
+.pick-one-head p{
+  margin:0;
+  color:#9aa6ad;
+  font-size:13px;
+}
+
+.pick-one-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+
+.pick-one-card{
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.025));
+  padding:12px;
+  cursor:pointer;
+  min-width:0;
+}
+
+.pick-one-card:hover{
+  border-color:rgba(140,255,50,.32);
+  transform:translateY(-1px);
+}
+
+.pick-one-card-top{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+  margin-bottom:9px;
+}
+
+.pick-one-card-top span{
+  font-size:10px;
+  color:#ffb000;
+  font-weight:950;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.pick-one-card-top b{
+  font-size:10px;
+  color:#9aa6ad;
+}
+
+.pick-one-card h3{
+  margin:0;
+  font-size:17px;
+  line-height:1.1;
+}
+
+.pick-one-card p{
+  margin:6px 0 10px;
+  font-size:12px;
+  color:#aeb6c2;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.pick-one-score{
+  color:#8cff32;
+  font-size:30px;
+  font-weight:950;
+  line-height:1;
+}
+
+.pick-one-meta{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:4px;
+  margin-top:9px;
+}
+
+.pick-one-meta span{
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:5px 7px;
+  font-size:10px;
+  color:#d8dee6;
+  background:rgba(0,0,0,.14);
+}
+
+@media(max-width:1180px){
+  .pick-one-grid{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:760px){
+  .pick-one-grid{
+    grid-template-columns:1fr;
+  }
+  .pick-one-head{
+    align-items:start;
+    flex-direction:column;
+  }
+}
+
+</style>
 </head>
 <body>
 
@@ -249,6 +378,68 @@ function topTargetScore(row){
   );
 }
 
+function renderPickOnePanel(){
+  const box = document.getElementById("pickOnePanel");
+  if(!box) return;
+
+  const dataBlock = DATA?.sections?.ifOnlyOne || DATA?.ifOnlyOne || {};
+  const picks = dataBlock.picks || dataBlock || {};
+
+  const cards = [
+    ["bestOverall", "🏆", "Best Overall"],
+    ["safestPlay", "🛡", "Safest HR Look"],
+    ["highestCeiling", "🚀", "Highest Ceiling"],
+    ["bestWeatherPlay", "🌤", "Best Weather"],
+    ["bestPitchMatchup", "🎯", "Best Pitch Matchup"],
+    ["bestLongshot", "💣", "Best Longshot"]
+  ]
+  .map(([key, icon, label]) => {
+    const p = picks[key];
+    if(!p) return "";
+
+    return `
+      <article class="pick-one-card" data-player="${escapeHtml(p.player || "")}">
+        <div class="pick-one-card-top">
+          <span>${icon} ${label}</span>
+          <b>${escapeHtml(p.tier || p.type || "")}</b>
+        </div>
+        <h3>${escapeHtml(p.player || "N/A")}</h3>
+        <p>${escapeHtml(p.team || "")} ${p.opponent ? "vs " + escapeHtml(p.opponent) : ""}</p>
+        <div class="pick-one-score">${Number(p.pickOneScore || p.hrConfidence || 0).toFixed(1)}</div>
+        <div class="pick-one-meta">
+          <span>Power ${Number(p.powerScore || 0).toFixed(1)}</span>
+          <span>Pitch ${Number(p.pitchEdge || 0).toFixed(1)}</span>
+          <span>Zones ${Number(p.zoneOverlap || 0).toFixed(1)}</span>
+        </div>
+      </article>
+    `;
+  })
+  .join("");
+
+  if(!cards.trim()){
+    box.innerHTML = "";
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="pick-one-head">
+      <div>
+        <span>Decision Shortcut</span>
+        <h2>If I Can Only Pick One</h2>
+      </div>
+      <p>The fastest way to see where the slate starts.</p>
+    </div>
+    <div class="pick-one-grid">${cards}</div>
+  `;
+
+  box.querySelectorAll(".pick-one-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const player = card.dataset.player;
+      if(window.openPlayerCard && player) window.openPlayerCard(player);
+    });
+  });
+}
+
 function renderTopTargets(){
   const rows = allRows()
     .map(r => ({...r, topTargetScore: topTargetScore(r)}))
@@ -361,6 +552,7 @@ async function load(){
   document.getElementById("status").textContent =
     `Updated ${new Date(data.updatedAt).toLocaleString()} • ${data.totalPlayers} HR candidates`;
 
+  renderPickOnePanel();
   renderTopTargets();
   renderTabs();
   renderGrid();
