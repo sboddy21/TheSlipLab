@@ -251,6 +251,129 @@ function weatherScore() {
   return round(avg);
 }
 
+
+function pickOneScore(row, type) {
+  const hr = num(row.hrConfidence);
+  const power = num(row.powerScore);
+  const pitch = num(row.pitchEdge);
+  const pitcher = num(row.pitcherRisk);
+  const weather = num(row.weather);
+  const bullpen = num(row.bullpen);
+  const zones = num(row.zoneOverlap);
+  const due = num(row.due);
+  const ceiling = num(row.multiHrCeilingScore || row.ceiling || row.powerScore);
+
+  if (type === "overall") {
+    return hr * 0.34 + power * 0.22 + pitch * 0.16 + zones * 0.14 + pitcher * 0.08 + weather * 0.04 + bullpen * 0.02;
+  }
+
+  if (type === "safe") {
+    return hr * 0.45 + zones * 0.24 + power * 0.14 + pitch * 0.10 + pitcher * 0.07;
+  }
+
+  if (type === "ceiling") {
+    return ceiling * 0.28 + power * 0.25 + pitcher * 0.18 + pitch * 0.14 + zones * 0.10 + bullpen * 0.05;
+  }
+
+  if (type === "weather") {
+    return weather * 0.50 + power * 0.18 + hr * 0.14 + zones * 0.10 + pitch * 0.08;
+  }
+
+  if (type === "pitch") {
+    return pitch * 0.46 + pitcher * 0.22 + zones * 0.16 + power * 0.10 + hr * 0.06;
+  }
+
+  if (type === "longshot") {
+    return power * 0.25 + pitch * 0.23 + zones * 0.20 + pitcher * 0.16 + weather * 0.10 + due * 0.06;
+  }
+
+  return hr;
+}
+
+function shortPlayerCard(row, type, label, description) {
+  if (!row) return null;
+
+  return {
+    label,
+    type,
+    description,
+    player: row.player,
+    team: row.team,
+    opponent: row.opponent,
+    game: row.game,
+    hrConfidence: round(row.hrConfidence),
+    powerScore: round(row.powerScore),
+    pitchEdge: round(row.pitchEdge),
+    pitcherRisk: round(row.pitcherRisk),
+    weather: round(row.weather),
+    bullpen: round(row.bullpen),
+    due: round(row.due),
+    zoneOverlap: round(row.zoneOverlap),
+    hitterZonePower: round(row.hitterZonePower),
+    pitcherLeak: round(row.pitcherLeak),
+    hotZoneCount: row.hotZoneCount,
+    seasonHr: row.seasonHr,
+    bestPitch: row.bestPitch,
+    tier: row.tier,
+    reasons: row.reasons || [],
+    pickOneScore: round(pickOneScore(row, type))
+  };
+}
+
+function topPick(rows, type) {
+  return rows
+    .slice()
+    .sort((a, b) => pickOneScore(b, type) - pickOneScore(a, type))[0] || null;
+}
+
+function buildIfOnlyOne(rows) {
+  const usable = rows.filter(row => row && row.player);
+
+  return {
+    title: "If I Can Only Pick One",
+    updatedAt: new Date().toISOString(),
+    picks: {
+      bestOverall: shortPlayerCard(
+        topPick(usable, "overall"),
+        "overall",
+        "Best Overall HR Pick",
+        "Best blend of power, matchup, zone overlap, pitcher risk, and environment."
+      ),
+      safestPlay: shortPlayerCard(
+        topPick(usable, "safe"),
+        "safe",
+        "Safest HR Look",
+        "Strongest profile when confidence, zones, and matchup stability are weighted heavier."
+      ),
+      highestCeiling: shortPlayerCard(
+        topPick(usable, "ceiling"),
+        "ceiling",
+        "Highest Ceiling",
+        "Biggest raw upside profile when power, pitcher vulnerability, and ceiling traits line up."
+      ),
+      bestWeatherPlay: shortPlayerCard(
+        topPick(usable, "weather"),
+        "weather",
+        "Best Weather Play",
+        "Best HR profile with weather and park carry weighted heavily."
+      ),
+      bestPitchMatchup: shortPlayerCard(
+        topPick(usable, "pitch"),
+        "pitch",
+        "Best Pitch Matchup",
+        "Best hitter versus the projected pitch mix and pitcher attack profile."
+      ),
+      bestLongshot: shortPlayerCard(
+        topPick(usable.filter(row => num(row.hrConfidence) < 17), "longshot") || topPick(usable, "longshot"),
+        "longshot",
+        "Best Longshot",
+        "Lower confidence bat with enough power, pitch edge, zones, or weather to stay live."
+      )
+    }
+  };
+}
+
+
 function bullpenScore(opponent) {
   const row = bullpenMap.get(norm(opponent));
   if (!row) return 0;
@@ -390,6 +513,7 @@ const output = {
   updatedAt: new Date().toISOString(),
   totalPlayers: cards.length,
   sections: {
+    ifOnlyOne: buildIfOnlyOne(enrichedRows || rows || uniqueRows(hrRows)),
     bestPicks: topUnique(cards, "hrConfidence"),
     safestPlays: topUnique(cards, "powerScore"),
 
