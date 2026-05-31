@@ -549,6 +549,28 @@ const output = {
   allPlayers: cards
 };
 
+
+// Final safety fills for Decision Center display sections
+if (!output.sections.ifOnlyOne) {
+  output.sections.ifOnlyOne = buildIfOnlyOne(cards);
+}
+
+if (!Array.isArray(output.sections.bestValue) || output.sections.bestValue.length === 0) {
+  output.sections.bestValue = topUnique(
+    cards.map(card => ({
+      ...card,
+      valueScore:
+        num(card.pitchEdge) * 0.30 +
+        num(card.pitcherRisk) * 0.24 +
+        num(card.zoneOverlap) * 0.18 +
+        num(card.powerScore) * 0.12 +
+        num(card.weather) * 0.08 +
+        num(card.bullpen) * 0.08
+    })),
+    "valueScore"
+  );
+}
+
 fs.writeFileSync(OUTFILE, JSON.stringify(output, null, 2));
 
 console.log("HR DECISION CENTER COMPLETE");

@@ -379,8 +379,13 @@ function topTargetScore(row){
 }
 
 function renderPickOnePanel(){
-  const box = document.getElementById("pickOnePanel");
-  if(!box) return;
+  let box = document.getElementById("pickOnePanel");
+  if(!box){
+    const tabs = document.getElementById("tabs");
+    if(!tabs) return;
+    tabs.insertAdjacentHTML("beforebegin", `<section class="pick-one-panel" id="pickOnePanel"></section>`);
+    box = document.getElementById("pickOnePanel");
+  }
 
   const dataBlock = data?.sections?.ifOnlyOne || data?.ifOnlyOne || {};
   const picks = dataBlock.picks || dataBlock || {};
@@ -398,13 +403,13 @@ function renderPickOnePanel(){
     if(!p) return "";
 
     return `
-      <article class="pick-one-card" data-player="${escapeHtml(p.player || "")}">
+      <article class="pick-one-card" data-player="${clean(p.player || "")}">
         <div class="pick-one-card-top">
           <span>${icon} ${label}</span>
-          <b>${escapeHtml(p.tier || p.type || "")}</b>
+          <b>${clean(p.tier || p.type || "")}</b>
         </div>
-        <h3>${escapeHtml(p.player || "N/A")}</h3>
-        <p>${escapeHtml(p.team || "")} ${p.opponent ? "vs " + escapeHtml(p.opponent) : ""}</p>
+        <h3>${clean(p.player || "N/A")}</h3>
+        <p>${clean(p.team || "")} ${p.opponent ? "vs " + clean(p.opponent) : ""}</p>
         <div class="pick-one-score">${Number(p.pickOneScore || p.hrConfidence || 0).toFixed(1)}</div>
         <div class="pick-one-meta">
           <span>Power ${Number(p.powerScore || 0).toFixed(1)}</span>
