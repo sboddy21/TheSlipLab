@@ -513,6 +513,7 @@ const output = {
   updatedAt: new Date().toISOString(),
   totalPlayers: cards.length,
   sections: {
+    ifOnlyOne: buildIfOnlyOne(cards),
     bestPicks: topUnique(cards, "hrConfidence"),
     safestPlays: topUnique(cards, "powerScore"),
 
