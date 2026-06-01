@@ -387,64 +387,28 @@ function renderPickOnePanel(){
     box = document.getElementById("pickOnePanel");
   }
 
-  const rows = allRows();
-  const dataBlock = data?.sections?.ifOnlyOne || data?.ifOnlyOne || {};
-  const savedPicks = dataBlock.picks || dataBlock || {};
+  const sections = data?.sections || {};
+  const all = allRows();
+
+  function first(sectionName){
+    const rows = Array.isArray(sections[sectionName]) ? sections[sectionName] : [];
+    return rows.length ? rows[0] : null;
+  }
 
   function bestBy(fn){
-    return rows.length
-      ? [...rows].map(r => ({...r, pickOneScore: fn(r)})).sort((a,b) => num(b.pickOneScore) - num(a.pickOneScore))[0]
+    return all.length
+      ? [...all].map(r => ({...r, pickOneScore: fn(r)})).sort((a,b) => num(b.pickOneScore) - num(a.pickOneScore))[0]
       : null;
   }
 
-  const fallbackPicks = {
-    bestOverall: bestBy(r =>
-      num(r.hrConfidence) * 4.0 +
-      num(r.powerScore) * 0.35 +
-      num(r.pitcherRisk) * 0.25 +
-      num(r.pitchEdge) * 0.22 +
-      num(r.zoneOverlap) * 0.18 +
-      num(r.weather) * 0.12 +
-      num(r.bullpen) * 0.12 +
-      num(r.due) * 1.15
-    ),
-    safestPlay: bestBy(r =>
-      num(r.hrConfidence) * 5.0 +
-      num(r.powerScore) * 0.25 +
-      num(r.pitcherRisk) * 0.18 +
-      num(r.pitchEdge) * 0.18 +
-      num(r.zoneOverlap) * 0.14
-    ),
-    highestCeiling: bestBy(r =>
-      num(r.powerScore) * 0.55 +
-      num(r.pitcherRisk) * 0.35 +
-      num(r.pitchEdge) * 0.25 +
-      num(r.weather) * 0.22 +
-      num(r.bullpen) * 0.18
-    ),
-    bestWeatherPlay: bestBy(r =>
-      num(r.weather) * 0.75 +
-      num(r.hrConfidence) * 2.5 +
-      num(r.powerScore) * 0.25 +
-      num(r.pitcherRisk) * 0.18
-    ),
-    bestPitchMatchup: bestBy(r =>
-      num(r.pitchEdge) * 0.75 +
-      num(r.zoneOverlap) * 0.45 +
-      num(r.hrConfidence) * 2.5 +
-      num(r.powerScore) * 0.22
-    ),
-    bestLongshot: bestBy(r =>
-      num(r.powerScore) * 0.42 +
-      num(r.pitcherRisk) * 0.32 +
-      num(r.pitchEdge) * 0.25 +
-      num(r.weather) * 0.18 +
-      num(r.due) * 1.35 -
-      num(r.hrConfidence) * 0.65
-    )
+  const picks = {
+    bestOverall: first("bestPicks") || bestBy(r => topTargetScore(r)),
+    safestPlay: first("safestPlays") || bestBy(r => num(r.hrConfidence) * 5 + num(r.powerScore) * .25 + num(r.pitcherRisk) * .18),
+    highestCeiling: first("bestValue") || bestBy(r => num(r.powerScore) * .55 + num(r.pitcherRisk) * .35 + num(r.pitchEdge) * .25 + num(r.weather) * .22),
+    bestWeatherPlay: first("weatherCarry") || bestBy(r => num(r.weather) * .75 + num(r.hrConfidence) * 2.5 + num(r.powerScore) * .25),
+    bestPitchMatchup: first("pitchTypeEdges") || bestBy(r => num(r.pitchEdge) * .75 + num(r.zoneOverlap) * .45 + num(r.hrConfidence) * 2.5),
+    bestLongshot: first("lottoBombs") || bestBy(r => num(r.powerScore) * .42 + num(r.pitcherRisk) * .32 + num(r.pitchEdge) * .25 + num(r.due) * 1.35)
   };
-
-  const picks = Object.keys(savedPicks).length ? savedPicks : fallbackPicks;
 
   const cards = [
     ["bestOverall", "🏆", "Best Overall"],
@@ -453,10 +417,11 @@ function renderPickOnePanel(){
     ["bestWeatherPlay", "🌤", "Best Weather"],
     ["bestPitchMatchup", "🎯", "Best Pitch Matchup"],
     ["bestLongshot", "💣", "Best Longshot"]
-  ]
-  .map(([key, icon, label]) => {
+  ].map(([key, icon, label]) => {
     const p = picks[key];
     if(!p) return "";
+
+    const displayScore = p.pickOneScore || p.topTargetScore || p.nuclearScore || p.hrConfidence || p.score || 0;
 
     return `
       <article class="pick-one-card" data-player="${clean(p.player || "")}">
@@ -466,7 +431,7 @@ function renderPickOnePanel(){
         </div>
         <h3>${clean(p.player || "N/A")}</h3>
         <p>${clean(p.team || "")} ${p.opponent ? "vs " + clean(p.opponent) : ""}</p>
-        <div class="pick-one-score">${Number(p.pickOneScore || p.hrConfidence || 0).toFixed(1)}</div>
+        <div class="pick-one-score">${Number(displayScore || 0).toFixed(1)}</div>
         <div class="pick-one-meta">
           <span>Power ${Number(p.powerScore || 0).toFixed(1)}</span>
           <span>Pitch ${Number(p.pitchEdge || 0).toFixed(1)}</span>
@@ -474,8 +439,7 @@ function renderPickOnePanel(){
         </div>
       </article>
     `;
-  })
-  .join("");
+  }).join("");
 
   box.innerHTML = `
     <div class="pick-one-head">
