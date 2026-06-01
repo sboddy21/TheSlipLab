@@ -135,8 +135,136 @@ function topUnique(rows, scoreKey, limit = 12) {
     .slice(0, limit);
 }
 
+function pickOneScore(row, type) {
+  if (type === "safe") {
+    return (
+      num(row.safetyScore) * 1.25 +
+      num(row.hrConfidence) * 3.0 +
+      num(row.powerScore) * 0.18 +
+      num(row.pitchEdge) * 0.14 +
+      num(row.zoneOverlap) * 0.12
+    );
+  }
+
+  if (type === "ceiling") {
+    return (
+      num(row.powerScore) * 0.55 +
+      num(row.pitcherRisk) * 0.34 +
+      num(row.pitchEdge) * 0.26 +
+      num(row.weatherScore || row.weather) * 0.22 +
+      num(row.bullpenScore || row.bullpen) * 0.16 +
+      num(row.multiHrCeilingScore) * 0.45
+    );
+  }
+
+  if (type === "weather") {
+    return (
+      num(row.weatherScore || row.weather) * 0.80 +
+      num(row.hrConfidence) * 2.2 +
+      num(row.powerScore) * 0.24 +
+      num(row.pitcherRisk) * 0.18
+    );
+  }
+
+  if (type === "pitch") {
+    return (
+      num(row.pitchTypeScore || row.pitchTypeDestructionScore || row.pitchEdge) * 0.75 +
+      num(row.pitchEdge) * 0.35 +
+      num(row.zoneOverlap) * 0.30 +
+      num(row.hrConfidence) * 2.2
+    );
+  }
+
+  if (type === "longshot") {
+    return (
+      num(row.lottoScore) * 1.15 +
+      num(row.dueScore || row.due) * 0.65 +
+      num(row.powerScore) * 0.24 +
+      num(row.pitcherRisk) * 0.22 +
+      num(row.pitchEdge) * 0.20 +
+      num(row.weatherScore || row.weather) * 0.14 -
+      num(row.hrConfidence) * 0.65
+    );
+  }
+
+  return (
+    num(row.decisionScore) * 1.15 +
+    num(row.hrConfidence) * 3.0 +
+    num(row.powerScore) * 0.25 +
+    num(row.pitcherRisk) * 0.22 +
+    num(row.pitchEdge) * 0.20 +
+    num(row.zoneOverlap) * 0.14 +
+    num(row.weatherScore || row.weather) * 0.10 +
+    num(row.bullpenScore || row.bullpen) * 0.08
+  );
+}
+
+function shortPick(row, type, label, description) {
+  if (!row) return null;
+
+  return {
+    label,
+    type,
+    description,
+    player: row.player,
+    team: row.team,
+    opponent: row.opponent,
+    game: row.game,
+    hrConfidence: num(row.hrConfidence),
+    powerScore: num(row.powerScore),
+    pitchEdge: num(row.pitchEdge),
+    pitcherRisk: num(row.pitcherRisk),
+    weather: num(row.weatherScore || row.weather),
+    bullpen: num(row.bullpenScore || row.bullpen),
+    due: num(row.dueScore || row.due),
+    zoneOverlap: num(row.zoneOverlap),
+    bestPitch: row.bestPitch,
+    tier: row.tier,
+    reasons: row.reasons || [],
+    pickOneScore: Number(pickOneScore(row, type).toFixed(1))
+  };
+}
+
+function topPick(rows, type, used = new Set()) {
+  const pick = [...rows]
+    .filter(row => row && row.player && !used.has(clean(row.player).toLowerCase()))
+    .sort((a, b) => pickOneScore(b, type) - pickOneScore(a, type))[0] || null;
+
+  if (pick?.player) used.add(clean(pick.player).toLowerCase());
+
+  return pick;
+}
+
+function buildIfOnlyOne(cards) {
+  const usable = cards.filter(row => row && row.player);
+  const used = new Set();
+
+  const bestOverall = topPick(usable, "overall", used);
+  const safestPlay = topPick(usable, "safe", used);
+  const highestCeiling = topPick(usable, "ceiling", used);
+  const bestWeatherPlay = topPick(usable, "weather", used);
+  const bestPitchMatchup = topPick(usable, "pitch", used);
+
+  const longshotPool = usable.filter(row => num(row.hrConfidence) < 35 || num(row.lottoScore) > 0 || num(row.dueScore) > 0);
+  const bestLongshot = topPick(longshotPool.length ? longshotPool : usable, "longshot", used);
+
+  return {
+    title: "If I Can Only Pick One",
+    updatedAt: new Date().toISOString(),
+    picks: {
+      bestOverall: shortPick(bestOverall, "overall", "Best Overall HR Pick", "Best blend of power, matchup, zone overlap, pitcher risk, and environment."),
+      safestPlay: shortPick(safestPlay, "safe", "Safest HR Look", "Strongest profile when confidence, zones, and matchup stability are weighted heavier."),
+      highestCeiling: shortPick(highestCeiling, "ceiling", "Highest Ceiling", "Biggest raw upside profile when power, pitcher vulnerability, and ceiling traits line up."),
+      bestWeatherPlay: shortPick(bestWeatherPlay, "weather", "Best Weather Play", "Best HR profile with weather and park carry weighted heavily."),
+      bestPitchMatchup: shortPick(bestPitchMatchup, "pitch", "Best Pitch Matchup", "Best hitter versus the projected pitch mix and pitcher attack profile."),
+      bestLongshot: shortPick(bestLongshot, "longshot", "Best Longshot", "Lower confidence bat with enough power, pitch edge, zones, or weather to stay live.")
+    }
+  };
+}
+
 function rebuildSections(cards) {
   return {
+    ifOnlyOne: buildIfOnlyOne(cards),
     bestPicks: topUnique(cards, "decisionScore"),
     safestPlays: topUnique(cards, "safetyScore"),
     lottoBombs: topUnique(cards.filter(x => num(x.lottoScore) > 0), "lottoScore"),
