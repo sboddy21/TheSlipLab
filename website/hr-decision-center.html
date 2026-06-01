@@ -387,8 +387,64 @@ function renderPickOnePanel(){
     box = document.getElementById("pickOnePanel");
   }
 
+  const rows = allRows();
   const dataBlock = data?.sections?.ifOnlyOne || data?.ifOnlyOne || {};
-  const picks = dataBlock.picks || dataBlock || {};
+  const savedPicks = dataBlock.picks || dataBlock || {};
+
+  function bestBy(fn){
+    return rows.length
+      ? [...rows].map(r => ({...r, pickOneScore: fn(r)})).sort((a,b) => num(b.pickOneScore) - num(a.pickOneScore))[0]
+      : null;
+  }
+
+  const fallbackPicks = {
+    bestOverall: bestBy(r =>
+      num(r.hrConfidence) * 4.0 +
+      num(r.powerScore) * 0.35 +
+      num(r.pitcherRisk) * 0.25 +
+      num(r.pitchEdge) * 0.22 +
+      num(r.zoneOverlap) * 0.18 +
+      num(r.weather) * 0.12 +
+      num(r.bullpen) * 0.12 +
+      num(r.due) * 1.15
+    ),
+    safestPlay: bestBy(r =>
+      num(r.hrConfidence) * 5.0 +
+      num(r.powerScore) * 0.25 +
+      num(r.pitcherRisk) * 0.18 +
+      num(r.pitchEdge) * 0.18 +
+      num(r.zoneOverlap) * 0.14
+    ),
+    highestCeiling: bestBy(r =>
+      num(r.powerScore) * 0.55 +
+      num(r.pitcherRisk) * 0.35 +
+      num(r.pitchEdge) * 0.25 +
+      num(r.weather) * 0.22 +
+      num(r.bullpen) * 0.18
+    ),
+    bestWeatherPlay: bestBy(r =>
+      num(r.weather) * 0.75 +
+      num(r.hrConfidence) * 2.5 +
+      num(r.powerScore) * 0.25 +
+      num(r.pitcherRisk) * 0.18
+    ),
+    bestPitchMatchup: bestBy(r =>
+      num(r.pitchEdge) * 0.75 +
+      num(r.zoneOverlap) * 0.45 +
+      num(r.hrConfidence) * 2.5 +
+      num(r.powerScore) * 0.22
+    ),
+    bestLongshot: bestBy(r =>
+      num(r.powerScore) * 0.42 +
+      num(r.pitcherRisk) * 0.32 +
+      num(r.pitchEdge) * 0.25 +
+      num(r.weather) * 0.18 +
+      num(r.due) * 1.35 -
+      num(r.hrConfidence) * 0.65
+    )
+  };
+
+  const picks = Object.keys(savedPicks).length ? savedPicks : fallbackPicks;
 
   const cards = [
     ["bestOverall", "🏆", "Best Overall"],
@@ -406,7 +462,7 @@ function renderPickOnePanel(){
       <article class="pick-one-card" data-player="${clean(p.player || "")}">
         <div class="pick-one-card-top">
           <span>${icon} ${label}</span>
-          <b>${clean(p.tier || p.type || "")}</b>
+          <b>${clean(p.tier || p.type || p.label || "")}</b>
         </div>
         <h3>${clean(p.player || "N/A")}</h3>
         <p>${clean(p.team || "")} ${p.opponent ? "vs " + clean(p.opponent) : ""}</p>
@@ -421,11 +477,6 @@ function renderPickOnePanel(){
   })
   .join("");
 
-  if(!cards.trim()){
-    box.innerHTML = "";
-    return;
-  }
-
   box.innerHTML = `
     <div class="pick-one-head">
       <div>
@@ -434,7 +485,7 @@ function renderPickOnePanel(){
       </div>
       <p>The fastest way to see where the slate starts.</p>
     </div>
-    <div class="pick-one-grid">${cards}</div>
+    <div class="pick-one-grid">${cards || `<div class="empty">Pick one board is waiting for today’s HR rows.</div>`}</div>
   `;
 
   box.querySelectorAll(".pick-one-card").forEach(card => {
