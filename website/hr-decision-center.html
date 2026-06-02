@@ -534,8 +534,8 @@ function renderGrid(){
         <div class="metric"><div class="metric-label">Weather</div><div class="metric-value">${score(row.weather)}</div></div>
         <div class="metric"><div class="metric-label">Lineup</div><div class="metric-value">${clean(row.lineupSpot || "-")}</div></div>
         <div class="metric"><div class="metric-label">PA</div><div class="metric-value">${num(row.projectedPlateAppearances || 0).toFixed(2)}</div></div>
-        <div class="metric"><div class="metric-label">Lineup</div><div class="metric-value">${clean(row.lineupSpot || "-")}</div></div>
-        <div class="metric"><div class="metric-label">PA</div><div class="metric-value">${num(row.projectedPlateAppearances || 0).toFixed(2)}</div></div>
+        <div class="metric"><div class="metric-label">Boost</div><div class="metric-value">${num(row.lineupBoost || 0) >= 0 ? "+" : ""}${num(row.lineupBoost || 0).toFixed(1)}</div></div>
+        <div class="metric"><div class="metric-label">Protection</div><div class="metric-value">${score(row.protectionScore)}</div></div>
         <div class="metric"><div class="metric-label">Bullpen</div><div class="metric-value">${score(row.bullpen)}</div></div>
         <div class="metric"><div class="metric-label">Due</div><div class="metric-value">${score(row.due)}</div></div>
       </div>
