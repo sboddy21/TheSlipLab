@@ -214,15 +214,35 @@
     const h = stats(row);
     const out = [grade(row)];
 
-    if (num(h.HR) >= 10) out.push(`${h.HR} HR`);
-    if (num(h.SLG) >= .500) out.push("POWER");
-    if (num(h.OPS) >= .850) out.push("OPS");
-    if (num(row.hotZoneCount) >= 4) out.push("HOT ZONES");
-    if (num(row.hitterZonePower) >= 50) out.push("ZONE EDGE");
-    if (num(row.weather) > 0) out.push("WEATHER");
-    if (num(row.bullpen) > 0) out.push("BULLPEN");
+    const add = (label) => {
+      const value = String(label || "").trim();
+      if (!value) return;
+      if (!out.some(x => String(x).toUpperCase() === value.toUpperCase())) out.push(value);
+    };
 
-    return out.slice(0, 8).map((x, i) => `<span class="pcchip c${i}">${esc(x)}</span>`).join("");
+    if (row.confirmedLineup && row.lineupSpot) add("CONFIRMED #" + row.lineupSpot);
+    else if (row.lineupSpot) add("PROJECTED #" + row.lineupSpot);
+
+    if (row.lineupRole) add(row.lineupRole);
+    if (num(row.lineupBoost) >= 8) add("LINEUP BOOST");
+
+    if (Array.isArray(row.tags)) {
+      row.tags.forEach(add);
+    }
+
+    if (num(h.HR) >= 10) add(`${h.HR} HR`);
+    if (num(h.SLG) >= .500) add("POWER");
+    if (num(h.OPS) >= .850) add("OPS HEATER");
+    if (num(row.hotZoneCount) >= 4) add("HOT ZONES");
+    if (num(row.hitterZonePower) >= 50) add("ZONE EDGE");
+    if (num(row.weather) > 0) add("WEATHER");
+    if (num(row.bullpen) > 0) add("BULLPEN");
+    if (num(row.pitcherRisk) >= 70) add("HR LEAK");
+    if (num(row.zoneOverlap) >= 55) add("ZONE OVERLAP");
+    if (num(row.powerScore) >= 70) add("BARREL KING");
+    if (num(row.protectionScore) >= 75) add("PROTECTION BOOST");
+
+    return out.slice(0, 14).map((x, i) => `<span class="pcchip c${i % 8}">${esc(x)}</span>`).join("");
   }
 
   function whyText(row) {
