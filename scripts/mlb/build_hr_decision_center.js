@@ -411,6 +411,10 @@ function tagsFor(card) {
   if (card.pitcherLeak >= 70) tags.push("LEAK");
   if (card.zoneOverlap >= 55) tags.push("OVERLAP");
   if (card.powerScore >= 60) tags.push("POWER");
+  if (num(card.lineupBoost) >= 8) tags.push("LINEUP BOOST");
+  if (card.confirmedLineup) tags.push("CONFIRMED");
+  if (num(card.lineupBoost) >= 8) tags.push("LINEUP BOOST");
+  if (card.confirmedLineup) tags.push("CONFIRMED");
 
   return tags.slice(0, 6);
 }
