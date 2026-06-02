@@ -888,8 +888,39 @@
   function renderSpotTab(row) {
     const spot = spotFor(row);
 
+    const confirmedSpot =
+      row.confirmedLineupSpot ||
+      row.actualLineupSpot ||
+      row.battingOrder ||
+      row.lineupSpot ||
+      null;
+
+    const projectedSpot =
+      row.projectedLineupSpot ||
+      row.projectedSpot ||
+      spot?.projectedSpot ||
+      null;
+
+    const activeSpot = confirmedSpot || projectedSpot;
+    const isConfirmed = Boolean(confirmedSpot || row.confirmedLineup || String(row.lineupSource || "").toUpperCase() === "CONFIRMED");
+
+    const lineupRole = row.lineupRole || "";
+    const lineupBoost = num(row.lineupBoost);
+    const projectedPA = num(row.projectedPlateAppearances);
+    const protectionScore = num(row.protectionScore);
+
     if (!spot?.spots) {
-      return `<h3>Spot Lab</h3><div class="pcwhy">Batting spot history is building for this player.</div>`;
+      return `
+        <h3>Spot Lab</h3>
+        <div class="pcgrid">
+          ${metric(isConfirmed ? "Confirmed Spot" : "Projected Spot", activeSpot ? "#" + activeSpot : "Pending")}
+          ${metric("Lineup Role", lineupRole || (isConfirmed ? "Confirmed" : "Pending"))}
+          ${metric("PA Projection", projectedPA ? projectedPA.toFixed(2) : "Pending")}
+          ${metric("Lineup Boost", lineupBoost ? (lineupBoost >= 0 ? "+" : "") + lineupBoost.toFixed(1) : "0.0")}
+          ${metric("Protection", protectionScore ? protectionScore.toFixed(1) : "Pending")}
+        </div>
+        <div class="pcwhy">Batting spot history is building for this player.</div>
+      `;
     }
 
     const rows = Object.values(spot.spots).sort((a, b) => Number(a.lineupSpot) - Number(b.lineupSpot));
@@ -902,18 +933,22 @@
           <h3>Spot Lab</h3>
           <p>Production by batting order spot this season</p>
         </div>
-        <span>Projected #${esc(spot.projectedSpot)}</span>
+        <span>${isConfirmed ? "Confirmed" : "Projected"} #${esc(activeSpot || "-")}</span>
       </div>
 
       <div class="pcgrid">
-        ${metric("Projected Spot", "#" + spot.projectedSpot)}
+        ${metric(isConfirmed ? "Confirmed Spot" : "Projected Spot", activeSpot ? "#" + activeSpot : "Pending")}
         ${metric("Best Spot", "#" + spot.bestSpot)}
         ${metric("Worst Spot", "#" + spot.worstSpot)}
+        ${metric("Lineup Role", lineupRole || (isConfirmed ? "Confirmed" : "Pending"))}
+        ${metric("PA Projection", projectedPA ? projectedPA.toFixed(2) : "Pending")}
+        ${metric("Lineup Boost", lineupBoost ? (lineupBoost >= 0 ? "+" : "") + lineupBoost.toFixed(1) : "0.0")}
+        ${metric("Protection", protectionScore ? protectionScore.toFixed(1) : "Pending")}
       </div>
 
       <div class="pcspottable">
         ${rows.map(r => {
-          const current = Number(r.lineupSpot) === Number(spot.projectedSpot);
+          const current = Number(r.lineupSpot) === Number(activeSpot);
           const opsWidth = Math.max(4, Math.round(num(r.ops) / maxOps * 100));
           const hrWidth = Math.max(4, Math.round(num(r.hr) / maxHr * 100));
           return `
