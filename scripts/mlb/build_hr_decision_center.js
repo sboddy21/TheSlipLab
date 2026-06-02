@@ -5,6 +5,11 @@ const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 const OUTFILE = path.join(DATA_DIR, "hr_decision_center.json");
 
+const lineupImpactPayload = readRawJson("lineup_impact_engine.json") || {};
+const lineupImpactMap = new Map(
+  Object.entries(lineupImpactPayload.byPlayer || {})
+);
+
 function readRawJson(name) {
   try {
     const file = path.join(DATA_DIR, name);
@@ -445,13 +450,30 @@ function buildCard(row) {
   const due = round(hardHit * 0.24 + barrel * 0.28 + iso * 20 + powerScore * 0.18);
   const seasonHr = round(num(row?.stats?.hitter?.hr ?? pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
 
-  const hrConfidence = round(
+  const compactPlayerKey = String(player || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const lineupImpact =
+    lineupImpactMap.get(norm(player)) ||
+    lineupImpactMap.get(compactPlayerKey) ||
+    {};
+  const lineupBoost = round(num(lineupImpact.lineupBoost));
+  const lineupImpactScore = round(num(lineupImpact.lineupImpactScore));
+  const projectedPlateAppearances = round(num(lineupImpact.projectedPlateAppearances));
+  const protectionScore = round(num(lineupImpact.protectionScore));
+
+  const baseHrConfidence = round(
     powerScore * 0.30 +
     pitchEdge * 0.22 +
     pitcherRisk * 0.18 +
     due * 0.12 +
     weather * 0.08 +
     bullpen * 0.10
+  );
+
+  const hrConfidence = round(
+    baseHrConfidence +
+    lineupBoost * 0.18 +
+    Math.max(0, lineupImpactScore - 65) * 0.035 +
+    Math.max(0, protectionScore - 60) * 0.025
   );
 
   const card = {
@@ -461,6 +483,17 @@ function buildCard(row) {
     game,
 
     hrConfidence,
+    baseHrConfidence,
+    lineupBoost,
+    lineupImpactScore,
+    lineupRole: lineupImpact.lineupRole || "",
+    lineupSpot: lineupImpact.lineupSpot || null,
+    lineupSource: lineupImpact.lineupSource || "",
+    confirmedLineup: Boolean(lineupImpact.confirmedLineup),
+    projectedPlateAppearances,
+    protectionScore,
+    hitterBefore: lineupImpact.hitterBefore || "",
+    hitterAfter: lineupImpact.hitterAfter || "",
     powerScore,
     pitchEdge,
     pitcherRisk,
@@ -471,7 +504,12 @@ function buildCard(row) {
 
     bestPitch: pitchProfile.pitch,
     tier: tier(hrConfidence),
-    reasons: reasonsFor(powerScore, pitchEdge, pitcherRisk, weather, due),
+    reasons: [
+      ...reasonsFor(powerScore, pitchEdge, pitcherRisk, weather, due),
+      ...(lineupImpact.lineupRole ? ["Lineup role: " + lineupImpact.lineupRole] : []),
+      ...(lineupBoost >= 8 ? ["strong lineup slot boost"] : []),
+      ...(protectionScore >= 75 ? ["protection boost"] : [])
+    ],
 
     zoneOverlap: zone.zoneOverlap,
     hitterZonePower: zone.hitterZonePower,
