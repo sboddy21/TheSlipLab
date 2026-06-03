@@ -17,23 +17,26 @@ function readJSON(file, fallback) {
 }
 
 function writeJSON(file, data) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(data, null, 2));
 }
 
 function normalizeRows(data) {
   if (Array.isArray(data)) return data;
-  if (Array.isArray(data.homeRuns)) return data.homeRuns;
-  if (Array.isArray(data.results)) return data.results;
-  if (Array.isArray(data.rows)) return data.rows;
-  if (Array.isArray(data.players)) return data.players;
+  if (Array.isArray(data?.homeRuns)) return data.homeRuns;
+  if (Array.isArray(data?.results)) return data.results;
+  if (Array.isArray(data?.rows)) return data.rows;
+  if (Array.isArray(data?.players)) return data.players;
   return [];
 }
 
 function cleanHrRows(rows) {
+  const seen = new Set();
+
   return rows
     .filter(r => {
       const event = String(r.event || r.eventType || r.result || r.outcome || "").toLowerCase();
-      return event.includes("home") || event.includes("home_run") || Number(r.hr || r.HR || 0) > 0;
+      return event.includes("home run") || event.includes("home_run") || Number(r.hr || r.HR || 0) > 0;
     })
     .map(r => ({
       player: r.player || r.batter || r.name || "Unknown Player",
@@ -54,13 +57,29 @@ function cleanHrRows(rows) {
       playId: r.playId || "",
       endTime: r.endTime || r.startTime || ""
     }))
-    .filter(r => r.player && r.player !== "Unknown Player");
+    .filter(r => r.player && r.player !== "Unknown Player")
+    .filter(r => {
+      const key = [
+        r.player,
+        r.team,
+        r.pitcher,
+        r.inning,
+        r.description,
+        r.endTime
+      ].join("|");
+
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
-function upsertDay(days, date, rows) {
+function upsertDay(days, date, rawRows) {
   if (!date) return days;
 
-  const homeRuns = cleanHrRows(rows);
+  const homeRuns = cleanHrRows(rawRows);
+  if (!homeRuns.length) return days;
+
   const dayEntry = {
     date,
     homeRuns,
@@ -72,7 +91,7 @@ function upsertDay(days, date, rows) {
   if (index >= 0) {
     days[index] = dayEntry;
   } else {
-    days.unshift(dayEntry);
+    days.push(dayEntry);
   }
 
   return days;
@@ -87,18 +106,18 @@ if (previous?.date) {
 }
 
 const live = readJSON(LIVE_RESULTS_FILE, null);
-if (live?.date && Number(live.count || 0) > 0) {
+if (live?.date) {
   days = upsertDay(days, live.date, normalizeRows(live));
 }
 
 days = days
-  .filter(d => d && d.date)
+  .filter(d => d && d.date && Array.isArray(d.homeRuns) && d.homeRuns.length)
   .sort((a, b) => String(b.date).localeCompare(String(a.date)))
   .slice(0, 60);
 
 writeJSON(HISTORY_FILE, {
   updatedAt: new Date().toISOString(),
-  source: "mlb_results_previous.json plus live mlb_results.json when populated",
+  source: "live mlb_results.json plus previous day mlb_results_previous.json",
   days
 });
 

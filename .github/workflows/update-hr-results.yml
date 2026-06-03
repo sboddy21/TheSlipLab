@@ -15,7 +15,7 @@ concurrency:
 jobs:
   update-hr-results:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
 
     steps:
       - name: Checkout repository
@@ -32,6 +32,11 @@ jobs:
       - name: Build live HR results
         run: node scripts/mlb/build_hr_results.js
 
+      - name: Build previous day HR results
+        run: |
+          PREV_DATE=$(node -e "const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));d.setDate(d.getDate()-1);console.log(d.toISOString().slice(0,10));")
+          node scripts/mlb/build_hr_results.js --date=$PREV_DATE --out=website/data/mlb_results_previous.json
+
       - name: Build HR results history
         run: node scripts/mlb/build_hr_results_history.js
 
@@ -47,7 +52,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/site_last_updated.json || true
-          git commit -m "Update HR results" || echo "No changes to commit"
+          git commit -m "Update HR results history" || echo "No changes to commit"
 
           for i in 1 2 3; do
             git pull origin main --rebase || true
