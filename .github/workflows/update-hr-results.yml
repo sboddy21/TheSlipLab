@@ -8,9 +8,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: update-hr-results
+  cancel-in-progress: false
+
 jobs:
   update-hr-results:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -24,16 +29,32 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build today's HR results
+      - name: Build live HR results
         run: node scripts/mlb/build_hr_results.js
 
-      - name: Commit updated HR results
+      - name: Build HR results history
+        run: node scripts/mlb/build_hr_results_history.js
+
+      - name: Stamp update time
+        if: always()
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          node -e "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'hr_results_workflow'},null,2));"
 
-          git add website/data/mlb_results.json
+      - name: Commit updated HR results
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git commit -m "Auto update HR results" || echo "No changes"
+          git add website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/site_last_updated.json || true
+          git commit -m "Update HR results" || echo "No changes to commit"
 
-          git push
+          for i in 1 2 3; do
+            git pull origin main --rebase || true
+            git push origin HEAD:main && exit 0
+            echo "Push failed. Retrying..."
+            sleep 10
+          done
+
+          echo "Push failed after retries"
+          exit 1
