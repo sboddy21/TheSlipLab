@@ -2,7 +2,7 @@ name: Update HR Results
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
       - name: Stamp update time
         if: always()
         run: |
-          node -e "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'hr_results_workflow'},null,2));"
+          node -e "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'hr_results_workflow_5_min'},null,2));"
 
       - name: Commit updated HR results
         if: always()
@@ -52,7 +52,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/site_last_updated.json || true
-          git commit -m "Update HR results history" || echo "No changes to commit"
+          git commit -m "Update HR results" || echo "No changes to commit"
 
           for i in 1 2 3; do
             git pull origin main --rebase || true
