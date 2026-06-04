@@ -9,6 +9,7 @@ const ROOT = path.resolve(__dirname, "../..");
 const POINTS_FILE = path.join(ROOT, "website/data/nba_points.json");
 const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const DEFENSE_FILE = path.join(ROOT, "website/data/nba_team_defense.json");
+const PACE_FILE = path.join(ROOT, "website/data/nba_pace_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_matchup_engine.json");
 
 function readJSON(file, fallback) {
@@ -56,6 +57,16 @@ function findGame(row, games) {
   ) || null;
 }
 
+function paceBoost(pace) {
+  if (!pace) return 0;
+  const rank = num(pace.rankPace);
+  if (rank <= 5) return 5;
+  if (rank <= 10) return 3;
+  if (rank >= 26) return -4;
+  if (rank >= 21) return -2;
+  return 0;
+}
+
 function defenseBoost(defense) {
   if (!defense) return 0;
   const rank = num(defense.rankPointsAllowed);
@@ -67,7 +78,7 @@ function defenseBoost(defense) {
   return 0;
 }
 
-function buildScore(row, defense) {
+function buildScore(row, defense, pace) {
   const pointsScore = num(row.pointsScore);
   const usageScore = num(row.usageScore);
   const minutes = num(row.expectedMinutes);
@@ -89,21 +100,25 @@ function buildScore(row, defense) {
     row.scoringRole === "Strong Scorer" ? 2 :
     0;
 
-  const matchupScore = clamp(base + usage + mins + minConf + volume + scoringTrend + homeAwayBoost + usageSpikeBoost + roleBoost + defenseBoost(defense));
+  const matchupScore = clamp(base + usage + mins + minConf + volume + scoringTrend + homeAwayBoost + usageSpikeBoost + roleBoost + defenseBoost(defense) + paceBoost(pace));
 
   return round1(matchupScore);
 }
 
-function buildRow(row, games, defenseMap) {
+function buildRow(row, games, defenseMap, paceMap) {
   const game = findGame(row, games);
   const defense = defenseMap.get(String(row.opponent)) || null;
-  const matchupScore = buildScore(row, defense);
+  const pace = paceMap.get(String(row.opponent)) || null;
+  const matchupScore = buildScore(row, defense, pace);
   const tier = matchupTier(matchupScore);
 
   const tags = [
     tier,
     row.homeAway === "HOME" ? "Home Spot" : "Road Spot",
     defense?.defensiveTier || "",
+    pace?.paceTier || "",
+    pace && num(pace.rankPace) <= 10 ? "Pace Boost" : "",
+    pace && num(pace.rankPace) >= 21 ? "Slow Pace" : "",
     defense && num(defense.rankPointsAllowed) >= 21 ? "Defense Target" : "",
     defense && num(defense.rankPointsAllowed) <= 10 ? "Tough Points Defense" : "",
     row.usageTrend === "Usage Spike" ? "Usage Spike" : "",
@@ -129,7 +144,16 @@ function buildRow(row, games, defenseMap) {
     arena: game?.arena || "",
     city: game?.city || "",
     opponentContext: defense ? `${defense.teamAbbr} allows ${defense.pointsAllowed} PPG, rank ${defense.rankPointsAllowed} vs points` : "Neutral until team defense dataset is added",
-    paceContext: "Neutral until pace dataset is added",
+    paceContext: pace ? `${pace.teamAbbr} pace ${pace.pace}, rank ${pace.rankPace}` : "Neutral until pace dataset is added",
+    pace: pace ? {
+      opponent: pace.teamAbbr,
+      pace: pace.pace,
+      rankPace: pace.rankPace,
+      paceTier: pace.paceTier,
+      offensiveRating: pace.offensiveRating,
+      defensiveRating: pace.defensiveRating,
+      netRating: pace.netRating
+    } : null,
     defense: defense ? {
       opponent: defense.teamAbbr,
       defensiveTier: defense.defensiveTier,
@@ -163,19 +187,26 @@ async function main() {
   const points = readJSON(POINTS_FILE, { players: [] });
   const gamesPayload = readJSON(GAMES_FILE, { games: [] });
   const defensePayload = readJSON(DEFENSE_FILE, { teams: [] });
+  const pacePayload = readJSON(PACE_FILE, { teams: [] });
 
   const players = Array.isArray(points.players) ? points.players : [];
   const games = Array.isArray(gamesPayload.games) ? gamesPayload.games : [];
   const defenses = Array.isArray(defensePayload.teams) ? defensePayload.teams : [];
+  const paces = Array.isArray(pacePayload.teams) ? pacePayload.teams : [];
 
   const defenseMap = new Map();
   for (const team of defenses) {
     if (team.teamAbbr) defenseMap.set(String(team.teamAbbr), team);
   }
 
+  const paceMap = new Map();
+  for (const team of paces) {
+    if (team.teamAbbr) paceMap.set(String(team.teamAbbr), team);
+  }
+
   const rows = players
     .filter(p => String(p.status || "").toUpperCase() === "ACTIVE")
-    .map(p => buildRow(p, games, defenseMap))
+    .map(p => buildRow(p, games, defenseMap, paceMap))
     .sort((a, b) =>
       b.matchupScore - a.matchupScore ||
       b.pointsScore - a.pointsScore ||
@@ -189,16 +220,16 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    version: "2.0",
+    version: "2.1",
     source: "nba_points plus nba_games_today",
     fetchedAt: new Date().toISOString(),
     date: points.date || gamesPayload.date || "",
     season: points.season || "",
     playerCount: rows.length,
     modelNotes: [
-      "NBA Matchup Engine 2.0 uses points board context plus real NBA team defense allowed data.",
+      "NBA Matchup Engine 2.1 uses points board context, real NBA team defense allowed data, and real NBA pace data.",
       "Opponent defensive ranks are pulled from nba_team_defense.json.",
-      "Pace remains neutral until a real pace dataset is added.",
+      "Pace ranks are pulled from nba_pace_engine.json.",
       "No odds or betting lines are used."
     ],
     players: rows
