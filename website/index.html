@@ -392,7 +392,7 @@
           <div class="stats">
             <div class="stat">
               <div class="label">Today’s Slate</div>
-              <div class="big" id="mlbGames">15</div>
+              <div class="big" id="mlbGames">Loading</div>
               <div class="small">Games</div>
             </div>
             <div class="stat">
@@ -550,5 +550,21 @@
     document.getElementById("lastUpdated").textContent =
       now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + " ET";
   </script>
+
+<script>
+(async function(){
+  try {
+    const res = await fetch("data/mlb_games_today.json?v=" + Date.now());
+    const data = await res.json();
+    const count = data.gameCount || (Array.isArray(data.games) ? data.games.length : 0);
+    const el = document.getElementById("mlbGames");
+    if (el) el.textContent = count;
+  } catch (err) {
+    const el = document.getElementById("mlbGames");
+    if (el) el.textContent = "--";
+  }
+})();
+</script>
+
 </body>
 </html>
