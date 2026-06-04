@@ -8,6 +8,9 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const POINTS_FILE = path.join(ROOT, "website/data/nba_points.json");
 const MATCHUP_FILE = path.join(ROOT, "website/data/nba_matchup_engine.json");
+const REBOUNDS_FILE = path.join(ROOT, "website/data/nba_rebounds.json");
+const ASSISTS_FILE = path.join(ROOT, "website/data/nba_assists.json");
+const THREES_FILE = path.join(ROOT, "website/data/nba_threes.json");
 const OUT = path.join(ROOT, "website/data/nba_decision_center.json");
 
 function readJSON(file, fallback) {
@@ -92,7 +95,34 @@ function top(rows, n = 10) {
   return rows.slice(0, n);
 }
 
-function buildSections(players, matchupMap) {
+function compactMarket(row, market, scoreKey, leanKey, reason = "") {
+  return {
+    rank: row.rank,
+    playerId: row.playerId,
+    player: row.player,
+    team: row.team,
+    opponent: row.opponent,
+    position: row.position,
+    homeAway: row.homeAway,
+    market,
+    marketScore: round1(row[scoreKey]),
+    marketLean: round1(row[leanKey]),
+    confidence: row.confidence,
+    expectedMinutes: round1(row.expectedMinutes),
+    minutesConfidence: round1(row.minutesConfidence),
+    minutesRole: row.minutesRole,
+    trendDiff: round1(row.trendDiff),
+    role:
+      row.reboundRole ||
+      row.assistRole ||
+      row.threesRole ||
+      "",
+    reason,
+    tags: Array.isArray(row.tags) ? row.tags.slice(0, 8) : []
+  };
+}
+
+function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [], threesRows = []) {
   const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
 
   const bestPointsPlays = top(sortByScore(active), 10)
@@ -148,6 +178,15 @@ function buildSections(players, matchupMap) {
     return rank > 0 && rank <= 10;
   })), 10).map(p => compact(p, "Opponent is a tougher points defense based on allowed points rank.", matchupMap));
 
+  const topRebounds = top(reboundsRows, 10)
+    .map(p => compactMarket(p, "Rebounds", "reboundsScore", "reboundsLean", "Best rebound profile from rebounds score, rebound lean, minutes, role, and recent trend."));
+
+  const topAssists = top(assistsRows, 10)
+    .map(p => compactMarket(p, "Assists", "assistsScore", "assistsLean", "Best assist profile from assists score, assist lean, minutes, usage, and recent trend."));
+
+  const topThrees = top(threesRows, 10)
+    .map(p => compactMarket(p, "Threes", "threesScore", "threesLean", "Best three point profile from threes score, threes lean, attempts, minutes, and trend."));
+
   return {
     bestPointsPlays,
     usageRisers,
@@ -157,6 +196,9 @@ function buildSections(players, matchupMap) {
     boomCandidates,
     defenseTargets,
     toughDefenseWarnings,
+    topRebounds,
+    topAssists,
+    topThrees,
     watchList
   };
 }
@@ -164,20 +206,26 @@ function buildSections(players, matchupMap) {
 async function main() {
   const points = readJSON(POINTS_FILE, { players: [] });
   const matchups = readJSON(MATCHUP_FILE, { players: [] });
+  const rebounds = readJSON(REBOUNDS_FILE, { players: [] });
+  const assists = readJSON(ASSISTS_FILE, { players: [] });
+  const threes = readJSON(THREES_FILE, { players: [] });
 
   const players = Array.isArray(points.players) ? points.players : [];
   const matchupRows = Array.isArray(matchups.players) ? matchups.players : [];
+  const reboundsRows = Array.isArray(rebounds.players) ? rebounds.players : [];
+  const assistsRows = Array.isArray(assists.players) ? assists.players : [];
+  const threesRows = Array.isArray(threes.players) ? threes.players : [];
 
   const matchupMap = new Map();
   for (const row of matchupRows) {
     if (row.playerId) matchupMap.set(String(row.playerId), row);
   }
 
-  const sections = buildSections(players, matchupMap);
+  const sections = buildSections(players, matchupMap, reboundsRows, assistsRows, threesRows);
 
   const out = {
     sport: "NBA",
-    version: "1.1",
+    version: "1.2",
     source: "nba_points.json",
     fetchedAt: new Date().toISOString(),
     date: points.date || "",
@@ -186,8 +234,8 @@ async function main() {
     playerCount: players.length,
     sectionCount: Object.keys(sections).length,
     modelNotes: [
-      "NBA Decision Center 1.1 is built from the NBA Points Board and NBA Matchup Engine.",
-      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, and watch list.",
+      "NBA Decision Center 1.2 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
+      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
