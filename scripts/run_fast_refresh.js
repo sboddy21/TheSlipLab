@@ -5,8 +5,6 @@ const jobs = [
   "node scripts/mlb/fetch_mlb_today.js",
   "node scripts/mlb/build_home_run_board.js",
   "node scripts/mlb/build_hits_board.js",
-  "node scripts/mlb/build_total_bases_board.js",
-  "node scripts/mlb/build_rbis_board.js",
   "node scripts/mlb/build_team_stacks.js",
   "node scripts/mlb/build_weather_board.js",
   "node scripts/mlb/build_hr_results.js",
