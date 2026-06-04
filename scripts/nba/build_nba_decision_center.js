@@ -1,0 +1,174 @@
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const ROOT = path.resolve(__dirname, "../..");
+const POINTS_FILE = path.join(ROOT, "website/data/nba_points.json");
+const OUT = path.join(ROOT, "website/data/nba_decision_center.json");
+
+function readJSON(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function round1(v) {
+  return Math.round(num(v) * 10) / 10;
+}
+
+function tagList(row) {
+  return Array.isArray(row.tags) ? row.tags : [];
+}
+
+function hasTag(row, text) {
+  return tagList(row).some(t => String(t).toLowerCase().includes(String(text).toLowerCase()));
+}
+
+function compact(row, reason = "") {
+  return {
+    rank: row.rank,
+    playerId: row.playerId,
+    player: row.player,
+    team: row.team,
+    opponent: row.opponent,
+    position: row.position,
+    homeAway: row.homeAway,
+    pointsScore: round1(row.pointsScore),
+    confidence: row.confidence,
+    pointsLean: round1(row.pointsLean),
+    seasonPoints: round1(row.seasonPoints),
+    last5Points: round1(row.last5Points),
+    last10Points: round1(row.last10Points),
+    trendDiff: round1(row.trendDiff),
+    expectedMinutes: round1(row.expectedMinutes),
+    minutesConfidence: round1(row.minutesConfidence),
+    minutesRole: row.minutesRole,
+    minutesTrend: round1(row.minutesTrend),
+    usageScore: round1(row.usageScore),
+    usageTier: row.usageTier,
+    usageTrend: row.usageTrend,
+    volumeTrend: round1(row.volumeTrend),
+    fgaTrend: round1(row.fgaTrend),
+    ftaTrend: round1(row.ftaTrend),
+    scoringRole: row.scoringRole,
+    reason,
+    tags: tagList(row).slice(0, 8)
+  };
+}
+
+function sortByScore(rows) {
+  return rows.slice().sort((a, b) =>
+    num(b.pointsScore) - num(a.pointsScore) ||
+    num(b.pointsLean) - num(a.pointsLean) ||
+    num(b.usageScore) - num(a.usageScore) ||
+    num(b.expectedMinutes) - num(a.expectedMinutes) ||
+    String(a.player).localeCompare(String(b.player))
+  );
+}
+
+function top(rows, n = 10) {
+  return rows.slice(0, n);
+}
+
+function buildSections(players) {
+  const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
+
+  const bestPointsPlays = top(sortByScore(active), 10)
+    .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, and recent form."));
+
+  const usageRisers = top(sortByScore(active.filter(p =>
+    p.usageTrend === "Usage Spike" ||
+    p.usageTrend === "Usage Up" ||
+    num(p.volumeTrend) >= 4 ||
+    hasTag(p, "Volume Acceleration")
+  )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction."));
+
+  const minutesMonsters = top(sortByScore(active.filter(p =>
+    num(p.expectedMinutes) >= 32 &&
+    num(p.minutesConfidence) >= 85
+  )), 10).map(p => compact(p, "High projected minutes with strong minute confidence."));
+
+  const scoringForm = top(sortByScore(active.filter(p =>
+    num(p.trendDiff) >= 3 ||
+    num(p.last5Points) >= num(p.seasonPoints) + 3 ||
+    num(p.last10Points) >= num(p.seasonPoints) + 2
+  )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline."));
+
+  const safeFloor = top(sortByScore(active.filter(p =>
+    num(p.expectedMinutes) >= 30 &&
+    num(p.minutesConfidence) >= 85 &&
+    num(p.usageScore) >= 50 &&
+    num(p.pointsLean) >= 15
+  )), 10).map(p => compact(p, "Stable minutes, usable offensive role, and reliable scoring lean."));
+
+  const boomCandidates = top(sortByScore(active.filter(p =>
+    num(p.trendDiff) >= 4 ||
+    p.usageTrend === "Usage Spike" ||
+    num(p.volumeTrend) >= 5 ||
+    num(p.fgaTrend) >= 3 ||
+    num(p.ftaTrend) >= 2
+  )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, or volume acceleration."));
+
+  const watchList = top(sortByScore(active.filter(p =>
+    num(p.pointsScore) >= 55 &&
+    num(p.pointsScore) < 70
+  )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor."));
+
+  return {
+    bestPointsPlays,
+    usageRisers,
+    minutesMonsters,
+    scoringForm,
+    safeFloor,
+    boomCandidates,
+    watchList
+  };
+}
+
+async function main() {
+  const points = readJSON(POINTS_FILE, { players: [] });
+  const players = Array.isArray(points.players) ? points.players : [];
+
+  const sections = buildSections(players);
+
+  const out = {
+    sport: "NBA",
+    version: "1.0",
+    source: "nba_points.json",
+    fetchedAt: new Date().toISOString(),
+    date: points.date || "",
+    season: points.season || "",
+    market: "Points",
+    playerCount: players.length,
+    sectionCount: Object.keys(sections).length,
+    modelNotes: [
+      "NBA Decision Center 1.0 is built from the NBA Points Board.",
+      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, and watch list.",
+      "No odds or betting lines are used."
+    ],
+    sections
+  };
+
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+
+  console.log("NBA DECISION CENTER COMPLETE");
+  console.log("Players:", players.length);
+  console.log("Sections:", Object.keys(sections).length);
+  console.log("Saved:", OUT);
+}
+
+main().catch(err => {
+  console.error("NBA DECISION CENTER FAILED");
+  console.error(err);
+  process.exit(1);
+});

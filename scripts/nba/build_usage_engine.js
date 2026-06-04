@@ -27,6 +27,10 @@ function round1(v) {
   return Math.round(num(v) * 10) / 10;
 }
 
+function clamp(v, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, num(v)));
+}
+
 function byId(rows) {
   const map = new Map();
   for (const row of Array.isArray(rows) ? rows : []) {
@@ -35,76 +39,85 @@ function byId(rows) {
   return map;
 }
 
-function usageScore(history, minutes) {
-  const season = history?.season || {};
-  const last5 = history?.last5 || {};
-
-  const seasonFGA = num(season.fieldGoalAttempts);
-  const last5FGA = num(last5.fieldGoalAttempts);
-  const seasonFTA = num(season.freeThrowAttempts);
-  const last5FTA = num(last5.freeThrowAttempts);
-  const seasonAST = num(season.assists);
-  const last5AST = num(last5.assists);
-  const expectedMinutes = num(minutes?.expectedMinutes);
-
-  let score = 0;
-
-  if (seasonFGA >= 20) score += 35;
-  else if (seasonFGA >= 17) score += 30;
-  else if (seasonFGA >= 14) score += 24;
-  else if (seasonFGA >= 11) score += 17;
-  else if (seasonFGA >= 8) score += 10;
-  else score += 4;
-
-  if (last5FGA >= seasonFGA + 4) score += 15;
-  else if (last5FGA >= seasonFGA + 2) score += 10;
-  else if (last5FGA >= seasonFGA + 1) score += 5;
-
-  if (seasonFTA >= 7) score += 12;
-  else if (seasonFTA >= 5) score += 9;
-  else if (seasonFTA >= 3) score += 5;
-
-  if (last5FTA >= seasonFTA + 2) score += 6;
-
-  if (seasonAST >= 7) score += 10;
-  else if (seasonAST >= 5) score += 7;
-  else if (seasonAST >= 3) score += 4;
-
-  if (last5AST >= seasonAST + 2) score += 5;
-
-  if (expectedMinutes >= 34) score += 10;
-  else if (expectedMinutes >= 30) score += 7;
-  else if (expectedMinutes >= 24) score += 4;
-
-  return Math.min(100, Math.round(score));
-}
-
-function trendLabel(history) {
-  const season = history?.season || {};
-  const last5 = history?.last5 || {};
-
-  const fgaDiff = num(last5.fieldGoalAttempts) - num(season.fieldGoalAttempts);
-  const ftaDiff = num(last5.freeThrowAttempts) - num(season.freeThrowAttempts);
-
-  if (fgaDiff >= 4 || ftaDiff >= 3) return "Usage Spike";
-  if (fgaDiff >= 2 || ftaDiff >= 1.5) return "Usage Up";
-  if (fgaDiff <= -4) return "Usage Down";
+function usageTrendLabel(volumeTrend, fgaTrend, ftaTrend) {
+  if (volumeTrend >= 6 || fgaTrend >= 4 || ftaTrend >= 3) return "Usage Spike";
+  if (volumeTrend >= 3 || fgaTrend >= 2 || ftaTrend >= 1.5) return "Usage Up";
+  if (volumeTrend <= -5 || fgaTrend <= -4) return "Usage Down";
   return "Stable Usage";
 }
 
 function usageTier(score) {
-  if (score >= 80) return "Elite Usage";
-  if (score >= 65) return "High Usage";
-  if (score >= 50) return "Strong Usage";
-  if (score >= 35) return "Moderate Usage";
+  if (score >= 85) return "Elite Usage";
+  if (score >= 70) return "High Usage";
+  if (score >= 55) return "Strong Usage";
+  if (score >= 40) return "Moderate Usage";
   return "Low Usage";
+}
+
+function buildUsageScore({ seasonFGA, last5FGA, seasonFTA, last5FTA, seasonAssists, last5Assists, expectedMinutes, minutesConfidence }) {
+  const fgaBase = clamp((seasonFGA / 22) * 38, 0, 38);
+  const ftaBase = clamp((seasonFTA / 8) * 14, 0, 14);
+  const assistBase = clamp((seasonAssists / 8) * 10, 0, 10);
+
+  const fgaTrend = last5FGA - seasonFGA;
+  const ftaTrend = last5FTA - seasonFTA;
+  const astTrend = last5Assists - seasonAssists;
+
+  const trendScore = clamp((fgaTrend * 2.8) + (ftaTrend * 2.2) + (astTrend * 1.2), -12, 18);
+  const minutesScore = clamp((expectedMinutes / 36) * 14, 0, 14);
+  const confidenceScore = clamp((minutesConfidence / 100) * 6, 0, 6);
+
+  return round1(clamp(fgaBase + ftaBase + assistBase + trendScore + minutesScore + confidenceScore));
 }
 
 function buildRow(history, minutes) {
   const season = history?.season || {};
   const last5 = history?.last5 || {};
   const last10 = history?.last10 || {};
-  const score = usageScore(history, minutes);
+
+  const seasonFGA = num(season.fieldGoalAttempts);
+  const last5FGA = num(last5.fieldGoalAttempts);
+  const last10FGA = num(last10.fieldGoalAttempts);
+
+  const seasonFTA = num(season.freeThrowAttempts);
+  const last5FTA = num(last5.freeThrowAttempts);
+  const last10FTA = num(last10.freeThrowAttempts);
+
+  const seasonAssists = num(season.assists);
+  const last5Assists = num(last5.assists);
+  const last10Assists = num(last10.assists);
+
+  const expectedMinutes = num(minutes?.expectedMinutes);
+  const minutesConfidence = num(minutes?.minutesConfidence);
+
+  const fgaTrend = round1(last5FGA - seasonFGA);
+  const ftaTrend = round1(last5FTA - seasonFTA);
+  const assistTrend = round1(last5Assists - seasonAssists);
+  const volumeTrend = round1(fgaTrend + ftaTrend + (assistTrend * 0.35));
+
+  const usageScore = buildUsageScore({
+    seasonFGA,
+    last5FGA,
+    seasonFTA,
+    last5FTA,
+    seasonAssists,
+    last5Assists,
+    expectedMinutes,
+    minutesConfidence
+  });
+
+  const trend = usageTrendLabel(volumeTrend, fgaTrend, ftaTrend);
+  const tier = usageTier(usageScore);
+
+  const tags = [
+    tier,
+    trend,
+    fgaTrend >= 3 ? "Shot Volume Climbing" : "",
+    ftaTrend >= 2 ? "Rim/FT Volume Climbing" : "",
+    volumeTrend >= 5 ? "Volume Acceleration" : "",
+    expectedMinutes >= 34 ? "Heavy Minutes" : "",
+    usageScore >= 85 ? "Primary Offensive Engine" : ""
+  ].filter(Boolean);
 
   return {
     playerId: history.playerId,
@@ -114,24 +127,30 @@ function buildRow(history, minutes) {
     position: history.position,
     starter: Boolean(history.starter),
     status: history.status,
-    expectedMinutes: num(minutes?.expectedMinutes),
-    minutesConfidence: num(minutes?.minutesConfidence),
-    seasonFGA: round1(season.fieldGoalAttempts),
-    last5FGA: round1(last5.fieldGoalAttempts),
-    last10FGA: round1(last10.fieldGoalAttempts),
-    seasonFTA: round1(season.freeThrowAttempts),
-    last5FTA: round1(last5.freeThrowAttempts),
-    last10FTA: round1(last10.freeThrowAttempts),
-    seasonAssists: round1(season.assists),
-    last5Assists: round1(last5.assists),
-    last10Assists: round1(last10.assists),
-    usageScore: score,
-    usageTier: usageTier(score),
-    usageTrend: trendLabel(history),
-    tags: [
-      usageTier(score),
-      trendLabel(history)
-    ]
+
+    expectedMinutes: round1(expectedMinutes),
+    minutesConfidence: round1(minutesConfidence),
+
+    seasonFGA: round1(seasonFGA),
+    last5FGA: round1(last5FGA),
+    last10FGA: round1(last10FGA),
+    fgaTrend,
+
+    seasonFTA: round1(seasonFTA),
+    last5FTA: round1(last5FTA),
+    last10FTA: round1(last10FTA),
+    ftaTrend,
+
+    seasonAssists: round1(seasonAssists),
+    last5Assists: round1(last5Assists),
+    last10Assists: round1(last10Assists),
+    assistTrend,
+
+    volumeTrend,
+    usageScore,
+    usageTier: tier,
+    usageTrend: trend,
+    tags: [...new Set(tags)]
   };
 }
 
@@ -146,21 +165,23 @@ async function main() {
     .map(h => buildRow(h, minutesMap.get(String(h.playerId)) || {}))
     .sort((a, b) =>
       b.usageScore - a.usageScore ||
+      b.volumeTrend - a.volumeTrend ||
       b.expectedMinutes - a.expectedMinutes ||
       a.player.localeCompare(b.player)
     );
 
   const out = {
     sport: "NBA",
-    version: "1.0",
+    version: "1.1",
     source: "nba_history plus nba_minutes_engine",
     fetchedAt: new Date().toISOString(),
     date: historyData.date || "",
     season: historyData.season || "",
     playerCount: rows.length,
     modelNotes: [
-      "Usage Engine 1.0 uses field goal attempts, free throw attempts, assists, recent usage trend, and expected minutes.",
-      "This layer helps separate real offensive engines from low volume rotation players."
+      "Usage Engine 1.1 uses shot volume, free throw volume, assist involvement, volume acceleration, expected minutes, and minutes confidence.",
+      "Usage trend labels are Usage Spike, Usage Up, Stable Usage, and Usage Down.",
+      "No odds or betting lines are used."
     ],
     players: rows
   };
