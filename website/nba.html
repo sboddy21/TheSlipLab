@@ -280,6 +280,10 @@
       <div class="metrics">
         <div class="metric"><span>Players</span><strong id="playerCount">--</strong></div>
         <div class="metric"><span>Sections</span><strong id="sectionCount">--</strong></div>
+        <div class="metric"><span>#1 Points</span><strong id="topPoints">--</strong></div>
+        <div class="metric"><span>#1 Rebounds</span><strong id="topRebounds">--</strong></div>
+        <div class="metric"><span>#1 Assists</span><strong id="topAssists">--</strong></div>
+        <div class="metric"><span>#1 Threes</span><strong id="topThrees">--</strong></div>
         <div class="metric"><span>Market</span><strong id="market">Points</strong></div>
         <div class="metric"><span>Updated</span><strong id="updated">--</strong></div>
       </div>
@@ -419,6 +423,10 @@
         `${clean(DATA.market, "Points")} board • ${clean(DATA.date)} • ${clean(DATA.source)}`;
       document.getElementById("playerCount").textContent = clean(DATA.playerCount);
       document.getElementById("sectionCount").textContent = clean(DATA.sectionCount);
+      document.getElementById("topPoints").textContent = clean(DATA.sections?.bestPointsPlays?.[0]?.player);
+      document.getElementById("topRebounds").textContent = clean(DATA.sections?.topRebounds?.[0]?.player);
+      document.getElementById("topAssists").textContent = clean(DATA.sections?.topAssists?.[0]?.player);
+      document.getElementById("topThrees").textContent = clean(DATA.sections?.topThrees?.[0]?.player);
       document.getElementById("market").textContent = clean(DATA.market, "Points");
       document.getElementById("updated").textContent = niceDate(DATA.fetchedAt);
 
