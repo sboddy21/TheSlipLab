@@ -29,6 +29,10 @@ function norm(v = "") {
   return clean(v).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function gameKey(g) {
+  return norm(g.matchup || g.game || `${g.awayTeam || g.away} at ${g.homeTeam || g.home}`);
+}
+
 function scoreOf(h) {
   return Number(h.hrVolatilityScore ?? h.hrConfidence ?? h.score ?? h.powerScore ?? 0);
 }
@@ -44,7 +48,12 @@ function buildLineupMap(lineup) {
 
     if (!Number.isFinite(order) || order <= 0) continue;
 
-    const entry = { order, player, playerId, position: clean(row.position) };
+    const entry = {
+      order,
+      player,
+      playerId,
+      position: clean(row.position)
+    };
 
     if (player) map.set(norm(player), entry);
     if (playerId) map.set(playerId, entry);
@@ -96,29 +105,23 @@ const hrPayload = readJSON("mlb_home_runs.json", []);
 const slateGames = rows(slatePayload);
 const hitters = rows(hrPayload);
 
-const slateMap = new Map();
-
-for (const g of slateGames) {
-  const key = norm(g.matchup || `${g.awayTeam} at ${g.homeTeam}`);
-  slateMap.set(key, g);
-}
-
 const groupedHitters = new Map();
 
 for (const hitter of hitters) {
   const key = norm(clean(hitter.game || hitter.matchup));
+  if (!key) continue;
   if (!groupedHitters.has(key)) groupedHitters.set(key, []);
   groupedHitters.get(key).push(hitter);
 }
 
 const finalGames = [];
 
-for (const [key, bats] of groupedHitters.entries()) {
-  const slateGame = slateMap.get(key);
-  if (!slateGame) continue;
+for (const slateGame of slateGames) {
+  const key = gameKey(slateGame);
+  const bats = groupedHitters.get(key) || [];
 
-  const awayTeam = slateGame.awayTeam;
-  const homeTeam = slateGame.homeTeam;
+  const awayTeam = slateGame.awayTeam || slateGame.away || "";
+  const homeTeam = slateGame.homeTeam || slateGame.home || "";
 
   const awayLineupMap = buildLineupMap(slateGame.awayBattingOrder);
   const homeLineupMap = buildLineupMap(slateGame.homeBattingOrder);
