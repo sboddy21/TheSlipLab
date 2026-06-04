@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const OUT = path.join(ROOT, "website/data/nba_points.json");
+const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 
 function readJSON(file, fallback) {
   try {
@@ -68,13 +69,14 @@ function buildPointsScore({ pointsLean, season, last5, last10, minutes, minutesC
   return round1(clamp(basePoints + seasonFloor + form + minuteScore + usage + trend + volumeTrend + starterBoost + confidenceBoost));
 }
 
-function buildRow(p) {
+function buildRow(p, minutesMap) {
+  const minuteRow = minutesMap.get(String(p.playerId)) || minutesMap.get(String(p.player)) || {};
   const season = num(p.profile?.seasonPoints ?? p.history?.season?.points);
   const last5 = num(p.profile?.last5Points ?? p.history?.last5?.points);
   const last10 = num(p.profile?.last10Points ?? p.history?.last10?.points);
 
-  const minutes = num(p.minutes?.expected ?? p.profile?.seasonMinutes ?? p.history?.season?.minutes);
-  const minutesConfidence = num(p.minutes?.confidence);
+  const minutes = num(minuteRow.expectedMinutes ?? p.minutes?.expected ?? p.profile?.seasonMinutes ?? p.history?.season?.minutes);
+  const minutesConfidence = num(minuteRow.minutesConfidence ?? p.minutes?.confidence);
   const usageScore = num(p.usage?.score);
 
   const seasonFGA = num(p.usage?.seasonFGA ?? p.profile?.seasonFGA ?? p.history?.season?.fieldGoalAttempts);
@@ -149,7 +151,11 @@ function buildRow(p) {
 
     expectedMinutes: round1(minutes),
     minutesConfidence,
-    minutesRole: p.minutes?.role || "",
+    minutesRole: minuteRow.role || p.minutes?.role || "",
+    seasonMinutes: round1(minuteRow.seasonMinutes ?? p.profile?.seasonMinutes ?? p.history?.season?.minutes),
+    last5Minutes: round1(minuteRow.last5Minutes ?? p.profile?.last5Minutes ?? p.history?.last5?.minutes),
+    last10Minutes: round1(minuteRow.last10Minutes ?? p.profile?.last10Minutes ?? p.history?.last10?.minutes),
+    minutesTrend: round1(minuteRow.minutesTrend ?? 0),
     usageScore,
     usageTier: p.usage?.tier || "",
     usageTrend: p.usage?.trend || "",
@@ -165,10 +171,19 @@ function buildRow(p) {
 
 async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
+  const minutesPayload = readJSON(MINUTES_FILE, { players: [] });
+
   const players = Array.isArray(core.players) ? core.players : [];
+  const minuteRows = Array.isArray(minutesPayload.players) ? minutesPayload.players : [];
+
+  const minutesMap = new Map();
+  for (const row of minuteRows) {
+    if (row.playerId) minutesMap.set(String(row.playerId), row);
+    if (row.player) minutesMap.set(String(row.player), row);
+  }
 
   const rows = players
-    .map(buildRow)
+    .map(p => buildRow(p, minutesMap))
     .filter(r => String(r.status || "").toUpperCase() === "ACTIVE")
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||
@@ -184,7 +199,7 @@ async function main() {
   const out = {
     sport: "NBA",
     market: "Points",
-    version: "1.1",
+    version: "1.2",
     source: "nba_core.json",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
@@ -192,9 +207,9 @@ async function main() {
     gameCount: core.gameCount || 0,
     playerCount: rows.length,
     modelNotes: [
-      "Points Board 1.1 reads from nba_core.json.",
+      "Points Board 1.2 reads from nba_core.json and nba_minutes_engine.json.",
       "Score is normalized to 0-100.",
-      "Foundation uses scoring average, last 5 form, last 10 form, expected minutes, usage, shot volume trend, free throw volume trend, and starter status.",
+      "Foundation uses scoring average, last 5 form, last 10 form, enhanced expected minutes, minutes confidence, minutes trend, usage, shot volume trend, free throw volume trend, and starter status.",
       "No odds or betting lines are used."
     ],
     players: rows

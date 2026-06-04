@@ -17,53 +17,99 @@ function readJSON(file, fallback) {
   }
 }
 
-function positionBase(pos) {
-  const p = String(pos || "").toUpperCase();
-  if (p === "PG") return 34;
-  if (p === "SG") return 32;
-  if (p === "SF") return 32;
-  if (p === "PF") return 30;
-  if (p === "C") return 30;
-  return 22;
+function num(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
 }
 
-function expectedMinutes(player) {
+function round1(v) {
+  return Math.round(num(v) * 10) / 10;
+}
+
+function clamp(v, min = 0, max = 100) {
+  return Math.max(min, Math.min(max, num(v)));
+}
+
+function roleFromMinutes(player, minutes) {
+  if (String(player.status || "").toUpperCase() !== "ACTIVE") return "Inactive";
+  if (minutes >= 34) return "Core Starter";
+  if (minutes >= 30) return "Starter";
+  if (minutes >= 22) return "Rotation";
+  if (minutes >= 12) return "Bench";
+  return "Deep Bench";
+}
+
+function buildExpectedMinutes(player) {
+  const coreExpected = num(player.minutes?.expected);
+  const season = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
+  const last5 = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
+  const last10 = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
+
   if (String(player.status || "").toUpperCase() !== "ACTIVE") return 0;
 
-  const base = positionBase(player.position);
+  const historyLean = round1(
+    season * 0.35 +
+    last5 * 0.40 +
+    last10 * 0.25
+  );
 
-  if (player.starter) return base;
-  if (player.oncourt) return Math.max(18, base - 8);
+  let expected = coreExpected || historyLean;
 
-  return Math.max(10, base - 14);
+  if (historyLean) {
+    expected = round1(expected * 0.55 + historyLean * 0.45);
+  }
+
+  if (player.starter) expected = Math.max(expected, 28);
+  if (!player.starter && expected > 28) expected = 28;
+
+  return round1(clamp(expected, 0, 40));
 }
 
-function confidence(player, minutes) {
+function buildConfidence(player, expectedMinutes) {
   let score = 0;
 
-  if (String(player.status || "").toUpperCase() === "ACTIVE") score += 25;
-  if (player.starter) score += 35;
-  if (player.oncourt) score += 15;
-  if (minutes >= 32) score += 20;
-  else if (minutes >= 28) score += 15;
-  else if (minutes >= 22) score += 10;
-  else if (minutes >= 16) score += 5;
+  const season = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
+  const last5 = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
+  const last10 = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
 
-  return Math.min(100, score);
-}
+  if (String(player.status || "").toUpperCase() === "ACTIVE") score += 20;
+  if (player.starter) score += 25;
+  if (player.oncourt) score += 10;
 
-function roleTag(player, minutes) {
-  if (String(player.status || "").toUpperCase() !== "ACTIVE") return "Inactive";
-  if (player.starter && minutes >= 32) return "Core Starter";
-  if (player.starter) return "Starter";
-  if (minutes >= 24) return "Rotation Piece";
-  if (minutes >= 16) return "Bench Role";
-  return "Low Minutes";
+  if (expectedMinutes >= 34) score += 25;
+  else if (expectedMinutes >= 30) score += 20;
+  else if (expectedMinutes >= 22) score += 14;
+  else if (expectedMinutes >= 12) score += 7;
+
+  if (season > 0 && last5 > 0 && last10 > 0) score += 15;
+  else if (season > 0) score += 8;
+
+  const minutesSwing = Math.abs(last5 - season);
+  if (season > 0 && last5 > 0 && minutesSwing <= 3) score += 5;
+  if (minutesSwing >= 8) score -= 8;
+
+  return round1(clamp(score));
 }
 
 function buildRow(player) {
-  const mins = expectedMinutes(player);
-  const conf = confidence(player, mins);
+  const seasonMinutes = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
+  const last5Minutes = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
+  const last10Minutes = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
+
+  const expectedMinutes = buildExpectedMinutes(player);
+  const minutesConfidence = buildConfidence(player, expectedMinutes);
+  const minutesTrend = round1(last5Minutes - seasonMinutes);
+  const role = roleFromMinutes(player, expectedMinutes);
+
+  const tags = [
+    player.starter ? "Starter" : "Bench",
+    role,
+    minutesTrend >= 3 ? "Minutes Trending Up" : "",
+    minutesTrend <= -3 ? "Minutes Trending Down" : "",
+    expectedMinutes >= 34 ? "Heavy Minutes" : "",
+    minutesConfidence >= 85 ? "High Minute Confidence" : "",
+    minutesConfidence < 55 ? "Minute Risk" : ""
+  ].filter(Boolean);
 
   return {
     playerId: player.playerId,
@@ -77,13 +123,15 @@ function buildRow(player) {
     homeAway: player.homeAway,
     gameId: player.gameId,
     gameTimeUTC: player.gameTimeUTC,
-    expectedMinutes: mins,
-    minutesConfidence: conf,
-    role: roleTag(player, mins),
-    tags: [
-      player.starter ? "Starter" : "Bench",
-      roleTag(player, mins)
-    ]
+
+    expectedMinutes,
+    minutesConfidence,
+    role,
+    seasonMinutes: round1(seasonMinutes),
+    last5Minutes: round1(last5Minutes),
+    last10Minutes: round1(last10Minutes),
+    minutesTrend,
+    tags: [...new Set(tags)]
   };
 }
 
@@ -101,14 +149,15 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    version: "1.0",
+    version: "1.1",
     source: "nba_core.json",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
     playerCount: rows.length,
     modelNotes: [
-      "Minutes Engine 1.0 uses starter status, active status, on court status, and position role.",
-      "Later versions will add season minutes, last 5 minutes, last 10 minutes, injuries, and rotation trends."
+      "Minutes Engine 1.1 uses core expected minutes, season minutes, last 5 minutes, last 10 minutes, starter status, active status, and on court status.",
+      "Roles are Core Starter, Starter, Rotation, Bench, Deep Bench, and Inactive.",
+      "No odds or betting lines are used."
     ],
     players: rows
   };
