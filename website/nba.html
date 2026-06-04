@@ -348,10 +348,31 @@
       return await res.json();
     }
 
+    function scoreOf(p) {
+      return num(p.marketScore || p.pointsScore || p.matchupScore || 0);
+    }
+
+    function leanOf(p) {
+      return num(p.marketLean || p.pointsLean || 0);
+    }
+
+    function scoreLabel(p) {
+      return p.market ? `${p.market} Score` : "Points Score";
+    }
+
+    function leanLabel(p) {
+      return p.market ? `${p.market} Lean` : "Lean";
+    }
+
+    function roleOf(p) {
+      return p.role || p.scoringRole || p.minutesRole || p.matchupTier || p.confidence || "";
+    }
+
     function cardClass(p) {
-      if (num(p.pointsScore) >= 85) return "elite";
-      if (num(p.pointsScore) >= 70) return "strong";
-      if (num(p.pointsScore) >= 55) return "watch";
+      const score = scoreOf(p);
+      if (score >= 85) return "elite";
+      if (score >= 70) return "strong";
+      if (score >= 55) return "watch";
       return "";
     }
 
@@ -377,15 +398,15 @@
         <article class="card ${cardClass(p)}">
           <div class="rank">
             <span class="pill">#${html(p.rank || i + 1)}</span>
-            <span class="score">${html(fmt(p.pointsScore))}</span>
+            <span class="score">${html(fmt(scoreOf(p)))}</span>
           </div>
           <div class="name">${html(p.player)}</div>
           <div class="sub">${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.homeAway)}</div>
 
           <div class="mini">
-            <div class="box"><span>Lean</span><strong>${html(fmt(p.pointsLean))}</strong></div>
+            <div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>
             <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
-            <div class="box"><span>Usage</span><strong>${html(fmt(p.usageScore))}</strong></div>
+            <div class="box"><span>${p.market ? "Role" : "Usage"}</span><strong>${html(p.market ? roleOf(p) : fmt(p.usageScore))}</strong></div>
             <div class="box"><span>Trend</span><strong>${html(fmt(p.trendDiff))}</strong></div>
           </div>
 
@@ -393,7 +414,7 @@
             ${(Array.isArray(p.tags) ? p.tags.slice(0, 5) : []).map(tag => `<span class="tag">${html(tag)}</span>`).join("")}
           </div>
 
-          <div class="reason">${html(p.reason || p.confidence || "")}</div>
+          <div class="reason">${html(p.reason || roleOf(p) || p.confidence || "")}</div>
         </article>
       `;
     }
