@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
 const POINTS_FILE = path.join(ROOT, "website/data/nba_points.json");
+const MATCHUP_FILE = path.join(ROOT, "website/data/nba_matchup_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_decision_center.json");
 
 function readJSON(file, fallback) {
@@ -34,7 +35,8 @@ function hasTag(row, text) {
   return tagList(row).some(t => String(t).toLowerCase().includes(String(text).toLowerCase()));
 }
 
-function compact(row, reason = "") {
+function compact(row, reason = "", matchupMap = new Map()) {
+  const matchup = matchupMap.get(String(row.playerId)) || {};
   return {
     rank: row.rank,
     playerId: row.playerId,
@@ -61,8 +63,18 @@ function compact(row, reason = "") {
     fgaTrend: round1(row.fgaTrend),
     ftaTrend: round1(row.ftaTrend),
     scoringRole: row.scoringRole,
+
+    matchupScore: round1(matchup.matchupScore),
+    matchupTier: matchup.matchupTier || "",
+    opponentContext: matchup.opponentContext || "",
+    paceContext: matchup.paceContext || "",
+    defense: matchup.defense || null,
+
     reason,
-    tags: tagList(row).slice(0, 8)
+    tags: [...new Set([
+      ...tagList(row),
+      ...(Array.isArray(matchup.tags) ? matchup.tags : [])
+    ])].slice(0, 10)
   };
 }
 
@@ -80,36 +92,36 @@ function top(rows, n = 10) {
   return rows.slice(0, n);
 }
 
-function buildSections(players) {
+function buildSections(players, matchupMap) {
   const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
 
   const bestPointsPlays = top(sortByScore(active), 10)
-    .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, and recent form."));
+    .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, recent form, and matchup context.", matchupMap));
 
   const usageRisers = top(sortByScore(active.filter(p =>
     p.usageTrend === "Usage Spike" ||
     p.usageTrend === "Usage Up" ||
     num(p.volumeTrend) >= 4 ||
     hasTag(p, "Volume Acceleration")
-  )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction."));
+  )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction.", matchupMap));
 
   const minutesMonsters = top(sortByScore(active.filter(p =>
     num(p.expectedMinutes) >= 32 &&
     num(p.minutesConfidence) >= 85
-  )), 10).map(p => compact(p, "High projected minutes with strong minute confidence."));
+  )), 10).map(p => compact(p, "High projected minutes with strong minute confidence.", matchupMap));
 
   const scoringForm = top(sortByScore(active.filter(p =>
     num(p.trendDiff) >= 3 ||
     num(p.last5Points) >= num(p.seasonPoints) + 3 ||
     num(p.last10Points) >= num(p.seasonPoints) + 2
-  )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline."));
+  )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline.", matchupMap));
 
   const safeFloor = top(sortByScore(active.filter(p =>
     num(p.expectedMinutes) >= 30 &&
     num(p.minutesConfidence) >= 85 &&
     num(p.usageScore) >= 50 &&
     num(p.pointsLean) >= 15
-  )), 10).map(p => compact(p, "Stable minutes, usable offensive role, and reliable scoring lean."));
+  )), 10).map(p => compact(p, "Stable minutes, usable offensive role, reliable scoring lean, and matchup context.", matchupMap));
 
   const boomCandidates = top(sortByScore(active.filter(p =>
     num(p.trendDiff) >= 4 ||
@@ -117,12 +129,24 @@ function buildSections(players) {
     num(p.volumeTrend) >= 5 ||
     num(p.fgaTrend) >= 3 ||
     num(p.ftaTrend) >= 2
-  )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, or volume acceleration."));
+  )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, volume acceleration, or matchup context.", matchupMap));
 
   const watchList = top(sortByScore(active.filter(p =>
     num(p.pointsScore) >= 55 &&
     num(p.pointsScore) < 70
-  )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor."));
+  )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor.", matchupMap));
+
+  const defenseTargets = top(sortByScore(active.filter(p => {
+    const m = matchupMap.get(String(p.playerId)) || {};
+    const rank = num(m.defense?.rankPointsAllowed);
+    return rank >= 21 || (Array.isArray(m.tags) && m.tags.includes("Defense Target"));
+  })), 10).map(p => compact(p, "Opponent defense profile is favorable based on points allowed data.", matchupMap));
+
+  const toughDefenseWarnings = top(sortByScore(active.filter(p => {
+    const m = matchupMap.get(String(p.playerId)) || {};
+    const rank = num(m.defense?.rankPointsAllowed);
+    return rank > 0 && rank <= 10;
+  })), 10).map(p => compact(p, "Opponent is a tougher points defense based on allowed points rank.", matchupMap));
 
   return {
     bestPointsPlays,
@@ -131,19 +155,29 @@ function buildSections(players) {
     scoringForm,
     safeFloor,
     boomCandidates,
+    defenseTargets,
+    toughDefenseWarnings,
     watchList
   };
 }
 
 async function main() {
   const points = readJSON(POINTS_FILE, { players: [] });
-  const players = Array.isArray(points.players) ? points.players : [];
+  const matchups = readJSON(MATCHUP_FILE, { players: [] });
 
-  const sections = buildSections(players);
+  const players = Array.isArray(points.players) ? points.players : [];
+  const matchupRows = Array.isArray(matchups.players) ? matchups.players : [];
+
+  const matchupMap = new Map();
+  for (const row of matchupRows) {
+    if (row.playerId) matchupMap.set(String(row.playerId), row);
+  }
+
+  const sections = buildSections(players, matchupMap);
 
   const out = {
     sport: "NBA",
-    version: "1.0",
+    version: "1.1",
     source: "nba_points.json",
     fetchedAt: new Date().toISOString(),
     date: points.date || "",
@@ -152,8 +186,8 @@ async function main() {
     playerCount: players.length,
     sectionCount: Object.keys(sections).length,
     modelNotes: [
-      "NBA Decision Center 1.0 is built from the NBA Points Board.",
-      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, and watch list.",
+      "NBA Decision Center 1.1 is built from the NBA Points Board and NBA Matchup Engine.",
+      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
