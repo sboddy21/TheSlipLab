@@ -50,6 +50,34 @@ console.log("Time:", new Date().toISOString());
 
 run("node", ["scripts/run_fast_refresh.js"], { timeout: 240000 });
 
+console.log("");
+console.log("THE SLIP LAB NBA REFRESH STARTED");
+
+const nbaScripts = [
+  "scripts/nba/fetch_nba_today.js",
+  "scripts/nba/build_nba_player_pool.js",
+  "scripts/nba/build_nba_history.js",
+  "scripts/nba/build_minutes_engine.js",
+  "scripts/nba/build_usage_engine.js",
+  "scripts/nba/build_nba_core.js",
+  "scripts/nba/build_team_defense.js",
+  "scripts/nba/build_pace_engine.js",
+  "scripts/nba/build_points_board.js",
+  "scripts/nba/build_rebounds_board.js",
+  "scripts/nba/build_assists_board.js",
+  "scripts/nba/build_threes_board.js",
+  "scripts/nba/build_matchup_engine.js",
+  "scripts/nba/build_nba_player_cards.js",
+  "scripts/nba/build_nba_decision_center.js"
+];
+
+for (const script of nbaScripts) {
+  run("node", [script], { timeout: 300000 });
+}
+
+console.log("THE SLIP LAB NBA REFRESH COMPLETE");
+
+
 run("node", [
   "-e",
   "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'render_fast_refresh_5_min'},null,2));"
