@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Slip Lab | NBA Rebounds Board</title>
+  <style>
+    :root{
+      --bg:#050814;--panel:#0b1220;--panel2:#111a2d;--text:#f5f7fb;--muted:#99a6bd;
+      --line:rgba(255,255,255,.1);--good:#41f0a6;--warn:#ffd166;--hot:#ff5c7a;--blue:#5cc8ff;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at top left,rgba(92,200,255,.14),transparent 30%),radial-gradient(circle at top right,rgba(255,92,122,.12),transparent 28%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1500px;margin:0 auto;padding:22px}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+    .logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--hot))}
+    .nav{display:flex;gap:10px;flex-wrap:wrap}
+    .nav a{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);color:var(--muted);font-weight:800;font-size:13px}
+    .nav a.active{color:var(--text);border-color:rgba(92,200,255,.45)}
+    .hero{border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,rgba(17,26,45,.92),rgba(11,18,32,.9));padding:26px;margin-bottom:18px}
+    .hero h1{margin:0 0 8px;font-size:clamp(30px,4vw,54px);line-height:1;letter-spacing:-.04em}
+    .hero p{margin:0;color:var(--muted);font-weight:700}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+    .search,.select{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:16px;padding:12px 14px;font-weight:800}
+    .search{min-width:280px;flex:1}
+    .select{min-width:180px}
+    .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+    .card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(17,26,45,.94),rgba(9,14,26,.94));border-radius:22px;padding:14px;min-height:285px;position:relative;overflow:hidden}
+    .card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(92,200,255,.14),transparent 38%);pointer-events:none}
+    .card.elite:before{background:radial-gradient(circle at top right,rgba(65,240,166,.18),transparent 42%)}
+    .card.strong:before{background:radial-gradient(circle at top right,rgba(255,209,102,.18),transparent 42%)}
+    .rank{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+    .pill{border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:12px;font-weight:900;color:var(--muted);background:rgba(255,255,255,.04)}
+    .score{font-size:30px;font-weight:1000;color:var(--good)}
+    .name{position:relative;z-index:1;margin:14px 0 2px;font-size:20px;font-weight:1000;letter-spacing:-.02em}
+    .sub{position:relative;z-index:1;color:var(--muted);font-size:13px;font-weight:800;margin-bottom:12px}
+    .mini{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+    .box{border:1px solid var(--line);border-radius:14px;padding:9px;background:rgba(255,255,255,.035)}
+    .box span{display:block;color:var(--muted);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em}
+    .box strong{display:block;margin-top:3px;font-size:15px}
+    .tags{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .tag{border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted);font-size:11px;font-weight:800;background:rgba(0,0,0,.12)}
+    .empty{border:1px dashed var(--line);border-radius:22px;padding:22px;color:var(--muted);font-weight:800}
+    @media(max-width:1250px){.grid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:760px){.wrap{padding:14px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.search{min-width:100%}}
+  
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:18px;z-index:50}
+    .modal.show{display:flex}
+    .modal-card{width:min(980px,100%);max-height:90vh;overflow:auto;border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,#111a2d,#070b15);padding:20px;box-shadow:0 24px 90px rgba(0,0,0,.5)}
+    .modal-head{display:flex;justify-content:space-between;gap:16px;align-items:start;margin-bottom:14px}
+    .modal-head h2{margin:0;font-size:32px;letter-spacing:-.04em}
+    .modal-head p{margin:5px 0 0;color:var(--muted);font-weight:800}
+    .close{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
+    .modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+    .log{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
+    .log th,.log td{border-bottom:1px solid var(--line);padding:9px;text-align:left}
+    .log th{color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.08em}
+    @media(max-width:760px){.modal-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <a class="brand" href="./index.html"><span class="logo"></span><span>The Slip Lab</span></a>
+      <nav class="nav">
+        <a href="./index.html">Home</a>
+        <a href="./nba.html">NBA Decision Center</a>
+        <a href="./nba-points.html">Points Board</a>
+        <a class="active" href="./nba-rebounds.html">Rebounds Board</a>
+      </nav>
+    </div>
+
+    <section class="hero">
+      <h1>NBA Rebounds Board</h1>
+      <p id="subtitle">Loading points board</p>
+    </section>
+
+    <div class="controls">
+      <input class="search" id="search" placeholder="Search player, team, opponent, tag" />
+      <select class="select" id="tier">
+        <option value="all">All confidence tiers</option>
+        <option value="Elite">Elite</option>
+        <option value="Strong">Strong</option>
+        <option value="Playable">Playable</option>
+        <option value="Watch">Watch</option>
+        <option value="Low">Low</option>
+      </select>
+      <select class="select" id="sort">
+        <option value="reboundsScore">Sort by Rebounds Score</option>
+        <option value="reboundsLean">Sort by Rebounds Lean</option>
+        <option value="usageScore">Sort by Usage</option>
+        <option value="expectedMinutes">Sort by Minutes</option>
+        <option value="trendDiff">Sort by Scoring Trend</option>
+      </select>
+    </div>
+
+    <section id="board" class="grid"></section>
+  
+  </main>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    let DATA = [];
+    let CARDS = [];
+    function clean(v,f="--"){return v===undefined||v===null||v===""?f:String(v)}
+    function html(v){return clean(v,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+    function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
+    function fmt(v){const n=num(v);return Number.isInteger(n)?String(n):n.toFixed(1)}
+    async function getJSON(file){const r=await fetch(file+"?v="+Date.now());if(!r.ok)throw new Error(file+" failed");return await r.json()}
+    function cardClass(p){if(num(p.reboundsScore)>=85)return"elite";if(num(p.reboundsScore)>=70)return"strong";return""}
+    function matches(p,q){
+      if(!q)return true;
+      const hay=[p.player,p.team,p.opponent,p.position,p.confidence,p.usageTrend,p.minutesRole,p.scoringRole,...(Array.isArray(p.tags)?p.tags:[])].join(" ").toLowerCase();
+      return hay.includes(q.toLowerCase());
+    }
+    function render(){
+      const q=document.getElementById("search").value.trim();
+      const tier=document.getElementById("tier").value;
+      const sort=document.getElementById("sort").value;
+      const rows=DATA.filter(p=>matches(p,q)).filter(p=>tier==="all"||p.confidence===tier)
+        .sort((a,b)=>num(b[sort])-num(a[sort])||num(b.reboundsScore)-num(a.reboundsScore));
+      document.getElementById("board").innerHTML=rows.length?rows.map(card).join(""):`<div class="empty">No players match this filter.</div>`;
+      installCards();
+    }
+    
+    function findCard(playerId){
+      return CARDS.find(p=>String(p.playerId)===String(playerId));
+    }
+    function metric(label,value){
+      return `<div class="box"><span>${html(label)}</span><strong>${html(fmt(value))}</strong></div>`;
+    }
+    function openCard(playerId){
+      const p=findCard(playerId);
+      if(!p)return;
+      const logs=Array.isArray(p.recentGames)?p.recentGames.slice(0,8):[];
+      document.getElementById("modalBody").innerHTML=`
+        <div class="modal-head">
+          <div>
+            <h2>${html(p.player)}</h2>
+            <p>${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.homeAway)} • ${html(p.headline?.confidence)}</p>
+          </div>
+          <button class="close" id="closeModal">Close</button>
+        </div>
+
+        <div class="tags">${(Array.isArray(p.tags)?p.tags.slice(0,10):[]).map(t=>`<span class="tag">${html(t)}</span>`).join("")}</div>
+
+        <div class="modal-grid">
+          ${metric("Rebounds Score",p.headline?.reboundsScore)}
+          ${metric("Rebounds Lean",p.headline?.reboundsLean)}
+          ${metric("Matchup",p.headline?.matchupScore)}
+          ${metric("Usage",p.usage?.score)}
+          ${metric("Exp Min",p.minutes?.expected)}
+          ${metric("Min Conf",p.minutes?.confidence)}
+          ${metric("Season PTS",p.production?.seasonRebounds)}
+          ${metric("Last 5 PTS",p.production?.last5Rebounds)}
+          ${metric("Last 10 PTS",p.production?.last10Points)}
+          ${metric("FGA Trend",p.usage?.fgaTrend)}
+          ${metric("FTA Trend",p.usage?.ftaTrend)}
+          ${metric("Volume",p.usage?.volumeTrend)}
+        </div>
+
+        <div class="sub">${html(p.matchup?.opponentContext)} • ${html(p.matchup?.paceContext)}</div>
+
+        <table class="log">
+          <thead><tr><th>Date</th><th>Matchup</th><th>Min</th><th>Pts</th><th>Reb</th><th>Ast</th><th>3PM</th><th>FGA</th><th>FTA</th></tr></thead>
+          <tbody>
+            ${logs.map(g=>`<tr><td>${html(g.date)}</td><td>${html(g.matchup)}</td><td>${html(fmt(g.minutes))}</td><td>${html(fmt(g.points))}</td><td>${html(fmt(g.rebounds))}</td><td>${html(fmt(g.assists))}</td><td>${html(fmt(g.threesMade))}</td><td>${html(fmt(g.fieldGoalAttempts))}</td><td>${html(fmt(g.freeThrowAttempts))}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      `;
+      document.getElementById("modal").classList.add("show");
+      document.getElementById("closeModal").addEventListener("click",()=>document.getElementById("modal").classList.remove("show"));
+    }
+    function installCards(){
+      document.querySelectorAll(".card[data-player-id]").forEach(card=>{
+        card.addEventListener("click",()=>openCard(card.dataset.playerId));
+        card.addEventListener("keydown",e=>{if(e.key==="Enter")openCard(card.dataset.playerId)});
+      });
+    }
+
+    function card(p){
+      return `<article class="card ${cardClass(p)}" data-player-id="${html(p.playerId)}" role="button" tabindex="0">
+        <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.reboundsScore))}</span></div>
+        <div class="name">${html(p.player)}</div>
+        <div class="sub">${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.confidence)}</div>
+        <div class="mini">
+          <div class="box"><span>Lean</span><strong>${html(fmt(p.reboundsLean))}</strong></div>
+          <div class="box"><span>Last 5</span><strong>${html(fmt(p.last5Rebounds))}</strong></div>
+          <div class="box"><span>Season</span><strong>${html(fmt(p.seasonRebounds))}</strong></div>
+          <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
+          <div class="box"><span>Usage</span><strong>${html(fmt(p.usageScore))}</strong></div>
+          <div class="box"><span>Volume</span><strong>${html(fmt(p.volumeTrend))}</strong></div>
+        </div>
+        <div class="tags">${(Array.isArray(p.tags)?p.tags.slice(0,6):[]).map(t=>`<span class="tag">${html(t)}</span>`).join("")}</div>
+      </article>`;
+    }
+    async function boot(){
+      const d=await getJSON("./data/nba_rebounds.json");
+      DATA=Array.isArray(d.players)?d.players:[];
+      document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
+      ["search","tier","sort"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+      render();
+    }
+    document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});
+    boot().catch(e=>document.getElementById("board").innerHTML=`<div class="empty">${html(e.message)}</div>`);
+  </script>
+</body>
+</html>
