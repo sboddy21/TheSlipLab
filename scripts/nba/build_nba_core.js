@@ -21,6 +21,14 @@ function readJSON(file, fallback) {
   }
 }
 
+function readExisting() {
+  try {
+    return JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -305,6 +313,25 @@ async function main() {
     .filter(p => p.player && p.playerId)
     .map(p => buildCorePlayer(p, minutesMap, historyMap, usageMap))
     .sort((a, b) => b.scores.nbaScore - a.scores.nbaScore || a.player.localeCompare(b.player));
+
+  const existing = readExisting();
+  const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
+
+  if (corePlayers.length === 0 && existingPlayers.length > 0) {
+    const preserved = {
+      ...existing,
+      preservedAt: new Date().toISOString(),
+      preserveReason: "NBA core generated 0 players, keeping previous non-empty core"
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
+
+    console.log("NBA CORE PRESERVED PREVIOUS NON-EMPTY CORE");
+    console.log("Fetched Players:", corePlayers.length);
+    console.log("Preserved Players:", existingPlayers.length);
+    console.log("Saved:", OUT);
+    return;
+  }
 
   const out = {
     sport: "NBA",

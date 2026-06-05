@@ -76,6 +76,14 @@ function normalizeGame(g) {
   };
 }
 
+function readExisting() {
+  try {
+    return JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 async function main() {
   const date = todayET();
   const nbaDate = compactDate(date);
@@ -94,6 +102,26 @@ async function main() {
   const games = Array.isArray(raw?.scoreboard?.games)
     ? raw.scoreboard.games.map(normalizeGame)
     : [];
+
+  const existing = readExisting();
+  const existingGames = Array.isArray(existing?.games) ? existing.games : [];
+
+  if (games.length === 0 && existingGames.length > 0) {
+    const preserved = {
+      ...existing,
+      preservedAt: new Date().toISOString(),
+      preserveReason: "NBA scoreboard returned 0 games, keeping previous non-empty slate"
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
+
+    console.log("NBA TODAY FETCH PRESERVED PREVIOUS NON-EMPTY SLATE");
+    console.log("Date:", date);
+    console.log("Fetched Games:", games.length);
+    console.log("Preserved Games:", existingGames.length);
+    console.log("Saved:", OUT);
+    return;
+  }
 
   const out = {
     sport: "NBA",

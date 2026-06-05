@@ -20,6 +20,14 @@ function readJSON(file, fallback) {
   }
 }
 
+function readExisting() {
+  try {
+    return JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -235,7 +243,21 @@ async function main() {
     players: rows
   };
 
-  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  const existing = readExisting();
+const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
+
+if (rows.length === 0 && existingPlayers.length > 0) {
+  fs.writeFileSync(OUT, JSON.stringify({
+    ...existing,
+    preservedAt: new Date().toISOString(),
+    preserveReason: "Matchup engine generated 0 players"
+  }, null, 2));
+
+  console.log("MATCHUP ENGINE PRESERVED PREVIOUS DATA");
+  return;
+}
+
+fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA MATCHUP ENGINE COMPLETE");
   console.log("Players:", rows.length);

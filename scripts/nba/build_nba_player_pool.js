@@ -17,6 +17,14 @@ function readJSON(file, fallback) {
   }
 }
 
+function readExisting() {
+  try {
+    return JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 async function fetchJson(url) {
   const res = await fetch(url, {
     headers: {
@@ -151,6 +159,33 @@ async function main() {
         error: err.message
       });
     }
+  }
+
+  const existing = readExisting();
+  const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
+
+  if (players.length === 0 && existingPlayers.length > 0) {
+    const preserved = {
+      ...existing,
+      preservedAt: new Date().toISOString(),
+      preserveReason: "NBA player pool generated 0 players, keeping previous non-empty pool",
+      latestEmptyAttempt: {
+        date: gamesData.date || "",
+        gameCount: games.length,
+        teamCount: teams.length,
+        errors
+      }
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
+
+    console.log("NBA PLAYER POOL PRESERVED PREVIOUS NON-EMPTY POOL");
+    console.log("Games:", games.length);
+    console.log("Teams:", teams.length);
+    console.log("Fetched Players:", players.length);
+    console.log("Preserved Players:", existingPlayers.length);
+    console.log("Saved:", OUT);
+    return;
   }
 
   const out = {

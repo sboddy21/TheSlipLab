@@ -21,6 +21,14 @@ function readJSON(file, fallback) {
   }
 }
 
+function readExisting() {
+  try {
+    return JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -166,11 +174,35 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     num(p.pointsScore) < 70
   )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor.", matchupMap));
 
-  const defenseTargets = top(sortByScore(active.filter(p => {
+  const trueDefenseTargets = sortByScore(active.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
     const rank = num(m.defense?.rankPointsAllowed);
     return rank >= 21 || (Array.isArray(m.tags) && m.tags.includes("Defense Target"));
-  })), 10).map(p => compact(p, "Opponent defense profile is favorable based on points allowed data.", matchupMap));
+  }));
+
+  const availableDefenseTargets = sortByScore(active.filter(p => {
+    const m = matchupMap.get(String(p.playerId)) || {};
+    const rank = num(m.defense?.rankPointsAllowed);
+    return rank > 10;
+  }));
+
+  const defenseTargetPool = trueDefenseTargets.length
+    ? trueDefenseTargets
+    : availableDefenseTargets.length
+      ? availableDefenseTargets
+      : sortByScore(active);
+
+  const defenseTargets = top(defenseTargetPool, 10).map(p => {
+    const m = matchupMap.get(String(p.playerId)) || {};
+    const rank = num(m.defense?.rankPointsAllowed);
+    const reason = rank >= 21
+      ? "Opponent defense profile is favorable based on points allowed data."
+      : rank > 10
+        ? "Best available defense target on this slate. Opponent is not a top 10 points defense."
+        : "Fallback defense target because this slate has mostly tough points defenses.";
+
+    return compact(p, reason, matchupMap);
+  });
 
   const toughDefenseWarnings = top(sortByScore(active.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
@@ -241,7 +273,30 @@ async function main() {
     sections
   };
 
-  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  const existing = readExisting();
+
+const sectionCount =
+  Object.values(sections || {})
+    .filter(v => Array.isArray(v))
+    .reduce((a,b)=>a+b.length,0);
+
+const existingCount =
+  Object.values(existing?.sections || {})
+    .filter(v => Array.isArray(v))
+    .reduce((a,b)=>a+b.length,0);
+
+if (sectionCount === 0 && existingCount > 0) {
+  fs.writeFileSync(OUT, JSON.stringify({
+    ...existing,
+    preservedAt: new Date().toISOString(),
+    preserveReason: "Decision Center generated 0 section entries"
+  }, null, 2));
+
+  console.log("DECISION CENTER PRESERVED PREVIOUS DATA");
+  return;
+}
+
+fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA DECISION CENTER COMPLETE");
   console.log("Players:", players.length);
