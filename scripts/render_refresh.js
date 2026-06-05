@@ -62,6 +62,7 @@ const nbaScripts = [
   "scripts/nba/build_nba_core.js",
   "scripts/nba/build_team_defense.js",
   "scripts/nba/build_pace_engine.js",
+  "scripts/nba/build_defender_engine.js",
   "scripts/nba/build_points_board.js",
   "scripts/nba/build_rebounds_board.js",
   "scripts/nba/build_assists_board.js",

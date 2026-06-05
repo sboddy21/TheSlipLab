@@ -85,7 +85,7 @@ function compact(row, reason = "", matchupMap = new Map()) {
     tags: [...new Set([
       ...tagList(row),
       ...(Array.isArray(matchup.tags) ? matchup.tags : [])
-    ])].slice(0, 10)
+    ])].slice(0, 14)
   };
 }
 
