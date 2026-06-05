@@ -1,10 +1,18 @@
-const state = { rows: [], profiles: [], games: [] };
+const state = { rows: [], profiles: [], games: [], market: "homeRuns", marketRows: {} };
 
 const FILES = {
   homeRuns: "data/mlb_home_runs.json",
+  hits: "data/mlb_hits.json",
+  totalBases: "data/mlb_total_bases.json",
   profiles: "data/player_card_profiles.json",
   matchups: "data/game_pitcher_matchups.json",
   fallbackGames: "data/mlb_games_today.json"
+};
+
+const MARKETS = {
+  homeRuns: { label: "Home Runs", title: "Home Run Targets", short: "HR", countLabel: "bats" },
+  hits: { label: "Hits", title: "Hit Targets", short: "Hits", countLabel: "hitters" },
+  totalBases: { label: "Total Bases", title: "Total Base Targets", short: "TB", countLabel: "hitters" }
 };
 
 function clean(value, fallback = "--") {
@@ -79,11 +87,19 @@ function normalizeGame(game) {
 
 async function boot() {
   const homeRuns = await getJSON(FILES.homeRuns, []);
+  const hits = await getJSON(FILES.hits, []);
+  const totalBases = await getJSON(FILES.totalBases, []);
   const profiles = await getJSON(FILES.profiles, { players: [] });
   const matchups = await getJSON(FILES.matchups, null);
   const fallbackGames = await getJSON(FILES.fallbackGames, null);
 
-  state.rows = list(homeRuns);
+  state.marketRows = {
+    homeRuns: list(homeRuns),
+    hits: list(hits),
+    totalBases: list(totalBases)
+  };
+
+  state.rows = state.marketRows[state.market] || [];
   state.profiles = list(profiles);
 
   const primary = list(matchups).map(normalizeGame);
@@ -134,13 +150,39 @@ function stat(label, value) {
 
 function renderHomeRuns() {
   const board = document.getElementById("board");
-  board.innerHTML = '<div class="hero"><h1>Home Run Targets</h1><p>' + state.games.length + ' games loaded today • ' + state.rows.length + ' hitter cards</p></div>' +
-    '<div class="game-tabs"><button class="game-tab active" data-game-index="all">All Games<small>' + state.rows.length + ' bats</small></button>' +
+  const market = MARKETS[state.market] || MARKETS.homeRuns;
+
+  board.innerHTML = '<div class="hero"><h1>' + html(market.title) + '</h1><p>' + state.games.length + ' games loaded today • ' + state.rows.length + ' ' + html(market.countLabel) + '</p></div>' +
+    renderMarketTabs() +
+    '<div class="game-tabs"><button class="game-tab active" data-game-index="all">All Games<small>' + state.rows.length + ' ' + html(market.countLabel) + '</small></button>' +
     state.games.map((game, index) => '<button class="game-tab" data-game-index="' + index + '">' + html(teamCode(game.awayTeam)) + ' at ' + html(teamCode(game.homeTeam)) + '<small>' + html(gameTime(game)) + '</small></button>').join("") +
     '</div><div id="games-board" class="games-wrap">' + state.games.map(renderGame).join("") + '</div>';
 
+  installMarketTabs();
   installGameTabs();
   installCardEvents();
+}
+
+function renderMarketTabs() {
+  return '<div class="market-tabs">' + Object.keys(MARKETS).map(key => {
+    const market = MARKETS[key];
+    const count = (state.marketRows[key] || []).length;
+    const active = key === state.market ? " active" : "";
+    return '<button class="market-tab' + active + '" data-market="' + html(key) + '" type="button">' + html(market.label) + '<small>' + count + '</small></button>';
+  }).join("") + '</div>';
+}
+
+function installMarketTabs() {
+  document.querySelectorAll(".market-tab").forEach(button => {
+    button.addEventListener("click", () => {
+      const key = button.dataset.market;
+      if (!MARKETS[key]) return;
+      state.market = key;
+      state.rows = state.marketRows[key] || [];
+      state.games = state.games.map(normalizeGame);
+      renderHomeRuns();
+    });
+  });
 }
 
 function renderGame(game, index) {
