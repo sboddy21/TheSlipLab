@@ -219,6 +219,23 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
   const topThrees = top(threesRows, 10)
     .map(p => compactMarket(p, "Threes", "threesScore", "threesLean", "Best three point profile from threes score, threes lean, attempts, minutes, and trend."));
 
+  const matchupRows = active
+    .map(p => ({ player: p, matchup: matchupMap.get(String(p.playerId)) || {} }))
+    .filter(x => num(x.matchup.matchupScore) > 0);
+
+  function bestByPosition(position) {
+    return top(
+      matchupRows
+        .filter(x => String(x.player.position || "").toUpperCase() === position)
+        .sort((a, b) =>
+          num(b.matchup.matchupScore) - num(a.matchup.matchupScore) ||
+          num(b.player.pointsScore) - num(a.player.pointsScore)
+        )
+        .map(x => compact(x.player, `Best ${position} matchup based on matchup score, points profile, minutes, usage, defense, and pace context.`, matchupMap)),
+      10
+    );
+  }
+
   return {
     bestPointsPlays,
     usageRisers,
@@ -231,6 +248,11 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     topRebounds,
     topAssists,
     topThrees,
+    bestPGMatchups: bestByPosition("PG"),
+    bestSGMatchups: bestByPosition("SG"),
+    bestSFMatchups: bestByPosition("SF"),
+    bestPFMatchups: bestByPosition("PF"),
+    bestCMatchups: bestByPosition("C"),
     watchList
   };
 }
@@ -267,7 +289,7 @@ async function main() {
     sectionCount: Object.keys(sections).length,
     modelNotes: [
       "NBA Decision Center 1.2 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
-      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, and watch list.",
+      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
