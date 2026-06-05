@@ -1,6 +1,6 @@
 (function () {
   const links = [
-    ["index.html", "Slate"],
+    ["mlb.html", "Slate"],
     ["full-board.html", "Full Board"],
     ["matchup-lab.html", "Matchup Lab"],
     ["power-zones.html", "Power Zones"],
