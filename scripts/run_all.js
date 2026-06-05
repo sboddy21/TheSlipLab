@@ -7,6 +7,8 @@ const steps = [
   ["Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
   ["HR Power Profiles", "scripts/mlb/build_hr_power_profiles.js"],
   ["Full Board", "scripts/mlb/build_home_run_board.js"],
+  ["Hits Board", "scripts/mlb/build_hits_board.js"],
+  ["Total Bases Board", "scripts/mlb/build_total_bases_board.js"],
   ["HR Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
   ["Game Pitcher Matchups", "scripts/mlb/build_game_pitcher_matchups.mjs"],
   ["Team Stacks", "scripts/mlb/build_team_stacks.js"],
@@ -30,7 +32,7 @@ const steps = [
   ["HR Calibration Report", "scripts/mlb/build_hr_calibration_report.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
-  "scripts/mlb/build_batting_spot_profiles.js",
+  ["Batting Spot Profiles", "scripts/mlb/build_batting_spot_profiles.js"],
   ["Live Intelligence", "scripts/run_live_intelligence.js"]
 ];
 
