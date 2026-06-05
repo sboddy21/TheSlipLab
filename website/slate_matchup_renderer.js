@@ -996,9 +996,33 @@
     });
   }
 
+  function marketStat(row) {
+    const hitter = row?.stats?.hitter || row?.hitterStats || {};
+    const pitcher = row?.stats?.pitcher || row?.pitcherStats || {};
+
+    if (state.market === "hits") {
+      return { label: "Hits", value: hitter.hits ?? row.hits ?? "N/A" };
+    }
+
+    if (state.market === "tb") {
+      return { label: "Total Bases", value: hitter.totalBases ?? row.totalBases ?? "N/A" };
+    }
+
+    if (state.market === "rbis") {
+      return { label: "RBIs", value: hitter.rbi ?? row.rbi ?? "N/A" };
+    }
+
+    if (state.market === "pitcherKs") {
+      return { label: "Strikeouts", value: pitcher.strikeOuts ?? row.strikeOuts ?? "N/A" };
+    }
+
+    return { label: "Score", value: scoreOf(row) };
+  }
+
   function renderMarketCard(row, index) {
     const s = statsOf(row);
     const score = scoreOf(row);
+    const stat = marketStat(row);
     const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "market model target");
     const opponent = row.opponent || "";
     const game = row.game || "";
@@ -1011,13 +1035,14 @@
           <div class="sweet-lineup">${esc(team)}${opponent ? " vs " + esc(opponent) : ""}</div>
           <div class="tags">
             <span class="tag green">${esc(row.edge || "Target")}</span>
-            ${game ? `<span class="tag teal">${esc(game)}</span>` : ""}
-            ${row.odds ? `<span class="tag gold">${esc(row.odds)}</span>` : ""}
+            <span class="tag gold">${esc(stat.label)}: ${esc(stat.value)}</span>
+            <span class="tag teal">Score: ${esc(score)}</span>
+            ${game ? `<span class="tag">${esc(game)}</span>` : ""}
           </div>
           <div class="sweet-note">${esc(note)}</div>
           ${statGrid(row)}
         </div>
-        <div class="score sweet-score"><b>${esc(score)}</b><br/>score<br/><span>${esc(marketLabel())}</span></div>
+        <div class="score sweet-score"><b>${esc(stat.value)}</b><br/>${esc(stat.label)}<br/><span>Score ${esc(score)}</span></div>
       </article>
     `;
   }
