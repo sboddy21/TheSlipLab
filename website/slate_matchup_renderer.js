@@ -771,7 +771,7 @@
   function injectShell() {
     const wrap = document.querySelector("main.wrap");
     if (!wrap) return;
-    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel"]) {
+    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
       const el = document.getElementById(id);
       if (el) el.remove();
     }
@@ -781,6 +781,11 @@
         <div class="panel-head"><div class="panel-title">Top Vulnerabilities <span id="avgVuln">Loading</span></div><div class="panel-note">click to jump</div></div>
         <div class="vulns" id="vulns"></div>
       </section>
+      <div class="market-tabs" id="marketTabs">
+        <button class="active" data-market="hr" type="button">Home Runs<small>Live</small></button>
+        <button class="disabled" data-market="hits" type="button">Hits<small>Coming Next</small></button>
+        <button class="disabled" data-market="tb" type="button">Total Bases<small>Coming Next</small></button>
+      </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
       <div class="tabs" id="tabs"></div>
       <section class="games" id="games"></section>
