@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [] } };
+  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -785,6 +785,8 @@
         <button class="active" data-market="hr" type="button">Home Runs<small>Slate</small></button>
         <button data-market="hits" type="button">Hits<small>Board</small></button>
         <button data-market="tb" type="button">Total Bases<small>Board</small></button>
+        <button data-market="rbis" type="button">RBIs<small>Board</small></button>
+        <button data-market="pitcherKs" type="button">Pitcher Ks<small>Board</small></button>
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
       <div class="tabs" id="tabs"></div>
@@ -977,6 +979,8 @@
   function marketLabel() {
     if (state.market === "hits") return "Hits";
     if (state.market === "tb") return "Total Bases";
+    if (state.market === "rbis") return "RBIs";
+    if (state.market === "pitcherKs") return "Pitcher Ks";
     return "Home Runs";
   }
 
@@ -1019,7 +1023,7 @@
   }
 
   function renderMarketBoard() {
-    const key = state.market === "tb" ? "tb" : "hits";
+    const key = state.market === "tb" ? "tb" : state.market === "rbis" ? "rbis" : state.market === "pitcherKs" ? "pitcherKs" : "hits";
     const marketRows = (state.marketRows[key] || []).slice().sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
     document.getElementById("hero").innerHTML = `<b>${marketRows.length}</b> ${esc(marketLabel())} targets loaded`;
     document.getElementById("games").innerHTML = `
@@ -1245,6 +1249,8 @@
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
+    state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
+    state.marketRows.pitcherKs = rows(await json("./data/mlb_pitcher_strikeouts.json", []));
     const weatherPayload = await json("./data/mlb_weather.json", []);
     state.weather = Array.isArray(weatherPayload) ? weatherPayload : weatherPayload.weather || weatherPayload.rows || weatherPayload.data || [];
     state.spray = await json("./data/player_spray_charts.json", {});

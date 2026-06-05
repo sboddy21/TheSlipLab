@@ -9,6 +9,8 @@ const steps = [
   ["Full Board", "scripts/mlb/build_home_run_board.js"],
   ["Hits Board", "scripts/mlb/build_hits_board.js"],
   ["Total Bases Board", "scripts/mlb/build_total_bases_board.js"],
+  ["RBI Board", "scripts/mlb/build_rbi_board.js"],
+  ["Pitcher Strikeouts Board", "scripts/mlb/build_pitcher_strikeouts_board.js"],
   ["HR Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
   ["Game Pitcher Matchups", "scripts/mlb/build_game_pitcher_matchups.mjs"],
   ["Team Stacks", "scripts/mlb/build_team_stacks.js"],
