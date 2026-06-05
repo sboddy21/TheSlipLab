@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], active: "all", last7: {} };
+  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [] } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -782,9 +782,9 @@
         <div class="vulns" id="vulns"></div>
       </section>
       <div class="market-tabs" id="marketTabs">
-        <button class="active" data-market="hr" type="button">Home Runs<small>Live</small></button>
-        <button class="disabled" data-market="hits" type="button">Hits<small>Coming Next</small></button>
-        <button class="disabled" data-market="tb" type="button">Total Bases<small>Coming Next</small></button>
+        <button class="active" data-market="hr" type="button">Home Runs<small>Slate</small></button>
+        <button data-market="hits" type="button">Hits<small>Board</small></button>
+        <button data-market="tb" type="button">Total Bases<small>Board</small></button>
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
       <div class="tabs" id="tabs"></div>
@@ -880,6 +880,10 @@
 
   function renderTabs() {
     const tabs = document.getElementById("tabs");
+    if (state.market !== "hr") {
+      tabs.innerHTML = "";
+      return;
+    }
     tabs.innerHTML = `<button class="${state.active === "all" ? "active" : ""}" data-game="all">All Games<span>${state.games.length} games</span></button>` +
       state.games.map((game, index) => `
         <button class="${String(state.active) === String(index) ? "active" : ""}" data-game="${index}">
@@ -970,15 +974,82 @@
     return `<div class="weather"><b>Weather</b><span>${esc(weather.temp)}°F</span><span>${esc(weather.windSpeed)} mph ${esc(weather.windCompass)}</span><span>${esc(weather.humidity)}% humidity</span><span>${esc(weather.status || "live")}</span></div>`;
   }
 
+  function marketLabel() {
+    if (state.market === "hits") return "Hits";
+    if (state.market === "tb") return "Total Bases";
+    return "Home Runs";
+  }
+
+  function wireMarketTabs() {
+    document.querySelectorAll("#marketTabs button").forEach(button => {
+      button.classList.toggle("active", button.dataset.market === state.market);
+      button.classList.remove("disabled");
+      button.addEventListener("click", () => {
+        state.market = button.dataset.market || "hr";
+        state.active = "all";
+        render();
+      });
+    });
+  }
+
+  function renderMarketCard(row, index) {
+    const s = statsOf(row);
+    const score = scoreOf(row);
+    const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "market model target");
+    const opponent = row.opponent || "";
+    const game = row.game || "";
+    const team = row.team || "";
+    return `
+      <article class="bat sweet-bat market-player-card" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
+        <div class="face">${esc(initials(row.player))}</div>
+        <div class="sweet-main">
+          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}</div>
+          <div class="sweet-lineup">${esc(team)}${opponent ? " vs " + esc(opponent) : ""}</div>
+          <div class="tags">
+            <span class="tag green">${esc(row.edge || "Target")}</span>
+            ${game ? `<span class="tag teal">${esc(game)}</span>` : ""}
+            ${row.odds ? `<span class="tag gold">${esc(row.odds)}</span>` : ""}
+          </div>
+          <div class="sweet-note">${esc(note)}</div>
+          ${statGrid(row)}
+        </div>
+        <div class="score sweet-score"><b>${esc(score)}</b><br/>score<br/><span>${esc(marketLabel())}</span></div>
+      </article>
+    `;
+  }
+
+  function renderMarketBoard() {
+    const key = state.market === "tb" ? "tb" : "hits";
+    const marketRows = (state.marketRows[key] || []).slice().sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
+    document.getElementById("hero").innerHTML = `<b>${marketRows.length}</b> ${esc(marketLabel())} targets loaded`;
+    document.getElementById("games").innerHTML = `
+      <section class="game-card">
+        <div class="game-head"><div><h2>Top ${esc(marketLabel())} Targets</h2><div class="game-meta">Ranked player board from the daily market model</div></div><div class="pill">BOARD</div></div>
+        <div class="danger"><div class="bats">${marketRows.map(renderMarketCard).join("") || `<div class="empty">No ${esc(marketLabel())} data loaded yet.</div>`}</div></div>
+      </section>
+    `;
+    wireCards();
+  }
+
   function render() {
     injectVulnerabilityStyles();
-    renderTopVulnerabilities();
+    wireMarketTabs();
+
+    if (state.market === "hr") {
+      renderTopVulnerabilities();
+      renderTabs();
+      document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
+      const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
+      document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
+      wireCards();
+      hydrateLast7();
+      return;
+    }
+
+    const vuln = document.getElementById("topVulnPanel");
+    if (vuln) vuln.style.display = "none";
     renderTabs();
-    document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
-    const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
-    document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
-    wireCards();
-    hydrateLast7();
+    renderMarketBoard();
   }
 
   function wireCards() {
@@ -1172,6 +1243,8 @@
     injectStyles();
     injectShell();
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
+    state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
+    state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     const weatherPayload = await json("./data/mlb_weather.json", []);
     state.weather = Array.isArray(weatherPayload) ? weatherPayload : weatherPayload.weather || weatherPayload.rows || weatherPayload.data || [];
     state.spray = await json("./data/player_spray_charts.json", {});
