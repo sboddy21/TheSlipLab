@@ -114,7 +114,23 @@ function defenseBoost(defense) {
   return 0;
 }
 
-function buildScore(row, defense, pace) {
+
+function defenderBoost(defenders) {
+  if (!Array.isArray(defenders) || !defenders.length) return 0;
+
+  let score = 0;
+
+  for (const d of defenders) {
+    if (d.tier === "Elite Defender") score -= 3;
+    else if (d.tier === "Strong Defender") score -= 2;
+    else if (d.tier === "Positive Defender") score -= 1;
+    else if (d.tier === "Attackable Defender") score += 2;
+  }
+
+  return score;
+}
+
+function buildScore(row, defense, pace, defenders) {
   const pointsScore = num(row.pointsScore);
   const usageScore = num(row.usageScore);
   const minutes = num(row.expectedMinutes);
@@ -136,7 +152,20 @@ function buildScore(row, defense, pace) {
     row.scoringRole === "Strong Scorer" ? 2 :
     0;
 
-  const matchupScore = clamp(base + usage + mins + minConf + volume + scoringTrend + homeAwayBoost + usageSpikeBoost + roleBoost + defenseBoost(defense) + paceBoost(pace));
+  const matchupScore = clamp(
+    base +
+    usage +
+    mins +
+    minConf +
+    volume +
+    scoringTrend +
+    homeAwayBoost +
+    usageSpikeBoost +
+    roleBoost +
+    defenseBoost(defense) +
+    paceBoost(pace) +
+    defenderBoost(defenders)
+  );
 
   return round1(matchupScore);
 }
@@ -146,7 +175,7 @@ function buildRow(row, games, defenseMap, paceMap, defenderMap) {
   const defense = defenseMap.get(String(row.opponent)) || null;
   const pace = paceMap.get(String(row.opponent)) || null;
   const defenders = topDefenders(defenderMap, row.opponent);
-  const matchupScore = buildScore(row, defense, pace);
+  const matchupScore = buildScore(row, defense, pace, defenders);
   const tier = matchupTier(matchupScore);
 
   const tags = [
@@ -267,7 +296,7 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    version: "2.2",
+    version: "3.0",
     source: "nba_points plus nba_games_today",
     fetchedAt: new Date().toISOString(),
     date: points.date || gamesPayload.date || "",
@@ -278,6 +307,7 @@ async function main() {
       "Opponent defensive ranks are pulled from nba_team_defense.json.",
       "Pace ranks are pulled from nba_pace_engine.json.",
       "Top opponent defender context is pulled from nba_defender_engine.json.",
+      "Matchup Engine 3.0 applies a small defender pressure adjustment to the matchup score.",
       "No odds or betting lines are used."
     ],
     players: rows
