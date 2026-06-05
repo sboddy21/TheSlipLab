@@ -125,6 +125,23 @@ function edge(score) {
   return "Thin";
 }
 
+function projectedStrikeouts(pitcher, opponentCtx) {
+  if (!pitcher) return 0;
+
+  const expectedInnings =
+    pitcher.gamesStarted > 0
+      ? Math.max(4.2, Math.min(6.6, pitcher.inningsPitched / pitcher.gamesStarted))
+      : 5.2;
+
+  const baseKs = (pitcher.kPer9 / 9) * expectedInnings;
+  const opponentBoost = opponentCtx.hitters
+    ? Math.max(-0.8, Math.min(1.1, (opponentCtx.avgStrikeOuts - 70) * 0.018))
+    : 0;
+
+  const projection = baseKs + opponentBoost;
+  return Number(Math.max(2.5, Math.min(10.5, projection)).toFixed(1));
+}
+
 async function main() {
   if (!fs.existsSync(GAMES_FILE)) throw new Error("Missing game pitcher matchups");
 
@@ -152,6 +169,8 @@ async function main() {
     const opponent = opponentKContext(row.game, row.side);
     const score = buildScore(pitcher, opponent);
 
+    const projection = projectedStrikeouts(pitcher, opponent);
+
     output.push({
       rank: 0,
       player: row.pitcher,
@@ -162,9 +181,14 @@ async function main() {
       opponent: row.opponent,
       game: row.game,
       score,
+      projection,
+      projectedStrikeouts: projection,
+      seasonTotal: pitcher?.strikeOuts || 0,
+      marketStatLabel: "Projected Ks",
+      marketStatValue: projection,
       odds: "N/A",
       edge: edge(score),
-      note: `K/9 ${pitcher?.kPer9 || "--"} • K Rate ${pitcher?.kRate || "--"} • SO ${pitcher?.strikeOuts || 0}`,
+      note: `Projected Ks ${projection} • Season SO ${pitcher?.strikeOuts || 0} • K/9 ${pitcher?.kPer9 || "--"} • K Rate ${pitcher?.kRate || "--"}`,
       stats: {
         pitcher,
         opponent

@@ -133,6 +133,18 @@ function edge(score) {
   return "Thin";
 }
 
+function projectedTotalBases(hitter, pitcher) {
+  const atBats = hitter.atBats > 0 ? hitter.atBats : 1;
+  const tbRate = hitter.totalBases / atBats;
+  const baseAtBats = 4.1;
+  const pitcherBoost = pitcher
+    ? Math.max(-0.35, Math.min(0.45, (pitcher.whip - 1.25) * 0.55 + (pitcher.era - 4.20) * 0.045))
+    : 0;
+
+  const projection = baseAtBats * Math.max(0.250, tbRate + pitcherBoost);
+  return Number(Math.max(0.6, Math.min(4.2, projection)).toFixed(1));
+}
+
 async function main() {
   if (!fs.existsSync(POOL_FILE)) {
     throw new Error("Missing player pool");
@@ -168,6 +180,8 @@ async function main() {
 
     const score = buildScore(hitter, pitcher);
 
+    const projection = projectedTotalBases(hitter, pitcher);
+
     rows.push({
       rank: 0,
       player: player.player,
@@ -176,10 +190,15 @@ async function main() {
       opponent: player.opponent,
       game: player.game,
       score,
+      projection,
+      projectedTotalBases: projection,
+      seasonTotal: hitter.totalBases,
+      marketStatLabel: "Projected TB",
+      marketStatValue: projection,
       odds: "N/A",
       edge: edge(score),
       note:
-        `SLG ${hitter.slg || "--"} • OPS ${hitter.ops || "--"} • TB ${hitter.totalBases}`,
+        `Projected TB ${projection} • Season TB ${hitter.totalBases} • SLG ${hitter.slg || "--"} • OPS ${hitter.ops || "--"}`,
       stats: {
         hitter,
         pitcher

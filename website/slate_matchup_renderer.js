@@ -1001,19 +1001,19 @@
     const pitcher = row?.stats?.pitcher || row?.pitcherStats || {};
 
     if (state.market === "hits") {
-      return { label: "Hits", value: hitter.hits ?? row.hits ?? "N/A" };
+      return { label: "Projected Hits", value: row.projectedHits ?? row.marketStatValue ?? row.projection ?? "N/A", seasonLabel: "Season Hits", seasonValue: hitter.hits ?? row.seasonTotal ?? "N/A" };
     }
 
     if (state.market === "tb") {
-      return { label: "Total Bases", value: hitter.totalBases ?? row.totalBases ?? "N/A" };
+      return { label: "Projected TB", value: row.projectedTotalBases ?? row.marketStatValue ?? row.projection ?? "N/A", seasonLabel: "Season TB", seasonValue: hitter.totalBases ?? row.seasonTotal ?? "N/A" };
     }
 
     if (state.market === "rbis") {
-      return { label: "RBIs", value: hitter.rbi ?? row.rbi ?? "N/A" };
+      return { label: "Projected RBI", value: row.projectedRBIs ?? row.marketStatValue ?? row.projection ?? "N/A", seasonLabel: "Season RBI", seasonValue: hitter.rbi ?? row.seasonTotal ?? "N/A" };
     }
 
     if (state.market === "pitcherKs") {
-      return { label: "Strikeouts", value: pitcher.strikeOuts ?? row.strikeOuts ?? "N/A" };
+      return { label: "Projected Ks", value: row.projectedStrikeouts ?? row.marketStatValue ?? row.projection ?? "N/A", seasonLabel: "Season SO", seasonValue: pitcher.strikeOuts ?? row.seasonTotal ?? "N/A" };
     }
 
     return { label: "Score", value: scoreOf(row) };
@@ -1036,7 +1036,8 @@
           <div class="tags">
             <span class="tag green">${esc(row.edge || "Target")}</span>
             <span class="tag gold">${esc(stat.label)}: ${esc(stat.value)}</span>
-            <span class="tag teal">Score: ${esc(score)}</span>
+            ${stat.seasonLabel ? `<span class="tag teal">${esc(stat.seasonLabel)}: ${esc(stat.seasonValue)}</span>` : ""}
+            <span class="tag">Score: ${esc(score)}</span>
             ${game ? `<span class="tag">${esc(game)}</span>` : ""}
           </div>
           <div class="sweet-note">${esc(note)}</div>
