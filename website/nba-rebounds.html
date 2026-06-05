@@ -100,8 +100,17 @@
     <section id="board" class="grid"></section>
   </main>
 
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+
+
   <script>
     let DATA=[];
+    let CARDS=[];
     function clean(v,f="--"){return v===undefined||v===null||v===""?f:String(v)}
     function html(v){return clean(v,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -120,6 +129,7 @@
       const rows=DATA.filter(p=>matches(p,q)).filter(p=>tier==="all"||p.matchupTier===tier)
         .sort((a,b)=>num(b[sort])-num(a[sort])||num(b.reboundsScore)-num(a.reboundsScore));
       document.getElementById("board").innerHTML=rows.length?rows.map(card).join(""):`<div class="empty">No players match this filter.</div>`;
+      installCards();
 
     }
     function findCard(playerId){
@@ -196,12 +206,15 @@
       </article>`;
     }
     async function boot(){
+      const cards=await getJSON("./data/nba_player_cards.json");
       const d=await getJSON("./data/nba_rebounds.json");
       DATA=Array.isArray(d.players)?d.players:[];
+      CARDS=Array.isArray(cards.players)?cards.players:[];
       document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
       ["search","tier","sort"].forEach(id=>document.getElementById(id).addEventListener("input",render));
       render();
     }
+    document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});
     boot().catch(e=>document.getElementById("board").innerHTML=`<div class="empty">${html(e.message)}</div>`);
   </script>
 </body>
