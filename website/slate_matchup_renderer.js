@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] } };
+  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -137,6 +137,44 @@
           }
           50% {
             box-shadow: 0 0 18px rgba(255, 107, 45, .22);
+          }
+        }
+
+        .market-filter-panel {
+          display: grid;
+          grid-template-columns: minmax(220px, 1.4fr) repeat(3, minmax(130px, .7fr)) auto;
+          gap: 9px;
+          margin: 0 0 12px;
+        }
+
+        .market-filter-panel input,
+        .market-filter-panel select,
+        .market-filter-panel button {
+          background: #101719;
+          color: #f4fff8;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 10px;
+          padding: 10px 11px;
+          font-size: 12px;
+          font-weight: 850;
+          outline: none;
+        }
+
+        .market-filter-panel button {
+          cursor: pointer;
+          color: #8cff32;
+          border-color: rgba(140,255,50,.35);
+        }
+
+        .market-filter-panel input:focus,
+        .market-filter-panel select:focus {
+          border-color: rgba(140,255,50,.55);
+          box-shadow: 0 0 0 2px rgba(140,255,50,.08);
+        }
+
+        @media(max-width:900px) {
+          .market-filter-panel {
+            grid-template-columns: 1fr;
           }
         }
 
@@ -991,6 +1029,7 @@
       button.addEventListener("click", () => {
         state.market = button.dataset.market || "hr";
         state.active = "all";
+        state.filters = { search: "", team: "all", minProjection: 0, minScore: 0 };
         render();
       });
     });
@@ -1048,16 +1087,133 @@
     `;
   }
 
+  function marketKey() {
+    return state.market === "tb" ? "tb" : state.market === "rbis" ? "rbis" : state.market === "pitcherKs" ? "pitcherKs" : "hits";
+  }
+
+  function projectionValue(row) {
+    const stat = marketStat(row);
+    return num(stat.value);
+  }
+
+  function marketTeams(rows) {
+    return [...new Set(rows.map(row => row.team).filter(Boolean))]
+      .sort((a, b) => String(a).localeCompare(String(b)));
+  }
+
+  function renderMarketFilters(allRows) {
+    const teams = marketTeams(allRows);
+    return `
+      <div class="market-filter-panel">
+        <input id="marketSearch" type="search" placeholder="Search player, pitcher, team, opponent..." value="${esc(state.filters.search)}" />
+        <select id="marketTeam">
+          <option value="all">All Teams</option>
+          ${teams.map(team => `<option value="${esc(team)}" ${state.filters.team === team ? "selected" : ""}>${esc(team)}</option>`).join("")}
+        </select>
+        <select id="marketMinProjection">
+          <option value="0" ${Number(state.filters.minProjection) === 0 ? "selected" : ""}>Any Projection</option>
+          <option value="1" ${Number(state.filters.minProjection) === 1 ? "selected" : ""}>Projection 1.0+</option>
+          <option value="2" ${Number(state.filters.minProjection) === 2 ? "selected" : ""}>Projection 2.0+</option>
+          <option value="3" ${Number(state.filters.minProjection) === 3 ? "selected" : ""}>Projection 3.0+</option>
+          <option value="5" ${Number(state.filters.minProjection) === 5 ? "selected" : ""}>Projection 5.0+</option>
+        </select>
+        <select id="marketMinScore">
+          <option value="0" ${Number(state.filters.minScore) === 0 ? "selected" : ""}>Any Score</option>
+          <option value="60" ${Number(state.filters.minScore) === 60 ? "selected" : ""}>Score 60+</option>
+          <option value="68" ${Number(state.filters.minScore) === 68 ? "selected" : ""}>Score 68+</option>
+          <option value="76" ${Number(state.filters.minScore) === 76 ? "selected" : ""}>Score 76+</option>
+        </select>
+        <button id="marketClearFilters" type="button">Clear</button>
+      </div>
+    `;
+  }
+
+  function filterMarketRows(rows) {
+    const q = String(state.filters.search || "").toLowerCase().trim();
+    const team = state.filters.team || "all";
+    const minProjection = num(state.filters.minProjection);
+    const minScore = num(state.filters.minScore);
+
+    return rows.filter(row => {
+      const haystack = [
+        row.player,
+        row.pitcher,
+        row.team,
+        row.opponent,
+        row.game,
+        row.edge,
+        row.note
+      ].join(" ").toLowerCase();
+
+      if (q && !haystack.includes(q)) return false;
+      if (team !== "all" && row.team !== team) return false;
+      if (minProjection && projectionValue(row) < minProjection) return false;
+      if (minScore && num(scoreOf(row)) < minScore) return false;
+
+      return true;
+    });
+  }
+
+  function wireMarketFilters() {
+    const search = document.getElementById("marketSearch");
+    const team = document.getElementById("marketTeam");
+    const minProjection = document.getElementById("marketMinProjection");
+    const minScore = document.getElementById("marketMinScore");
+    const clear = document.getElementById("marketClearFilters");
+
+    if (search) {
+      search.addEventListener("input", () => {
+        state.filters.search = search.value;
+        render();
+      });
+    }
+
+    if (team) {
+      team.addEventListener("change", () => {
+        state.filters.team = team.value;
+        render();
+      });
+    }
+
+    if (minProjection) {
+      minProjection.addEventListener("change", () => {
+        state.filters.minProjection = Number(minProjection.value || 0);
+        render();
+      });
+    }
+
+    if (minScore) {
+      minScore.addEventListener("change", () => {
+        state.filters.minScore = Number(minScore.value || 0);
+        render();
+      });
+    }
+
+    if (clear) {
+      clear.addEventListener("click", () => {
+        state.filters = { search: "", team: "all", minProjection: 0, minScore: 0 };
+        render();
+      });
+    }
+  }
+
   function renderMarketBoard() {
-    const key = state.market === "tb" ? "tb" : state.market === "rbis" ? "rbis" : state.market === "pitcherKs" ? "pitcherKs" : "hits";
-    const marketRows = (state.marketRows[key] || []).slice().sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
-    document.getElementById("hero").innerHTML = `<b>${marketRows.length}</b> ${esc(marketLabel())} targets loaded`;
+    const key = marketKey();
+    const allRows = (state.marketRows[key] || []).slice().sort((a, b) => projectionValue(b) - projectionValue(a) || num(scoreOf(b)) - num(scoreOf(a)));
+    const marketRows = filterMarketRows(allRows);
+
+    document.getElementById("hero").innerHTML = `<b>${marketRows.length}</b> of ${allRows.length} ${esc(marketLabel())} targets shown`;
     document.getElementById("games").innerHTML = `
       <section class="game-card">
-        <div class="game-head"><div><h2>Top ${esc(marketLabel())} Targets</h2><div class="game-meta">Ranked player board from the daily market model</div></div><div class="pill">BOARD</div></div>
-        <div class="danger"><div class="bats">${marketRows.map(renderMarketCard).join("") || `<div class="empty">No ${esc(marketLabel())} data loaded yet.</div>`}</div></div>
+        <div class="game-head"><div><h2>Top ${esc(marketLabel())} Targets</h2><div class="game-meta">Filter by player, team, projection, or model score</div></div><div class="pill">BOARD</div></div>
+        <div class="danger">
+          ${renderMarketFilters(allRows)}
+          <div class="bats">${marketRows.map(renderMarketCard).join("") || `<div class="empty">No ${esc(marketLabel())} targets match these filters.</div>`}</div>
+        </div>
       </section>
     `;
+
+    wireMarketFilters();
     wireCards();
   }
 
