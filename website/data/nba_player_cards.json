@@ -1,13 +1,13 @@
 {
   "sport": "NBA",
-  "version": "1.0",
+  "version": "1.1",
   "source": "nba_core plus nba_points plus nba_matchup_engine",
-  "fetchedAt": "2026-06-04T21:26:05.630Z",
+  "fetchedAt": "2026-06-05T01:14:47.327Z",
   "date": "2026-06-03",
   "season": "2025-26",
   "playerCount": 30,
   "modelNotes": [
-    "NBA Player Cards 1.0 combines core, points, matchup, minutes, usage, production, and recent game logs.",
+    "NBA Player Cards 1.1 combines core, points, matchup, defender context, minutes, usage, production, and recent game logs.",
     "No odds or betting lines are used."
   ],
   "players": [
@@ -31,8 +31,8 @@
         "pointsScore": 94.1,
         "confidence": "Elite",
         "pointsLean": 28.9,
-        "matchupScore": 86.7,
-        "matchupTier": "Elite Matchup",
+        "matchupScore": 83.7,
+        "matchupTier": "Strong Matchup",
         "scoringRole": "Primary Scorer",
         "minutesRole": "Core Starter"
       },
@@ -73,10 +73,55 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 86.7,
-        "matchupTier": "Elite Matchup"
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 83.7,
+        "matchupTier": "Strong Matchup"
       },
       "recentGames": [
         {
@@ -210,9 +255,13 @@
         "Primary Scorer",
         "Scoring Form Up",
         "Free Throw Volume Up",
-        "Elite Matchup",
+        "Strong Matchup",
         "Road Spot",
-        "Minute Edge"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -235,8 +284,8 @@
         "pointsScore": 89.2,
         "confidence": "Strong",
         "pointsLean": 27.8,
-        "matchupScore": 81.3,
-        "matchupTier": "Strong Matchup",
+        "matchupScore": 73.3,
+        "matchupTier": "Playable Matchup",
         "scoringRole": "Strong Scorer",
         "minutesRole": "Starter"
       },
@@ -277,10 +326,55 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 81.3,
-        "matchupTier": "Strong Matchup"
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 73.3,
+        "matchupTier": "Playable Matchup"
       },
       "recentGames": [
         {
@@ -414,8 +508,12 @@
         "Strong Scorer",
         "Scoring Form Up",
         "Free Throw Volume Up",
-        "Strong Matchup",
+        "Playable Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Volume Acceleration"
       ]
     },
@@ -439,8 +537,8 @@
         "pointsScore": 79.8,
         "confidence": "Playable",
         "pointsLean": 22.5,
-        "matchupScore": 86,
-        "matchupTier": "Elite Matchup",
+        "matchupScore": 78,
+        "matchupTier": "Strong Matchup",
         "scoringRole": "Strong Scorer",
         "minutesRole": "Starter"
       },
@@ -481,10 +579,55 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 86,
-        "matchupTier": "Elite Matchup"
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 78,
+        "matchupTier": "Strong Matchup"
       },
       "recentGames": [
         {
@@ -618,8 +761,12 @@
         "Strong Scorer",
         "Scoring Form Up",
         "Free Throw Volume Up",
-        "Elite Matchup",
+        "Strong Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Volume Acceleration"
       ]
     },
@@ -643,7 +790,7 @@
         "pointsScore": 63.9,
         "confidence": "Watch",
         "pointsLean": 19.3,
-        "matchupScore": 56.4,
+        "matchupScore": 53.4,
         "matchupTier": "Neutral Matchup",
         "scoringRole": "Secondary Scorer",
         "minutesRole": "Starter"
@@ -685,9 +832,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 56.4,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 53.4,
         "matchupTier": "Neutral Matchup"
       },
       "recentGames": [
@@ -820,7 +1012,12 @@
         "Stable Minutes",
         "Strong Usage",
         "Neutral Matchup",
-        "Road Spot"
+        "Road Spot",
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -843,8 +1040,8 @@
         "pointsScore": 62.4,
         "confidence": "Watch",
         "pointsLean": 17.5,
-        "matchupScore": 62.2,
-        "matchupTier": "Playable Matchup",
+        "matchupScore": 54.2,
+        "matchupTier": "Neutral Matchup",
         "scoringRole": "Secondary Scorer",
         "minutesRole": "Starter"
       },
@@ -885,10 +1082,55 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 62.2,
-        "matchupTier": "Playable Matchup"
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 54.2,
+        "matchupTier": "Neutral Matchup"
       },
       "recentGames": [
         {
@@ -1022,8 +1264,12 @@
         "Free Throw Volume Up",
         "Stable Minutes",
         "Strong Usage",
-        "Playable Matchup",
-        "Home Spot"
+        "Neutral Matchup",
+        "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -1046,7 +1292,7 @@
         "pointsScore": 62,
         "confidence": "Watch",
         "pointsLean": 16.8,
-        "matchupScore": 61.7,
+        "matchupScore": 58.7,
         "matchupTier": "Neutral Matchup",
         "scoringRole": "Secondary Scorer",
         "minutesRole": "Starter"
@@ -1088,9 +1334,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 61.7,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 58.7,
         "matchupTier": "Neutral Matchup"
       },
       "recentGames": [
@@ -1226,7 +1517,11 @@
         "Stable Minutes",
         "Neutral Matchup",
         "Road Spot",
-        "Minute Edge"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -1249,7 +1544,7 @@
         "pointsScore": 60.1,
         "confidence": "Watch",
         "pointsLean": 16.3,
-        "matchupScore": 61.1,
+        "matchupScore": 53.1,
         "matchupTier": "Neutral Matchup",
         "scoringRole": "Secondary Scorer",
         "minutesRole": "Starter"
@@ -1291,9 +1586,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 61.1,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 53.1,
         "matchupTier": "Neutral Matchup"
       },
       "recentGames": [
@@ -1427,6 +1767,10 @@
         "Stable Minutes",
         "Neutral Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Minute Edge"
       ]
     },
@@ -1450,8 +1794,8 @@
         "pointsScore": 57.4,
         "confidence": "Low",
         "pointsLean": 16.4,
-        "matchupScore": 50.8,
-        "matchupTier": "Neutral Matchup",
+        "matchupScore": 47.8,
+        "matchupTier": "Thin Matchup",
         "scoringRole": "Secondary Scorer",
         "minutesRole": "Starter"
       },
@@ -1492,10 +1836,55 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 50.8,
-        "matchupTier": "Neutral Matchup"
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 47.8,
+        "matchupTier": "Thin Matchup"
       },
       "recentGames": [
         {
@@ -1625,8 +2014,13 @@
         "Stable Usage",
         "Secondary Scorer",
         "Stable Minutes",
-        "Neutral Matchup",
-        "Road Spot"
+        "Thin Matchup",
+        "Road Spot",
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -1649,7 +2043,7 @@
         "pointsScore": 42,
         "confidence": "Low",
         "pointsLean": 13.1,
-        "matchupScore": 42.6,
+        "matchupScore": 34.6,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Low Volume Scorer",
         "minutesRole": "Bench"
@@ -1691,9 +2085,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 42.6,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 34.6,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -1825,7 +2264,10 @@
         "Low Volume Scorer",
         "Thin Matchup",
         "Home Spot",
-        "Bench"
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -1848,7 +2290,7 @@
         "pointsScore": 39.7,
         "confidence": "Low",
         "pointsLean": 12.9,
-        "matchupScore": 32.4,
+        "matchupScore": 29.4,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Low Volume Scorer",
         "minutesRole": "Bench"
@@ -1890,9 +2332,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 32.4,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 29.4,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -2024,7 +2511,11 @@
         "Low Volume Scorer",
         "Thin Matchup",
         "Road Spot",
-        "Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -2047,7 +2538,7 @@
         "pointsScore": 35.9,
         "confidence": "Low",
         "pointsLean": 13,
-        "matchupScore": 25.8,
+        "matchupScore": 17.8,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Low Volume Scorer",
         "minutesRole": "Bench"
@@ -2089,9 +2580,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 25.8,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 17.8,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -2223,6 +2759,10 @@
         "Low Volume Scorer",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Bench"
       ]
     },
@@ -2246,7 +2786,7 @@
         "pointsScore": 35.8,
         "confidence": "Low",
         "pointsLean": 9.6,
-        "matchupScore": 35.2,
+        "matchupScore": 27.2,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Rotation"
@@ -2288,9 +2828,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 35.2,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 27.2,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -2422,6 +3007,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Rotation"
       ]
     },
@@ -2445,7 +3034,7 @@
         "pointsScore": 35.5,
         "confidence": "Low",
         "pointsLean": 9.5,
-        "matchupScore": 30.9,
+        "matchupScore": 27.9,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Starter"
@@ -2487,9 +3076,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 30.9,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 27.9,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -2623,7 +3257,12 @@
         "Scoring Form Down",
         "Stable Minutes",
         "Thin Matchup",
-        "Road Spot"
+        "Road Spot",
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -2646,7 +3285,7 @@
         "pointsScore": 31.1,
         "confidence": "Low",
         "pointsLean": 9.7,
-        "matchupScore": 28.7,
+        "matchupScore": 20.7,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -2688,9 +3327,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 28.7,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 20.7,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -2822,6 +3506,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Bench"
       ]
     },
@@ -2845,7 +3533,7 @@
         "pointsScore": 26.8,
         "confidence": "Low",
         "pointsLean": 7.2,
-        "matchupScore": 31.1,
+        "matchupScore": 23.1,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -2887,9 +3575,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 31.1,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 23.1,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -3021,6 +3754,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Bench"
       ]
     },
@@ -3044,7 +3781,7 @@
         "pointsScore": 24.3,
         "confidence": "Low",
         "pointsLean": 8,
-        "matchupScore": 21,
+        "matchupScore": 18,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -3086,9 +3823,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 21,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 18,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -3220,7 +4002,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -3243,7 +4029,7 @@
         "pointsScore": 24,
         "confidence": "Low",
         "pointsLean": 8.3,
-        "matchupScore": 17.3,
+        "matchupScore": 14.3,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -3285,9 +4071,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 17.3,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 14.3,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -3419,7 +4250,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -3442,7 +4277,7 @@
         "pointsScore": 20.2,
         "confidence": "Low",
         "pointsLean": 6.6,
-        "matchupScore": 15.6,
+        "matchupScore": 12.6,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -3484,9 +4319,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 15.6,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 12.6,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -3618,7 +4498,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -3641,7 +4525,7 @@
         "pointsScore": 18.1,
         "confidence": "Low",
         "pointsLean": 4.3,
-        "matchupScore": 24.6,
+        "matchupScore": 21.6,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -3683,9 +4567,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 24.6,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 21.6,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -3817,7 +4746,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Deep Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -3840,7 +4773,7 @@
         "pointsScore": 17.8,
         "confidence": "Low",
         "pointsLean": 4.5,
-        "matchupScore": 23.3,
+        "matchupScore": 15.3,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -3882,9 +4815,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 23.3,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 15.3,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -4016,6 +4994,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     },
@@ -4039,7 +5021,7 @@
         "pointsScore": 15.2,
         "confidence": "Low",
         "pointsLean": 4.4,
-        "matchupScore": 14.5,
+        "matchupScore": 11.5,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Bench"
@@ -4081,9 +5063,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 14.5,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 11.5,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -4215,7 +5242,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -4238,7 +5269,7 @@
         "pointsScore": 14.6,
         "confidence": "Low",
         "pointsLean": 4.2,
-        "matchupScore": 14.5,
+        "matchupScore": 11.5,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -4280,9 +5311,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 14.5,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 11.5,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -4414,7 +5490,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Deep Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -4437,7 +5517,7 @@
         "pointsScore": 11.6,
         "confidence": "Low",
         "pointsLean": 2.7,
-        "matchupScore": 17.1,
+        "matchupScore": 9.1,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -4479,9 +5559,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 17.1,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 9.1,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -4613,6 +5738,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     },
@@ -4636,7 +5765,7 @@
         "pointsScore": 8.2,
         "confidence": "Low",
         "pointsLean": 1.6,
-        "matchupScore": 14.4,
+        "matchupScore": 6.4,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -4678,9 +5807,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 14.4,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 6.4,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -4812,6 +5986,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     },
@@ -4835,7 +6013,7 @@
         "pointsScore": 7.6,
         "confidence": "Low",
         "pointsLean": 2.5,
-        "matchupScore": 8.4,
+        "matchupScore": 0.4,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -4877,9 +6055,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 8.4,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 0.4,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -5011,6 +6234,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     },
@@ -5034,7 +6261,7 @@
         "pointsScore": 7.3,
         "confidence": "Low",
         "pointsLean": 1.8,
-        "matchupScore": 11.5,
+        "matchupScore": 3.5,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -5076,9 +6303,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 11.5,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 3.5,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -5210,6 +6482,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     },
@@ -5233,7 +6509,7 @@
         "pointsScore": 5.9,
         "confidence": "Low",
         "pointsLean": 1.1,
-        "matchupScore": 8.8,
+        "matchupScore": 5.8,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -5275,9 +6551,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 8.8,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 5.8,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -5409,7 +6730,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Deep Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -5432,7 +6757,7 @@
         "pointsScore": 5.8,
         "confidence": "Low",
         "pointsLean": 1.9,
-        "matchupScore": 5.1,
+        "matchupScore": 2.1,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -5474,9 +6799,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 5.1,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 2.1,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -5608,7 +6978,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Deep Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -5631,7 +7005,7 @@
         "pointsScore": 5.4,
         "confidence": "Low",
         "pointsLean": 1.1,
-        "matchupScore": 8.5,
+        "matchupScore": 5.5,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -5673,9 +7047,54 @@
       "matchup": {
         "matchup": "NYK vs SAS",
         "homeAway": "AWAY",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 8.5,
+        "opponentContext": "SAS allows 111.5 PPG, rank 8 vs points",
+        "paceContext": "SAS pace 100.7, rank 13",
+        "defenderContext": "Victor Wembanyama: Elite Defender, -8.6 | Luke Kornet: Strong Defender, -3.9 | Keldon Johnson: Positive Defender, -3.1",
+        "topDefenders": [
+          {
+            "player": "Victor Wembanyama",
+            "position": "F-C",
+            "defendedFGA": 18.1,
+            "pctPlusMinus": -8.6,
+            "tier": "Elite Defender"
+          },
+          {
+            "player": "Luke Kornet",
+            "position": "C-F",
+            "defendedFGA": 14.7,
+            "pctPlusMinus": -3.9,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "Keldon Johnson",
+            "position": "F-G",
+            "defendedFGA": 7.5,
+            "pctPlusMinus": -3.1,
+            "tier": "Positive Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "SAS",
+          "defensiveTier": "Average Defense",
+          "pointsAllowed": 111.5,
+          "rankPointsAllowed": 8,
+          "reboundsAllowed": 42.6,
+          "rankReboundsAllowed": 8,
+          "assistsAllowed": 26.2,
+          "rankAssistsAllowed": 12,
+          "threesAllowed": 13,
+          "rankThreesAllowed": 15
+        },
+        "pace": {
+          "opponent": "SAS",
+          "pace": 100.7,
+          "rankPace": 13,
+          "paceTier": "Neutral Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 110.4,
+          "netRating": 8.4
+        },
+        "matchupScore": 5.5,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -5807,7 +7226,11 @@
         "Thin Points Role",
         "Thin Matchup",
         "Road Spot",
-        "Deep Bench"
+        "Average Defense",
+        "Neutral Pace",
+        "Elite Defender In Matchup",
+        "Strong Defender In Matchup",
+        "Tough Points Defense"
       ]
     },
     {
@@ -5830,7 +7253,7 @@
         "pointsScore": 5.3,
         "confidence": "Low",
         "pointsLean": 0.7,
-        "matchupScore": 11.6,
+        "matchupScore": 3.6,
         "matchupTier": "Thin Matchup",
         "scoringRole": "Thin Points Role",
         "minutesRole": "Deep Bench"
@@ -5872,9 +7295,54 @@
       "matchup": {
         "matchup": "SAS vs NYK",
         "homeAway": "HOME",
-        "opponentContext": "Neutral until team defense dataset is added",
-        "paceContext": "Neutral until pace dataset is added",
-        "matchupScore": 11.6,
+        "opponentContext": "NYK allows 110.1 PPG, rank 5 vs points",
+        "paceContext": "NYK pace 97.7, rank 25",
+        "defenderContext": "Mitchell Robinson: Strong Defender, -4.5 | OG Anunoby: Positive Defender, -2.6 | Mikal Bridges: Neutral Defender, -1",
+        "topDefenders": [
+          {
+            "player": "Mitchell Robinson",
+            "position": "C-F",
+            "defendedFGA": 9.4,
+            "pctPlusMinus": -4.5,
+            "tier": "Strong Defender"
+          },
+          {
+            "player": "OG Anunoby",
+            "position": "F-G",
+            "defendedFGA": 12.8,
+            "pctPlusMinus": -2.6,
+            "tier": "Positive Defender"
+          },
+          {
+            "player": "Mikal Bridges",
+            "position": "G-F",
+            "defendedFGA": 11.7,
+            "pctPlusMinus": -1,
+            "tier": "Neutral Defender"
+          }
+        ],
+        "defense": {
+          "opponent": "NYK",
+          "defensiveTier": "Strong Defense",
+          "pointsAllowed": 110.1,
+          "rankPointsAllowed": 5,
+          "reboundsAllowed": 40.5,
+          "rankReboundsAllowed": 4,
+          "assistsAllowed": 25,
+          "rankAssistsAllowed": 5,
+          "threesAllowed": 13.9,
+          "rankThreesAllowed": 21
+        },
+        "pace": {
+          "opponent": "NYK",
+          "pace": 97.7,
+          "rankPace": 25,
+          "paceTier": "Slow Pace",
+          "offensiveRating": 118.7,
+          "defensiveRating": 112.3,
+          "netRating": 6.4
+        },
+        "matchupScore": 3.6,
         "matchupTier": "Thin Matchup"
       },
       "recentGames": [
@@ -6006,6 +7474,10 @@
         "Thin Points Role",
         "Thin Matchup",
         "Home Spot",
+        "Strong Defense",
+        "Slow Pace",
+        "Strong Defender In Matchup",
+        "Tough Points Defense",
         "Deep Bench"
       ]
     }

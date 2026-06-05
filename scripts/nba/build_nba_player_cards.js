@@ -127,12 +127,16 @@ function buildCard(core, points, matchup) {
       homeAway: core.homeAway,
       opponentContext: matchup?.opponentContext || "",
       paceContext: matchup?.paceContext || "",
+      defenderContext: matchup?.defenderContext || "",
+      topDefenders: Array.isArray(matchup?.topDefenders) ? matchup.topDefenders : [],
+      defense: matchup?.defense || null,
+      pace: matchup?.pace || null,
       matchupScore: round1(matchup?.matchupScore),
       matchupTier: matchup?.matchupTier || ""
     },
 
     recentGames: lastGames(core),
-    tags: [...new Set(tags)].slice(0, 12)
+    tags: [...new Set(tags)].slice(0, 16)
   };
 }
 
@@ -154,14 +158,14 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    version: "1.0",
+    version: "1.1",
     source: "nba_core plus nba_points plus nba_matchup_engine",
     fetchedAt: new Date().toISOString(),
     date: core.date || points.date || "",
     season: core.season || points.season || "",
     playerCount: players.length,
     modelNotes: [
-      "NBA Player Cards 1.0 combines core, points, matchup, minutes, usage, production, and recent game logs.",
+      "NBA Player Cards 1.1 combines core, points, matchup, defender context, minutes, usage, production, and recent game logs.",
       "No odds or betting lines are used."
     ],
     players
