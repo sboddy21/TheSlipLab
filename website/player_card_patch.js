@@ -188,17 +188,17 @@
     const primary = title === "Zone Overlap";
     const pitcher = title === "Pitcher Leak";
 
-    return `<div class="pcz pcz-premium ${primary ? "pcz-primary" : ""} ${pitcher ? "pcz-pitcher" : ""}">
-      <div class="pcz-head">
-        <div class="pcz-icon">${zoneIcon(title)}</div>
-        <div>
-          <h4>${esc(title)}</h4>
-          <p>${esc(zoneSub(title))}</p>
-        </div>
-      </div>
-      <div class="pcz-frame">
-        <div class="pcz-yaxis"><span>HIGH</span><span>MID</span><span>LOW</span></div>
-        <div class="pcz-cells">${cells.map(cell => {
+    return `<section class="pcz pcz-clean ${primary ? "pcz-primary" : ""} ${pitcher ? "pcz-pitcher" : ""}">
+      <header class="pcz-clean-head">
+        <span class="pcz-clean-icon">${zoneIcon ? zoneIcon(title) : "◆"}</span>
+        <span class="pcz-clean-copy">
+          <b>${esc(title)}</b>
+          <small>${zoneSub ? esc(zoneSub(title)) : "Zone profile"}</small>
+        </span>
+      </header>
+
+      <main class="pcz-clean-board">
+        ${cells.map(cell => {
           const raw = field ? cell?.[field] : cell;
           const n = num(raw);
 
@@ -218,12 +218,14 @@
 
           const txt = mode === "dec" ? dec(raw) : String(Math.round(n));
           return `<span class="${cls}" title="${esc(title)}: ${esc(txt)}">${txt}</span>`;
-        }).join("")}</div>
-      </div>
-      <div class="pcz-xaxis"><span>INSIDE</span><span>MIDDLE</span><span>OUTSIDE</span></div>
-    </div>`;
-  }
+        }).join("")}
+      </main>
 
+      <footer class="pcz-clean-axis">
+        <span>Inside</span><span>Middle</span><span>Outside</span>
+      </footer>
+    </section>`;
+  }
 
   function sprayChart(row) {
     const s = SPRAY?.byPlayerId?.[String(row.playerId || "")] || SPRAY?.players?.[row.player];
