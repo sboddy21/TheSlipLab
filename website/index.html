@@ -264,7 +264,7 @@
 
     .row{
       display:grid;
-      grid-template-columns:24px 1fr auto;
+      grid-template-columns:24px minmax(0,1fr) minmax(125px,auto);
       gap:8px;
       align-items:center;
       padding:6px 0;
@@ -274,6 +274,9 @@
     .score{
       font-weight:900;
       color:var(--green);
+      text-align:right;
+      white-space:nowrap;
+      text-shadow:0 0 10px rgba(99,226,47,.45),0 0 20px rgba(99,226,47,.22);
     }
 
     .nba .score,.nhl .score{color:var(--blue)}
@@ -595,8 +598,8 @@
           <div class="label">Live Top Plays</div>
           <div class="toplist">
             <div class="row"><span>🔥</span><span>Top HR Play</span><span class="score" id="homeMlbTopHr">Loading</span></div>
-            <div class="row"><span>🌤</span><span>Best Weather Spot</span><span class="score" id="homeMlbWeather">Loading</span></div>
-            <div class="row"><span>🎯</span><span>Top Matchup</span><span class="score" id="homeMlbMatchup">Loading</span></div>
+            <div class="row"><span>🌤</span><span>Best Weather Boost</span><span class="score" id="homeMlbWeather">Loading</span></div>
+            <div class="row"><span>🎯</span><span>Top Matchup Edge</span><span class="score" id="homeMlbMatchup">Loading</span></div>
           </div>
 
           <a class="btn" href="mlb.html">View MLB Dashboard</a>
@@ -819,6 +822,30 @@
       return `${parts[0][0]}. ${parts.slice(1).join(" ")}`;
     }
 
+    function fullName(name){
+      return String(name || "").trim() || "--";
+    }
+
+    function mlbMetric(row){
+      if(!row) return "";
+      const pct = row.hrProbability || row.realHrProbability || row.probability || row.hrProb;
+      const boost = row.weatherBoost || row.windBoost || row.carryBoost || row.pullWindBoost;
+      const score = row.finalScore || row.score || row.modelScore || row.hrScore;
+      const tier = row.tier || row.grade || row.label || row.matchupTier;
+
+      if(pct !== undefined && pct !== null && pct !== "") return ` (${Number(pct).toFixed(1)}%)`;
+      if(boost !== undefined && boost !== null && boost !== "") return ` (+${Number(boost).toFixed(1)})`;
+      if(tier) return ` (${tier})`;
+      if(score !== undefined && score !== null && score !== "") return ` (${Number(score).toFixed(1)})`;
+      return "";
+    }
+
+    function mlbHomeText(row){
+      const name = fullName(row?.player || row?.batter || row?.name);
+      if(name === "--") return "--";
+      return name + mlbMetric(row);
+    }
+
     async function loadHomepageLivePlays(){
       try{
         const games = await loadJSON("./data/mlb_games_today.json");
@@ -846,10 +873,10 @@
           sections.bestPicks?.[0] ||
           topHr;
 
-        setText("homeMlbTopHr", shortName(topHr?.player || topHr?.batter || topHr?.name));
-        setText("leaderMlb", shortName(topHr?.player || topHr?.batter || topHr?.name));
-        setText("homeMlbWeather", shortName(weather?.player || weather?.batter || weather?.venue || weather?.park || weather?.name));
-        setText("homeMlbMatchup", shortName(matchup?.player || matchup?.batter || matchup?.name));
+        setText("homeMlbTopHr", mlbHomeText(topHr));
+        setText("leaderMlb", fullName(topHr?.player || topHr?.batter || topHr?.name));
+        setText("homeMlbWeather", mlbHomeText(weather));
+        setText("homeMlbMatchup", mlbHomeText(matchup));
       }catch(e){
         setText("homeMlbTopHr", "--");
         setText("homeMlbWeather", "--");
