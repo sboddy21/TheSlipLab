@@ -403,6 +403,47 @@
   transform-origin:left center;
 }
 
+
+.hr-difficulty-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  border:1px solid rgba(148,163,184,.28);
+}
+.hr-difficulty-badge.moonshot{
+  color:#fde68a;
+  background:rgba(250,204,21,.14);
+  border-color:rgba(250,204,21,.42);
+  box-shadow:0 0 16px rgba(250,204,21,.22);
+}
+.hr-difficulty-badge.no-doubter{
+  color:#fca5a5;
+  background:rgba(239,68,68,.14);
+  border-color:rgba(239,68,68,.42);
+  box-shadow:0 0 16px rgba(239,68,68,.22);
+}
+.hr-difficulty-badge.solid{
+  color:#93c5fd;
+  background:rgba(59,130,246,.13);
+  border-color:rgba(59,130,246,.36);
+}
+.hr-difficulty-badge.just-out{
+  color:#cbd5e1;
+  background:rgba(148,163,184,.12);
+  border-color:rgba(148,163,184,.30);
+}
+.hr-difficulty-badge.scraper{
+  color:#fdba74;
+  background:rgba(249,115,22,.13);
+  border-color:rgba(249,115,22,.36);
+}
+
 </style>
   <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
 </head>
@@ -738,6 +779,31 @@ function trajectoryBadge(row){
   return "HR FLIGHT";
 }
 
+function hrDifficulty(row){
+  const dist = n(row.distance);
+  const ev = n(row.exitVelocity);
+  const la = n(row.launchAngle);
+
+  let label = "SOLID SHOT";
+  let cls = "solid";
+
+  if(dist >= 445 || ev >= 112){
+    label = "MOONSHOT";
+    cls = "moonshot";
+  } else if(dist >= 420 || ev >= 108){
+    label = "NO DOUBTER";
+    cls = "no-doubter";
+  } else if(dist <= 365 || (dist <= 375 && ev < 102)){
+    label = "WALL SCRAPER";
+    cls = "scraper";
+  } else if(dist <= 390 || ev < 100 || la < 20 || la > 38){
+    label = "JUST GOT OUT";
+    cls = "just-out";
+  }
+
+  return `<span class="hr-difficulty-badge ${cls}">${label}</span>`;
+}
+
 function tagClass(tag){
   const t = String(tag || "").toLowerCase();
   if(t.includes("strong") || t.includes("elite")) return "strong";
@@ -935,6 +1001,7 @@ function render(){
           <div class="detail-grid">
             <div class="detail-pill"><div class="detail-label">EV</div><div class="detail-value">${clean(row.exitVelocity)}</div></div>
             <div class="detail-pill"><div class="detail-label">Distance</div><div class="detail-value">${clean(row.distance)}</div></div>
+            <div class="detail-pill"><div class="detail-label">HR Difficulty</div><div class="detail-value">${hrDifficulty(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Launch Angle</div><div class="detail-value">${clean(row.launchAngle)}</div></div>
             <div class="detail-pill"><div class="detail-label">Pitch</div><div class="detail-value">${clean(row.pitchType)}</div></div>
             <div class="detail-pill"><div class="detail-label">Pitch Velo</div><div class="detail-value">${clean(row.pitchVelocity)}</div></div>
