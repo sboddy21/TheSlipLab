@@ -559,6 +559,42 @@
       return p.market ? `${p.market} Lean` : "Lean";
     }
 
+
+    function bestMarketForPlayer(p){
+      const pos = String(p.position || p.pos || "").toUpperCase();
+      const tags = Array.isArray(p.tags) ? p.tags.join(" ").toLowerCase() : String(p.tags || "").toLowerCase();
+      const role = String(p.role || p.scoringRole || p.minutesRole || p.matchupTier || p.confidence || "").toLowerCase();
+
+      let points = Number(p.pointsScore || p.points_score || p.scoringScore || p.scoring_score || 0);
+      let rebounds = Number(p.reboundsScore || p.rebounds_score || p.reboundScore || p.rebound_score || 0);
+      let assists = Number(p.assistsScore || p.assists_score || p.assistScore || p.assist_score || 0);
+      let pra = Number(p.praScore || p.pra_score || 0);
+
+      points += Number(p.usageScore || p.usage || 0) * .55 + Number(p.trend || p.trendScore || 0) * 3;
+      rebounds += Number(p.minutes || p.projectedMinutes || 0) * .45;
+      assists += Number(p.usageScore || p.usage || 0) * .25 + Number(p.trend || p.trendScore || 0) * 2;
+      pra += (points + rebounds + assists) / 3;
+
+      if (pos.includes("C") || pos.includes("PF")) rebounds += 18;
+      if (pos.includes("PG")) assists += 14;
+      if (tags.includes("hot form") || tags.includes("usage up") || role.includes("scoring")) points += 12;
+      if (tags.includes("volume up") || tags.includes("minutes boost")) pra += 10;
+
+      const markets = [
+        { key:"points", label:"POINTS OVER", score:points },
+        { key:"rebounds", label:"REBOUNDS OVER", score:rebounds },
+        { key:"assists", label:"ASSISTS OVER", score:assists },
+        { key:"pra", label:"PRA OVER", score:pra }
+      ].sort((a,b) => b.score - a.score);
+
+      return markets[0];
+    }
+
+    function bestMarketBadge(p){
+      const m = bestMarketForPlayer(p);
+      return `<div class="nba-best-market ${m.key}">Best Market: ${m.label}</div>`;
+    }
+
     function confidenceValue(p) {
       return Math.max(
         0,
