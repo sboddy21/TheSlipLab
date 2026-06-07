@@ -560,6 +560,28 @@ function contextGrade(row){
   return "F";
 }
 
+function carryRating(row){
+  const wind = String(row.weatherWind || "").toLowerCase();
+  const weather = String(row.weatherCondition || "").toLowerCase();
+  const temp = n(row.weatherTemp);
+
+  let score = 0;
+
+  if(wind.includes("out")) score += 2;
+  if(wind.includes("in")) score -= 2;
+  if(wind.includes("left") || wind.includes("right")) score += 1;
+
+  if(temp >= 80) score += 1;
+  if(temp <= 55) score -= 1;
+
+  if(weather.includes("clear") || weather.includes("sun")) score += 1;
+  if(weather.includes("rain") || weather.includes("drizzle")) score -= 1;
+
+  if(score >= 3) return "High Carry";
+  if(score <= -1) return "Low Carry";
+  return "Neutral Carry";
+}
+
 function contextMap(){
   const map = new Map();
   contextFactors.forEach(c => {
@@ -847,6 +869,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">Plate Z</div><div class="detail-value">${clean(row.plateZ)}</div></div>
             <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
             <div class="detail-pill"><div class="detail-label">Venue</div><div class="detail-value">${clean(row.venueName)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Ballpark Carry</div><div class="detail-value">${carryRating(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Home Plate Ump</div><div class="detail-value">${clean(row.umpireName)}</div></div>
             <div class="detail-pill"><div class="detail-label">Roof</div><div class="detail-value">${clean(row.roofStatus)}</div></div>
             <div class="detail-pill"><div class="detail-label">Weather</div><div class="detail-value">${clean(row.weatherCondition)} ${clean(row.weatherTemp)}</div></div>
