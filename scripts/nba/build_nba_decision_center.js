@@ -114,11 +114,46 @@ function attachBestMarket(row, maps = {}) {
   );
 
   const markets = [
-    { key: "points", label: "POINTS OVER", score: pointsScore, lean: pointsLean },
-    { key: "rebounds", label: "REBOUNDS OVER", score: reboundsScore, lean: reboundsLean },
-    { key: "assists", label: "ASSISTS OVER", score: assistsScore, lean: assistsLean },
-    { key: "threes", label: "3PT OVER", score: threesScore, lean: threesLean },
-    { key: "pra", label: "PRA OVER", score: praScore, lean: round1(pointsLean + reboundsLean + assistsLean) }
+    {
+      key: "points",
+      label: "POINTS OVER",
+      score: pointsScore,
+      lean: pointsLean,
+      projection: pointsLean,
+      projectionLabel: "Projected Points"
+    },
+    {
+      key: "rebounds",
+      label: "REBOUNDS OVER",
+      score: reboundsScore,
+      lean: reboundsLean,
+      projection: reboundsLean,
+      projectionLabel: "Projected Rebounds"
+    },
+    {
+      key: "assists",
+      label: "ASSISTS OVER",
+      score: assistsScore,
+      lean: assistsLean,
+      projection: assistsLean,
+      projectionLabel: "Projected Assists"
+    },
+    {
+      key: "threes",
+      label: "3PT OVER",
+      score: threesScore,
+      lean: threesLean,
+      projection: threesLean,
+      projectionLabel: "Projected Threes"
+    },
+    {
+      key: "pra",
+      label: "PRA OVER",
+      score: praScore,
+      lean: round1(pointsLean + reboundsLean + assistsLean),
+      projection: round1(pointsLean + reboundsLean + assistsLean),
+      projectionLabel: "Projected PRA"
+    }
   ].filter(m => num(m.score) > 0);
 
   const best = markets.sort((a, b) =>
@@ -140,7 +175,9 @@ function attachBestMarket(row, maps = {}) {
     bestMarket: best.key,
     bestMarketLabel: best.label,
     bestMarketScore: round1(best.score),
-    bestMarketLean: round1(best.lean)
+    bestMarketLean: round1(best.lean),
+    bestMarketProjection: round1(best.projection),
+    bestMarketProjectionLabel: best.projectionLabel
   };
 }
 
@@ -167,6 +204,8 @@ function compact(row, reason = "", matchupMap = new Map(), maps = {}) {
     bestMarketLabel: row.bestMarketLabel,
     bestMarketScore: round1(row.bestMarketScore),
     bestMarketLean: round1(row.bestMarketLean),
+    bestMarketProjection: round1(row.bestMarketProjection),
+    bestMarketProjectionLabel: row.bestMarketProjectionLabel,
     confidence: row.confidence,
     pointsLean: round1(row.pointsLean),
     reboundsLean: round1(row.reboundsLean),
@@ -237,6 +276,8 @@ function compactMarket(row, market, scoreKey, leanKey, reason = "", maps = {}) {
     bestMarketLabel: enriched.bestMarketLabel,
     bestMarketScore: round1(enriched.bestMarketScore),
     bestMarketLean: round1(enriched.bestMarketLean),
+    bestMarketProjection: round1(enriched.bestMarketProjection),
+    bestMarketProjectionLabel: enriched.bestMarketProjectionLabel,
     playerId: row.playerId,
     player: row.player,
     team: row.team,

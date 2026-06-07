@@ -620,8 +620,23 @@
     function bestMarketBadge(p){
       const key = p.bestMarket || bestMarketForPlayer(p).key;
       const label = p.bestMarketLabel || bestMarketForPlayer(p).label;
-      const score = p.bestMarketScore ? ` • ${html(fmt(p.bestMarketScore))}` : "";
-      return `<div class="nba-best-market ${key}">Best Market: ${html(label)}${score}</div>`;
+
+      const projection =
+        p.bestMarketProjection !== undefined
+          ? fmt(p.bestMarketProjection)
+          : "--";
+
+      const projectionLabel =
+        p.bestMarketProjectionLabel || "Projection";
+
+      return `
+        <div class="nba-best-market ${key}">
+          <div>Best Market: ${html(label)}</div>
+          <div style="font-size:11px;margin-top:2px;opacity:.95">
+            ${html(projection)} ${html(projectionLabel)}
+          </div>
+        </div>
+      `;
     }
 
     function confidenceValue(p) {
