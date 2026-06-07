@@ -46,6 +46,32 @@ function hasTag(row, text) {
   return tagList(row).some(t => String(t).toLowerCase().includes(String(text).toLowerCase()));
 }
 
+function edgeTags(row, matchup = {}) {
+  const tags = [];
+
+  if (num(row.pointsScore) >= 88 || num(row.marketScore) >= 88) tags.push("Smash Spot");
+  if (num(row.expectedMinutes) >= 34) tags.push("Core Minutes");
+  if (num(row.expectedMinutes) >= 30 && num(row.minutesConfidence) >= 85) tags.push("Minutes Boost");
+  if (row.usageTrend === "Usage Spike") tags.push("Usage Spike");
+  if (row.usageTrend === "Usage Up") tags.push("Usage Up");
+  if (num(row.volumeTrend) >= 4) tags.push("Volume Up");
+  if (num(row.trendDiff) >= 3) tags.push("Hot Form");
+  if (num(row.pointsLean || row.marketLean) >= 25) tags.push("High Projection");
+  if (num(row.pointsLean || row.marketLean) >= 15 && num(row.expectedMinutes) >= 30) tags.push("Safe Floor");
+
+  if (num(matchup.matchupScore) >= 80) tags.push("Elite Matchup");
+  if (num(matchup.matchupScore) >= 70) tags.push("Strong Matchup");
+  if (num(matchup.defense?.rankPointsAllowed) >= 21) tags.push("Defense Edge");
+  if (num(matchup.defense?.rankPointsAllowed) <= 10 && num(matchup.defense?.rankPointsAllowed) > 0) tags.push("Tough Defense");
+  if (num(matchup.pace?.rankPace) <= 10 && num(matchup.pace?.rankPace) > 0) tags.push("Pace Boost");
+  if (num(matchup.pace?.rankPace) >= 22) tags.push("Slow Pace");
+
+  if (tags.includes("Usage Spike") && tags.includes("Core Minutes")) tags.push("Usage + Minutes");
+  if (tags.includes("Hot Form") && tags.includes("High Projection")) tags.push("Boom Profile");
+
+  return tags;
+}
+
 function compact(row, reason = "", matchupMap = new Map()) {
   const matchup = matchupMap.get(String(row.playerId)) || {};
   return {
@@ -83,9 +109,10 @@ function compact(row, reason = "", matchupMap = new Map()) {
 
     reason,
     tags: [...new Set([
+      ...edgeTags(row, matchup),
       ...tagList(row),
       ...(Array.isArray(matchup.tags) ? matchup.tags : [])
-    ])].slice(0, 14)
+    ])].slice(0, 18)
   };
 }
 
@@ -104,6 +131,12 @@ function top(rows, n = 10) {
 }
 
 function compactMarket(row, market, scoreKey, leanKey, reason = "") {
+  const synthetic = {
+    ...row,
+    marketScore: row[scoreKey],
+    marketLean: row[leanKey]
+  };
+
   return {
     rank: row.rank,
     playerId: row.playerId,
@@ -126,7 +159,10 @@ function compactMarket(row, market, scoreKey, leanKey, reason = "") {
       row.threesRole ||
       "",
     reason,
-    tags: Array.isArray(row.tags) ? row.tags.slice(0, 8) : []
+    tags: [...new Set([
+      ...edgeTags(synthetic, {}),
+      ...(Array.isArray(row.tags) ? row.tags : [])
+    ])].slice(0, 14)
   };
 }
 
