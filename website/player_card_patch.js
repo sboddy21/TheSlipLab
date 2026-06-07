@@ -7879,3 +7879,72 @@
   `;
   document.head.appendChild(s);
 })();
+
+/* Zone Map Glass Polish */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pcz-clean{
+      background:
+        radial-gradient(circle at 15% 0%, rgba(147,255,45,.10), transparent 34%),
+        linear-gradient(135deg, rgba(18,28,38,.72), rgba(4,8,13,.88))!important;
+      border:1px solid rgba(255,255,255,.16)!important;
+      box-shadow:
+        0 18px 42px rgba(0,0,0,.34),
+        inset 0 1px 0 rgba(255,255,255,.08),
+        inset 0 0 26px rgba(255,255,255,.03)!important;
+      backdrop-filter:blur(14px)!important;
+    }
+
+    .pcz-clean.pcz-primary{
+      border-color:rgba(147,255,45,.55)!important;
+      box-shadow:
+        0 0 28px rgba(147,255,45,.16),
+        0 18px 42px rgba(0,0,0,.34),
+        inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+
+    .pcz-clean.pcz-pitcher{
+      border-color:rgba(255,83,92,.42)!important;
+      box-shadow:
+        0 0 22px rgba(255,56,74,.10),
+        0 18px 42px rgba(0,0,0,.34),
+        inset 0 1px 0 rgba(255,255,255,.08)!important;
+    }
+
+    .pcz-clean-head{
+      min-height:38px!important;
+      padding:6px 7px!important;
+      border-radius:12px!important;
+      background:rgba(255,255,255,.035)!important;
+      border:1px solid rgba(255,255,255,.06)!important;
+    }
+
+    .pcz-clean-copy b{
+      font-size:11px!important;
+      color:#ffb000!important;
+    }
+
+    .pcz-primary .pcz-clean-copy b{
+      color:#93ff2d!important;
+    }
+
+    .pcz-clean-copy small{
+      font-size:10px!important;
+      color:rgba(255,255,255,.72)!important;
+    }
+
+    .pcz-clean-board{
+      box-shadow:
+        inset 0 0 18px rgba(0,0,0,.38),
+        0 0 18px rgba(255,255,255,.035)!important;
+    }
+
+    .pcz-clean-axis span{
+      padding:4px 6px!important;
+      border-radius:7px!important;
+      background:rgba(255,255,255,.045)!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
