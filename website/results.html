@@ -338,6 +338,36 @@
   transform-origin:left center;
 }
 
+
+.weather-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.weather-badge.good{
+  color:#86efac;
+  background:rgba(34,197,94,.14);
+  border:1px solid rgba(34,197,94,.35);
+  box-shadow:0 0 14px rgba(34,197,94,.18);
+}
+.weather-badge.neutral{
+  color:#cbd5e1;
+  background:rgba(148,163,184,.12);
+  border:1px solid rgba(148,163,184,.28);
+}
+.weather-badge.bad{
+  color:#fca5a5;
+  background:rgba(239,68,68,.13);
+  border:1px solid rgba(239,68,68,.34);
+  box-shadow:0 0 14px rgba(239,68,68,.16);
+}
+
 </style>
   <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
 </head>
@@ -580,6 +610,20 @@ function carryRating(row){
   if(score >= 3) return "High Carry";
   if(score <= -1) return "Low Carry";
   return "Neutral Carry";
+}
+
+function weatherBadge(row){
+  const rating = carryRating(row);
+
+  if(rating === "High Carry"){
+    return `<span class="weather-badge good">Favorable</span>`;
+  }
+
+  if(rating === "Low Carry"){
+    return `<span class="weather-badge bad">Suppressing</span>`;
+  }
+
+  return `<span class="weather-badge neutral">Neutral</span>`;
 }
 
 function contextMap(){
@@ -872,7 +916,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">Ballpark Carry</div><div class="detail-value">${carryRating(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Home Plate Ump</div><div class="detail-value">${clean(row.umpireName)}</div></div>
             <div class="detail-pill"><div class="detail-label">Roof</div><div class="detail-value">${clean(row.roofStatus)}</div></div>
-            <div class="detail-pill"><div class="detail-label">Weather</div><div class="detail-value">${clean(row.weatherCondition)} ${clean(row.weatherTemp)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Weather</div><div class="detail-value">${clean(row.weatherCondition)} ${clean(row.weatherTemp)} ${weatherBadge(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Wind</div><div class="detail-value">${clean(row.weatherWind)}</div></div>
             <div class="detail-pill"><div class="detail-label">Context Grade</div><div class="detail-value">${contextGrade(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Context Score</div><div class="detail-value">${clean(row.contextScoreValue)}</div></div>
