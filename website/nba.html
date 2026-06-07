@@ -810,7 +810,7 @@
           ${confidenceMeter(p)}
 
           <div class="tags">
-            ${(Array.isArray(p.tags) ? p.tags.slice(0, 6) : []).map(tag => `<span class="tag">${html(tag)}</span>`).join("")}
+            ${(Array.isArray(p.tags) ? p.tags.slice(0, 6) : []).map(tag => `<span class="tag"><b class="tag-icon">${tagIcon(tag)}</b>${html(tag)}</span>`).join("")}
           </div>
 
           <div class="reason">${html(p.reason || roleOf(p) || p.confidence || "")}</div>
