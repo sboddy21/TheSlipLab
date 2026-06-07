@@ -65,16 +65,20 @@
     }
     .nav a.active{color:var(--text);border-color:rgba(92,200,255,.45)}
     .hero{
-      border:1px solid var(--line);
-      border-radius:28px;
-      background:linear-gradient(180deg,rgba(17,26,45,.92),rgba(11,18,32,.9));
-      padding:26px;
-      margin-bottom:18px;
-      box-shadow:0 18px 70px rgba(0,0,0,.28);
+      border:1px solid rgba(92,200,255,.18);
+      border-radius:22px;
+      background:
+        radial-gradient(circle at top left,rgba(65,240,166,.12),transparent 34%),
+        radial-gradient(circle at top right,rgba(92,200,255,.13),transparent 32%),
+        linear-gradient(180deg,rgba(17,26,45,.82),rgba(11,18,32,.88));
+      padding:16px 18px;
+      margin-bottom:14px;
+      box-shadow:0 0 28px rgba(92,200,255,.10),0 16px 44px rgba(0,0,0,.25);
+      animation:nbaPanelRise .65s ease both;
     }
     .hero h1{
-      margin:0 0 8px;
-      font-size:clamp(30px,4vw,54px);
+      margin:0 0 6px;
+      font-size:clamp(24px,3vw,38px);
       line-height:1;
       letter-spacing:-.04em;
     }
@@ -82,17 +86,33 @@
     .metrics{
       display:grid;
       grid-template-columns:repeat(4,1fr);
-      gap:12px;
-      margin-top:18px;
+      gap:9px;
+      margin-top:12px;
     }
     .metric{
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      border-radius:20px;
-      padding:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(92,200,255,.035));
+      border-radius:16px;
+      padding:10px 12px;
+      position:relative;
+      overflow:hidden;
+      animation:nbaCardFloat .7s ease both;
     }
-    .metric span{display:block;color:var(--muted);font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
-    .metric strong{display:block;font-size:28px;margin-top:4px}
+    .metric:before{
+      content:"";
+      position:absolute;
+      inset:-40%;
+      background:radial-gradient(circle,rgba(65,240,166,.12),transparent 42%);
+      opacity:.55;
+      pointer-events:none;
+    }
+    .metric:hover{
+      border-color:rgba(65,240,166,.38);
+      box-shadow:0 0 20px rgba(65,240,166,.12);
+      transform:translateY(-1px);
+    }
+    .metric span{display:block;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.10em;position:relative;z-index:1}
+    .metric strong{display:block;font-size:22px;margin-top:3px;position:relative;z-index:1}
     .tabs{
       display:flex;
       flex-wrap:wrap;
@@ -249,9 +269,9 @@
     }
     .quick-links{
       display:flex;
-      gap:10px;
+      gap:8px;
       flex-wrap:wrap;
-      margin-top:18px;
+      margin-top:12px;
     }
     .quick-links a{
       border:1px solid var(--line);
@@ -265,8 +285,55 @@
       letter-spacing:.05em;
     }
     .quick-links a:hover{
-      border-color:rgba(92,200,255,.55);
-      background:rgba(92,200,255,.10);
+      border-color:rgba(65,240,166,.55);
+      background:rgba(65,240,166,.10);
+      box-shadow:0 0 16px rgba(65,240,166,.14);
+      transform:translateY(-1px);
+    }
+
+    .tab{
+      transition:.18s ease;
+    }
+
+    .tab:hover{
+      border-color:rgba(65,240,166,.45);
+      color:var(--text);
+      box-shadow:0 0 14px rgba(92,200,255,.10);
+      transform:translateY(-1px);
+    }
+
+    .tab.active{
+      box-shadow:0 0 18px rgba(92,200,255,.18);
+    }
+
+    .card{
+      animation:nbaCardRise .65s ease both;
+      transition:.18s ease;
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      border-color:rgba(65,240,166,.34);
+      box-shadow:0 0 22px rgba(65,240,166,.10),0 18px 42px rgba(0,0,0,.28);
+    }
+
+    .score{
+      text-shadow:0 0 16px rgba(65,240,166,.28);
+    }
+
+    @keyframes nbaPanelRise{
+      from{opacity:0;transform:translateY(12px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @keyframes nbaCardRise{
+      from{opacity:0;transform:translateY(16px)}
+      to{opacity:1;transform:translateY(0)}
+    }
+
+    @keyframes nbaCardFloat{
+      from{opacity:0;transform:translateY(8px)}
+      to{opacity:1;transform:translateY(0)}
     }
     .slate-panel{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.04);padding:14px;margin:0 0 18px}
     .slate-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
