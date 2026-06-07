@@ -352,6 +352,7 @@
       topSF: "Top SF",
       topPF: "Top PF",
       topC: "Top C",
+      consensusPlays: "Consensus Plays",
       bestPointsPlays: "Best Points Plays",
       usageRisers: "Usage Risers",
       minutesMonsters: "Minutes Monsters",
@@ -539,7 +540,7 @@
           <div class="sub">${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.homeAway)}</div>
 
           <div class="mini">
-            ${p.overallScore !== undefined ? `<div class="box"><span>Overall</span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
+            ${p.consensusScore !== undefined ? `<div class="box"><span>Consensus</span><strong>${html(fmt(p.consensusScore))}</strong></div>` : p.overallScore !== undefined ? `<div class="box"><span>Overall</span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
             <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
             <div class="box"><span>${p.market ? "Role" : "Usage"}</span><strong>${html(p.market ? roleOf(p) : fmt(p.usageScore))}</strong></div>
             <div class="box"><span>Trend</span><strong>${html(fmt(p.trendDiff))}</strong></div>

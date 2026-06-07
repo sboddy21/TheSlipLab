@@ -343,6 +343,89 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
   };
 }
 
+
+function buildConsensusSection(sections) {
+  const watchedSections = [
+    ["topOverallPlays", "Overall"],
+    ["pickOnePool", "Pick One"],
+    ["bestPointsPlays", "Points"],
+    ["topRebounds", "Rebounds"],
+    ["topAssists", "Assists"],
+    ["topThrees", "Threes"],
+    ["defenseTargets", "Defense Target"],
+    ["minutesMonsters", "Minutes"],
+    ["usageRisers", "Usage"],
+    ["boomCandidates", "Boom"],
+    ["safeFloor", "Safe Floor"]
+  ];
+
+  const byPlayer = new Map();
+
+  for (const [sectionKey, label] of watchedSections) {
+    const rows = Array.isArray(sections[sectionKey]) ? sections[sectionKey] : [];
+
+    rows.forEach((row, index) => {
+      if (!row.playerId) return;
+
+      const id = String(row.playerId);
+      const existing = byPlayer.get(id) || {
+        ...row,
+        appearances: [],
+        consensusScore: 0,
+        consensusTags: []
+      };
+
+      const rankScore = Math.max(0, 12 - index);
+      const sectionWeight =
+        sectionKey === "topOverallPlays" ? 16 :
+        sectionKey === "pickOnePool" ? 15 :
+        sectionKey === "bestPointsPlays" ? 13 :
+        sectionKey === "topRebounds" ? 10 :
+        sectionKey === "topAssists" ? 10 :
+        sectionKey === "topThrees" ? 10 :
+        sectionKey === "safeFloor" ? 9 :
+        sectionKey === "boomCandidates" ? 9 :
+        8;
+
+      existing.appearances.push({
+        section: label,
+        rank: index + 1
+      });
+
+      existing.consensusScore += rankScore + sectionWeight;
+      existing.consensusTags.push(label);
+
+      byPlayer.set(id, existing);
+    });
+  }
+
+  return Array.from(byPlayer.values())
+    .filter(row => row.appearances.length >= 2)
+    .map(row => ({
+      ...row,
+      consensusScore: round1(row.consensusScore),
+      consensusCount: row.appearances.length,
+      consensusTags: [...new Set(row.consensusTags)],
+      reason: `Appears in ${row.appearances.length} key Decision Center sections: ${row.appearances.map(a => `${a.section} #${a.rank}`).join(", ")}.`,
+      tags: [...new Set([
+        "Consensus Play",
+        row.appearances.length >= 4 ? "Multi-Board Standout" : "",
+        row.appearances.length >= 3 ? "Strong Cross-Market Profile" : "",
+        ...(Array.isArray(row.tags) ? row.tags : [])
+      ].filter(Boolean))].slice(0, 18)
+    }))
+    .sort((a, b) =>
+      num(b.consensusScore) - num(a.consensusScore) ||
+      num(b.consensusCount) - num(a.consensusCount) ||
+      String(a.player).localeCompare(String(b.player))
+    )
+    .slice(0, 12)
+    .map((row, index) => ({
+      ...row,
+      rank: index + 1
+    }));
+}
+
 async function main() {
   const points = readJSON(POINTS_FILE, { players: [] });
   const matchups = readJSON(MATCHUP_FILE, { players: [] });
@@ -362,6 +445,7 @@ async function main() {
   }
 
   const sections = buildSections(players, matchupMap, reboundsRows, assistsRows, threesRows);
+  sections.consensusPlays = buildConsensusSection(sections);
 
   const out = {
     sport: "NBA",
@@ -375,7 +459,7 @@ async function main() {
     sectionCount: Object.keys(sections).length,
     modelNotes: [
       "NBA Decision Center 2.0 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
-      "Sections include top overall plays, I Can Only Pick One, position rankings, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
+      "Sections include top overall plays, I Can Only Pick One, position rankings, consensus plays, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
