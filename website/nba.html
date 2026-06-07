@@ -261,6 +261,19 @@
       border-color:rgba(92,200,255,.55);
       background:rgba(92,200,255,.10);
     }
+    .slate-panel{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.04);padding:14px;margin:0 0 18px}
+    .slate-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+    .slate-head h2{margin:0;font-size:18px;letter-spacing:-.02em}
+    .slate-head span{color:var(--muted);font-size:12px;font-weight:850}
+    .slate-games{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .slate-game{border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.12);padding:11px}
+    .slate-matchup{font-weight:1000;font-size:14px;margin-bottom:5px}
+    .slate-meta{color:var(--muted);font-size:12px;font-weight:800}
+    .slate-live{color:var(--good)}
+    .slate-final{color:var(--warn)}
+    .slate-pregame{color:var(--blue)}
+    @media(max-width:900px){.slate-games{grid-template-columns:1fr}}
+
     .empty{
       border:1px dashed var(--line);
       border-radius:22px;
@@ -294,6 +307,8 @@
         <a href="./nba-threes.html">Threes</a>
       </nav>
     </div>
+
+    <section id="nbaSlatePanel" class="slate-panel">Loading NBA slate</section>
 
     <section class="hero">
       <h1>NBA Decision Center</h1>
@@ -484,6 +499,7 @@
       document.getElementById("market").textContent = clean(DATA.market, "Points");
       document.getElementById("updated").textContent = niceDate(DATA.fetchedAt);
 
+      renderSlatePanel();
       renderTabs();
       renderSection();
     }

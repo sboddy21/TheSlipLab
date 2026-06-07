@@ -50,6 +50,19 @@
     .play-grade.watch{color:var(--hot);border-color:rgba(255,92,122,.45);background:rgba(255,92,122,.12)}
     .play-grade.avoid{color:var(--muted)}
     .note{position:relative;z-index:1;color:var(--muted);font-size:12px;line-height:1.35;margin-top:10px;font-weight:700}
+    .slate-panel{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.04);padding:14px;margin:0 0 18px}
+    .slate-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px}
+    .slate-head h2{margin:0;font-size:18px;letter-spacing:-.02em}
+    .slate-head span{color:var(--muted);font-size:12px;font-weight:850}
+    .slate-games{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .slate-game{border:1px solid var(--line);border-radius:16px;background:rgba(0,0,0,.12);padding:11px}
+    .slate-matchup{font-weight:1000;font-size:14px;margin-bottom:5px}
+    .slate-meta{color:var(--muted);font-size:12px;font-weight:800}
+    .slate-live{color:var(--good)}
+    .slate-final{color:var(--warn)}
+    .slate-pregame{color:var(--blue)}
+    @media(max-width:900px){.slate-games{grid-template-columns:1fr}}
+
     .empty{border:1px dashed var(--line);border-radius:22px;padding:22px;color:var(--muted);font-weight:800}
     @media(max-width:1250px){.grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:760px){.wrap{padding:14px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.search{min-width:100%}}
@@ -92,6 +105,8 @@
         <a href="./nba-threes.html">Threes</a>
       </nav>
     </div>
+
+    <section id="nbaSlatePanel" class="slate-panel">Loading NBA slate</section>
 
     <section class="hero">
       <h1>NBA Threes Board</h1>
@@ -137,6 +152,53 @@
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
     function fmt(v){const n=num(v);return Number.isInteger(n)?String(n):n.toFixed(1)}
     async function getJSON(file){const r=await fetch(file+"?v="+Date.now());if(!r.ok)throw new Error(file+" failed");return await r.json()}
+
+    function gameStatusClass(game){
+      const status=Number(game?.gameStatus||0);
+      if(status===2)return"slate-live";
+      if(status===3)return"slate-final";
+      return"slate-pregame";
+    }
+
+    function gameStatusLabel(game){
+      const status=Number(game?.gameStatus||0);
+      if(status===2)return game?.clock ? `LIVE • Q${game.period} ${game.clock}` : `LIVE • Q${game.period||""}`;
+      if(status===3)return"FINAL";
+      return game?.gameStatusText || "Pregame";
+    }
+
+    function teamLine(team){
+      if(!team)return"--";
+      const abbr=team.abbreviation||team.team||"--";
+      const score=Number(team.score||0);
+      return score>0?`${abbr} ${score}`:abbr;
+    }
+
+    async function renderSlatePanel(){
+      const panel=document.getElementById("nbaSlatePanel");
+      if(!panel)return;
+
+      try{
+        const slate=await getJSON("./data/nba_games_today.json");
+        const games=Array.isArray(slate.games)?slate.games:[];
+        panel.innerHTML=`
+          <div class="slate-head">
+            <h2>Today’s NBA Slate</h2>
+            <span>${games.length} game${games.length===1?"":"s"} • Updated ${clean(slate.fetchedAt,"--")}</span>
+          </div>
+          <div class="slate-games">
+            ${games.map(game=>`
+              <div class="slate-game">
+                <div class="slate-matchup">${html(teamLine(game.awayTeam))} at ${html(teamLine(game.homeTeam))}</div>
+                <div class="slate-meta ${gameStatusClass(game)}">${html(gameStatusLabel(game))}</div>
+              </div>
+            `).join("") || `<div class="slate-game"><div class="slate-meta">No NBA games loaded.</div></div>`}
+          </div>
+        `;
+      }catch(e){
+        panel.innerHTML=`<div class="slate-head"><h2>Today’s NBA Slate</h2><span>Slate unavailable</span></div>`;
+      }
+    }
     function gradeClass(grade){
       const g=String(grade||"").toLowerCase();
       if(g.includes("elite"))return"elite";
@@ -331,8 +393,10 @@
         document.getElementById("tier").value="all";
         document.getElementById("minProjection").value="0";
         document.getElementById("minScore").value="0";
-        render();
+        renderSlatePanel();
+      render();
       });
+      renderSlatePanel();
       render();
     }
     document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});
