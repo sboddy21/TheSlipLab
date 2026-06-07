@@ -380,6 +380,24 @@
     .nba-best-market.assists{color:#73d7ff;background:rgba(76,201,255,.10);border-color:rgba(76,201,255,.30);}
     .nba-best-market.pra{color:#d9b7ff;background:rgba(181,116,255,.10);border-color:rgba(181,116,255,.30);}
 
+  
+    .info-tip{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:14px;
+      height:14px;
+      margin-left:4px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.35);
+      color:var(--muted);
+      font-size:10px;
+      font-weight:900;
+      cursor:help;
+      position:relative;
+      top:-1px;
+    }
+
   </style>
 </head>
 <body>
@@ -706,7 +724,7 @@
           ${bestMarketBadge(p)}
 
           <div class="mini">
-            ${p.consensusScore !== undefined ? `<div class="box"><span>Consensus</span><strong>${html(fmt(p.consensusScore))}</strong></div>` : p.overallScore !== undefined ? `<div class="box"><span>Slip Lab Rating</span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
+            ${p.consensusScore !== undefined ? `<div class="box"><span>Consensus</span><strong>${html(fmt(p.consensusScore))}</strong></div>` : p.overallScore !== undefined ? `<div class="box"><span>Slip Lab Rating <span class="info-tip" title="Slip Lab Rating is the overall player strength score. Higher values mean a stronger blend of projection, market score, usage, minutes, trend, and matchup context.">i</span></span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
             <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
             <div class="box"><span>${p.market ? "Role" : "Usage"}</span><strong>${html(p.market ? roleOf(p) : fmt(p.usageScore))}</strong></div>
             <div class="box"><span>Trend</span><strong>${html(fmt(p.trendDiff))}</strong></div>
