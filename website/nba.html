@@ -618,8 +618,10 @@
     }
 
     function bestMarketBadge(p){
-      const m = bestMarketForPlayer(p);
-      return `<div class="nba-best-market ${m.key}">Best Market: ${m.label}</div>`;
+      const key = p.bestMarket || bestMarketForPlayer(p).key;
+      const label = p.bestMarketLabel || bestMarketForPlayer(p).label;
+      const score = p.bestMarketScore ? ` • ${html(fmt(p.bestMarketScore))}` : "";
+      return `<div class="nba-best-market ${key}">Best Market: ${html(label)}${score}</div>`;
     }
 
     function confidenceValue(p) {

@@ -72,8 +72,84 @@ function edgeTags(row, matchup = {}) {
   return tags;
 }
 
-function compact(row, reason = "", matchupMap = new Map()) {
+
+function marketMaps(pointsRows = [], reboundsRows = [], assistsRows = [], threesRows = []) {
+  const maps = {
+    points: new Map(),
+    rebounds: new Map(),
+    assists: new Map(),
+    threes: new Map()
+  };
+
+  pointsRows.forEach(r => maps.points.set(String(r.playerId), r));
+  reboundsRows.forEach(r => maps.rebounds.set(String(r.playerId), r));
+  assistsRows.forEach(r => maps.assists.set(String(r.playerId), r));
+  threesRows.forEach(r => maps.threes.set(String(r.playerId), r));
+
+  return maps;
+}
+
+function attachBestMarket(row, maps = {}) {
+  const id = String(row.playerId);
+
+  const pointsRow = maps.points?.get(id) || {};
+  const reboundsRow = maps.rebounds?.get(id) || {};
+  const assistsRow = maps.assists?.get(id) || {};
+  const threesRow = maps.threes?.get(id) || {};
+
+  const pointsScore = round1(pointsRow.pointsScore ?? row.pointsScore);
+  const reboundsScore = round1(reboundsRow.reboundsScore);
+  const assistsScore = round1(assistsRow.assistsScore);
+  const threesScore = round1(threesRow.threesScore);
+
+  const pointsLean = round1(pointsRow.pointsLean ?? row.pointsLean);
+  const reboundsLean = round1(reboundsRow.reboundsLean);
+  const assistsLean = round1(assistsRow.assistsLean);
+  const threesLean = round1(threesRow.threesLean);
+
+  const praScore = round1(
+    pointsScore * 0.45 +
+    reboundsScore * 0.30 +
+    assistsScore * 0.25
+  );
+
+  const markets = [
+    { key: "points", label: "POINTS OVER", score: pointsScore, lean: pointsLean },
+    { key: "rebounds", label: "REBOUNDS OVER", score: reboundsScore, lean: reboundsLean },
+    { key: "assists", label: "ASSISTS OVER", score: assistsScore, lean: assistsLean },
+    { key: "threes", label: "3PT OVER", score: threesScore, lean: threesLean },
+    { key: "pra", label: "PRA OVER", score: praScore, lean: round1(pointsLean + reboundsLean + assistsLean) }
+  ].filter(m => num(m.score) > 0);
+
+  const best = markets.sort((a, b) =>
+    num(b.score) - num(a.score) ||
+    num(b.lean) - num(a.lean)
+  )[0] || { key: "points", label: "POINTS OVER", score: pointsScore, lean: pointsLean };
+
+  return {
+    ...row,
+    pointsScore,
+    reboundsScore,
+    assistsScore,
+    threesScore,
+    praScore,
+    pointsLean,
+    reboundsLean,
+    assistsLean,
+    threesLean,
+    bestMarket: best.key,
+    bestMarketLabel: best.label,
+    bestMarketScore: round1(best.score),
+    bestMarketLean: round1(best.lean)
+  };
+}
+
+
+function compact(row, reason = "", matchupMap = new Map(), maps = {}) {
   const matchup = matchupMap.get(String(row.playerId)) || {};
+  row = attachBestMarket(row, maps);
+  const enriched = attachBestMarket(row, maps);
+
   return {
     rank: row.rank,
     playerId: row.playerId,
@@ -83,8 +159,19 @@ function compact(row, reason = "", matchupMap = new Map()) {
     position: row.position,
     homeAway: row.homeAway,
     pointsScore: round1(row.pointsScore),
+    reboundsScore: round1(row.reboundsScore),
+    assistsScore: round1(row.assistsScore),
+    threesScore: round1(row.threesScore),
+    praScore: round1(row.praScore),
+    bestMarket: row.bestMarket,
+    bestMarketLabel: row.bestMarketLabel,
+    bestMarketScore: round1(row.bestMarketScore),
+    bestMarketLean: round1(row.bestMarketLean),
     confidence: row.confidence,
     pointsLean: round1(row.pointsLean),
+    reboundsLean: round1(row.reboundsLean),
+    assistsLean: round1(row.assistsLean),
+    threesLean: round1(row.threesLean),
     seasonPoints: round1(row.seasonPoints),
     last5Points: round1(row.last5Points),
     last10Points: round1(row.last10Points),
@@ -130,15 +217,26 @@ function top(rows, n = 10) {
   return rows.slice(0, n);
 }
 
-function compactMarket(row, market, scoreKey, leanKey, reason = "") {
+function compactMarket(row, market, scoreKey, leanKey, reason = "", maps = {}) {
   const synthetic = {
     ...row,
     marketScore: row[scoreKey],
     marketLean: row[leanKey]
   };
 
+  const enriched = attachBestMarket(row, maps);
+
   return {
     rank: row.rank,
+    pointsScore: round1(enriched.pointsScore),
+    reboundsScore: round1(enriched.reboundsScore),
+    assistsScore: round1(enriched.assistsScore),
+    threesScore: round1(enriched.threesScore),
+    praScore: round1(enriched.praScore),
+    bestMarket: enriched.bestMarket,
+    bestMarketLabel: enriched.bestMarketLabel,
+    bestMarketScore: round1(enriched.bestMarketScore),
+    bestMarketLean: round1(enriched.bestMarketLean),
     playerId: row.playerId,
     player: row.player,
     team: row.team,
@@ -179,6 +277,7 @@ function overallScore(row, matchupMap = new Map()) {
 
 function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [], threesRows = []) {
   const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
+  const maps = marketMaps(active, reboundsRows, assistsRows, threesRows);
 
   const topOverallPlays = top(
     active.slice().sort((a, b) =>
@@ -188,7 +287,7 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     ),
     10
   ).map(p => ({
-    ...compact(p, "Best overall blend of projection, model score, usage, minutes, form, and matchup context.", matchupMap),
+    ...compact(p, "Best overall blend of projection, model score, usage, minutes, form, and matchup context.", matchupMap, maps),
     overallScore: overallScore(p, matchupMap)
   }));
 
@@ -207,32 +306,32 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     }));
 
   const bestPointsPlays = top(sortByScore(active), 10)
-    .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, recent form, and matchup context.", matchupMap));
+    .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, recent form, and matchup context.", matchupMap, maps));
 
   const usageRisers = top(sortByScore(active.filter(p =>
     p.usageTrend === "Usage Spike" ||
     p.usageTrend === "Usage Up" ||
     num(p.volumeTrend) >= 4 ||
     hasTag(p, "Volume Acceleration")
-  )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction.", matchupMap));
+  )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction.", matchupMap, maps));
 
   const minutesMonsters = top(sortByScore(active.filter(p =>
     num(p.expectedMinutes) >= 32 &&
     num(p.minutesConfidence) >= 85
-  )), 10).map(p => compact(p, "High projected minutes with strong minute confidence.", matchupMap));
+  )), 10).map(p => compact(p, "High projected minutes with strong minute confidence.", matchupMap, maps));
 
   const scoringForm = top(sortByScore(active.filter(p =>
     num(p.trendDiff) >= 3 ||
     num(p.last5Points) >= num(p.seasonPoints) + 3 ||
     num(p.last10Points) >= num(p.seasonPoints) + 2
-  )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline.", matchupMap));
+  )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline.", matchupMap, maps));
 
   const safeFloor = top(sortByScore(active.filter(p =>
     num(p.expectedMinutes) >= 30 &&
     num(p.minutesConfidence) >= 85 &&
     num(p.usageScore) >= 50 &&
     num(p.pointsLean) >= 15
-  )), 10).map(p => compact(p, "Stable minutes, usable offensive role, reliable scoring lean, and matchup context.", matchupMap));
+  )), 10).map(p => compact(p, "Stable minutes, usable offensive role, reliable scoring lean, and matchup context.", matchupMap, maps));
 
   const boomCandidates = top(sortByScore(active.filter(p =>
     num(p.trendDiff) >= 4 ||
@@ -240,12 +339,12 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     num(p.volumeTrend) >= 5 ||
     num(p.fgaTrend) >= 3 ||
     num(p.ftaTrend) >= 2
-  )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, volume acceleration, or matchup context.", matchupMap));
+  )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, volume acceleration, or matchup context.", matchupMap, maps));
 
   const watchList = top(sortByScore(active.filter(p =>
     num(p.pointsScore) >= 55 &&
     num(p.pointsScore) < 70
-  )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor.", matchupMap));
+  )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor.", matchupMap, maps));
 
   const trueDefenseTargets = sortByScore(active.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
@@ -274,23 +373,23 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
         ? "Best available defense target on this slate. Opponent is not a top 10 points defense."
         : "Fallback defense target because this slate has mostly tough points defenses.";
 
-    return compact(p, reason, matchupMap);
+    return compact(p, reason, matchupMap, maps);
   });
 
   const toughDefenseWarnings = top(sortByScore(active.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
     const rank = num(m.defense?.rankPointsAllowed);
     return rank > 0 && rank <= 10;
-  })), 10).map(p => compact(p, "Opponent is a tougher points defense based on allowed points rank.", matchupMap));
+  })), 10).map(p => compact(p, "Opponent is a tougher points defense based on allowed points rank.", matchupMap, maps));
 
   const topRebounds = top(reboundsRows, 10)
-    .map(p => compactMarket(p, "Rebounds", "reboundsScore", "reboundsLean", "Best rebound profile from rebounds score, rebound lean, minutes, role, and recent trend."));
+    .map(p => compactMarket(p, "Rebounds", "reboundsScore", "reboundsLean", "Best rebound profile from rebounds score, rebound lean, minutes, role, and recent trend.", maps));
 
   const topAssists = top(assistsRows, 10)
-    .map(p => compactMarket(p, "Assists", "assistsScore", "assistsLean", "Best assist profile from assists score, assist lean, minutes, usage, and recent trend."));
+    .map(p => compactMarket(p, "Assists", "assistsScore", "assistsLean", "Best assist profile from assists score, assist lean, minutes, usage, and recent trend.", maps));
 
   const topThrees = top(threesRows, 10)
-    .map(p => compactMarket(p, "Threes", "threesScore", "threesLean", "Best three point profile from threes score, threes lean, attempts, minutes, and trend."));
+    .map(p => compactMarket(p, "Threes", "threesScore", "threesLean", "Best three point profile from threes score, threes lean, attempts, minutes, and trend.", maps));
 
   const matchupRows = active
     .map(p => ({ player: p, matchup: matchupMap.get(String(p.playerId)) || {} }))
@@ -304,7 +403,7 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
           num(b.matchup.matchupScore) - num(a.matchup.matchupScore) ||
           num(b.player.pointsScore) - num(a.player.pointsScore)
         )
-        .map(x => compact(x.player, `Best ${position} matchup based on matchup score, points profile, minutes, usage, defense, and pace context.`, matchupMap)),
+        .map(x => compact(x.player, `Best ${position} matchup based on matchup score, points profile, minutes, usage, defense, and pace context.`, matchupMap, maps)),
       10
     );
   }
