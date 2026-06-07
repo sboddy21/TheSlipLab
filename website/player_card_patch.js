@@ -638,6 +638,50 @@
   }
 
 
+  function zoneMatchSummary(row) {
+    const overlap = Math.max(
+      num(row.zoneOverlap),
+      num(row.hotZoneCount),
+      num(row.hitterZonePower) / 12
+    );
+
+    const matchCount = Math.max(0, Math.min(5, Math.round(overlap)));
+    const spray =
+      row.sprayTendency ||
+      row.pullTendency ||
+      row.battedBallProfile ||
+      row.hitDirection ||
+      "Balanced";
+
+    const label =
+      matchCount >= 5 ? "Premium overlap" :
+      matchCount >= 4 ? "Strong overlap" :
+      matchCount >= 3 ? "Playable overlap" :
+      matchCount >= 2 ? "Some overlap" :
+      "Low overlap";
+
+    return `
+      <div class="pczone-summary">
+        <div>
+          <span>Hot Zone Match</span>
+          <strong>${matchCount}/5</strong>
+          <em>${label}</em>
+        </div>
+        <div>
+          <span>Spray Profile</span>
+          <strong>${esc(spray)}</strong>
+          <em>Direction context</em>
+        </div>
+        <div>
+          <span>Read</span>
+          <strong>${matchCount >= 4 ? "Attackable" : matchCount >= 3 ? "Live" : "Monitor"}</strong>
+          <em>Use with pitch type and lineup spot</em>
+        </div>
+      </div>
+    `;
+  }
+
+
   function playerLookup(store, row) {
     const players = store?.players || store || {};
     return players[String(row.playerId || "")] || players[row.player] || players[key(row.player)] || null;
@@ -1229,6 +1273,8 @@
           ${renderZoneOverlapCard(row)}
         </div>
 
+        ${zoneMatchSummary(row)}
+
         <div class="pczone-grid-upgraded pczone-grid-premium">
           ${zones("Zone Overlap", attackCellsFor(row), "overlap")}
           ${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}
@@ -1236,6 +1282,10 @@
           ${zones("ISO", row.isoZones, null, "dec")}
           ${zones("SLG", row.slgZones, null, "dec")}
           ${zones("HR", row.hrZones, null, "cnt")}
+        </div>
+
+        <div class="pczone-note">
+          <b>Zone read:</b> The strongest HR cases come when hitter damage zones and pitcher leak zones overlap. Use this with confirmed lineup spot, pitch type edge, weather carry, and bullpen risk.
         </div>
       `;
       return;
