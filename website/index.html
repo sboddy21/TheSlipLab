@@ -400,6 +400,46 @@
       transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     }
 
+  
+    .leader-strip{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin:26px 0 8px;
+    }
+
+    .leader-item{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(8,20,33,.78);
+      border-radius:12px;
+      padding:14px 16px;
+      box-shadow:0 0 24px rgba(47,128,255,.12);
+    }
+
+    .leader-item span{
+      display:block;
+      color:var(--muted);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      margin-bottom:6px;
+    }
+
+    .leader-item strong{
+      display:block;
+      font-size:19px;
+      color:var(--text);
+      font-weight:950;
+    }
+
+    .leader-item.mlb strong{color:var(--green)}
+    .leader-item.nba strong{color:var(--blue)}
+
+    @media(max-width:720px){
+      .leader-strip{grid-template-columns:1fr}
+    }
+
   </style>
 </head>
 <body>
@@ -424,6 +464,22 @@
       <h2>Your edge. Every day.</h2>
       <p>Data driven insights, matchup analysis, and decision tools across MLB, NBA, NFL, and NHL.</p>
     </section>
+
+    <section class="leader-strip">
+      <div class="leader-item mlb">
+        <span>MLB Leader Today</span>
+        <strong id="leaderMlb">Loading</strong>
+      </div>
+      <div class="leader-item nba">
+        <span>NBA Leader Today</span>
+        <strong id="leaderNba">Loading</strong>
+      </div>
+      <div class="leader-item">
+        <span>Live Slate</span>
+        <strong id="leaderSlate">Loading</strong>
+      </div>
+    </section>
+
 
     <section class="grid">
       <article class="card mlb">
@@ -650,6 +706,7 @@
         const games = await loadJSON("./data/mlb_games_today.json");
         const count = Array.isArray(games.games) ? games.games.length : Array.isArray(games) ? games.length : 0;
         setText("mlbGames", count || "--");
+        setText("leaderSlate", `${count || "--"} MLB • 4 NBA Markets`);
       }catch(e){
         setText("mlbGames", "--");
       }
@@ -677,6 +734,7 @@
           topHr;
 
         setText("homeMlbTopHr", shortName(topHr?.player || topHr?.batter || topHr?.name));
+        setText("leaderMlb", shortName(topHr?.player || topHr?.batter || topHr?.name));
         setText("homeMlbWeather", shortName(weather?.player || weather?.batter || weather?.venue || weather?.park || weather?.name));
         setText("homeMlbMatchup", shortName(matchup?.player || matchup?.batter || matchup?.name));
       }catch(e){
@@ -689,6 +747,7 @@
         const nba = await loadJSON("./data/nba_decision_center.json");
         const sections = nba.sections || {};
         setText("homeNbaPoints", shortName(sections.bestPointsPlays?.[0]?.player));
+        setText("leaderNba", shortName(sections.topOverallPlays?.[0]?.player || sections.bestPointsPlays?.[0]?.player));
         setText("homeNbaRebounds", shortName(sections.topRebounds?.[0]?.player));
         setText("homeNbaAssists", shortName(sections.topAssists?.[0]?.player));
       }catch(e){
