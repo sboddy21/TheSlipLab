@@ -7826,3 +7826,56 @@
   style.textContent = css;
   document.head.appendChild(style);
 })();
+
+/* Clean Zone Map CSS Injection */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pczone-grid-premium{
+      display:grid!important;
+      grid-template-columns:repeat(2,minmax(260px,1fr))!important;
+      gap:14px!important;
+      align-items:start!important;
+    }
+    .pcz-clean{
+      padding:14px!important;
+      border-radius:16px!important;
+      background:linear-gradient(135deg,rgba(9,17,25,.96),rgba(4,8,13,.98))!important;
+      border:1px solid rgba(255,255,255,.12)!important;
+    }
+    .pcz-clean-head{
+      display:flex!important;
+      align-items:center!important;
+      gap:10px!important;
+      margin-bottom:10px!important;
+    }
+    .pcz-clean-board{
+      display:grid!important;
+      grid-template-columns:repeat(5,34px)!important;
+      gap:5px!important;
+      width:max-content!important;
+      margin:0 auto!important;
+      padding:8px!important;
+      border-radius:12px!important;
+      background:rgba(0,0,0,.24)!important;
+    }
+    .pcz-clean-board span{
+      width:34px!important;
+      height:25px!important;
+      display:grid!important;
+      place-items:center!important;
+      border-radius:7px!important;
+      font-size:10px!important;
+      font-weight:1000!important;
+    }
+    .pcz-clean-axis{
+      display:flex!important;
+      justify-content:space-between!important;
+      width:190px!important;
+      margin:7px auto 0!important;
+      font-size:8px!important;
+      text-transform:uppercase!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
