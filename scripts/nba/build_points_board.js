@@ -40,6 +40,17 @@ function clamp(v, min = 0, max = 100) {
   return Math.max(min, Math.min(max, num(v)));
 }
 
+function playGrade(score) {
+  const s = Number(score) || 0;
+
+  if (s >= 90) return "ELITE PLAY";
+  if (s >= 80) return "STRONG PLAY";
+  if (s >= 70) return "GOOD PLAY";
+  if (s >= 60) return "WATCH LIST";
+
+  return "AVOID";
+}
+
 function confidenceTier(score) {
   if (score >= 90) return "Elite";
   if (score >= 80) return "Strong";
@@ -179,6 +190,7 @@ function buildRow(p, minutesMap, usageMap) {
     nbaScore: num(p.scores?.nbaScore),
     pointsScore,
     confidence: confidenceTier(pointsScore),
+    playGrade: playGrade(pointsScore),
     scoringRole: scoringRole(pointsLean),
     tags
   };

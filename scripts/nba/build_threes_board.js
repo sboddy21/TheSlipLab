@@ -48,6 +48,17 @@ function byId(rows) {
   return map;
 }
 
+function playGrade(score) {
+  const s = Number(score) || 0;
+
+  if (s >= 90) return "ELITE PLAY";
+  if (s >= 80) return "STRONG PLAY";
+  if (s >= 70) return "GOOD PLAY";
+  if (s >= 60) return "WATCH LIST";
+
+  return "AVOID";
+}
+
 function confidenceTier(score) {
   if (score >= 88) return "Elite";
   if (score >= 76) return "Strong";
@@ -139,6 +150,7 @@ function buildRow(p, minuteRow, usageRow) {
 
     threesScore,
     confidence: confidenceTier(threesScore),
+    playGrade: playGrade(threesScore),
     threesRole: threesRole(threesLean),
     tags: [...new Set(tags)].slice(0, 8)
   };
