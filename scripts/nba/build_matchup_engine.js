@@ -248,7 +248,7 @@ function buildRow(row, games, defenseMap, paceMap, defenderMap) {
 
     matchupScore,
     matchupTier: tier,
-    tags: [...new Set(tags)].slice(0, 8)
+    tags: [...new Set(tags)].slice(0, 12)
   };
 }
 
