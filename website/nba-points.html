@@ -190,11 +190,12 @@
 
     function card(p){
       return `<article class="card ${cardClass(p)}" data-player-id="${html(p.playerId)}" role="button" tabindex="0">
-        <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.pointsScore))}</span></div>
+        <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.pointsLean))}</span></div>
         <div class="name">${html(p.player)}</div>
         <div class="sub">${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.confidence)}</div>
         <div class="mini">
-          <div class="box"><span>Lean</span><strong>${html(fmt(p.pointsLean))}</strong></div>
+          <div class="box"><span>Projected Points</span><strong>${html(fmt(p.pointsLean))}</strong></div>
+          <div class="box"><span>Model Score</span><strong>${html(fmt(p.pointsScore))}</strong></div>
           <div class="box"><span>Last 5</span><strong>${html(fmt(p.last5Points))}</strong></div>
           <div class="box"><span>Season</span><strong>${html(fmt(p.seasonPoints))}</strong></div>
           <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
