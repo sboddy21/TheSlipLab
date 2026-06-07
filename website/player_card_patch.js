@@ -7633,46 +7633,6 @@
 
       @media(max-width:850px){#pcBox{max-width:94vw}.pcbiggrid,.pcgrid,.pcbars,.pcprofile{grid-template-columns:repeat(2,1fr)}.pczones{grid-template-columns:repeat(2,max-content)}.pcl7hero{grid-template-columns:repeat(2,1fr)}}
     `;
-
-      /* FINAL ZONE MAP OVERRIDE */
-      .pczone-grid-premium{
-        display:grid!important;
-        grid-template-columns:repeat(3,minmax(210px,1fr))!important;
-        gap:14px!important;
-        align-items:start!important;
-      }
-      .pcz-premium .pcz-head{
-        display:flex!important;
-        align-items:center!important;
-      }
-      .pcz-premium .pcz-frame{
-        display:block!important;
-      }
-      .pcz-premium .pcz-yaxis{
-        display:none!important;
-      }
-      .pcz-premium .pcz-cells{
-        display:grid!important;
-        grid-template-columns:repeat(5,34px)!important;
-        gap:5px!important;
-        width:max-content!important;
-        margin:0 auto!important;
-      }
-      .pcz-premium .pcz-cells span{
-        width:34px!important;
-        height:25px!important;
-        min-width:34px!important;
-        min-height:25px!important;
-        font-size:10px!important;
-      }
-      .pcz-premium .pcz-xaxis{
-        display:flex!important;
-        justify-content:space-between!important;
-        width:190px!important;
-        margin:7px auto 0!important;
-        font-size:8px!important;
-      }
-
     document.head.appendChild(style);
   }
 
