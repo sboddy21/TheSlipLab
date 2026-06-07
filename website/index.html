@@ -460,6 +460,7 @@
           </div>
 
           <a class="btn" href="mlb.html">View MLB Dashboard</a>
+          <div class="small" style="text-align:center;margin-top:10px;">MLB Updated: <span id="homeMlbUpdated">Loading</span></div>
         </div>
       </article>
 
@@ -497,6 +498,7 @@
           </div>
 
           <a class="btn" href="nba.html">View NBA Dashboard</a>
+          <div class="small" style="text-align:center;margin-top:10px;">NBA Updated: <span id="homeNbaUpdated">Loading</span></div>
         </div>
       </article>
 
@@ -629,6 +631,12 @@
       if(el) el.textContent = value || "--";
     }
 
+    function formatTime(value){
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())) return "Live";
+      return d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
+    }
+
     function shortName(name){
       const s = String(name || "").trim();
       if(!s) return "--";
@@ -692,9 +700,19 @@
       try{
         const updated = await loadJSON("./data/site_last_updated.json");
         const d = new Date(updated.updatedAt || updated.updated_at);
-        setText("lastUpdated", Number.isNaN(d.getTime()) ? "Live" : d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}));
+        const t = formatTime(updated.updatedAt || updated.updated_at);
+        setText("lastUpdated", t);
+        setText("homeMlbUpdated", t);
       }catch(e){
         setText("lastUpdated", "Live");
+        setText("homeMlbUpdated", "Live");
+      }
+
+      try{
+        const nbaUpdated = await loadJSON("./data/nba_last_updated.json");
+        setText("homeNbaUpdated", formatTime(nbaUpdated.updatedAt || nbaUpdated.updated_at));
+      }catch(e){
+        setText("homeNbaUpdated", "Live");
       }
     }
 
