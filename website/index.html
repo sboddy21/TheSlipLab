@@ -479,7 +479,52 @@
       box-shadow:0 0 14px rgba(143,80,255,.45);
     }
 
-  </style>
+  
+    .activity-feed{
+      margin-top:26px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(8,20,33,.72);
+      padding:20px;
+      box-shadow:0 0 30px rgba(47,128,255,.10);
+    }
+
+    .activity-feed h3{
+      margin:0 0 14px;
+      font-size:17px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:var(--green);
+    }
+
+    .activity-list{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .activity-item{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:10px;
+      padding:12px;
+      background:rgba(255,255,255,.04);
+    }
+
+    .activity-time{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+
+    .activity-text{
+      font-size:13px;
+      font-weight:900;
+      color:var(--text);
+    }
+
+</style>
 </head>
 <body>
   <header>
@@ -682,7 +727,31 @@
       </article>
     </section>
 
-    <section class="features">
+    
+    <section class="activity-feed">
+      <h3>Latest Lab Updates</h3>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-time" id="activityMlbTime">Loading</div>
+          <div class="activity-text">MLB refresh completed</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-time" id="activityNbaTime">Loading</div>
+          <div class="activity-text">NBA refresh completed</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-time">Live</div>
+          <div class="activity-text">Decision Centers updated</div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-time">Live</div>
+          <div class="activity-text">Model boards refreshed</div>
+        </div>
+      </div>
+    </section>
+
+
+<section class="features">
       <div class="feature">
         <div class="ico">📊</div>
         <div><strong>Data Driven</strong><p>Advanced analytics and custom scoring models.</p></div>
