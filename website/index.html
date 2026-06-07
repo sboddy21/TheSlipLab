@@ -402,11 +402,11 @@
             </div>
           </div>
 
-          <div class="label">Top Plays</div>
+          <div class="label">Live Top Plays</div>
           <div class="toplist">
-            <div class="row"><span>1</span><span>HR Matchup Board</span><span class="score">Ready</span></div>
-            <div class="row"><span>2</span><span>Weather Carry</span><span class="score">Ready</span></div>
-            <div class="row"><span>3</span><span>Player Cards</span><span class="score">Ready</span></div>
+            <div class="row"><span>🔥</span><span>Top HR Play</span><span class="score" id="homeMlbTopHr">Loading</span></div>
+            <div class="row"><span>🌤</span><span>Best Weather Spot</span><span class="score" id="homeMlbWeather">Loading</span></div>
+            <div class="row"><span>🎯</span><span>Top Matchup</span><span class="score" id="homeMlbMatchup">Loading</span></div>
           </div>
 
           <a class="btn" href="mlb.html">View MLB Dashboard</a>
@@ -439,11 +439,11 @@
             </div>
           </div>
 
-          <div class="label">Live Features</div>
+          <div class="label">Live Top Plays</div>
           <div class="toplist">
-            <div class="row"><span>1</span><span>NBA Decision Center</span><span class="score">Ready</span></div>
-            <div class="row"><span>2</span><span>Player Cards</span><span class="score">Ready</span></div>
-            <div class="row"><span>3</span><span>Matchup Engine</span><span class="score">Ready</span></div>
+            <div class="row"><span>🏀</span><span>Top Points Play</span><span class="score" id="homeNbaPoints">Loading</span></div>
+            <div class="row"><span>🧲</span><span>Top Rebounds Play</span><span class="score" id="homeNbaRebounds">Loading</span></div>
+            <div class="row"><span>🤝</span><span>Top Assists Play</span><span class="score" id="homeNbaAssists">Loading</span></div>
           </div>
 
           <a class="btn" href="nba.html">View NBA Dashboard</a>
@@ -565,6 +565,91 @@
   }
 })();
 </script>
+
+
+  <script>
+    async function loadJSON(file){
+      const res = await fetch(file + "?v=" + Date.now());
+      if(!res.ok) throw new Error(file + " failed");
+      return await res.json();
+    }
+
+    function setText(id, value){
+      const el = document.getElementById(id);
+      if(el) el.textContent = value || "--";
+    }
+
+    function shortName(name){
+      const s = String(name || "").trim();
+      if(!s) return "--";
+      const parts = s.split(/\s+/);
+      if(parts.length < 2) return s;
+      return `${parts[0][0]}. ${parts.slice(1).join(" ")}`;
+    }
+
+    async function loadHomepageLivePlays(){
+      try{
+        const games = await loadJSON("./data/mlb_games_today.json");
+        const count = Array.isArray(games.games) ? games.games.length : Array.isArray(games) ? games.length : 0;
+        setText("mlbGames", count || "--");
+      }catch(e){
+        setText("mlbGames", "--");
+      }
+
+      try{
+        const dc = await loadJSON("./data/hr_decision_center.json");
+        const sections = dc.sections || dc || {};
+        const topHr =
+          sections.topOverall?.[0] ||
+          sections.topOverallPlays?.[0] ||
+          sections.hrTargets?.[0] ||
+          sections.topTargets?.[0] ||
+          sections.smashSpots?.[0];
+
+        const weather =
+          sections.weatherCarry?.[0] ||
+          sections.bestWeather?.[0] ||
+          sections.weatherBoosts?.[0] ||
+          sections.pullWind?.[0];
+
+        const matchup =
+          sections.bestMatchups?.[0] ||
+          sections.matchupEdges?.[0] ||
+          sections.pitcherTargets?.[0] ||
+          topHr;
+
+        setText("homeMlbTopHr", shortName(topHr?.player || topHr?.batter || topHr?.name));
+        setText("homeMlbWeather", shortName(weather?.player || weather?.batter || weather?.venue || weather?.park || weather?.name));
+        setText("homeMlbMatchup", shortName(matchup?.player || matchup?.batter || matchup?.name));
+      }catch(e){
+        setText("homeMlbTopHr", "--");
+        setText("homeMlbWeather", "--");
+        setText("homeMlbMatchup", "--");
+      }
+
+      try{
+        const nba = await loadJSON("./data/nba_decision_center.json");
+        const sections = nba.sections || {};
+        setText("homeNbaPoints", shortName(sections.bestPointsPlays?.[0]?.player));
+        setText("homeNbaRebounds", shortName(sections.topRebounds?.[0]?.player));
+        setText("homeNbaAssists", shortName(sections.topAssists?.[0]?.player));
+      }catch(e){
+        setText("homeNbaPoints", "--");
+        setText("homeNbaRebounds", "--");
+        setText("homeNbaAssists", "--");
+      }
+
+      try{
+        const updated = await loadJSON("./data/site_last_updated.json");
+        const d = new Date(updated.updatedAt || updated.updated_at);
+        setText("lastUpdated", Number.isNaN(d.getTime()) ? "Live" : d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}));
+      }catch(e){
+        setText("lastUpdated", "Live");
+      }
+    }
+
+    loadHomepageLivePlays();
+  </script>
 
 </body>
 </html>
