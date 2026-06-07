@@ -497,6 +497,51 @@
   box-shadow:none;
 }
 
+
+.hr-leaders{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  margin:14px 0 18px;
+}
+.hr-leader-card{
+  background:linear-gradient(180deg, rgba(15,23,42,.92), rgba(2,6,23,.92));
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:18px;
+  padding:13px;
+  box-shadow:0 16px 35px rgba(0,0,0,.22);
+}
+.hr-leader-label{
+  font-size:10px;
+  color:#94a3b8;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+.hr-leader-player{
+  font-size:15px;
+  color:#e5e7eb;
+  font-weight:950;
+  margin-bottom:3px;
+}
+.hr-leader-stat{
+  font-size:13px;
+  color:#facc15;
+  font-weight:950;
+}
+.hr-leader-sub{
+  font-size:11px;
+  color:#94a3b8;
+  margin-top:3px;
+}
+@media(max-width:900px){
+  .hr-leaders{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:560px){
+  .hr-leaders{grid-template-columns:1fr;}
+}
+
 </style>
   <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
 </head>
@@ -620,6 +665,9 @@
   <div class="timeline">
     <div class="timeline-title">Latest HRs</div>
     <div class="timeline-list" id="timelineList"></div>
+
+    <div class="hr-leaders" id="hrLeaders"></div>
+
   </div>
 
   <div class="search-wrap">
@@ -977,6 +1025,50 @@ function filteredRows(rows){
   return out;
 }
 
+function topBy(rows, field){
+  return [...rows]
+    .filter(r => n(r[field]) > 0)
+    .sort((a,b) => n(b[field]) - n(a[field]))[0] || null;
+}
+
+function leaderCard(label, row, value, suffix){
+  if(!row){
+    return `
+      <div class="hr-leader-card">
+        <div class="hr-leader-label">${label}</div>
+        <div class="hr-leader-player">N/A</div>
+        <div class="hr-leader-stat">No Data</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="hr-leader-card">
+      <div class="hr-leader-label">${label}</div>
+      <div class="hr-leader-player">${clean(row.player)}</div>
+      <div class="hr-leader-stat">${clean(value)}${suffix}</div>
+      <div class="hr-leader-sub">${clean(row.team)} • vs ${clean(row.pitcher)}</div>
+    </div>
+  `;
+}
+
+function renderHrLeaders(rows){
+  const longest = topBy(rows, "distance");
+  const hardest = topBy(rows, "exitVelocity");
+  const highestLa = topBy(rows, "launchAngle");
+  const fastestPitch = topBy(rows, "pitchVelocity");
+
+  const box = document.getElementById("hrLeaders");
+  if(!box) return;
+
+  box.innerHTML = [
+    leaderCard("Longest HR", longest, longest ? n(longest.distance) : "", " FT"),
+    leaderCard("Hardest Hit HR", hardest, hardest ? n(hardest.exitVelocity) : "", " EV"),
+    leaderCard("Highest Launch Angle", highestLa, highestLa ? n(highestLa.launchAngle) : "", "°"),
+    leaderCard("Fastest Pitch Hit Out", fastestPitch, fastestPitch ? n(fastestPitch.pitchVelocity) : "", " MPH")
+  ].join("");
+}
+
 function render(){
   const map = modelMap();
   const ctxMap = contextMap();
@@ -1072,6 +1164,8 @@ function render(){
       <div class="timeline-meta">${clean(r.exitVelocity)} EV • ${clean(r.distance)} FT • ${clean(r.pitchType)}</div>
     </div>
   `).join("");
+
+  renderHrLeaders(rows);
 
   const displayRows = filteredRows(rows);
 
