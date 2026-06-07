@@ -130,8 +130,31 @@ function compactMarket(row, market, scoreKey, leanKey, reason = "") {
   };
 }
 
+function overallScore(row, matchupMap = new Map()) {
+  const matchup = matchupMap.get(String(row.playerId)) || {};
+  return round1(
+    num(row.pointsScore) * 0.36 +
+    num(row.pointsLean) * 1.15 +
+    num(row.usageScore) * 0.18 +
+    num(row.expectedMinutes) * 0.42 +
+    num(matchup.matchupScore) * 0.22
+  );
+}
+
 function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [], threesRows = []) {
   const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
+
+  const topOverallPlays = top(
+    active.slice().sort((a, b) =>
+      overallScore(b, matchupMap) - overallScore(a, matchupMap) ||
+      num(b.pointsScore) - num(a.pointsScore) ||
+      String(a.player).localeCompare(String(b.player))
+    ),
+    10
+  ).map(p => ({
+    ...compact(p, "Best overall blend of projection, model score, usage, minutes, form, and matchup context.", matchupMap),
+    overallScore: overallScore(p, matchupMap)
+  }));
 
   const bestPointsPlays = top(sortByScore(active), 10)
     .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, recent form, and matchup context.", matchupMap));
@@ -237,6 +260,7 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
   }
 
   return {
+    topOverallPlays,
     bestPointsPlays,
     usageRisers,
     minutesMonsters,
@@ -279,7 +303,7 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    version: "1.2",
+    version: "2.0",
     source: "nba_points.json",
     fetchedAt: new Date().toISOString(),
     date: points.date || "",
@@ -288,8 +312,8 @@ async function main() {
     playerCount: players.length,
     sectionCount: Object.keys(sections).length,
     modelNotes: [
-      "NBA Decision Center 1.2 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
-      "Sections include best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
+      "NBA Decision Center 2.0 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
+      "Sections include top overall plays, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
