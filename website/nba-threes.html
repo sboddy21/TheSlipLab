@@ -99,6 +99,7 @@
         <option value="volumeTrend">Sort by Volume</option>
         <option value="expectedMinutes">Sort by Minutes</option>
       </select>
+      <button class="clear-btn" id="clearFilters" type="button">Clear</button>
     </div>
 
     <section id="board" class="grid"></section>
@@ -230,7 +231,20 @@
       DATA=Array.isArray(d.players)?d.players:[];
       CARDS=Array.isArray(cards.players)?cards.players:[];
       document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
-      ["search","tier","sort"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+      fillTeams();
+      ["search","team","tier","minProjection","minScore","sort"].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.addEventListener("input",render);
+        if(el)el.addEventListener("change",render);
+      });
+      document.getElementById("clearFilters").addEventListener("click",()=>{
+        document.getElementById("search").value="";
+        document.getElementById("team").value="all";
+        document.getElementById("tier").value="all";
+        document.getElementById("minProjection").value="0";
+        document.getElementById("minScore").value="0";
+        render();
+      });
       render();
     }
     document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});

@@ -22,10 +22,13 @@
     .hero{border:1px solid var(--line);border-radius:28px;background:linear-gradient(180deg,rgba(17,26,45,.92),rgba(11,18,32,.9));padding:26px;margin-bottom:18px}
     .hero h1{margin:0 0 8px;font-size:clamp(30px,4vw,54px);line-height:1;letter-spacing:-.04em}
     .hero p{margin:0;color:var(--muted);font-weight:700}
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
-    .search,.select{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:16px;padding:12px 14px;font-weight:800}
-    .search{min-width:280px;flex:1}
-    .select{min-width:180px}
+    .controls{display:grid;grid-template-columns:minmax(260px,1.5fr) repeat(4,minmax(150px,.7fr)) auto;gap:10px;margin:18px 0}
+    .search,.select,.clear-btn{border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);border-radius:16px;padding:12px 14px;font-weight:800}
+    .search{min-width:260px}
+    .select{min-width:150px}
+    .clear-btn{cursor:pointer;color:var(--blue);border-color:rgba(92,200,255,.35)}
+    .clear-btn:hover{background:rgba(92,200,255,.10)}
+    @media(max-width:980px){.controls{grid-template-columns:1fr}.search,.select{min-width:100%}}
     .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
     .card{border:1px solid var(--line);background:linear-gradient(180deg,rgba(17,26,45,.94),rgba(9,14,26,.94));border-radius:22px;padding:14px;min-height:285px;position:relative;overflow:hidden}
     .card:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at top right,rgba(92,200,255,.14),transparent 38%);pointer-events:none}
@@ -86,6 +89,9 @@
 
     <div class="controls">
       <input class="search" id="search" placeholder="Search player, team, opponent, tag" />
+      <select class="select" id="team">
+        <option value="all">All Teams</option>
+      </select>
       <select class="select" id="tier">
         <option value="all">All confidence tiers</option>
         <option value="Elite">Elite</option>
@@ -94,6 +100,21 @@
         <option value="Watch">Watch</option>
         <option value="Low">Low</option>
       </select>
+      <select class="select" id="minProjection">
+        <option value="0">Any Projection</option>
+        <option value="2">Projected Points 2+</option>
+        <option value="4">Projected Points 4+</option>
+        <option value="6">Projected Points 6+</option>
+        <option value="10">Projected Points 10+</option>
+        <option value="20">Projected Points 20+</option>
+      </select>
+      <select class="select" id="minScore">
+        <option value="0">Any Score</option>
+        <option value="55">Score 55+</option>
+        <option value="65">Score 65+</option>
+        <option value="75">Score 75+</option>
+        <option value="85">Score 85+</option>
+      </select>
       <select class="select" id="sort">
         <option value="pointsScore">Sort by Points Score</option>
         <option value="pointsLean">Sort by Points Lean</option>
@@ -101,6 +122,7 @@
         <option value="expectedMinutes">Sort by Minutes</option>
         <option value="trendDiff">Sort by Scoring Trend</option>
       </select>
+      <button class="clear-btn" id="clearFilters" type="button">Clear</button>
     </div>
 
     <section id="board" class="grid"></section>
@@ -142,12 +164,31 @@
       const hay=[p.player,p.team,p.opponent,p.position,p.confidence,p.usageTrend,p.minutesRole,p.scoringRole,...(Array.isArray(p.tags)?p.tags:[])].join(" ").toLowerCase();
       return hay.includes(q.toLowerCase());
     }
+    function fillTeams(){
+      const select=document.getElementById("team");
+      if(!select)return;
+      const current=select.value || "all";
+      const teams=[...new Set(DATA.map(p=>p.team).filter(Boolean))].sort();
+      select.innerHTML=`<option value="all">All Teams</option>`+teams.map(t=>`<option value="${html(t)}">${html(t)}</option>`).join("");
+      select.value=teams.includes(current)?current:"all";
+    }
+
     function render(){
       const q=document.getElementById("search").value.trim();
+      const team=document.getElementById("team").value;
       const tier=document.getElementById("tier").value;
+      const minProjection=num(document.getElementById("minProjection").value);
+      const minScore=num(document.getElementById("minScore").value);
       const sort=document.getElementById("sort").value;
-      const rows=DATA.filter(p=>matches(p,q)).filter(p=>tier==="all"||p.confidence===tier)
+
+      const rows=DATA
+        .filter(p=>matches(p,q))
+        .filter(p=>team==="all"||p.team===team)
+        .filter(p=>tier==="all"||p.confidence===tier)
+        .filter(p=>!minProjection||num(p.pointsLean)>=minProjection)
+        .filter(p=>!minScore||num(p.pointsScore)>=minScore)
         .sort((a,b)=>num(b[sort])-num(a[sort])||num(b.pointsScore)-num(a.pointsScore));
+
       document.getElementById("board").innerHTML=rows.length?rows.map(card).join(""):`<div class="empty">No players match this filter.</div>`;
       installCards();
     }
@@ -230,7 +271,20 @@
       DATA=Array.isArray(d.players)?d.players:[];
       CARDS=Array.isArray(cards.players)?cards.players:[];
       document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
-      ["search","tier","sort"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+      fillTeams();
+      ["search","team","tier","minProjection","minScore","sort"].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.addEventListener("input",render);
+        if(el)el.addEventListener("change",render);
+      });
+      document.getElementById("clearFilters").addEventListener("click",()=>{
+        document.getElementById("search").value="";
+        document.getElementById("team").value="all";
+        document.getElementById("tier").value="all";
+        document.getElementById("minProjection").value="0";
+        document.getElementById("minScore").value="0";
+        render();
+      });
       render();
     }
     document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});
