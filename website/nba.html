@@ -397,6 +397,27 @@
       position:relative;
       top:-1px;
     }
+    .info-tip[data-tip]:hover:after{
+      content:attr(data-tip);
+      position:absolute;
+      left:50%;
+      bottom:130%;
+      transform:translateX(-50%);
+      width:210px;
+      padding:9px 10px;
+      border-radius:10px;
+      background:#101827;
+      border:1px solid rgba(255,255,255,.18);
+      color:#dfe8ff;
+      font-size:11px;
+      line-height:1.35;
+      letter-spacing:0;
+      text-transform:none;
+      font-weight:800;
+      box-shadow:0 14px 32px rgba(0,0,0,.35);
+      z-index:20;
+      pointer-events:none;
+    }
 
   </style>
 </head>
@@ -724,7 +745,7 @@
           ${bestMarketBadge(p)}
 
           <div class="mini">
-            ${p.consensusScore !== undefined ? `<div class="box"><span>Consensus</span><strong>${html(fmt(p.consensusScore))}</strong></div>` : p.overallScore !== undefined ? `<div class="box"><span>Slip Lab Rating <span class="info-tip" title="Slip Lab Rating is the overall player strength score. Higher values mean a stronger blend of projection, market score, usage, minutes, trend, and matchup context.">i</span></span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
+            ${p.consensusScore !== undefined ? `<div class="box"><span>Consensus</span><strong>${html(fmt(p.consensusScore))}</strong></div>` : p.overallScore !== undefined ? `<div class="box"><span>Slip Lab Rating <span class="info-tip" data-tip="Overall player strength score. Higher values mean a stronger blend of projection, market score, usage, minutes, trend, and matchup context.">i</span></span><strong>${html(fmt(p.overallScore))}</strong></div>` : `<div class="box"><span>${html(leanLabel(p))}</span><strong>${html(fmt(leanOf(p)))}</strong></div>`}
             <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
             <div class="box"><span>${p.market ? "Role" : "Usage"}</span><strong>${html(p.market ? roleOf(p) : fmt(p.usageScore))}</strong></div>
             <div class="box"><span>Trend</span><strong>${html(fmt(p.trendDiff))}</strong></div>
