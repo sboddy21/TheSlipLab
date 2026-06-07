@@ -428,6 +428,17 @@
       pointer-events:none;
     }
 
+  
+    .tag-icon{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      margin-right:5px;
+      font-size:12px;
+      line-height:1;
+      filter:drop-shadow(0 0 5px rgba(77,184,255,.35));
+    }
+
   </style>
 </head>
 <body>
@@ -642,6 +653,26 @@
       return markets[0];
     }
 
+
+
+    function tagIcon(tag){
+      const t = String(tag || "").toLowerCase();
+
+      if (t.includes("minutes") || t.includes("starter")) return "⏱";
+      if (t.includes("usage") || t.includes("volume")) return "📈";
+      if (t.includes("safe floor")) return "🛡";
+      if (t.includes("tough defense")) return "🏀";
+      if (t.includes("matchup") || t.includes("defense edge")) return "🎯";
+      if (t.includes("hot form") || t.includes("boom")) return "⚡";
+      if (t.includes("projection") || t.includes("smash")) return "🚀";
+      if (t.includes("slow pace")) return "🐌";
+      if (t.includes("rebound") || t.includes("board")) return "🧲";
+      if (t.includes("assist") || t.includes("creator")) return "🤝";
+      if (t.includes("points") || t.includes("scoring")) return "🎯";
+      if (t.includes("3pt") || t.includes("three")) return "🔥";
+
+      return "•";
+    }
 
     function marketTags(p){
       const best = bestMarketForPlayer(p);
