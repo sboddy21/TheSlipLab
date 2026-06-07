@@ -214,6 +214,13 @@
       margin-top:3px;
       font-size:16px;
     }
+    .confidence-meter{position:relative;z-index:1;margin:12px 0 4px}
+    .confidence-row{display:flex;justify-content:space-between;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .confidence-track{height:9px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid var(--line)}
+    .confidence-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--blue),var(--good));box-shadow:0 0 16px rgba(65,240,166,.22)}
+    .confidence-fill.warn{background:linear-gradient(90deg,var(--warn),var(--hot));box-shadow:0 0 16px rgba(255,209,102,.18)}
+    .confidence-fill.hot{background:linear-gradient(90deg,var(--hot),#ff8fa3);box-shadow:0 0 16px rgba(255,92,122,.18)}
+
     .tags{
       position:relative;
       z-index:1;
@@ -461,6 +468,32 @@
       return p.market ? `${p.market} Lean` : "Lean";
     }
 
+    function confidenceValue(p) {
+      return Math.max(
+        0,
+        Math.min(
+          100,
+          num(p.overallScore || p.marketScore || p.pointsScore || p.matchupScore || 0)
+        )
+      );
+    }
+
+    function confidenceClass(value) {
+      if (value >= 75) return "";
+      if (value >= 60) return "warn";
+      return "hot";
+    }
+
+    function confidenceMeter(p) {
+      const value = confidenceValue(p);
+      return `
+        <div class="confidence-meter">
+          <div class="confidence-row"><span>Confidence</span><span>${html(fmt(value))}%</span></div>
+          <div class="confidence-track"><div class="confidence-fill ${confidenceClass(value)}" style="width:${Math.max(4, Math.min(100, value))}%"></div></div>
+        </div>
+      `;
+    }
+
     function roleOf(p) {
       return p.role || p.scoringRole || p.minutesRole || p.matchupTier || p.confidence || "";
     }
@@ -507,8 +540,10 @@
             <div class="box"><span>Trend</span><strong>${html(fmt(p.trendDiff))}</strong></div>
           </div>
 
+          ${confidenceMeter(p)}
+
           <div class="tags">
-            ${(Array.isArray(p.tags) ? p.tags.slice(0, 5) : []).map(tag => `<span class="tag">${html(tag)}</span>`).join("")}
+            ${(Array.isArray(p.tags) ? p.tags.slice(0, 6) : []).map(tag => `<span class="tag">${html(tag)}</span>`).join("")}
           </div>
 
           <div class="reason">${html(p.reason || roleOf(p) || p.confidence || "")}</div>
