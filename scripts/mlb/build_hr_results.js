@@ -4,6 +4,7 @@ import path from "path";
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 const OUT_FILE = path.join(DATA_DIR, "mlb_results.json");
+const CONTEXT_FILE = path.join(DATA_DIR, "mlb_context_factors.json");
 
 function etDate(offsetDays = 0) {
   const now = new Date();
@@ -23,7 +24,7 @@ const argOut = process.argv.find(a => a.startsWith("--out="))?.split("=")[1];
 const targetDate = argDate || etDate(0);
 const outputFile = argOut ? path.join(ROOT, argOut) : OUT_FILE;
 
-const SCHEDULE_URL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${targetDate}`;
+const SCHEDULE_URL = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${targetDate}&hydrate=venue,weather,officials`;
 const LIVE_FEED_BASE = "https://statsapi.mlb.com/api/v1.1/game";
 
 const VALID_STATUSES = new Set([
@@ -49,6 +50,61 @@ function num(v) {
   const n = Number(v);
   if (!Number.isFinite(n)) return "";
   return Math.round(n * 10) / 10;
+}
+
+function readJSON(file, fallback) {
+  try {
+    if (!fs.existsSync(file)) return fallback;
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
+function buildContextMap() {
+  const ctx = readJSON(CONTEXT_FILE, {});
+  const contexts = Array.isArray(ctx?.contexts) ? ctx.contexts : [];
+  return new Map(contexts.map(c => [String(c.gamePk), c]));
+}
+
+function getOfficialName(game, feed) {
+  const scheduleOfficials = Array.isArray(game?.officials) ? game.officials : [];
+  const liveOfficials = Array.isArray(feed?.liveData?.boxscore?.officials) ? feed.liveData.boxscore.officials : [];
+  const all = [...scheduleOfficials, ...liveOfficials];
+
+  const hp = all.find(o =>
+    String(o?.officialType || o?.officialTypeCode || o?.role || "").toLowerCase().includes("home")
+  );
+
+  return safe(hp?.official?.fullName || hp?.official?.name || hp?.name);
+}
+
+function getGameContext(game, feed, contextMap) {
+  const gamePk = String(game?.gamePk || "");
+  const ctx = contextMap.get(gamePk) || {};
+
+  const venueName = safe(feed?.gameData?.venue?.name || game?.venue?.name || ctx?.venue?.name);
+  const weatherCondition = safe(feed?.gameData?.weather?.condition || game?.weather?.condition || ctx?.weather?.condition);
+  const weatherTemp = safe(feed?.gameData?.weather?.temp || game?.weather?.temp || ctx?.weather?.temp);
+  const weatherWind = safe(feed?.gameData?.weather?.wind || game?.weather?.wind || ctx?.weather?.wind);
+  const roofStatus = safe(feed?.gameData?.venue?.roofType || feed?.gameData?.venue?.roof || game?.venue?.roofType || ctx?.roof?.roof);
+  const umpireName = safe(getOfficialName(game, feed) || ctx?.umpire?.name);
+
+  let contextScoreValue = 0;
+  if (venueName) contextScoreValue += 20;
+  if (weatherCondition || weatherTemp || weatherWind) contextScoreValue += 30;
+  if (umpireName) contextScoreValue += 25;
+  if (roofStatus) contextScoreValue += 10;
+
+  return {
+    venueName,
+    umpireName,
+    roofStatus,
+    weatherCondition,
+    weatherTemp,
+    weatherWind,
+    contextScoreValue
+  };
 }
 
 function isHomeRun(play) {
@@ -121,6 +177,8 @@ async function buildResults(date) {
   const schedule = await getJSON(SCHEDULE_URL);
   const games = schedule?.dates?.flatMap(d => d.games || []) || [];
 
+  const contextMap = buildContextMap();
+
   const homeRuns = [];
   let checkedGames = 0;
   let skippedGames = 0;
@@ -140,6 +198,7 @@ async function buildResults(date) {
     const plays = uniquePlays(feed);
     const gameLabel = getGameLabel(feed, game);
     const score = getScore(feed);
+    const gameContext = getGameContext(game, feed, contextMap);
 
     for (const play of plays) {
       if (!isHomeRun(play)) continue;
@@ -183,7 +242,8 @@ async function buildResults(date) {
         plateZ: num(pitchData?.coordinates?.pZ),
         strikeZoneTop: num(pitchData?.strikeZoneTop),
         strikeZoneBottom: num(pitchData?.strikeZoneBottom),
-        count: getCount(play, pitch)
+        count: getCount(play, pitch),
+        ...gameContext
       });
     }
   }
