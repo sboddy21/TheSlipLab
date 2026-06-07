@@ -8105,3 +8105,72 @@
   `;
   document.head.appendChild(s);
 })();
+
+/* Final Zone Map Polish */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pczone-header-compact{
+      padding:11px 14px!important;
+      margin-bottom:12px!important;
+      grid-template-columns:1fr 118px!important;
+    }
+
+    .pczone-score-card{
+      padding:9px 10px!important;
+    }
+
+    .pczone-score-card strong{
+      font-size:30px!important;
+    }
+
+    .pczone-score-card span::after{
+      content:" MATCH";
+    }
+
+    .pcz-clean-head{
+      grid-template-columns:34px 1fr!important;
+      min-height:50px!important;
+    }
+
+    .pcz-clean-copy{
+      display:block!important;
+    }
+
+    .pcz-clean-copy b{
+      display:block!important;
+      font-size:12px!important;
+      margin-bottom:4px!important;
+    }
+
+    .pcz-clean-copy small{
+      display:block!important;
+      font-size:10px!important;
+      line-height:1.2!important;
+    }
+
+    .pcz-primary{
+      box-shadow:
+        0 0 32px rgba(140,255,50,.22),
+        inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+
+    .pcz-primary .pcz-clean-head::after{
+      content:"PRIMARY";
+      margin-left:auto;
+      padding:3px 7px;
+      border-radius:999px;
+      background:rgba(140,255,50,.13);
+      border:1px solid rgba(140,255,50,.28);
+      color:#8cff32;
+      font-size:9px;
+      font-weight:1000;
+      letter-spacing:.5px;
+    }
+
+    .pczone-grid-premium{
+      gap:12px!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
