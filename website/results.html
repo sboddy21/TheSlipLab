@@ -718,6 +718,7 @@ function render(){
       score:m ? n(m.hrConfidence) : 0,
       barrel:m ? n(m.barrel || m.barrelRate || m.powerScore * .20) : 0,
       hardHit:m ? n(m.hardHit || m.powerScore * .65) : 0,
+      pitcherHand: row.pitcherHand || row.hand || row.pitchHand || m?.pitcherHand || m?.pitchHand || m?.opposingPitcherHand || m?.starterHand || "RHP",
       contextScoreValue: row.contextScoreValue ?? contextScore(row),
     };
   });
