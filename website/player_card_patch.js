@@ -1260,19 +1260,24 @@
 
     if (id === "zones") {
       body.innerHTML = `
-        <div class="pczone-hero pczone-hero-premium">
-          <div>
-            <h3>Zone Power Map</h3>
-            <p>Hitter damage zones, pitcher leak zones, and matchup overlap</p>
-            <div class="pczone-legend">
-              <span><i class="leg-cold"></i>Cold</span>
-              <span><i class="leg-neutral"></i>Neutral</span>
-              <span><i class="leg-warm"></i>Warm</span>
-              <span><i class="leg-hot"></i>Hot</span>
-              <span><i class="leg-nuclear"></i>Nuclear</span>
+        <div class="pczone-header-compact">
+          <div class="pczone-header-copy">
+            <h3>ZONE POWER MAP</h3>
+            <div class="pczone-matchup-tag">🔥 Elite 5/5 Hot Zone Match</div>
+            <p>Hitter damage zones strongly overlap pitcher leak areas</p>
+            <div class="pczone-legend-pills">
+              <span class="cold">Cold</span>
+              <span class="neutral">Neutral</span>
+              <span class="warm">Warm</span>
+              <span class="hot">Hot</span>
+              <span class="nuclear">Nuclear</span>
             </div>
           </div>
-          ${renderZoneOverlapCard(row)}
+
+          <div class="pczone-score-card">
+            <strong>${one(Math.max(num(row.zoneOverlap), num(row.hotZoneCount), num(row.hitterZonePower) / 12))}</strong>
+            <span>ELITE</span>
+          </div>
         </div>
 
         <div class="pczone-grid-upgraded pczone-grid-premium">
@@ -8000,6 +8005,102 @@
 
     .pcz-clean-board{
       margin-top:12px!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
+
+
+/* Compact Zone Power Map Header */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pczone-header-compact{
+      display:grid!important;
+      grid-template-columns:1fr 135px!important;
+      gap:14px!important;
+      align-items:center!important;
+      margin-bottom:14px!important;
+      padding:13px 15px!important;
+      border:1px solid rgba(140,255,50,.16)!important;
+      border-radius:16px!important;
+      background:
+        radial-gradient(circle at 8% 0%, rgba(140,255,50,.09), transparent 34%),
+        rgba(8,14,18,.78)!important;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.06)!important;
+    }
+
+    .pczone-header-copy h3{
+      margin:0 0 7px!important;
+      color:#8cff32!important;
+      font-size:15px!important;
+      letter-spacing:1.6px!important;
+      text-transform:uppercase!important;
+    }
+
+    .pczone-matchup-tag{
+      display:inline-block!important;
+      padding:5px 10px!important;
+      border-radius:999px!important;
+      background:rgba(255,176,0,.12)!important;
+      border:1px solid rgba(255,176,0,.25)!important;
+      color:#ffb000!important;
+      font-size:12px!important;
+      font-weight:900!important;
+      margin-bottom:7px!important;
+    }
+
+    .pczone-header-copy p{
+      margin:0 0 10px!important;
+      color:#d8dee6!important;
+      font-size:12px!important;
+      line-height:1.35!important;
+    }
+
+    .pczone-legend-pills{
+      display:flex!important;
+      gap:7px!important;
+      flex-wrap:wrap!important;
+    }
+
+    .pczone-legend-pills span{
+      padding:4px 8px!important;
+      border-radius:999px!important;
+      font-size:10px!important;
+      font-weight:900!important;
+      color:white!important;
+      text-transform:uppercase!important;
+      letter-spacing:.3px!important;
+    }
+
+    .pczone-legend-pills .cold{background:#1d3f6e!important}
+    .pczone-legend-pills .neutral{background:#5b5b5b!important}
+    .pczone-legend-pills .warm{background:#b98216!important}
+    .pczone-legend-pills .hot{background:#d24b2d!important}
+    .pczone-legend-pills .nuclear{background:#c42020!important}
+
+    .pczone-score-card{
+      text-align:center!important;
+      padding:11px 10px!important;
+      border-radius:14px!important;
+      background:rgba(140,255,50,.07)!important;
+      border:1px solid rgba(140,255,50,.24)!important;
+      box-shadow:0 0 18px rgba(140,255,50,.08)!important;
+    }
+
+    .pczone-score-card strong{
+      display:block!important;
+      font-size:34px!important;
+      color:#8cff32!important;
+      line-height:1!important;
+      margin-bottom:4px!important;
+    }
+
+    .pczone-score-card span{
+      color:#ffb000!important;
+      font-size:11px!important;
+      font-weight:1000!important;
+      letter-spacing:.7px!important;
     }
   `;
   document.head.appendChild(s);
