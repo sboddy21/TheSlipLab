@@ -35,6 +35,22 @@ const steps = [
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
   ["Batting Spot Profiles", "scripts/mlb/build_batting_spot_profiles.js"],
+  ["NBA Today", "scripts/nba/fetch_nba_today.js"],
+  ["NBA Player Pool", "scripts/nba/build_nba_player_pool.js"],
+  ["NBA History", "scripts/nba/build_nba_history.js"],
+  ["NBA Minutes Engine", "scripts/nba/build_minutes_engine.js"],
+  ["NBA Usage Engine", "scripts/nba/build_usage_engine.js"],
+  ["NBA Core", "scripts/nba/build_nba_core.js"],
+  ["NBA Team Defense", "scripts/nba/build_team_defense.js"],
+  ["NBA Pace Engine", "scripts/nba/build_pace_engine.js"],
+  ["NBA Defender Engine", "scripts/nba/build_defender_engine.js"],
+  ["NBA Points Board", "scripts/nba/build_points_board.js"],
+  ["NBA Rebounds Board", "scripts/nba/build_rebounds_board.js"],
+  ["NBA Assists Board", "scripts/nba/build_assists_board.js"],
+  ["NBA Threes Board", "scripts/nba/build_threes_board.js"],
+  ["NBA Matchup Engine", "scripts/nba/build_matchup_engine.js"],
+  ["NBA Player Cards", "scripts/nba/build_nba_player_cards.js"],
+  ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"],
   ["Live Intelligence", "scripts/run_live_intelligence.js"]
 ];
 
@@ -86,7 +102,14 @@ fs.writeFileSync(
       "streak_lab",
       "weather",
       "results",
-      "decision_center"
+      "decision_center",
+      "nba_today",
+      "nba_points",
+      "nba_rebounds",
+      "nba_assists",
+      "nba_threes",
+      "nba_matchups",
+      "nba_decision_center"
     ]
   }, null, 2)
 );
