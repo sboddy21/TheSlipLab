@@ -55,10 +55,20 @@
     .modal-head p{margin:5px 0 0;color:var(--muted);font-weight:800}
     .close{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:10px 14px;font-weight:900;cursor:pointer}
     .modal-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+    .modal-section{border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.035);padding:14px;margin:12px 0}
+    .modal-section h3{margin:0 0 10px;font-size:16px;letter-spacing:-.02em}
+    .modal-note{color:var(--muted);font-size:13px;font-weight:750;line-height:1.45}
+    .profile-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:12px;margin:12px 0}
+    .profile-main-number{border:1px solid rgba(65,240,166,.35);border-radius:20px;padding:16px;background:rgba(65,240,166,.08)}
+    .profile-main-number span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:950;letter-spacing:.08em}
+    .profile-main-number strong{display:block;color:var(--good);font-size:42px;line-height:1;margin-top:6px}
+    .profile-context{border:1px solid var(--line);border-radius:20px;padding:16px;background:rgba(92,200,255,.06)}
+    .profile-context b{display:block;font-size:18px;margin-bottom:5px}
+    .profile-context p{margin:0;color:var(--muted);font-weight:750;line-height:1.35}
     .log{width:100%;border-collapse:collapse;margin-top:12px;font-size:13px}
     .log th,.log td{border-bottom:1px solid var(--line);padding:9px;text-align:left}
     .log th{color:var(--muted);text-transform:uppercase;font-size:11px;letter-spacing:.08em}
-    @media(max-width:760px){.modal-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:760px){.modal-grid{grid-template-columns:repeat(2,1fr)}.profile-hero{grid-template-columns:1fr}}
   
   </style>
 </head>
@@ -161,7 +171,14 @@
     function openCard(playerId){
       const p=findCard(playerId);
       if(!p)return;
+
       const logs=Array.isArray(p.recentGames)?p.recentGames.slice(0,8):[];
+      const tags=Array.isArray(p.tags)?p.tags:[];
+      const topTags=tags.slice(0,14).map(t=>`<span class="tag ${typeof tagClass==="function"?tagClass(t):""}">${html(t)}</span>`).join("");
+
+      const projection=p.headline?.threesLean;
+      const marketScore=p.headline?.threesScore;
+
       document.getElementById("modalBody").innerHTML=`
         <div class="modal-head">
           <div>
@@ -171,35 +188,68 @@
           <button class="close" id="closeModal">Close</button>
         </div>
 
-        <div class="tags">${renderTags(p.tags, 12)}</div>
-
-        <div class="modal-grid">
-          ${metric("Points Score",p.headline?.threesScore)}
-          ${metric("Points Lean",p.headline?.threesLean)}
-          ${metric("Matchup",p.headline?.threesScore)}
-          ${metric("Usage",p.usage?.score)}
-          ${metric("Exp Min",p.minutes?.expected)}
-          ${metric("Min Conf",p.minutes?.confidence)}
-          ${metric("Season PTS",p.production?.seasonPoints)}
-          ${metric("Last 5 PTS",p.production?.last5Points)}
-          ${metric("Last 10 PTS",p.production?.last10Points)}
-          ${metric("FGA Trend",p.usage?.fgaTrend)}
-          ${metric("FTA Trend",p.usage?.ftaTrend)}
-          ${metric("Volume",p.usage?.volumeTrend)}
+        <div class="profile-hero">
+          <div class="profile-main-number">
+            <span>Projected 3PM</span>
+            <strong>${html(fmt(projection))}</strong>
+          </div>
+          <div class="profile-context">
+            <b>${html(p.headline?.confidence || "NBA Profile")}</b>
+            <p>${html(p.matchup?.opponentContext || "Opponent context loading")}</p>
+            <p>${html(p.matchup?.paceContext || "")}</p>
+          </div>
         </div>
 
-        <div class="sub">${html(p.matchup?.opponentContext)} • ${html(p.matchup?.paceContext)}</div>
+        <div class="tags">${topTags}</div>
 
-        <table class="log">
-          <thead><tr><th>Date</th><th>Matchup</th><th>Min</th><th>Pts</th><th>Reb</th><th>Ast</th><th>3PM</th><th>FGA</th><th>FTA</th></tr></thead>
-          <tbody>
-            ${logs.map(g=>`<tr><td>${html(g.date)}</td><td>${html(g.matchup)}</td><td>${html(fmt(g.minutes))}</td><td>${html(fmt(g.points))}</td><td>${html(fmt(g.rebounds))}</td><td>${html(fmt(g.assists))}</td><td>${html(fmt(g.threesMade))}</td><td>${html(fmt(g.fieldGoalAttempts))}</td><td>${html(fmt(g.freeThrowAttempts))}</td></tr>`).join("")}
-          </tbody>
-        </table>
+        <div class="modal-section">
+          <h3>Projection Summary</h3>
+          <div class="modal-grid">
+            ${metric("Projected 3PM",projection)}
+            ${metric("Model Score",marketScore)}
+            ${metric("Expected Minutes",p.minutes?.expected)}
+            ${metric("Minutes Confidence",p.minutes?.confidence)}
+            ${metric("Season Points",p.production?.seasonPoints)}
+            ${metric("Last 5 Points",p.production?.last5Points)}
+            ${metric("Last 10 Points",p.production?.last10Points)}
+            ${metric("Usage Score",p.usage?.score)}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3>Usage and Volume</h3>
+          <div class="modal-grid">
+            ${metric("FGA Trend",p.usage?.fgaTrend)}
+            ${metric("FTA Trend",p.usage?.ftaTrend)}
+            ${metric("Volume Trend",p.usage?.volumeTrend)}
+            ${metric("Usage Trend",p.usage?.trend || p.headline?.usageTrend)}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3>Matchup Context</h3>
+          <div class="modal-note">
+            ${html(p.matchup?.opponentContext || "")}<br/>
+            ${html(p.matchup?.paceContext || "")}<br/>
+            ${html(p.matchup?.defenderContext || "")}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3>Recent Game Log</h3>
+          <table class="log">
+            <thead><tr><th>Date</th><th>Matchup</th><th>Min</th><th>Pts</th><th>Reb</th><th>Ast</th><th>3PM</th><th>FGA</th><th>FTA</th></tr></thead>
+            <tbody>
+              ${logs.map(g=>`<tr><td>${html(g.date)}</td><td>${html(g.matchup)}</td><td>${html(fmt(g.minutes))}</td><td>${html(fmt(g.points))}</td><td>${html(fmt(g.rebounds))}</td><td>${html(fmt(g.assists))}</td><td>${html(fmt(g.threesMade))}</td><td>${html(fmt(g.fieldGoalAttempts))}</td><td>${html(fmt(g.freeThrowAttempts))}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
       `;
+
       document.getElementById("modal").classList.add("show");
       document.getElementById("closeModal").addEventListener("click",()=>document.getElementById("modal").classList.remove("show"));
     }
+
     function installCards(){
       document.querySelectorAll(".card[data-player-id]").forEach(card=>{
         card.addEventListener("click",()=>openCard(card.dataset.playerId));
