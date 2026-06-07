@@ -7948,3 +7948,59 @@
   `;
   document.head.appendChild(s);
 })();
+
+/* Zone Map Header Cleanup */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pcz-clean-head{
+      display:grid!important;
+      grid-template-columns:42px 1fr!important;
+      gap:10px!important;
+      align-items:center!important;
+      padding:8px 10px!important;
+      min-height:46px!important;
+    }
+
+    .pcz-clean-icon{
+      width:34px!important;
+      height:34px!important;
+      border-radius:11px!important;
+      font-size:15px!important;
+    }
+
+    .pcz-clean-copy{
+      display:grid!important;
+      grid-template-columns:auto 1fr!important;
+      align-items:center!important;
+      gap:8px!important;
+      width:100%!important;
+    }
+
+    .pcz-clean-copy b{
+      white-space:nowrap!important;
+      font-size:13px!important;
+      line-height:1!important;
+      margin:0!important;
+    }
+
+    .pcz-clean-copy small{
+      display:block!important;
+      white-space:normal!important;
+      font-size:12px!important;
+      line-height:1.15!important;
+      margin:0!important;
+      color:rgba(255,255,255,.78)!important;
+      max-width:none!important;
+    }
+
+    .pcz-clean{
+      min-width:250px!important;
+    }
+
+    .pcz-clean-board{
+      margin-top:12px!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
