@@ -444,6 +444,36 @@
   border-color:rgba(249,115,22,.36);
 }
 
+
+.park-factor-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  border:1px solid rgba(148,163,184,.28);
+}
+.park-factor-badge.hitter{
+  color:#86efac;
+  background:rgba(34,197,94,.14);
+  border-color:rgba(34,197,94,.38);
+  box-shadow:0 0 16px rgba(34,197,94,.18);
+}
+.park-factor-badge.neutral{
+  color:#cbd5e1;
+  background:rgba(148,163,184,.12);
+  border-color:rgba(148,163,184,.30);
+}
+.park-factor-badge.pitcher{
+  color:#93c5fd;
+  background:rgba(59,130,246,.13);
+  border-color:rgba(59,130,246,.36);
+}
+
 </style>
   <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
 </head>
@@ -614,6 +644,7 @@
 let results = [];
 let model = [];
 let contextFactors = [];
+let parkFactors = [];
 let activeFilter = "all";
 let searchTerm = "";
 
@@ -686,6 +717,43 @@ function carryRating(row){
   if(score >= 3) return "High Carry";
   if(score <= -1) return "Low Carry";
   return "Neutral Carry";
+}
+
+function normVenue(v){
+  return String(v || "")
+    .toLowerCase()
+    .replace(/uniqlo field at /g, "")
+    .replace(/guaranteed rate field/g, "rate field")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function parkFactorFor(row){
+  const venue = normVenue(row.venueName);
+  if(!venue) return null;
+
+  return parkFactors.find(p => {
+    const pv = normVenue(p.venue);
+    return pv && (venue.includes(pv) || pv.includes(venue));
+  }) || null;
+}
+
+function parkFactorBadge(row){
+  const park = parkFactorFor(row);
+  const factor = n(park?.hrFactor);
+
+  if(!park || !factor){
+    return `<span class="park-factor-badge neutral">Park Unknown</span>`;
+  }
+
+  if(factor >= 105){
+    return `<span class="park-factor-badge hitter">Hitter Park ${factor}</span>`;
+  }
+
+  if(factor <= 96){
+    return `<span class="park-factor-badge pitcher">Pitcher Park ${factor}</span>`;
+  }
+
+  return `<span class="park-factor-badge neutral">Neutral Park ${factor}</span>`;
 }
 
 function weatherBadge(row){
@@ -1016,6 +1084,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">Game</div><div class="detail-value">${clean(row.game)}</div></div>
             <div class="detail-pill"><div class="detail-label">Venue</div><div class="detail-value">${clean(row.venueName)}</div></div>
             <div class="detail-pill"><div class="detail-label">Ballpark Carry</div><div class="detail-value">${carryRating(row)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Park Factor</div><div class="detail-value">${parkFactorBadge(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Home Plate Ump</div><div class="detail-value">${clean(row.umpireName)}</div></div>
             <div class="detail-pill"><div class="detail-label">Roof</div><div class="detail-value">${clean(row.roofStatus)}</div></div>
             <div class="detail-pill"><div class="detail-label">Weather</div><div class="detail-value">${clean(row.weatherCondition)} ${clean(row.weatherTemp)} ${weatherBadge(row)}</div></div>
@@ -1100,6 +1169,14 @@ async function load(){
     contextFactors = contextJson.contexts || [];
   } catch {
     contextFactors = [];
+  }
+
+  try {
+    const parkRes = await fetch("./data/mlb_park_factors.json?v=" + Date.now());
+    const parkJson = await parkRes.json();
+    parkFactors = parkJson.parks || [];
+  } catch {
+    parkFactors = [];
   }
 
   results = getRows(json);
