@@ -268,11 +268,32 @@
         </div>
 
         <div class="modal-section">
-          <h3>Matchup Context</h3>
+          <h3>Matchup Intelligence</h3>
+          <div class="modal-grid">
+            ${metric("Matchup Grade",p.matchup?.matchupTier)}
+            ${metric("Matchup Score",p.headline?.matchupScore)}
+            ${metric("Defense Tier",p.matchup?.defense?.defensiveTier)}
+            ${metric("Pace Tier",p.matchup?.pace?.paceTier)}
+            ${metric("Opp PPG Allowed",p.matchup?.defense?.pointsAllowed)}
+            ${metric("Pace Rank",p.matchup?.pace?.rankPace)}
+            ${metric("Reb Allowed",p.matchup?.defense?.reboundsAllowed)}
+            ${metric("Ast Allowed",p.matchup?.defense?.assistsAllowed)}
+          </div>
           <div class="modal-note">
             ${html(p.matchup?.opponentContext || "")}<br/>
             ${html(p.matchup?.paceContext || "")}<br/>
             ${html(p.matchup?.defenderContext || "")}
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3>Defender Context</h3>
+          <div class="modal-note">
+            ${(Array.isArray(p.matchup?.topDefenders) && p.matchup.topDefenders.length)
+              ? p.matchup.topDefenders.slice(0,5).map(d =>
+                  `${html(d.player)} • ${html(d.position || "DEF")} • ${html(d.tier || "Tracked Defender")} • ${html(d.pctPlusMinus)}`
+                ).join("<br/>")
+              : "No defender tracking context available yet."}
           </div>
         </div>
 
