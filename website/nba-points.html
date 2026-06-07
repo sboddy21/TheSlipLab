@@ -49,6 +49,12 @@
     .tag.warn{color:var(--warn);border-color:rgba(255,209,102,.38);background:rgba(255,209,102,.10)}
     .tag.hot{color:var(--hot);border-color:rgba(255,92,122,.38);background:rgba(255,92,122,.10)}
     .tag.blue{color:var(--blue);border-color:rgba(92,200,255,.38);background:rgba(92,200,255,.10)}
+    .play-grade{display:inline-flex;align-items:center;justify-content:center;margin-top:10px;border-radius:999px;padding:7px 11px;font-size:11px;font-weight:1000;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);background:rgba(255,255,255,.05)}
+    .play-grade.elite{color:var(--good);border-color:rgba(65,240,166,.45);background:rgba(65,240,166,.12);box-shadow:0 0 18px rgba(65,240,166,.14)}
+    .play-grade.strong{color:var(--blue);border-color:rgba(92,200,255,.45);background:rgba(92,200,255,.12)}
+    .play-grade.good{color:var(--warn);border-color:rgba(255,209,102,.45);background:rgba(255,209,102,.12)}
+    .play-grade.watch{color:var(--hot);border-color:rgba(255,92,122,.45);background:rgba(255,92,122,.12)}
+    .play-grade.avoid{color:var(--muted)}
     .empty{border:1px dashed var(--line);border-radius:22px;padding:22px;color:var(--muted);font-weight:800}
     @media(max-width:1250px){.grid{grid-template-columns:repeat(3,1fr)}}
     @media(max-width:760px){.wrap{padding:14px}.top{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}.search{min-width:100%}}
@@ -153,6 +159,16 @@
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
     function fmt(v){const n=num(v);return Number.isInteger(n)?String(n):n.toFixed(1)}
     async function getJSON(file){const r=await fetch(file+"?v="+Date.now());if(!r.ok)throw new Error(file+" failed");return await r.json()}
+    function gradeClass(grade){
+      const g=String(grade||"").toLowerCase();
+      if(g.includes("elite"))return"elite";
+      if(g.includes("strong"))return"strong";
+      if(g.includes("good"))return"good";
+      if(g.includes("watch"))return"watch";
+      if(g.includes("avoid"))return"avoid";
+      return"";
+    }
+
     function tagClass(tag){
       const t = String(tag || "").toLowerCase();
       if (t.includes("edge") || t.includes("pace up") || t.includes("usage up") || t.includes("usage spike") || t.includes("core minutes") || t.includes("minutes boost") || t.includes("attackable")) return "good";
@@ -241,6 +257,7 @@
           </div>
         </div>
 
+        <div class="play-grade ${gradeClass(p.headline?.playGrade)}">${html(p.headline?.playGrade || p.headline?.confidence || "WATCH LIST")}</div>
         <div class="tags">${topTags}</div>
 
         <div class="modal-section">
@@ -324,6 +341,7 @@
         <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.pointsLean))}</span></div>
         <div class="name">${html(p.player)}</div>
         <div class="sub">${html(p.team)} vs ${html(p.opponent)} • ${html(p.position)} • ${html(p.confidence)}</div>
+        <div class="play-grade ${gradeClass(p.playGrade)}">${html(p.playGrade || p.confidence || "WATCH LIST")}</div>
         <div class="mini">
           <div class="box"><span>Projected Points</span><strong>${html(fmt(p.pointsLean))}</strong></div>
           <div class="box"><span>Model Score</span><strong>${html(fmt(p.pointsScore))}</strong></div>
