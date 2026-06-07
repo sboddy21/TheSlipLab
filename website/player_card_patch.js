@@ -163,30 +163,65 @@
     });
   }
 
+  function zoneIcon(title) {
+    if (title === "AVG") return "▥";
+    if (title === "ISO") return "⌖";
+    if (title === "SLG") return "◒";
+    if (title === "HR") return "⬡";
+    if (title === "Pitcher Leak") return "♨";
+    if (title === "Zone Overlap") return "◎";
+    return "◆";
+  }
+
+  function zoneSub(title) {
+    if (title === "AVG") return "Batting average";
+    if (title === "ISO") return "Isolated power";
+    if (title === "SLG") return "Slugging damage";
+    if (title === "HR") return "Home run zones";
+    if (title === "Pitcher Leak") return "Where pitcher gives up damage";
+    if (title === "Zone Overlap") return "Hitter vs pitcher matchup";
+    return "Zone profile";
+  }
+
   function zones(title, values, field, mode) {
     const cells = Array.isArray(values) ? values.slice(0, 25) : Array.from({ length: 25 }, () => 0);
+    const primary = title === "Zone Overlap";
+    const pitcher = title === "Pitcher Leak";
 
-    return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(cell => {
-      const raw = field ? cell?.[field] : cell;
-      const n = num(raw);
+    return `<div class="pcz pcz-premium ${primary ? "pcz-primary" : ""} ${pitcher ? "pcz-pitcher" : ""}">
+      <div class="pcz-head">
+        <div class="pcz-icon">${zoneIcon(title)}</div>
+        <div>
+          <h4>${esc(title)}</h4>
+          <p>${esc(zoneSub(title))}</p>
+        </div>
+      </div>
+      <div class="pcz-frame">
+        <div class="pcz-yaxis"><span>HIGH</span><span>MID</span><span>LOW</span></div>
+        <div class="pcz-cells">${cells.map(cell => {
+          const raw = field ? cell?.[field] : cell;
+          const n = num(raw);
 
-      let cls = "z1";
-      if (title === "AVG") {
-        cls = n >= .330 ? "zdanger" : n >= .290 ? "z5" : n >= .260 ? "z4" : n >= .230 ? "z3" : n >= .200 ? "z2" : "z1";
-      } else if (title === "ISO") {
-        cls = n >= .300 ? "zdanger" : n >= .220 ? "z5" : n >= .170 ? "z4" : n >= .120 ? "z3" : n >= .080 ? "z2" : "z1";
-      } else if (title === "SLG") {
-        cls = n >= .560 ? "zdanger" : n >= .480 ? "z5" : n >= .400 ? "z4" : n >= .330 ? "z3" : n >= .260 ? "z2" : "z1";
-      } else if (title === "HR") {
-        cls = n >= 2 ? "zdanger" : n >= 1 ? "z5" : "z1";
-      } else {
-        const score = n > 1 ? n : n * 100;
-        cls = score >= 55 ? "zdanger" : score >= 40 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1";
-      }
+          let cls = "z1";
+          if (title === "AVG") {
+            cls = n >= .330 ? "zdanger" : n >= .290 ? "z5" : n >= .260 ? "z4" : n >= .230 ? "z3" : n >= .200 ? "z2" : "z1";
+          } else if (title === "ISO") {
+            cls = n >= .300 ? "zdanger" : n >= .220 ? "z5" : n >= .170 ? "z4" : n >= .120 ? "z3" : n >= .080 ? "z2" : "z1";
+          } else if (title === "SLG") {
+            cls = n >= .560 ? "zdanger" : n >= .480 ? "z5" : n >= .400 ? "z4" : n >= .330 ? "z3" : n >= .260 ? "z2" : "z1";
+          } else if (title === "HR") {
+            cls = n >= 2 ? "zdanger" : n >= 1 ? "z5" : "z1";
+          } else {
+            const score = n > 1 ? n : n * 100;
+            cls = score >= 75 ? "zdanger" : score >= 55 ? "z5" : score >= 35 ? "z4" : score >= 18 ? "z3" : score >= 5 ? "z2" : "z1";
+          }
 
-      const txt = mode === "dec" ? dec(raw) : String(Math.round(n));
-      return `<span class="${cls}">${txt}</span>`;
-    }).join("")}</div></div>`;
+          const txt = mode === "dec" ? dec(raw) : String(Math.round(n));
+          return `<span class="${cls}" title="${esc(title)}: ${esc(txt)}">${txt}</span>`;
+        }).join("")}</div>
+      </div>
+      <div class="pcz-xaxis"><span>INSIDE</span><span>MIDDLE</span><span>OUTSIDE</span></div>
+    </div>`;
   }
 
 
@@ -590,13 +625,14 @@
       num(row.hitterZonePower) / 12
     );
 
-    const label = overlap >= 7 ? "Elite" : overlap >= 5 ? "Strong" : overlap >= 3 ? "Live" : "Building";
+    const label = overlap >= 7 ? "ELITE" : overlap >= 5 ? "STRONG" : overlap >= 3 ? "LIVE" : "BUILDING";
 
     return `
-      <div class="pcoverlap-card">
-        <span>Zone Overlap</span>
+      <div class="pcoverlap-card pcoverlap-premium">
+        <span>PRIMARY MATCHUP ZONE</span>
         <strong>${one(overlap)}</strong>
         <em>${label}</em>
+        <small>ZONE OVERLAP SCORE</small>
       </div>
     `;
   }
@@ -1178,21 +1214,28 @@
 
     if (id === "zones") {
       body.innerHTML = `
-        <div class="pczone-hero">
+        <div class="pczone-hero pczone-hero-premium">
           <div>
             <h3>Zone Power Map</h3>
             <p>Hitter damage zones, pitcher leak zones, and matchup overlap</p>
+            <div class="pczone-legend">
+              <span><i class="leg-cold"></i>Cold</span>
+              <span><i class="leg-neutral"></i>Neutral</span>
+              <span><i class="leg-warm"></i>Warm</span>
+              <span><i class="leg-hot"></i>Hot</span>
+              <span><i class="leg-nuclear"></i>Nuclear</span>
+            </div>
           </div>
           ${renderZoneOverlapCard(row)}
         </div>
 
-        <div class="pczone-grid-upgraded">
+        <div class="pczone-grid-upgraded pczone-grid-premium">
+          ${zones("Zone Overlap", attackCellsFor(row), "overlap")}
+          ${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}
           ${zones("AVG", row.avgZones, null, "dec")}
           ${zones("ISO", row.isoZones, null, "dec")}
           ${zones("SLG", row.slgZones, null, "dec")}
           ${zones("HR", row.hrZones, null, "cnt")}
-          ${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}
-          ${zones("Zone Overlap", attackCellsFor(row), "overlap")}
         </div>
       `;
       return;
