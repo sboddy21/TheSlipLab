@@ -833,22 +833,17 @@
         const dc = await loadJSON("./data/hr_decision_center.json");
         const sections = dc.sections || dc || {};
         const topHr =
-          sections.topOverall?.[0] ||
-          sections.topOverallPlays?.[0] ||
-          sections.hrTargets?.[0] ||
-          sections.topTargets?.[0] ||
-          sections.smashSpots?.[0];
+          sections.bestPicks?.[0] ||
+          sections.ifOnlyOne?.[0] ||
+          sections.safestPlays?.[0];
 
         const weather =
           sections.weatherCarry?.[0] ||
-          sections.bestWeather?.[0] ||
-          sections.weatherBoosts?.[0] ||
-          sections.pullWind?.[0];
+          topHr;
 
         const matchup =
-          sections.bestMatchups?.[0] ||
-          sections.matchupEdges?.[0] ||
-          sections.pitcherTargets?.[0] ||
+          sections.pitchTypeEdges?.[0] ||
+          sections.bestPicks?.[0] ||
           topHr;
 
         setText("homeMlbTopHr", shortName(topHr?.player || topHr?.batter || topHr?.name));
