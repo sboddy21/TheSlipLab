@@ -89,8 +89,8 @@
         <option value="Thin Matchup">Thin Matchup</option>
       </select>
       <select class="select" id="sort">
-        <option value="threesScore">Sort by Matchup Score</option>
-        <option value="threesScore">Sort by Points Score</option>
+        <option value="threesScore">Sort by Threes Score</option>
+        <option value="threesScore">Sort by Threes Score</option>
         <option value="usageScore">Sort by Usage</option>
         <option value="volumeTrend">Sort by Volume</option>
         <option value="expectedMinutes">Sort by Minutes</option>
@@ -190,12 +190,12 @@
 
     function card(p){
       return `<article class="card ${cardClass(p)}" data-player-id="${html(p.playerId)}" role="button" tabindex="0">
-        <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.threesScore))}</span></div>
+        <div class="rank"><span class="pill">#${html(p.rank)}</span><span class="score">${html(fmt(p.threesLean))}</span></div>
         <div class="name">${html(p.player)}</div>
         <div class="sub">${html(p.matchup)} • ${html(p.position)} • ${html(p.matchupTier)}</div>
         <div class="mini">
-          <div class="box"><span>Points</span><strong>${html(fmt(p.threesScore))}</strong></div>
-          <div class="box"><span>Lean</span><strong>${html(fmt(p.threesLean))}</strong></div>
+          <div class="box"><span>Projected 3PM</span><strong>${html(fmt(p.threesLean))}</strong></div>
+          <div class="box"><span>Threes Score</span><strong>${html(fmt(p.threesScore))}</strong></div>
           <div class="box"><span>Usage</span><strong>${html(fmt(p.usageScore))}</strong></div>
           <div class="box"><span>Volume</span><strong>${html(fmt(p.volumeTrend))}</strong></div>
           <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
