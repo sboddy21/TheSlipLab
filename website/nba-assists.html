@@ -230,6 +230,19 @@
       const hay=[p.player,p.team,p.opponent,p.position,p.matchupTier,p.usageTrend,p.minutesRole,p.scoringRole,...(Array.isArray(p.tags)?p.tags:[])].join(" ").toLowerCase();
       return hay.includes(q.toLowerCase());
     }
+    function fillTeams(){
+      const select=document.getElementById("team");
+      if(!select)return;
+
+      const current=select.value || "all";
+      const teams=[...new Set(DATA.map(p=>p.team).filter(Boolean))].sort();
+
+      select.innerHTML=`<option value="all">All Teams</option>`+
+        teams.map(t=>`<option value="${html(t)}">${html(t)}</option>`).join("");
+
+      select.value=teams.includes(current)?current:"all";
+    }
+
     function render(){
       const q=document.getElementById("search").value.trim();
       const tier=document.getElementById("tier").value;

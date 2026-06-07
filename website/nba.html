@@ -396,6 +396,53 @@
       return await res.json();
     }
 
+    function gameStatusClass(game){
+      const status=Number(game?.gameStatus||0);
+      if(status===2)return"slate-live";
+      if(status===3)return"slate-final";
+      return"slate-pregame";
+    }
+
+    function gameStatusLabel(game){
+      const status=Number(game?.gameStatus||0);
+      if(status===2)return game?.clock ? `LIVE • Q${game.period} ${game.clock}` : `LIVE • Q${game.period||""}`;
+      if(status===3)return"FINAL";
+      return game?.gameStatusText || "Pregame";
+    }
+
+    function teamLine(team){
+      if(!team)return"--";
+      const abbr=team.abbreviation||team.team||"--";
+      const score=Number(team.score||0);
+      return score>0?`${abbr} ${score}`:abbr;
+    }
+
+    async function renderSlatePanel(){
+      const panel=document.getElementById("nbaSlatePanel");
+      if(!panel)return;
+
+      try{
+        const slate=await getJSON("./data/nba_games_today.json");
+        const games=Array.isArray(slate.games)?slate.games:[];
+        panel.innerHTML=`
+          <div class="slate-head">
+            <h2>Today’s NBA Slate</h2>
+            <span>${games.length} game${games.length===1?"":"s"} • Updated ${clean(slate.fetchedAt,"--")}</span>
+          </div>
+          <div class="slate-games">
+            ${games.map(game=>`
+              <div class="slate-game">
+                <div class="slate-matchup">${html(teamLine(game.awayTeam))} at ${html(teamLine(game.homeTeam))}</div>
+                <div class="slate-meta ${gameStatusClass(game)}">${html(gameStatusLabel(game))}</div>
+              </div>
+            `).join("") || `<div class="slate-game"><div class="slate-meta">No NBA games loaded.</div></div>`}
+          </div>
+        `;
+      }catch(e){
+        panel.innerHTML=`<div class="slate-head"><h2>Today’s NBA Slate</h2><span>Slate unavailable</span></div>`;
+      }
+    }
+
     function scoreOf(p) {
       return num(p.marketScore || p.pointsScore || p.matchupScore || 0);
     }
