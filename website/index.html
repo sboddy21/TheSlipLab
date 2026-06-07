@@ -351,30 +351,52 @@
       .updated{display:none}
     }
   
+    
     @keyframes liveGlowGreen{
-      0%,100%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 18px rgba(99,226,47,.12)}
-      50%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 30px rgba(99,226,47,.24)}
+      0%,100%{
+        box-shadow:
+          0 18px 50px rgba(0,0,0,.32),
+          0 0 25px rgba(99,226,47,.30),
+          0 0 50px rgba(99,226,47,.15);
+      }
+      50%{
+        box-shadow:
+          0 18px 50px rgba(0,0,0,.32),
+          0 0 45px rgba(99,226,47,.60),
+          0 0 90px rgba(99,226,47,.30);
+      }
     }
 
     @keyframes liveGlowBlue{
-      0%,100%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 18px rgba(47,128,255,.12)}
-      50%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 30px rgba(47,128,255,.24)}
+      0%,100%{
+        box-shadow:
+          0 18px 50px rgba(0,0,0,.32),
+          0 0 25px rgba(47,128,255,.30),
+          0 0 50px rgba(47,128,255,.15);
+      }
+      50%{
+        box-shadow:
+          0 18px 50px rgba(0,0,0,.32),
+          0 0 45px rgba(47,128,255,.60),
+          0 0 90px rgba(47,128,255,.30);
+      }
     }
 
     .card.mlb{
-      animation:liveGlowGreen 3.5s ease-in-out infinite;
+      animation:liveGlowGreen 2.5s ease-in-out infinite;
     }
 
     .card.nba{
-      animation:liveGlowBlue 3.5s ease-in-out infinite;
+      animation:liveGlowBlue 2.5s ease-in-out infinite;
     }
 
     .card.mlb:hover,
     .card.nba:hover{
-      transform:translateY(-3px);
+      transform:translateY(-4px);
+      filter:brightness(1.03);
     }
 
-    .card{
+.card{
       transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
     }
 
