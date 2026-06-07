@@ -350,6 +350,34 @@
       .features{grid-template-columns:1fr}
       .updated{display:none}
     }
+  
+    @keyframes liveGlowGreen{
+      0%,100%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 18px rgba(99,226,47,.12)}
+      50%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 30px rgba(99,226,47,.24)}
+    }
+
+    @keyframes liveGlowBlue{
+      0%,100%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 18px rgba(47,128,255,.12)}
+      50%{box-shadow:0 18px 50px rgba(0,0,0,.32),0 0 30px rgba(47,128,255,.24)}
+    }
+
+    .card.mlb{
+      animation:liveGlowGreen 3.5s ease-in-out infinite;
+    }
+
+    .card.nba{
+      animation:liveGlowBlue 3.5s ease-in-out infinite;
+    }
+
+    .card.mlb:hover,
+    .card.nba:hover{
+      transform:translateY(-3px);
+    }
+
+    .card{
+      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+    }
+
   </style>
 </head>
 <body>
