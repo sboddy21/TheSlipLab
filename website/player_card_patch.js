@@ -1265,12 +1265,12 @@
             <h3>ZONE POWER MAP</h3>
             <div class="pczone-matchup-tag">🔥 Elite 5/5 Hot Zone Match</div>
             <p>Hitter damage zones strongly overlap pitcher leak areas</p>
-            <div class="pczone-legend-pills">
-              <span class="cold">Cold</span>
-              <span class="neutral">Neutral</span>
-              <span class="warm">Warm</span>
-              <span class="hot">Hot</span>
-              <span class="nuclear">Nuclear</span>
+            <div class="pczone-legend-explained">
+              <div class="leg-row cold"><span class="leg-chip">Cold</span><small>Low Damage</small></div>
+              <div class="leg-row neutral"><span class="leg-chip">Neutral</span><small>Average</small></div>
+              <div class="leg-row warm"><span class="leg-chip">Warm</span><small>Above Average</small></div>
+              <div class="leg-row hot"><span class="leg-chip">Hot</span><small>Strong Damage</small></div>
+              <div class="leg-row nuclear"><span class="leg-chip">Nuclear</span><small>Elite Damage Zone</small></div>
             </div>
           </div>
 
@@ -8170,6 +8170,60 @@
 
     .pczone-grid-premium{
       gap:12px!important;
+    }
+  `;
+  document.head.appendChild(s);
+})();
+
+
+/* Explained Zone Legend */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pczone-legend-explained{
+      display:grid!important;
+      grid-template-columns:repeat(5,max-content)!important;
+      gap:8px!important;
+      align-items:center!important;
+      margin-top:8px!important;
+    }
+
+    .pczone-legend-explained .leg-row{
+      display:flex!important;
+      align-items:center!important;
+      gap:6px!important;
+      padding:5px 7px!important;
+      border-radius:999px!important;
+      background:rgba(255,255,255,.045)!important;
+      border:1px solid rgba(255,255,255,.08)!important;
+    }
+
+    .pczone-legend-explained .leg-chip{
+      padding:3px 7px!important;
+      border-radius:999px!important;
+      color:white!important;
+      font-size:9px!important;
+      font-weight:1000!important;
+      text-transform:uppercase!important;
+    }
+
+    .pczone-legend-explained small{
+      color:rgba(255,255,255,.72)!important;
+      font-size:10px!important;
+      font-weight:800!important;
+      white-space:nowrap!important;
+    }
+
+    .pczone-legend-explained .cold .leg-chip{background:#1d3f6e!important}
+    .pczone-legend-explained .neutral .leg-chip{background:#5b5b5b!important}
+    .pczone-legend-explained .warm .leg-chip{background:#b98216!important}
+    .pczone-legend-explained .hot .leg-chip{background:#d24b2d!important}
+    .pczone-legend-explained .nuclear .leg-chip{background:#c42020!important}
+
+    @media(max-width:900px){
+      .pczone-legend-explained{
+        grid-template-columns:repeat(2,max-content)!important;
+      }
     }
   `;
   document.head.appendChild(s);
