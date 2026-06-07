@@ -1273,8 +1273,6 @@
           ${renderZoneOverlapCard(row)}
         </div>
 
-        ${zoneMatchSummary(row)}
-
         <div class="pczone-grid-upgraded pczone-grid-premium">
           ${zones("Zone Overlap", attackCellsFor(row), "overlap")}
           ${zones("Pitcher Leak", attackCellsFor(row), "pitcher")}
@@ -1282,10 +1280,6 @@
           ${zones("ISO", row.isoZones, null, "dec")}
           ${zones("SLG", row.slgZones, null, "dec")}
           ${zones("HR", row.hrZones, null, "cnt")}
-        </div>
-
-        <div class="pczone-note">
-          <b>Zone read:</b> The strongest HR cases come when hitter damage zones and pitcher leak zones overlap. Use this with confirmed lineup spot, pitch type edge, weather carry, and bullpen risk.
         </div>
       `;
       return;
