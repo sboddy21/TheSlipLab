@@ -590,6 +590,29 @@
       return markets[0];
     }
 
+
+    function marketTags(p){
+      const best = bestMarketForPlayer(p);
+      const pos = String(p.position || p.pos || "").toUpperCase();
+      const tags = Array.isArray(p.tags) ? p.tags : [];
+
+      const out = [];
+
+      if (best.key === "points") out.push("Elite Points");
+      if (best.key === "rebounds") out.push("Rebounds Target");
+      if (best.key === "assists") out.push("Assist Upside");
+      if (best.key === "pra") out.push("PRA Target");
+
+      if (pos.includes("C") || pos.includes("PF")) out.push("Board Upside");
+      if (pos.includes("PG")) out.push("Creator Role");
+
+      for (const t of tags) {
+        if (!out.includes(t)) out.push(t);
+      }
+
+      return out.slice(0, 6);
+    }
+
     function bestMarketBadge(p){
       const m = bestMarketForPlayer(p);
       return `<div class="nba-best-market ${m.key}">Best Market: ${m.label}</div>`;
