@@ -474,6 +474,29 @@
   border-color:rgba(59,130,246,.36);
 }
 
+
+.model-called-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:#fde68a;
+  background:rgba(250,204,21,.14);
+  border:1px solid rgba(250,204,21,.42);
+  box-shadow:0 0 16px rgba(250,204,21,.20);
+}
+.model-called-badge.miss{
+  color:#cbd5e1;
+  background:rgba(148,163,184,.10);
+  border-color:rgba(148,163,184,.25);
+  box-shadow:none;
+}
+
 </style>
   <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
 </head>
@@ -784,6 +807,25 @@ function modelMap(){
   return map;
 }
 
+function modelCalledBadge(row){
+  const rank = n(row.modelRank);
+  const score = n(row.score);
+
+  if(rank <= 10){
+    return `<span class="model-called-badge">Called It Top 10</span>`;
+  }
+
+  if(rank <= 30){
+    return `<span class="model-called-badge">Called It Top 30</span>`;
+  }
+
+  if(score >= 42){
+    return `<span class="model-called-badge">Called It</span>`;
+  }
+
+  return `<span class="model-called-badge miss">Not Model Tagged</span>`;
+}
+
 function pitchZone(row){
   const x = Number(row.plateX);
   const z = Number(row.plateZ);
@@ -1070,6 +1112,7 @@ function render(){
             <div class="detail-pill"><div class="detail-label">EV</div><div class="detail-value">${clean(row.exitVelocity)}</div></div>
             <div class="detail-pill"><div class="detail-label">Distance</div><div class="detail-value">${clean(row.distance)}</div></div>
             <div class="detail-pill"><div class="detail-label">HR Difficulty</div><div class="detail-value">${hrDifficulty(row)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Model Result</div><div class="detail-value">${modelCalledBadge(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Launch Angle</div><div class="detail-value">${clean(row.launchAngle)}</div></div>
             <div class="detail-pill"><div class="detail-label">Pitch</div><div class="detail-value">${clean(row.pitchType)}</div></div>
             <div class="detail-pill"><div class="detail-label">Pitch Velo</div><div class="detail-value">${clean(row.pitchVelocity)}</div></div>
