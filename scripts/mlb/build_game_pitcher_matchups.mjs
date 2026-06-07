@@ -74,15 +74,21 @@ function findLineupEntry(hitter, lineupMap) {
 
 function applyLineupData(hitter, lineupMap, lineupStatus) {
   const entry = findLineupEntry(hitter, lineupMap);
-  const confirmed = String(lineupStatus || "").toUpperCase().includes("CONFIRMED");
+  const statusText = String(lineupStatus || "").toUpperCase();
+  const confirmed = statusText.includes("CONFIRMED");
+  const partial = statusText.includes("PARTIAL");
+  const lineupPosted = confirmed || partial || lineupMap.size > 0;
 
   if (!entry) {
     return {
       ...hitter,
-      lineupStatus,
+      lineupStatus: lineupPosted ? "NOT IN LINEUP" : lineupStatus,
       confirmedLineup: false,
       confirmedLineupSpot: null,
-      lineupSource: "PROJECTED"
+      lineupSpot: null,
+      battingOrder: null,
+      actualLineupSpot: null,
+      lineupSource: lineupPosted ? "NOT_IN_LINEUP" : "PROJECTED"
     };
   }
 
