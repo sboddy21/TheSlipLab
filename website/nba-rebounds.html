@@ -147,6 +147,7 @@
   <script>
     let DATA=[];
     let CARDS=[];
+    let MARKET_DATA=[];
     function clean(v,f="--"){return v===undefined||v===null||v===""?f:String(v)}
     function html(v){return clean(v,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -253,8 +254,26 @@
       installCards();
 
     }
+    function findMarketRow(playerId){
+      return MARKET_DATA.find(p=>String(p.playerId)===String(playerId));
+    }
+
     function findCard(playerId){
-      return CARDS.find(p=>String(p.playerId)===String(playerId));
+      const card=CARDS.find(p=>String(p.playerId)===String(playerId));
+      const market=findMarketRow(playerId);
+      if(!card)return market || null;
+
+      return {
+        ...card,
+        marketRow: market || null,
+        headline: {
+          ...(card.headline || {}),
+          reboundsLean: market?.reboundsLean ?? card.headline?.reboundsLean,
+          reboundsScore: market?.reboundsScore ?? card.headline?.reboundsScore,
+          playGrade: market?.playGrade ?? card.headline?.playGrade,
+          confidence: market?.confidence ?? card.headline?.confidence
+        }
+      };
     }
     function metric(label,value){
       return `<div class="box"><span>${html(label)}</span><strong>${html(fmt(value))}</strong></div>`;
@@ -267,8 +286,8 @@
       const tags=Array.isArray(p.tags)?p.tags:[];
       const topTags=tags.slice(0,14).map(t=>`<span class="tag ${typeof tagClass==="function"?tagClass(t):""}">${html(t)}</span>`).join("");
 
-      const projection=p.headline?.reboundsLean;
-      const marketScore=p.headline?.reboundsScore;
+      const projection=p.headline?.reboundsLean ?? p.marketRow?.reboundsLean;
+      const marketScore=p.headline?.reboundsScore ?? p.marketRow?.reboundsScore;
 
       document.getElementById("modalBody").innerHTML=`
         <div class="modal-head">
@@ -301,10 +320,10 @@
             ${metric("Model Score",marketScore)}
             ${metric("Expected Minutes",p.minutes?.expected)}
             ${metric("Minutes Confidence",p.minutes?.confidence)}
+            ${metric("Rebounds Score",marketScore)}
+            ${metric("Projected Rebounds",projection)}
             ${metric("Season Points",p.production?.seasonPoints)}
             ${metric("Last 5 Points",p.production?.last5Points)}
-            ${metric("Last 10 Points",p.production?.last10Points)}
-            ${metric("Usage Score",p.usage?.score)}
           </div>
         </div>
 
@@ -390,9 +409,11 @@
     }
     async function boot(){
       const cards=await getJSON("./data/nba_player_cards.json");
+      const market=await getJSON("./data/nba_rebounds.json");
       const d=await getJSON("./data/nba_rebounds.json");
       DATA=Array.isArray(d.players)?d.players:[];
       CARDS=Array.isArray(cards.players)?cards.players:[];
+      MARKET_DATA=Array.isArray(market.players)?market.players:[];
       document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
       fillTeams();
       ["search","team","tier","minProjection","minScore","sort"].forEach(id=>{
