@@ -39,6 +39,10 @@
     .box strong{display:block;margin-top:3px;font-size:15px}
     .tags{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
     .tag{border:1px solid var(--line);border-radius:999px;padding:5px 8px;color:var(--muted);font-size:11px;font-weight:800;background:rgba(0,0,0,.12)}
+    .tag.good{color:var(--good);border-color:rgba(65,240,166,.38);background:rgba(65,240,166,.10)}
+    .tag.warn{color:var(--warn);border-color:rgba(255,209,102,.38);background:rgba(255,209,102,.10)}
+    .tag.hot{color:var(--hot);border-color:rgba(255,92,122,.38);background:rgba(255,92,122,.10)}
+    .tag.blue{color:var(--blue);border-color:rgba(92,200,255,.38);background:rgba(92,200,255,.10)}
     .note{position:relative;z-index:1;color:var(--muted);font-size:12px;line-height:1.35;margin-top:10px;font-weight:700}
     .empty{border:1px dashed var(--line);border-radius:22px;padding:22px;color:var(--muted);font-weight:800}
     @media(max-width:1250px){.grid{grid-template-columns:repeat(3,1fr)}}
@@ -116,6 +120,21 @@
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
     function fmt(v){const n=num(v);return Number.isInteger(n)?String(n):n.toFixed(1)}
     async function getJSON(file){const r=await fetch(file+"?v="+Date.now());if(!r.ok)throw new Error(file+" failed");return await r.json()}
+    function tagClass(tag){
+      const t = String(tag || "").toLowerCase();
+      if (t.includes("edge") || t.includes("pace up") || t.includes("usage up") || t.includes("usage spike") || t.includes("core minutes") || t.includes("minutes boost") || t.includes("attackable")) return "good";
+      if (t.includes("strong") || t.includes("playable") || t.includes("high usage") || t.includes("home spot")) return "blue";
+      if (t.includes("warning") || t.includes("tough") || t.includes("slow pace") || t.includes("elite defender")) return "hot";
+      if (t.includes("watch") || t.includes("neutral") || t.includes("average")) return "warn";
+      return "";
+    }
+
+    function renderTags(tags, limit = 8){
+      return (Array.isArray(tags) ? tags.slice(0, limit) : [])
+        .map(t => `<span class="tag ${tagClass(t)}">${html(t)}</span>`)
+        .join("");
+    }
+
     function cardClass(p){if(num(p.assistsScore)>=85)return"elite";if(num(p.assistsScore)>=75)return"strong";return""}
     function matches(p,q){
       if(!q)return true;
@@ -151,7 +170,7 @@
           <button class="close" id="closeModal">Close</button>
         </div>
 
-        <div class="tags">${(Array.isArray(p.tags)?p.tags.slice(0,10):[]).map(t=>`<span class="tag">${html(t)}</span>`).join("")}</div>
+        <div class="tags">${renderTags(p.tags, 12)}</div>
 
         <div class="modal-grid">
           ${metric("Points Score",p.headline?.assistsScore)}
@@ -201,7 +220,7 @@
           <div class="box"><span>Minutes</span><strong>${html(fmt(p.expectedMinutes))}</strong></div>
           <div class="box"><span>Min Conf</span><strong>${html(fmt(p.minutesConfidence))}</strong></div>
         </div>
-        <div class="tags">${(Array.isArray(p.tags)?p.tags.slice(0,6):[]).map(t=>`<span class="tag">${html(t)}</span>`).join("")}</div>
+        <div class="tags">${renderTags(p.tags, 9)}</div>
         <div class="note">${html(p.opponentContext)} • ${html(p.paceContext)}</div>
       </article>`;
     }
