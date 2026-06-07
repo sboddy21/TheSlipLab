@@ -880,16 +880,21 @@
         const t = formatTime(updated.updatedAt || updated.updated_at);
         setText("lastUpdated", t);
         setText("homeMlbUpdated", t);
+        setText("activityMlbTime", t);
       }catch(e){
         setText("lastUpdated", "Live");
         setText("homeMlbUpdated", "Live");
+        setText("activityMlbTime", "Live");
       }
 
       try{
         const nbaUpdated = await loadJSON("./data/nba_last_updated.json");
-        setText("homeNbaUpdated", formatTime(nbaUpdated.updatedAt || nbaUpdated.updated_at));
+        const nt = formatTime(nbaUpdated.updatedAt || nbaUpdated.updated_at);
+        setText("homeNbaUpdated", nt);
+        setText("activityNbaTime", nt);
       }catch(e){
         setText("homeNbaUpdated", "Live");
+        setText("activityNbaTime", "Live");
       }
     }
 
