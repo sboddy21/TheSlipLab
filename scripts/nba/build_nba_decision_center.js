@@ -309,9 +309,20 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     );
   }
 
+  const topPG = bestByPosition("PG");
+  const topSG = bestByPosition("SG");
+  const topSF = bestByPosition("SF");
+  const topPF = bestByPosition("PF");
+  const topC = bestByPosition("C");
+
   return {
     topOverallPlays,
     pickOnePool,
+    topPG,
+    topSG,
+    topSF,
+    topPF,
+    topC,
     bestPointsPlays,
     usageRisers,
     minutesMonsters,
@@ -323,11 +334,11 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     topRebounds,
     topAssists,
     topThrees,
-    bestPGMatchups: bestByPosition("PG"),
-    bestSGMatchups: bestByPosition("SG"),
-    bestSFMatchups: bestByPosition("SF"),
-    bestPFMatchups: bestByPosition("PF"),
-    bestCMatchups: bestByPosition("C"),
+    bestPGMatchups: topPG,
+    bestSGMatchups: topSG,
+    bestSFMatchups: topSF,
+    bestPFMatchups: topPF,
+    bestCMatchups: topC,
     watchList
   };
 }
@@ -364,7 +375,7 @@ async function main() {
     sectionCount: Object.keys(sections).length,
     modelNotes: [
       "NBA Decision Center 2.0 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
-      "Sections include top overall plays, I Can Only Pick One, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
+      "Sections include top overall plays, I Can Only Pick One, position rankings, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
       "No odds or betting lines are used."
     ],
     sections
