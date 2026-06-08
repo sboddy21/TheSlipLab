@@ -106,10 +106,10 @@ function applyLineupData(hitter, lineupMap, lineupStatus) {
 }
 
 const slatePayload = readJSON("mlb_games_today.json", { games: [] });
-const hrPayload = readJSON("mlb_home_runs.json", []);
+const playerPoolPayload = readJSON("mlb_player_pool.json", { players: [] });
 
 const slateGames = rows(slatePayload);
-const hitters = rows(hrPayload);
+const hitters = rows(playerPoolPayload);
 
 const groupedHitters = new Map();
 
