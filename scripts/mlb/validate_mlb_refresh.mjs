@@ -1,5 +1,9 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DATA = path.join(__dirname, "../../website/data");
 
@@ -38,10 +42,26 @@ if (!Array.isArray(matchups.games) || matchups.games.length !== games.games.leng
 for (const g of matchups.games) {
   const away = g.hitters?.away?.length || 0;
   const home = g.hitters?.home?.length || 0;
+
   if (away === 0 || home === 0) fail(`${g.matchup} has empty hitters`);
+
+  const threats = g.topThreats || [];
+  if (threats.length === 0) fail(`${g.matchup} has no top threats`);
+
+  const maxScore = Math.max(...threats.map(t => Number(t.score || 0)));
+  if (maxScore <= 0) fail(`${g.matchup} has zero threat scores`);
 }
 
 const hr = read("mlb_home_runs.json");
 if (!Array.isArray(hr) || hr.length < 40) fail("HR board is too small");
+
+const hits = read("mlb_hits.json");
+if (!Array.isArray(hits) || hits.length < 20) fail("Hits board is too small");
+
+const tb = read("mlb_total_bases.json");
+if (!Array.isArray(tb) || tb.length < 20) fail("Total Bases board is too small");
+
+const rbis = read("mlb_rbis.json");
+if (!Array.isArray(rbis) || rbis.length < 20) fail("RBI board is too small");
 
 console.log("MLB validation passed:", today);
