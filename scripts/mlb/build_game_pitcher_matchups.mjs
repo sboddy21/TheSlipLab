@@ -107,9 +107,37 @@ function applyLineupData(hitter, lineupMap, lineupStatus) {
 
 const slatePayload = readJSON("mlb_games_today.json", { games: [] });
 const playerPoolPayload = readJSON("mlb_player_pool.json", { players: [] });
+const hrPayload = readJSON("mlb_home_runs.json", []);
 
 const slateGames = rows(slatePayload);
-const hitters = rows(playerPoolPayload);
+const poolHitters = rows(playerPoolPayload);
+const scoredHitters = rows(hrPayload);
+
+const scoreByPlayerId = new Map();
+const scoreByPlayerName = new Map();
+
+for (const h of scoredHitters) {
+  if (h.playerId) scoreByPlayerId.set(String(h.playerId), h);
+  if (h.player) scoreByPlayerName.set(norm(h.player), h);
+}
+
+const hitters = poolHitters.map(h => {
+  const scored =
+    scoreByPlayerId.get(String(h.playerId || "")) ||
+    scoreByPlayerName.get(norm(h.player)) ||
+    {};
+
+  return {
+    ...h,
+    ...scored,
+    team: h.team || scored.team,
+    opponent: h.opponent || scored.opponent,
+    game: h.game || scored.game,
+    gamePk: h.gamePk || scored.gamePk,
+    playerId: h.playerId || scored.playerId,
+    player: h.player || scored.player
+  };
+});
 
 const groupedHitters = new Map();
 
