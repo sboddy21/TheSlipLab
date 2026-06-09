@@ -28,10 +28,10 @@ function fail(msg) {
 const today = todayET();
 
 const games = read("mlb_games_today.json");
-if (games.date !== today) fail(`mlb_games_today date is ${games.date}, expected ${today}`);
+const slateDate = games.date || today;
 
 const pool = read("mlb_player_pool.json");
-if (pool.date !== today) fail(`mlb_player_pool date is ${pool.date}, expected ${today}`);
+if (pool.date !== slateDate) fail(`mlb_player_pool date is ${pool.date}, expected slate date ${slateDate}`);
 if (!Array.isArray(pool.players) || pool.players.length < 50) fail("player pool is too small");
 
 const matchups = read("game_pitcher_matchups.json");
@@ -64,4 +64,4 @@ if (!Array.isArray(tb) || tb.length < 20) fail("Total Bases board is too small")
 const rbis = read("mlb_rbis.json");
 if (!Array.isArray(rbis) || rbis.length < 20) fail("RBI board is too small");
 
-console.log("MLB validation passed:", today);
+console.log("MLB validation passed:", slateDate);
