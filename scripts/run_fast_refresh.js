@@ -3,6 +3,7 @@ import fs from "fs";
 
 const jobs = [
   "node scripts/mlb/fetch_mlb_today.js",
+  "node scripts/mlb/build_mlb_player_pool.js",
   "node scripts/mlb/build_home_run_board.js",
   "node scripts/mlb/build_hits_board.js",
   "node scripts/mlb/build_team_stacks.js",
@@ -26,6 +27,7 @@ const jobs = [
 
   "node scripts/build_player_card_data.js",
   "node scripts/mlb/build_batting_spot_profiles.js",
+  "node scripts/mlb/build_game_pitcher_matchups.mjs",
   "node scripts/content/build_x_content.js"
 ];
 
