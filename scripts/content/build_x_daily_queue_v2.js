@@ -90,7 +90,7 @@ function postObject(type, minutesAfter930, text, players = []) {
     type,
     status: "queued",
     scheduled_for_eastern: easternPostTime(minutesAfter930),
-    text: text.slice(0, 275).trim(),
+    text: text.trim(),
     players,
     posted: false,
     posted_at: null,
@@ -100,7 +100,7 @@ function postObject(type, minutesAfter930, text, players = []) {
 }
 
 function makeSectionPost({ type, minute, title, rows, lineBuilder, footer = "" }) {
-  const list = uniqueRows(rows, 8);
+  const list = uniqueRows(rows, 5);
   if (!list.length) return null;
 
   const lines = list.map((row, index) => lineBuilder(row, index)).filter(Boolean);
@@ -257,7 +257,7 @@ function weatherBoardPost(weather, minute) {
     }))
     .filter(row => row.venue || row.matchup)
     .sort((a, b) => b.carry - a.carry || b.wind - a.wind)
-    .slice(0, 6);
+    .slice(0, 5);
 
   if (!usable.length) return null;
 
