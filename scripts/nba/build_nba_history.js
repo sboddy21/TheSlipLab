@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
-const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
+const CORE_FILE = path.join(ROOT, "website/data/nba_player_pool.json");
 const OUT = path.join(ROOT, "website/data/nba_history.json");
 
 const FETCH_TIMEOUT_MS = 7000;
