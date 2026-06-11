@@ -115,4 +115,17 @@ fs.writeFileSync(
 );
 
 console.log("");
+console.log("RUNNING: MLB Health Status");
+const healthResult = spawnSync("node", ["scripts/build_health_status.js"], {
+  stdio: "inherit",
+  env: process.env
+});
+
+if (healthResult.status !== 0) {
+  console.log("");
+  console.log("FAILED: MLB Health Status");
+  process.exit(healthResult.status || 1);
+}
+
+console.log("");
 console.log("THE SLIP LAB FULL AUTO REFRESH COMPLETE");

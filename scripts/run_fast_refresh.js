@@ -110,5 +110,7 @@ for (const [label, command] of steps) {
 
 verifyDecisionCenterFresh();
 
+run("Build MLB health status", "node scripts/build_health_status.js");
+
 console.log("\nFAST REFRESH COMPLETE");
 console.log("Time:", new Date().toISOString());
