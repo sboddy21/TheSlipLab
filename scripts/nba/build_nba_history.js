@@ -9,6 +9,10 @@ const ROOT = path.resolve(__dirname, "../..");
 const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const OUT = path.join(ROOT, "website/data/nba_history.json");
 
+const FETCH_TIMEOUT_MS = 7000;
+const BETWEEN_PLAYERS_MS = 150;
+const RETRY_WAIT_MS = 500;
+
 function readJSON(file, fallback) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -38,6 +42,7 @@ function safeName(player) {
 
 function seasonYear() {
   const now = new Date();
+
   const year = Number(new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     year: "numeric"
@@ -54,24 +59,59 @@ function seasonYear() {
   return `${start}-${end}`;
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json,text/plain,*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Origin": "https://www.nba.com",
-      "Referer": "https://www.nba.com/",
-      "x-nba-stats-origin": "stats",
-      "x-nba-stats-token": "true"
+function summarize(games) {
+  return {
+    games: games.length,
+    minutes: avg(games.map(g => g.minutes)),
+    points: avg(games.map(g => g.points)),
+    rebounds: avg(games.map(g => g.rebounds)),
+    assists: avg(games.map(g => g.assists)),
+    threesMade: avg(games.map(g => g.threesMade)),
+    threesAttempted: avg(games.map(g => g.threesAttempted)),
+    fieldGoalAttempts: avg(games.map(g => g.fieldGoalAttempts)),
+    freeThrowAttempts: avg(games.map(g => g.freeThrowAttempts)),
+    steals: avg(games.map(g => g.steals)),
+    blocks: avg(games.map(g => g.blocks)),
+    turnovers: avg(games.map(g => g.turnovers))
+  };
+}
+
+function emptyHistory() {
+  return {
+    gamesPlayed: 0,
+    seasonSummary: summarize([]),
+    last5: summarize([]),
+    last10: summarize([]),
+    recentGames: []
+  };
+}
+
+async function fetchJson(url, timeoutMs = FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json,text/plain,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://www.nba.com",
+        "Referer": "https://www.nba.com/",
+        "x-nba-stats-origin": "stats",
+        "x-nba-stats-token": "true"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch failed ${res.status}`);
     }
-  });
 
-  if (!res.ok) {
-    throw new Error(`Fetch failed ${res.status}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
   }
-
-  return await res.json();
 }
 
 function parsePlayerGameLog(data) {
@@ -127,8 +167,15 @@ async function fetchPlayerHistory(playerId, season) {
   });
 
   const url = `https://stats.nba.com/stats/playergamelog?${params.toString()}`;
-  const data = await fetchJson(url);
-  return parsePlayerGameLog(data);
+
+  try {
+    const data = await fetchJson(url);
+    return parsePlayerGameLog(data);
+  } catch (err) {
+    await sleep(RETRY_WAIT_MS);
+    const data = await fetchJson(url);
+    return parsePlayerGameLog(data);
+  }
 }
 
 function splitHistory(games) {
@@ -138,27 +185,10 @@ function splitHistory(games) {
 
   return {
     gamesPlayed: sorted.length,
-    season: summarize(sorted),
+    seasonSummary: summarize(sorted),
     last5: summarize(last5),
     last10: summarize(last10),
     recentGames: sorted.slice(0, 10)
-  };
-}
-
-function summarize(games) {
-  return {
-    games: games.length,
-    minutes: avg(games.map(g => g.minutes)),
-    points: avg(games.map(g => g.points)),
-    rebounds: avg(games.map(g => g.rebounds)),
-    assists: avg(games.map(g => g.assists)),
-    threesMade: avg(games.map(g => g.threesMade)),
-    threesAttempted: avg(games.map(g => g.threesAttempted)),
-    fieldGoalAttempts: avg(games.map(g => g.fieldGoalAttempts)),
-    freeThrowAttempts: avg(games.map(g => g.freeThrowAttempts)),
-    steals: avg(games.map(g => g.steals)),
-    blocks: avg(games.map(g => g.blocks)),
-    turnovers: avg(games.map(g => g.turnovers))
   };
 }
 
@@ -166,6 +196,12 @@ async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const players = Array.isArray(core.players) ? core.players : [];
   const season = seasonYear();
+
+  const previous = readJSON(OUT, { players: [] });
+  const previousById = new Map(
+    (Array.isArray(previous.players) ? previous.players : [])
+      .map(p => [String(p.playerId || ""), p])
+  );
 
   const rows = [];
   const errors = [];
@@ -188,8 +224,9 @@ async function main() {
       });
 
       console.log("OK", player.player, history.gamesPlayed);
-      await sleep(450);
     } catch (err) {
+      const prior = previousById.get(String(player.playerId || ""));
+
       errors.push({
         playerId: player.playerId,
         player: player.player,
@@ -206,21 +243,24 @@ async function main() {
         starter: Boolean(player.starter),
         status: player.status,
         season,
-        gamesPlayed: 0,
-        season: summarize([]),
-        last5: summarize([]),
-        last10: summarize([]),
-        recentGames: []
+        ...(prior ? {
+          gamesPlayed: num(prior.gamesPlayed),
+          seasonSummary: prior.seasonSummary || prior.season || summarize([]),
+          last5: prior.last5 || summarize([]),
+          last10: prior.last10 || summarize([]),
+          recentGames: Array.isArray(prior.recentGames) ? prior.recentGames : []
+        } : emptyHistory())
       });
 
       console.log("ERR", player.player, err.message);
-      await sleep(750);
     }
+
+    await sleep(BETWEEN_PLAYERS_MS);
   }
 
   const out = {
     sport: "NBA",
-    version: "1.0",
+    version: "1.1",
     source: "NBA stats player game logs",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",

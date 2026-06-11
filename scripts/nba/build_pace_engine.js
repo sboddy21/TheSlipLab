@@ -8,8 +8,24 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const OUT = path.join(ROOT, "website/data/nba_pace_engine.json");
 
+const FETCH_TIMEOUT_MS = 8000;
+const RETRY_WAIT_MS = 600;
+
+function readJSON(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function seasonYear() {
   const now = new Date();
+
   const year = Number(new Intl.DateTimeFormat("en-US", {
     timeZone: "America/New_York",
     year: "numeric"
@@ -35,21 +51,41 @@ function round1(v) {
   return Math.round(num(v) * 10) / 10;
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json,text/plain,*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Origin": "https://www.nba.com",
-      "Referer": "https://www.nba.com/",
-      "x-nba-stats-origin": "stats",
-      "x-nba-stats-token": "true"
-    }
-  });
+async function fetchJson(url, timeoutMs = FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  if (!res.ok) throw new Error(`Fetch failed ${res.status}`);
-  return await res.json();
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json,text/plain,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://www.nba.com",
+        "Referer": "https://www.nba.com/",
+        "x-nba-stats-origin": "stats",
+        "x-nba-stats-token": "true"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch failed ${res.status}`);
+    }
+
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function fetchJsonWithRetry(url) {
+  try {
+    return await fetchJson(url);
+  } catch (err) {
+    await sleep(RETRY_WAIT_MS);
+    return await fetchJson(url);
+  }
 }
 
 const TEAM_ABBR = {
@@ -103,6 +139,7 @@ function parseRows(data) {
 
   return rows.map(row => {
     const team = row[idx.TEAM_NAME] || "";
+
     return {
       teamId: String(row[idx.TEAM_ID] || ""),
       team,
@@ -115,6 +152,37 @@ function parseRows(data) {
       netRating: round1(row[idx.NET_RATING])
     };
   }).filter(t => t.teamAbbr && t.pace > 0);
+}
+
+function buildFallbackTeam(teamAbbr, index) {
+  const rank = index + 1;
+
+  return {
+    teamId: "",
+    team: teamAbbr,
+    teamAbbr,
+    games: 0,
+    pace: 0,
+    possessions: 0,
+    offensiveRating: 0,
+    defensiveRating: 0,
+    netRating: 0,
+    rankPace: rank,
+    paceTier: "Neutral Pace"
+  };
+}
+
+function applyPaceRanks(teams) {
+  teams
+    .slice()
+    .sort((a, b) => b.pace - a.pace)
+    .forEach((team, index) => {
+      const target = teams.find(t => t.teamAbbr === team.teamAbbr);
+      target.rankPace = index + 1;
+      target.paceTier = paceTier(index + 1);
+    });
+
+  teams.sort((a, b) => a.rankPace - b.rankPace);
 }
 
 async function main() {
@@ -154,30 +222,38 @@ async function main() {
   });
 
   const url = `https://stats.nba.com/stats/leaguedashteamstats?${params.toString()}`;
-  const data = await fetchJson(url);
-  const teams = parseRows(data);
 
-  teams
-    .slice()
-    .sort((a, b) => b.pace - a.pace)
-    .forEach((team, index) => {
-      const target = teams.find(t => t.teamAbbr === team.teamAbbr);
-      target.rankPace = index + 1;
-      target.paceTier = paceTier(index + 1);
-    });
+  let teams = [];
+  let error = null;
 
-  teams.sort((a, b) => a.rankPace - b.rankPace);
+  try {
+    const data = await fetchJsonWithRetry(url);
+    teams = parseRows(data);
+  } catch (err) {
+    error = err.message;
+    const previous = readJSON(OUT, { teams: [] });
+    teams = Array.isArray(previous.teams) ? previous.teams : [];
+    console.log("NBA PACE ENGINE USING PREVIOUS DATA:", error);
+  }
+
+  if (!teams.length) {
+    teams = Object.values(TEAM_ABBR).map(buildFallbackTeam);
+  } else {
+    applyPaceRanks(teams);
+  }
 
   const out = {
     sport: "NBA",
-    version: "1.0",
-    source: "NBA stats leaguedashteamstats advanced per game",
+    version: "1.1",
+    source: error ? "Previous NBA pace data fallback" : "NBA stats leaguedashteamstats advanced per game",
     fetchedAt: new Date().toISOString(),
     season,
     teamCount: teams.length,
+    error: error || "",
     modelNotes: [
-      "Pace Engine 1.0 uses NBA stats advanced team pace.",
+      "Pace Engine 1.1 uses NBA stats advanced team pace when available.",
       "Higher pace ranks as faster game environment.",
+      "If NBA stats times out, the file keeps the previous usable pace snapshot.",
       "No odds or betting lines are used."
     ],
     teams
@@ -188,6 +264,7 @@ async function main() {
   console.log("NBA PACE ENGINE COMPLETE");
   console.log("Season:", season);
   console.log("Teams:", teams.length);
+  console.log("Error:", error || "none");
   console.log("Saved:", OUT);
 }
 
