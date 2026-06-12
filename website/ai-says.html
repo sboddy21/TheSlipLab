@@ -601,6 +601,7 @@ h1{font-size:46px}
   
   <section class="ai-verdict" id="aiVerdict"></section>
 
+<section class="ai-stack-finder" id="stackFinder"></section>
 <section class="report-card" id="reportCard"></section>
 
   <section class="feature">
@@ -641,6 +642,7 @@ h1{font-size:46px}
 
 <script>
 let rows = [];
+let stackData = { stacks: [] };
 let activeGrade = "all";
 let query = "";
 let sortBy = "score";
@@ -958,6 +960,52 @@ function strongestStack(){
 
 
 
+
+
+function renderStacks(){
+
+  const stacks = (stackData?.stacks || []).slice(0,3);
+
+  const medals = ["🥇","#1 STACK","🥈 #2 STACK","🥉 #3 STACK"];
+
+  document.getElementById("stackFinder").innerHTML = `
+    <div class="stack-head">
+      <span>🔥 AI STACK FINDER</span>
+      <h2>Top AI Team Stacks</h2>
+      <p>Built from AI grades, consensus signals, confidence, and stack quality.</p>
+    </div>
+
+    <div class="stack-grid">
+      ${stacks.map((s,i)=>`
+        <article class="stack-card place-${i+1}">
+          <div class="stack-rank">${medals[i+1] || medals[0]}</div>
+
+          <div class="stack-team">${s.team}</div>
+
+          <div class="stack-score">
+            <span>STACK SCORE</span>
+            <strong>${s.stackScore}</strong>
+          </div>
+
+          <div class="stack-players">
+            ${(s.players || []).map(p=>`
+              <div class="stack-player">
+                <b>${p.player}</b>
+                <span>${p.grade}</span>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="stack-consensus">
+            ${s.consensusScore} Consensus
+          </div>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+
 function renderVerdict(){
 
   const lock = rows[0];
@@ -1077,6 +1125,7 @@ function render(){
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
   renderVerdict();
+  renderStacks();
   renderReportCard();
   renderLock(rows[0]);
   document.getElementById("spotlightGrid").innerHTML = [
@@ -1801,6 +1850,140 @@ load();
 
   .verdict-left h2{
     font-size:32px;
+  }
+}
+
+</style>
+
+
+<style>
+
+.ai-stack-finder{
+  margin:16px 0 18px;
+}
+
+.stack-head{
+  margin-bottom:12px;
+}
+
+.stack-head span{
+  color:#ffb000;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.18em;
+}
+
+.stack-head h2{
+  margin:6px 0;
+  color:white;
+  font-size:28px;
+}
+
+.stack-head p{
+  color:#aebbc2;
+  margin:0;
+}
+
+.stack-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+
+.stack-card{
+  position:relative;
+  overflow:hidden;
+  border-radius:22px;
+  padding:16px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.stack-card:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(110deg,transparent,rgba(255,255,255,.05),transparent);
+  animation:stackSweep 6s linear infinite;
+}
+
+@keyframes stackSweep{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+
+.place-1{
+  box-shadow:0 0 28px rgba(255,215,0,.28);
+  border-color:rgba(255,215,0,.35);
+}
+
+.place-2{
+  box-shadow:0 0 22px rgba(200,200,200,.20);
+}
+
+.place-3{
+  box-shadow:0 0 22px rgba(205,127,50,.20);
+}
+
+.stack-rank{
+  color:#ffb000;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.12em;
+  margin-bottom:10px;
+}
+
+.stack-team{
+  color:white;
+  font-size:22px;
+  font-weight:1000;
+  margin-bottom:10px;
+}
+
+.stack-score{
+  margin-bottom:12px;
+}
+
+.stack-score span{
+  display:block;
+  color:#9fb0b9;
+  font-size:10px;
+  font-weight:1000;
+}
+
+.stack-score strong{
+  color:#8cff32;
+  font-size:34px;
+}
+
+.stack-player{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.stack-player b{
+  color:white;
+  font-size:13px;
+}
+
+.stack-player span{
+  color:#ffb000;
+  font-weight:1000;
+}
+
+.stack-consensus{
+  margin-top:12px;
+  color:#8cff32;
+  font-size:12px;
+  font-weight:1000;
+}
+
+@media(max-width:1000px){
+  .stack-grid{
+    grid-template-columns:1fr;
   }
 }
 
