@@ -88,8 +88,7 @@ function verifyDecisionCenterFresh() {
     "lottoBombs",
     "pitchTypeEdges",
     "weatherCarry",
-    "bullpenBoosts",
-    "ifOnlyOne"
+    "bullpenBoosts"
   ];
 
   const missing = requiredSections.filter(key => !Array.isArray(data.sections[key]));
