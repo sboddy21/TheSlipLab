@@ -598,7 +598,10 @@ h1{font-size:46px}
 
   </section>
 
-  <section class="report-card" id="reportCard"></section>
+  
+  <section class="ai-verdict" id="aiVerdict"></section>
+
+<section class="report-card" id="reportCard"></section>
 
   <section class="feature">
     <article class="lock player-card" id="lockCard"></article>
@@ -953,6 +956,73 @@ function strongestStack(){
     .sort((a,b)=>b[1]-a[1])[0]?.[0] || "-";
 }
 
+
+
+function renderVerdict(){
+
+  const lock = rows[0];
+  if(!lock) return;
+
+  const reasons = (lock.reasons || [])
+    .slice(0,4)
+    .map(r => `<li>✓ ${esc(r)}</li>`)
+    .join("");
+
+  document.getElementById("aiVerdict").innerHTML = `
+    <div class="verdict-wrap">
+
+      <div class="verdict-kicker">
+        🧠 TODAY'S AI VERDICT
+      </div>
+
+      <div class="verdict-grid">
+
+        <div class="verdict-left">
+          <h2>${esc(lock.player)}</h2>
+
+          <p>
+            The AI model found
+            <strong>${esc(lock.grade)}</strong>
+            as today's strongest home run profile.
+          </p>
+
+          <ul>
+            ${reasons}
+          </ul>
+        </div>
+
+        <div class="verdict-right">
+
+          <div class="verdict-metric">
+            <span>Consensus</span>
+            <strong>${lock.consensusScore || 0}</strong>
+          </div>
+
+          <div class="verdict-metric">
+            <span>Confidence</span>
+            <strong>${confidence(lock)}</strong>
+          </div>
+
+          <div class="verdict-metric">
+            <span>Power</span>
+            <strong>${lock.explanationScores?.power || 0}</strong>
+          </div>
+
+          <div class="verdict-metric">
+            <span>Matchup</span>
+            <strong>${lock.explanationScores?.matchup || 0}</strong>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
+
 function renderReportCard(){
   const aPlus = rows.filter(r=>normGrade(r.grade)==="A+").length;
   const a = rows.filter(r=>normGrade(r.grade)==="A").length;
@@ -1006,6 +1076,7 @@ function render(){
   document.getElementById("gradeCount").textContent = shown.length;
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
+  renderVerdict();
   renderReportCard();
   renderLock(rows[0]);
   document.getElementById("spotlightGrid").innerHTML = [
@@ -1596,6 +1667,140 @@ load();
 @media(max-width:700px){
   .dc-checks{
     grid-template-columns:1fr;
+  }
+}
+
+</style>
+
+
+<style>
+
+.ai-verdict{
+  margin:0 0 16px;
+}
+
+.verdict-wrap{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  padding:22px;
+  border:1px solid rgba(140,255,50,.22);
+
+  background:
+    radial-gradient(circle at 15% 0%,
+      rgba(140,255,50,.18),
+      transparent 45%),
+    radial-gradient(circle at 100% 0%,
+      rgba(255,176,0,.12),
+      transparent 35%),
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.06),
+      rgba(255,255,255,.02)
+    );
+
+  box-shadow:
+    0 0 40px rgba(140,255,50,.12),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.verdict-wrap:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(
+      110deg,
+      transparent,
+      rgba(255,255,255,.05),
+      transparent
+    );
+  animation:verdictSweep 7s linear infinite;
+}
+
+@keyframes verdictSweep{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+
+.verdict-kicker{
+  color:#8cff32;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.18em;
+  margin-bottom:12px;
+}
+
+.verdict-grid{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:1.5fr .9fr;
+  gap:18px;
+}
+
+.verdict-left h2{
+  margin:0 0 8px;
+  font-size:42px;
+  line-height:1;
+  color:white;
+}
+
+.verdict-left p{
+  color:#d7e1de;
+  font-size:15px;
+  margin-bottom:12px;
+}
+
+.verdict-left ul{
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+
+.verdict-left li{
+  padding:6px 0;
+  color:#edf5f2;
+  font-weight:850;
+}
+
+.verdict-right{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+
+.verdict-metric{
+  text-align:center;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.verdict-metric span{
+  display:block;
+  color:#b8c8c2;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+
+.verdict-metric strong{
+  display:block;
+  margin-top:5px;
+  color:#8cff32;
+  font-size:28px;
+  font-weight:1000;
+}
+
+@media(max-width:900px){
+  .verdict-grid{
+    grid-template-columns:1fr;
+  }
+
+  .verdict-left h2{
+    font-size:32px;
   }
 }
 
