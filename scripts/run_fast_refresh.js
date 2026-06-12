@@ -27,6 +27,10 @@ const steps = [
   ["Real HR Probability Engine", "node scripts/mlb/build_real_hr_probability_engine.js"],
   ["Finalize Decision Center", "node scripts/mlb/finalize_hr_decision_center.js"],
 
+  ["HR AI Breakdowns", "node scripts/build_hr_ai_breakdowns.cjs"],
+  ["HR AI History", "node scripts/build_hr_ai_history.cjs"],
+  ["HR AI Movement", "node scripts/build_hr_ai_movement.cjs"],
+
   ["X Content", "node scripts/content/build_x_content.js"]
 ];
 

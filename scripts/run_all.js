@@ -34,6 +34,12 @@ const steps = [
   ["HR Calibration Report", "scripts/mlb/build_hr_calibration_report.js"],
   ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
   ["Player Card Data", "scripts/build_player_card_data.js"],
+
+  ["HR AI Breakdowns", "scripts/build_hr_ai_breakdowns.cjs"],
+  ["HR AI History", "scripts/build_hr_ai_history.cjs"],
+  ["HR AI Movement", "scripts/build_hr_ai_movement.cjs"],
+  ["HR AI Stacks", "scripts/build_hr_ai_stacks.cjs"],
+
   ["Batting Spot Profiles", "scripts/mlb/build_batting_spot_profiles.js"],
   ["NBA Today", "scripts/nba/fetch_nba_today.js"],
   ["NBA Player Pool", "scripts/nba/build_nba_player_pool.js"],
