@@ -150,6 +150,49 @@ function sectionHit(player, sectionName) {
   return arr.some(r => String(r.player || r.name || "").toLowerCase().trim() === name);
 }
 
+
+  function buildExplanationScores(info) {
+    const reasons = (info.reasons || []).join(" ").toLowerCase();
+
+    let power = 65;
+    let matchup = 65;
+    let environment = 65;
+
+    if (reasons.includes("elite power profile")) {
+      power = 95;
+    } else if (reasons.includes("above-average power")) {
+      power = 82;
+    } else if (reasons.includes("power profile")) {
+      power = 75;
+    }
+
+    if (reasons.includes("extremely vulnerable opposing pitcher")) {
+      matchup = 96;
+    } else if (reasons.includes("one of the weakest pitcher matchups")) {
+      matchup = 92;
+    } else if (reasons.includes("clear pitcher vulnerability")) {
+      matchup = 86;
+    } else if (reasons.includes("positive pitcher matchup")) {
+      matchup = 80;
+    }
+
+    if (reasons.includes("weather")) {
+      environment = 92;
+    } else if (reasons.includes("bullpen")) {
+      environment = 88;
+    } else if (reasons.includes("launch")) {
+      environment = 84;
+    }
+
+    return {
+      power,
+      matchup,
+      environment,
+      certainty: Math.round(info.score || 80)
+    };
+  }
+
+
 const sorted = [...map.entries()].sort((a, b) => b[1].score - a[1].score);
 
 sorted.forEach(([, info], index) => {
@@ -168,24 +211,7 @@ sorted.forEach(([, info], index) => {
   if (reasonText.includes("bullpen")) info.badges.push("💣 HR Upside");
   if (reasonText.includes("pitch-type") || reasonText.includes("arsenal")) info.badges.push("🧬 Pitch Mix Edge");
 
-  info.explanationScores = {
-    power: Math.min(100, Math.round(
-      num(info.powerScore || 0) * 0.7 +
-      num(info.launchHrProfileScore || 0) * 0.3
-    )),
-
-    matchup: Math.min(100, Math.round(
-      num(info.pitcherRisk || 0) * 0.7 +
-      num(info.pitchTypeDestructionScore || 0) * 0.3
-    )),
-
-    environment: Math.min(100, Math.round(
-      num(info.bullpenInheritanceScore || 0) * 0.55 +
-      num(info.pullWindHrScore || 0) * 0.45
-    )),
-
-    certainty: Math.min(100, Math.round(info.score || 0))
-  };
+  
 
   info.consensus = [];
   if (sectionHit(info.player, "bestPicks")) info.consensus.push("🔥 AI + Best Pick");
@@ -209,6 +235,8 @@ sorted.forEach(([, info], index) => {
 
   if (info.consensus.length >= 3) info.badges.unshift("⚡ Triple Consensus");
   else if (info.consensus.length >= 2) info.badges.unshift("✅ Multi-Model Agree");
+
+  info.explanationScores = buildExplanationScores(info);
 
   info.matchupReason = (info.reasons || []).find(r => /pitch-type|arsenal|power|confidence/i.test(r)) || "";
   info.pitcherReason = (info.reasons || []).find(r => /pitcher|bullpen/i.test(r)) || "";
