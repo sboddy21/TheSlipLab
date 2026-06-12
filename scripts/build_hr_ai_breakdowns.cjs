@@ -130,6 +130,15 @@ if (dc.sections && typeof dc.sections === "object") {
   }
 }
 
+/*
+  Safety net:
+  AI Says must include every current MLB player from the player pool,
+  even if that player did not land inside a Decision Center section.
+*/
+for (const p of poolRows) {
+  rows.push(p);
+}
+
 const map = new Map();
 
 for (const r of rows) {
