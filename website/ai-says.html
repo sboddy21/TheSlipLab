@@ -692,8 +692,22 @@ function avatar(row, cls="avatar"){
   return `<div class="${cls}"><img src="${img}" onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;>${esc(initials(row.player))}</div>'"></div>`;
 }
 
+function shortTag(x){
+  const s = String(x || "");
+  const low = s.toLowerCase();
+  if (low.includes("confidence")) return s.match(/[\d.]+%/) ? s.match(/[\d.]+%/)[0] + " HR confidence" : "HR confidence";
+  if (low.includes("weakest pitcher") || low.includes("vulnerable opposing pitcher")) return "Weak pitcher matchup";
+  if (low.includes("pitcher vulnerability")) return "Pitcher vulnerability";
+  if (low.includes("bullpen")) return "Bullpen HR upside";
+  if (low.includes("pitch-type") || low.includes("arsenal")) return "Pitch mix edge";
+  if (low.includes("elite power")) return "Elite power";
+  if (low.includes("above-average power")) return "Power profile";
+  if (low.includes("weather") || low.includes("carry")) return "Weather carry";
+  return s.length > 24 ? s.slice(0, 23) + "…" : s;
+}
+
 function tags(row, max=4){
-  return `<div class="tags">${(row.reasons || []).slice(0,max).map(x=>`<span>${iconFor(x)} ${esc(x)}</span>`).join("")}</div>`;
+  return `<div class="tags">${(row.reasons || []).slice(0,max).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}</div>`;
 }
 
 function wireClicks(){
@@ -814,4 +828,18 @@ load();
 .mini-avatar{width:58px!important;height:64px!important}
 .lock{min-height:205px!important}
 .board{margin-bottom:10px!important}
+</style>
+
+<style>
+.mini{overflow:hidden!important}
+.mini .tags{display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:6px!important}
+.mini .tags span{
+  max-width:100%!important;
+  width:auto!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:9px!important;
+  line-height:1.1!important;
+}
 </style>
