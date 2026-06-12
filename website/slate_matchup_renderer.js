@@ -809,7 +809,7 @@
   function injectShell() {
     const wrap = document.querySelector("main.wrap");
     if (!wrap) return;
-    for (const id of ["hero", "aiSaysPanel", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
+    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
       const el = document.getElementById(id);
       if (el) el.remove();
     }
@@ -827,7 +827,6 @@
         <button data-market="pitcherKs" type="button">Pitcher Ks<small>Board</small></button>
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
-      <section class="ai-says-panel" id="aiSaysPanel"></section>
       <div class="tabs" id="tabs"></div>
       <section class="games" id="games"></section>
     `);
@@ -1289,7 +1288,6 @@
       renderTopVulnerabilities();
       renderTabs();
       document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
-      renderAiSaysHome();
       const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
       document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
       wireCards();
@@ -1538,7 +1536,6 @@
     injectStyles();
     injectShell();
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
-    state.aiSays = await json("./data/hr_ai_breakdowns.json", { players: {} });
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>The Slip Lab | AI Says</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+<style>
+:root{--bg:#050808;--panel:#0b1113;--line:rgba(255,255,255,.10);--muted:#9fb0ad;--green:#8cff32;--gold:#ffb000;--orange:#ff6b2d}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0%,rgba(140,255,50,.09),transparent 32%),radial-gradient(circle at 80% 10%,rgba(255,176,0,.08),transparent 34%),var(--bg);color:white;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(5,8,8,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1500px;margin:auto;padding:12px 18px;display:flex;align-items:center;gap:16px}
+.brand{font-size:22px;font-weight:1000;color:white;text-decoration:none}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{color:white;text-decoration:none;font-weight:900;font-size:13px;padding:9px 14px;border-radius:999px;background:#10191c;border:1px solid var(--line)}.nav a.active{background:var(--green);color:#061006}
+.wrap{max-width:1500px;margin:auto;padding:28px 18px 60px}
+.hero{position:relative;overflow:hidden;border:1px solid rgba(140,255,50,.25);border-radius:30px;padding:28px;background:radial-gradient(circle at 15% 0%,rgba(140,255,50,.22),transparent 34%),radial-gradient(circle at 85% 15%,rgba(255,176,0,.16),transparent 32%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.025));box-shadow:0 0 50px rgba(140,255,50,.13)}
+.hero:before,.card:before,.lock:before{content:"";position:absolute;inset:-3px;background:linear-gradient(110deg,transparent,rgba(140,255,50,.18),rgba(255,176,0,.16),transparent);transform:translateX(-75%);animation:sweep 6s ease-in-out infinite;pointer-events:none}
+@keyframes sweep{0%,70%{transform:translateX(-75%);opacity:0}82%{opacity:.8}100%{transform:translateX(75%);opacity:0}}
+.kicker{color:var(--green);font-size:13px;font-weight:1000;letter-spacing:.18em}
+h1{margin:8px 0 8px;font-size:58px;line-height:.95;letter-spacing:-.05em}.sub{color:#d8e4df;font-weight:850;font-size:16px;max-width:900px;line-height:1.45}
+.hero-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;position:relative;z-index:2}.count{color:var(--gold);font-weight:1000;text-transform:uppercase;letter-spacing:.08em}
+.lock-wrap{display:grid;grid-template-columns:.95fr 1.45fr;gap:16px;margin-top:18px}
+.lock{position:relative;overflow:hidden;border:1px solid rgba(140,255,50,.32);border-radius:28px;padding:22px;background:linear-gradient(180deg,rgba(140,255,50,.10),rgba(255,255,255,.025));box-shadow:0 0 42px rgba(140,255,50,.16);cursor:pointer}
+.lock-label{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(255,176,0,.12);border:1px solid rgba(255,176,0,.35);color:var(--gold);font-size:11px;font-weight:1000}
+.lock h2{margin:14px 0 6px;font-size:42px;letter-spacing:-.04em}.lock p{margin:0;color:#e7f0ec;font-weight:850;line-height:1.45}
+.lock-meta{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:12px;color:var(--muted);font-weight:900}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.filters button{cursor:pointer;border:1px solid var(--line);background:#10191c;color:white;border-radius:999px;padding:10px 14px;font-weight:1000}.filters button.active{background:var(--green);color:#061006}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card{position:relative;overflow:hidden;cursor:pointer;border:1px solid var(--line);border-radius:24px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));box-shadow:0 0 22px rgba(0,0,0,.28)}
+.card-top{position:relative;z-index:2;display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;margin-bottom:10px}.card h3{margin:0;font-size:21px}.card .meta{margin-top:3px;color:var(--muted);font-weight:850;font-size:12px}
+.grade{display:inline-flex;align-items:center;justify-content:center;height:42px;min-width:50px;border-radius:15px;font-weight:1000;font-size:16px}
+.aplus{background:rgba(140,255,50,.16);border:1px solid rgba(140,255,50,.45);color:var(--green);box-shadow:0 0 20px rgba(140,255,50,.20)}
+.a{background:rgba(255,176,0,.15);border:1px solid rgba(255,176,0,.40);color:var(--gold);box-shadow:0 0 20px rgba(255,176,0,.16)}
+.bplus{background:rgba(255,107,45,.15);border:1px solid rgba(255,107,45,.38);color:#ff8a45;box-shadow:0 0 20px rgba(255,107,45,.14)}
+.b{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:white}
+.summary{position:relative;z-index:2;color:#e8eff2;font-size:13px;line-height:1.48;font-weight:800}
+.tags{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.tags span{padding:6px 9px;border-radius:999px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.10);font-size:11px;font-weight:950;color:#dfe7ef}
+@media(max-width:950px){.lock-wrap,.grid{grid-template-columns:1fr}h1{font-size:42px}.hero-row{display:block}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="topbar-inner">
+  <a class="brand" href="./index.html">The Slip Lab</a>
+  <nav class="nav">
+    <a href="./mlb.html">Slate</a><a href="./full-board.html">Full Board</a><a href="./matchup-lab.html">Matchup Lab</a><a href="./power-zones.html">Power Zones</a><a href="./quick-target.html">Quick Target</a><a href="./heat-check.html">Heat Check</a><a href="./streak-lab.html">Streak Lab</a><a href="./weather.html">Weather</a><a href="./results.html">Results</a><a href="./hr-decision-center.html">Decision Center</a><a class="active" href="./ai-says.html">AI Says</a>
+  </nav>
+</div></div>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="hero-row">
+      <div>
+        <div class="kicker">🧠 AI SAYS</div>
+        <h1>Model Favorites Today</h1>
+        <div class="sub">Plain-English HR breakdowns generated from confidence, pitcher risk, pitch mix, weather, bullpen, power profile, and matchup context.</div>
+      </div>
+      <div class="count" id="count">Loading</div>
+    </div>
+  </section>
+
+  <section class="lock-wrap" id="lockWrap"></section>
+
+  <div class="filters" id="filters">
+    <button class="active" data-grade="all">All AI Grades</button>
+    <button data-grade="A+">A+</button>
+    <button data-grade="A">A</button>
+    <button data-grade="B+">B+</button>
+    <button data-grade="B">B</button>
+  </div>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<script src="./player_card_patch.js?v=ai-says"></script>
+<script>
+let rows = [];
+let activeGrade = "all";
+
+const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+const gradeClass = g => g === "A+" ? "aplus" : g === "A" ? "a" : g === "B+" ? "bplus" : "b";
+const iconFor = r => {
+  const x = String(r || "").toLowerCase();
+  if(x.includes("confidence")) return "📈";
+  if(x.includes("power")) return "⚡";
+  if(x.includes("pitcher")) return "🎯";
+  if(x.includes("weather") || x.includes("carry")) return "🌪";
+  if(x.includes("bullpen")) return "🔥";
+  if(x.includes("pitch-type") || x.includes("arsenal")) return "🧬";
+  if(x.includes("launch")) return "🚀";
+  if(x.includes("ballpark")) return "🏟";
+  return "✅";
+};
+
+function wireClicks(){
+  document.querySelectorAll(".player-card").forEach(card=>{
+    card.addEventListener("click",()=>{
+      if(window.openPlayerCard) window.openPlayerCard(card.dataset.playerName, card.dataset.playerId);
+    });
+  });
+}
+
+function render(){
+  const shown = rows.filter(r => activeGrade === "all" || r.grade === activeGrade);
+  document.getElementById("count").textContent = `${shown.length} AI grades`;
+
+  const lock = rows[0];
+  document.getElementById("lockWrap").innerHTML = lock ? `
+    <article class="lock player-card" data-player-name="${esc(lock.player)}" data-player-id="${esc(lock.playerId || "")}">
+      <span class="lock-label">MODEL FAVORITE TODAY</span>
+      <h2>${esc(lock.player)}</h2>
+      <p>${esc(lock.summary)}</p>
+      <div class="lock-meta"><span>${esc(lock.team || "")}${lock.opponent ? " vs " + esc(lock.opponent) : ""}</span><span class="grade ${gradeClass(lock.grade)}">${esc(lock.grade)}</span></div>
+    </article>
+    <div class="grid">
+      ${rows.slice(1,5).map(card).join("")}
+    </div>
+  ` : "";
+
+  document.getElementById("grid").innerHTML = shown.slice(0,40).map(card).join("");
+  wireClicks();
+}
+
+function card(r){
+  return `
+    <article class="card player-card" data-player-name="${esc(r.player)}" data-player-id="${esc(r.playerId || "")}">
+      <div class="card-top">
+        <span class="grade ${gradeClass(r.grade)}">${esc(r.grade || "B")}</span>
+        <div><h3>${esc(r.player)}</h3><div class="meta">${esc(r.team || "")}${r.opponent ? " vs " + esc(r.opponent) : ""}</div></div>
+      </div>
+      <div class="summary">${esc(r.summary)}</div>
+      <div class="tags">${(r.reasons || []).slice(0,5).map(x=>`<span>${iconFor(x)} ${esc(x)}</span>`).join("")}</div>
+    </article>
+  `;
+}
+
+document.getElementById("filters").addEventListener("click", e=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  activeGrade = btn.dataset.grade;
+  document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active", b === btn));
+  render();
+});
+
+async function load(){
+  const data = await (await fetch("./data/hr_ai_breakdowns.json?v=" + Date.now())).json();
+  rows = Object.values(data.players || {}).sort((a,b)=>Number(b.score || 0)-Number(a.score || 0));
+  render();
+}
+load();
+</script>
+</body>
+</html>
