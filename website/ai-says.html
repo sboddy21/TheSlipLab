@@ -920,6 +920,22 @@ function strongestTeam(){
   return winner ? winner[0] : "-";
 }
 
+function topLongshot(){
+  return rows.find(r=>normGrade(r.grade)==="B")?.player || "-";
+}
+
+function strongestStack(){
+  const teams = {};
+
+  rows.forEach(r=>{
+    const team = r.team || "Unknown";
+    teams[team] = (teams[team] || 0) + (r.consensusScore || 0);
+  });
+
+  return Object.entries(teams)
+    .sort((a,b)=>b[1]-a[1])[0]?.[0] || "-";
+}
+
 function renderReportCard(){
   const aPlus = rows.filter(r=>normGrade(r.grade)==="A+").length;
   const a = rows.filter(r=>normGrade(r.grade)==="A").length;
@@ -954,8 +970,13 @@ function renderReportCard(){
     </div>
 
     <div class="rc-card">
-      <span>🏆 Strongest Team</span>
-      <strong>${strongestTeam()}</strong>
+      <span>🏆 Strongest Stack</span>
+      <strong>${strongestStack()}</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>💣 Top Longshot</span>
+      <strong>${topLongshot()}</strong>
     </div>
   `;
 }
@@ -1316,7 +1337,7 @@ load();
 <style>
 .report-card{
   display:grid;
-  grid-template-columns:repeat(6,1fr);
+  grid-template-columns:repeat(7,1fr);
   gap:12px;
   margin-bottom:14px;
 }
