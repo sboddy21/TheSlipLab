@@ -1319,7 +1319,11 @@ function render(){
 
   updateFilterCounts();
 
-  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
+  const boardRows = query
+    ? shown.slice(0,80)
+    : (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40));
+
+  document.getElementById("board").innerHTML = boardRows.map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
   wireClicks();
 }
 
