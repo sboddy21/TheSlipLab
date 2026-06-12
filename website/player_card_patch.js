@@ -1307,7 +1307,7 @@
     const h = stats(row);
 
     if (id === "why") {
-      body.innerHTML = renderAiBreakdown(row) + renderWhyTab(row);
+      body.innerHTML = renderWhyTab(row);
       return;
     }
 

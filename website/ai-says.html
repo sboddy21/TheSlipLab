@@ -627,7 +627,13 @@ h1{font-size:46px}
   <div class="footer-glow">⚡ Real Time Analysis • Daily Updates • AI Powered ⚡</div>
 </main>
 
-<script src="./player_card_patch.js?v=ai-page-2"></script>
+<div class="ai-modal-bg" id="aiModal">
+  <div class="ai-modal-card">
+    <button class="ai-modal-close" id="aiModalClose">×</button>
+    <div id="aiModalBody"></div>
+  </div>
+</div>
+
 <script>
 let rows = [];
 let activeGrade = "all";
@@ -710,10 +716,33 @@ function tags(row, max=4){
   return `<div class="tags">${(row.reasons || []).slice(0,max).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}</div>`;
 }
 
+function openAiModal(row){
+  const modal = document.getElementById("aiModal");
+  const body = document.getElementById("aiModalBody");
+  body.innerHTML = `
+    <div class="ai-modal-head">
+      <div>
+        <span>🧠 AI BREAKDOWN</span>
+        <h2>${esc(row.player)}</h2>
+        <p>${esc(row.team || "")} vs ${esc(row.opponent || "")}</p>
+      </div>
+      <div class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</div>
+    </div>
+    <div class="ai-modal-summary">${esc(row.summary)}</div>
+    <div class="ai-modal-tags">
+      ${(row.reasons || []).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}
+    </div>
+  `;
+  modal.classList.add("open");
+}
+
 function wireClicks(){
   document.querySelectorAll(".player-card").forEach(card=>{
     card.addEventListener("click",()=>{
-      if(window.openPlayerCard) window.openPlayerCard(card.dataset.playerName, card.dataset.playerId);
+      const player = card.dataset.playerName;
+      const id = card.dataset.playerId;
+      const row = rows.find(r => String(r.playerId || "") === String(id || "") || r.player === player);
+      if(row) openAiModal(row);
     });
   });
 }
@@ -814,6 +843,11 @@ document.getElementById("sort").addEventListener("change", e=>{
   render();
 });
 
+document.getElementById("aiModalClose").addEventListener("click", ()=>document.getElementById("aiModal").classList.remove("open"));
+document.getElementById("aiModal").addEventListener("click", e=>{
+  if(e.target.id === "aiModal") e.currentTarget.classList.remove("open");
+});
+
 async function load(){
   const data = await (await fetch("./data/hr_ai_breakdowns.json?v=" + Date.now())).json();
   rows = Object.values(data.players || {}).sort((a,b)=>num(b.score)-num(a.score));
@@ -858,5 +892,95 @@ load();
   color:#dce8e2;
   font-weight:1000;
   text-align:center;
+}
+</style>
+
+<style>
+.ai-modal-bg{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.74);
+  backdrop-filter:blur(10px);
+}
+.ai-modal-bg.open{display:flex}
+.ai-modal-card{
+  position:relative;
+  width:min(680px,96vw);
+  border-radius:26px;
+  border:1px solid rgba(140,255,50,.35);
+  background:
+    radial-gradient(circle at 20% 0%,rgba(140,255,50,.18),transparent 34%),
+    radial-gradient(circle at 90% 20%,rgba(255,176,0,.12),transparent 32%),
+    linear-gradient(180deg,#101918,#050909);
+  box-shadow:0 0 55px rgba(140,255,50,.18);
+  padding:20px;
+}
+.ai-modal-close{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(0,0,0,.35);
+  color:white;
+  font-size:24px;
+  font-weight:900;
+  cursor:pointer;
+}
+.ai-modal-head{
+  display:grid;
+  grid-template-columns:1fr 58px;
+  gap:12px;
+  align-items:start;
+  padding-right:38px;
+}
+.ai-modal-head span{
+  color:#8cff32;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:.16em;
+}
+.ai-modal-head h2{
+  margin:7px 0 3px;
+  font-size:34px;
+  letter-spacing:-.04em;
+}
+.ai-modal-head p{
+  margin:0;
+  color:#aebdb8;
+  font-weight:900;
+}
+.ai-modal-summary{
+  margin-top:16px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.10);
+  color:#edf7f1;
+  font-size:14px;
+  line-height:1.55;
+  font-weight:800;
+}
+.ai-modal-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:13px;
+}
+.ai-modal-tags span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.30);
+  border:1px solid rgba(255,255,255,.12);
+  color:#e7f1ec;
+  font-size:11px;
+  font-weight:950;
 }
 </style>
