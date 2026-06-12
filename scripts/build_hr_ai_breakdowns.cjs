@@ -21,7 +21,7 @@ function grade(score, rank = 999) {
   if (rank <= 5 && score >= 68) return "A";
   if (rank <= 20 && score >= 58) return "B+";
   if (score >= 48) return "B";
-  return "Watch";
+  return "B";
 }
 
 function pct(v) {
@@ -135,7 +135,11 @@ if (dc.sections && typeof dc.sections === "object") {
   AI Says must include every current MLB player from the player pool,
   even if that player did not land inside a Decision Center section.
 */
+const existingPlayers = new Set(rows.map(r => String(r.player || r.name || "").toLowerCase().trim()));
+
 for (const p of poolRows) {
+  const name = String(p.player || p.name || "").toLowerCase().trim();
+  if (!name || existingPlayers.has(name)) continue;
   rows.push(p);
 }
 
