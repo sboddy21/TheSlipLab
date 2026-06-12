@@ -600,6 +600,7 @@ h1{font-size:46px}
 
   
   <section class="ai-pulse" id="aiPulse"></section>
+<section class="ai-movement" id="aiMovement"></section>
 <section class="ai-verdict" id="aiVerdict"></section>
 
 <section class="ai-stack-finder" id="stackFinder"></section>
@@ -644,6 +645,7 @@ h1{font-size:46px}
 <script>
 let rows = [];
 let stackData = { stacks: [] };
+let movementData = { risers: [], fallers: [] };
 let activeGrade = "all";
 let query = "";
 let sortBy = "score";
@@ -1100,6 +1102,65 @@ function renderPulse(){
 }
 
 
+
+
+function renderMovement(){
+
+  const risers = movementData?.risers || [];
+  const fallers = movementData?.fallers || [];
+
+  const box = document.getElementById("aiMovement");
+
+  if(!risers.length && !fallers.length){
+    box.innerHTML = `
+      <div class="movement-empty">
+        <div class="movement-title">📈 AI MOVEMENT TRACKER</div>
+        <h3>Collecting movement history...</h3>
+        <p>The AI engine needs multiple refresh cycles before risers and fallers become available.</p>
+      </div>
+    `;
+    return;
+  }
+
+  box.innerHTML = `
+    <div class="movement-wrap">
+
+      <div class="movement-head">
+        <span>📈 AI MOVEMENT TRACKER</span>
+        <h2>Model Changes</h2>
+      </div>
+
+      <div class="movement-grid">
+
+        <div class="movement-side">
+          <h3>📈 Biggest Risers</h3>
+
+          ${risers.slice(0,5).map(r=>`
+            <div class="move-row rise">
+              <b>${r.player}</b>
+              <span>+${r.rankChange || r.scoreChange}</span>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="movement-side">
+          <h3>📉 Biggest Fallers</h3>
+
+          ${fallers.slice(0,5).map(r=>`
+            <div class="move-row fall">
+              <b>${r.player}</b>
+              <span>${r.rankChange || r.scoreChange}</span>
+            </div>
+          `).join("")}
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
 function renderVerdict(){
 
   const lock = rows[0];
@@ -1219,6 +1280,7 @@ function render(){
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
   renderPulse();
+  renderMovement();
   renderVerdict();
   renderStacks();
   renderReportCard();
@@ -2196,6 +2258,82 @@ load();
 @media(max-width:1000px){
   .pulse-grid{
     grid-template-columns:repeat(2,1fr);
+  }
+}
+
+</style>
+
+
+<style>
+
+.ai-movement{
+  margin:0 0 16px;
+}
+
+.movement-empty,
+.movement-wrap{
+  border-radius:22px;
+  padding:16px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.03);
+}
+
+.movement-title,
+.movement-head span{
+  color:#00d7ff;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.18em;
+}
+
+.movement-head h2{
+  margin:6px 0 0;
+  color:white;
+}
+
+.movement-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-top:12px;
+}
+
+.movement-side{
+  border-radius:16px;
+  padding:12px;
+  background:rgba(255,255,255,.03);
+}
+
+.movement-side h3{
+  margin:0 0 10px;
+  color:white;
+}
+
+.move-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:8px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+
+.move-row b{
+  color:white;
+}
+
+.move-row.rise span{
+  color:#8cff32;
+  font-weight:1000;
+}
+
+.move-row.fall span{
+  color:#ff6b6b;
+  font-weight:1000;
+}
+
+@media(max-width:900px){
+  .movement-grid{
+    grid-template-columns:1fr;
   }
 }
 
