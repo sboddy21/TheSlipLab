@@ -599,7 +599,8 @@ h1{font-size:46px}
   </section>
 
   
-  <section class="ai-verdict" id="aiVerdict"></section>
+  <section class="ai-pulse" id="aiPulse"></section>
+<section class="ai-verdict" id="aiVerdict"></section>
 
 <section class="ai-stack-finder" id="stackFinder"></section>
 <section class="report-card" id="reportCard"></section>
@@ -1006,6 +1007,99 @@ function renderStacks(){
 }
 
 
+
+
+function renderPulse(){
+
+  const stacks = stackData?.stacks || [];
+
+  const aPlus =
+    rows.filter(r => String(r.grade).trim() === "A+").length;
+
+  const aGrades =
+    rows.filter(r => ["A+","A"].includes(String(r.grade).trim())).length;
+
+  const consensus =
+    rows.filter(r => (r.consensus || []).length >= 2).length;
+
+  const confidenceValues = rows.map(r=>{
+    const m = String(
+      (r.reasons || []).find(x=>x.includes("%")) || ""
+    ).match(/([\d.]+)%/);
+    return Number(m?.[1] || 0);
+  });
+
+  const avgConfidence =
+    confidenceValues.length
+      ? (confidenceValues.reduce((a,b)=>a+b,0) / confidenceValues.length).toFixed(1)
+      : "0.0";
+
+  let status = "CAUTIOUS";
+  let statusClass = "cautious";
+
+  if (aPlus >= 1 && Number(avgConfidence) >= 17){
+    status = "AGGRESSIVE";
+    statusClass = "aggressive";
+  } else if (aGrades >= 4){
+    status = "BALANCED";
+    statusClass = "balanced";
+  }
+
+  const topStack = stacks[0];
+
+  document.getElementById("aiPulse").innerHTML = `
+    <div class="pulse-wrap">
+
+      <div class="pulse-head">
+        <div>
+          <span>🧠 AI PULSE</span>
+          <h2>Model Status</h2>
+        </div>
+
+        <div class="pulse-status ${statusClass}">
+          ${status}
+        </div>
+      </div>
+
+      <div class="pulse-grid">
+
+        <div class="pulse-box">
+          <small>A+ PICKS</small>
+          <strong>${aPlus}</strong>
+        </div>
+
+        <div class="pulse-box">
+          <small>A PICKS</small>
+          <strong>${aGrades}</strong>
+        </div>
+
+        <div class="pulse-box">
+          <small>CONSENSUS</small>
+          <strong>${consensus}</strong>
+        </div>
+
+        <div class="pulse-box">
+          <small>AVG CONF</small>
+          <strong>${avgConfidence}%</strong>
+        </div>
+
+        <div class="pulse-box">
+          <small>TOP STACK</small>
+          <strong>${topStack?.team || "-"}</strong>
+        </div>
+
+        <div class="pulse-box">
+          <small>STACK SCORE</small>
+          <strong>${topStack?.stackScore || "-"}</strong>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+}
+
+
 function renderVerdict(){
 
   const lock = rows[0];
@@ -1124,6 +1218,7 @@ function render(){
   document.getElementById("gradeCount").textContent = shown.length;
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
+  renderPulse();
   renderVerdict();
   renderStacks();
   renderReportCard();
@@ -1984,6 +2079,123 @@ load();
 @media(max-width:1000px){
   .stack-grid{
     grid-template-columns:1fr;
+  }
+}
+
+</style>
+
+
+<style>
+
+.ai-pulse{
+  margin:0 0 16px;
+}
+
+.pulse-wrap{
+  position:relative;
+  overflow:hidden;
+  border-radius:24px;
+  padding:18px;
+  border:1px solid rgba(140,255,50,.22);
+  background:
+    radial-gradient(circle at 0% 0%,rgba(140,255,50,.18),transparent 40%),
+    linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  box-shadow:
+    0 0 28px rgba(140,255,50,.12),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.pulse-wrap:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,.05),
+    transparent);
+  animation:pulseScan 6s linear infinite;
+}
+
+@keyframes pulseScan{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+
+.pulse-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+
+.pulse-head span{
+  color:#8cff32;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.18em;
+}
+
+.pulse-head h2{
+  margin:6px 0 0;
+  color:white;
+}
+
+.pulse-status{
+  padding:8px 14px;
+  border-radius:999px;
+  font-weight:1000;
+  letter-spacing:.08em;
+}
+
+.pulse-status.aggressive{
+  color:#8cff32;
+  border:1px solid rgba(140,255,50,.35);
+  box-shadow:0 0 22px rgba(140,255,50,.25);
+}
+
+.pulse-status.balanced{
+  color:#ffb000;
+  border:1px solid rgba(255,176,0,.35);
+  box-shadow:0 0 22px rgba(255,176,0,.20);
+}
+
+.pulse-status.cautious{
+  color:#ff7a45;
+  border:1px solid rgba(255,122,69,.35);
+  box-shadow:0 0 22px rgba(255,122,69,.20);
+}
+
+.pulse-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+}
+
+.pulse-box{
+  text-align:center;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.pulse-box small{
+  display:block;
+  color:#9fb0b9;
+  font-size:9px;
+  font-weight:1000;
+}
+
+.pulse-box strong{
+  display:block;
+  margin-top:6px;
+  color:white;
+  font-size:22px;
+}
+
+@media(max-width:1000px){
+  .pulse-grid{
+    grid-template-columns:repeat(2,1fr);
   }
 }
 
