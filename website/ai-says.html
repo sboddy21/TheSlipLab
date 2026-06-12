@@ -6,89 +6,679 @@
 <title>The Slip Lab | AI Says</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico" />
 <style>
-:root{--bg:#050808;--panel:#0b1113;--line:rgba(255,255,255,.10);--muted:#9fb0ad;--green:#8cff32;--gold:#ffb000;--orange:#ff6b2d}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0%,rgba(140,255,50,.09),transparent 32%),radial-gradient(circle at 80% 10%,rgba(255,176,0,.08),transparent 34%),var(--bg);color:white;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(5,8,8,.88);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
-.topbar-inner{max-width:1500px;margin:auto;padding:12px 18px;display:flex;align-items:center;gap:16px}
-.brand{font-size:22px;font-weight:1000;color:white;text-decoration:none}.nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{color:white;text-decoration:none;font-weight:900;font-size:13px;padding:9px 14px;border-radius:999px;background:#10191c;border:1px solid var(--line)}.nav a.active{background:var(--green);color:#061006}
-.wrap{max-width:1500px;margin:auto;padding:28px 18px 60px}
-.hero{position:relative;overflow:hidden;border:1px solid rgba(140,255,50,.25);border-radius:30px;padding:28px;background:radial-gradient(circle at 15% 0%,rgba(140,255,50,.22),transparent 34%),radial-gradient(circle at 85% 15%,rgba(255,176,0,.16),transparent 32%),linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.025));box-shadow:0 0 50px rgba(140,255,50,.13)}
-.hero:before,.card:before,.lock:before{content:"";position:absolute;inset:-3px;background:linear-gradient(110deg,transparent,rgba(140,255,50,.18),rgba(255,176,0,.16),transparent);transform:translateX(-75%);animation:sweep 6s ease-in-out infinite;pointer-events:none}
-@keyframes sweep{0%,70%{transform:translateX(-75%);opacity:0}82%{opacity:.8}100%{transform:translateX(75%);opacity:0}}
-.kicker{color:var(--green);font-size:13px;font-weight:1000;letter-spacing:.18em}
-h1{margin:8px 0 8px;font-size:58px;line-height:.95;letter-spacing:-.05em}.sub{color:#d8e4df;font-weight:850;font-size:16px;max-width:900px;line-height:1.45}
-.hero-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;position:relative;z-index:2}.count{color:var(--gold);font-weight:1000;text-transform:uppercase;letter-spacing:.08em}
-.lock-wrap{display:grid;grid-template-columns:.95fr 1.45fr;gap:16px;margin-top:18px}
-.lock{position:relative;overflow:hidden;border:1px solid rgba(140,255,50,.32);border-radius:28px;padding:22px;background:linear-gradient(180deg,rgba(140,255,50,.10),rgba(255,255,255,.025));box-shadow:0 0 42px rgba(140,255,50,.16);cursor:pointer}
-.lock-label{display:inline-flex;padding:6px 10px;border-radius:999px;background:rgba(255,176,0,.12);border:1px solid rgba(255,176,0,.35);color:var(--gold);font-size:11px;font-weight:1000}
-.lock h2{margin:14px 0 6px;font-size:42px;letter-spacing:-.04em}.lock p{margin:0;color:#e7f0ec;font-weight:850;line-height:1.45}
-.lock-meta{display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:12px;color:var(--muted);font-weight:900}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0}.filters button{cursor:pointer;border:1px solid var(--line);background:#10191c;color:white;border-radius:999px;padding:10px 14px;font-weight:1000}.filters button.active{background:var(--green);color:#061006}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.card{position:relative;overflow:hidden;cursor:pointer;border:1px solid var(--line);border-radius:24px;padding:16px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));box-shadow:0 0 22px rgba(0,0,0,.28)}
-.card-top{position:relative;z-index:2;display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;margin-bottom:10px}.card h3{margin:0;font-size:21px}.card .meta{margin-top:3px;color:var(--muted);font-weight:850;font-size:12px}
-.grade{display:inline-flex;align-items:center;justify-content:center;height:42px;min-width:50px;border-radius:15px;font-weight:1000;font-size:16px}
-.aplus{background:rgba(140,255,50,.16);border:1px solid rgba(140,255,50,.45);color:var(--green);box-shadow:0 0 20px rgba(140,255,50,.20)}
-.a{background:rgba(255,176,0,.15);border:1px solid rgba(255,176,0,.40);color:var(--gold);box-shadow:0 0 20px rgba(255,176,0,.16)}
-.bplus{background:rgba(255,107,45,.15);border:1px solid rgba(255,107,45,.38);color:#ff8a45;box-shadow:0 0 20px rgba(255,107,45,.14)}
-.b{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:white}
-.summary{position:relative;z-index:2;color:#e8eff2;font-size:13px;line-height:1.48;font-weight:800}
-.tags{position:relative;z-index:2;display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}.tags span{padding:6px 9px;border-radius:999px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.10);font-size:11px;font-weight:950;color:#dfe7ef}
-@media(max-width:950px){.lock-wrap,.grid{grid-template-columns:1fr}h1{font-size:42px}.hero-row{display:block}}
+:root{
+  --bg:#030707;
+  --panel:#071011;
+  --panel2:#0b1415;
+  --line:rgba(255,255,255,.10);
+  --green:#8cff32;
+  --green2:#b6ff38;
+  --gold:#ffcc18;
+  --orange:#ff7b2f;
+  --cyan:#1ee7ff;
+  --muted:#9fb0ad;
+  --text:#f4fff7;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+  background:
+    radial-gradient(circle at 18% 18%,rgba(140,255,50,.13),transparent 28%),
+    radial-gradient(circle at 75% 14%,rgba(255,176,0,.12),transparent 28%),
+    radial-gradient(circle at 50% 95%,rgba(30,231,255,.06),transparent 30%),
+    #020606;
+  overflow-x:hidden;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    radial-gradient(circle,rgba(140,255,50,.55) 0 1px,transparent 1.5px),
+    radial-gradient(circle,rgba(255,204,24,.45) 0 1px,transparent 1.5px);
+  background-size:90px 90px,130px 130px;
+  background-position:10px 30px,55px 80px;
+  opacity:.18;
+  animation:stars 18s linear infinite;
+}
+@keyframes stars{to{background-position:10px -300px,55px -260px}}
+
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:50;
+  border-bottom:1px solid rgba(140,255,50,.16);
+  background:rgba(3,7,7,.90);
+  backdrop-filter:blur(18px);
+}
+.topbar-inner{
+  max-width:1560px;
+  margin:auto;
+  padding:14px 18px;
+  display:flex;
+  gap:18px;
+  align-items:center;
+}
+.brand{
+  color:#fff;
+  text-decoration:none;
+  font-size:24px;
+  font-weight:1000;
+  letter-spacing:-.04em;
+  white-space:nowrap;
+}
+.brand span{color:var(--green)}
+.nav{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.nav a{
+  color:white;
+  text-decoration:none;
+  font-size:13px;
+  font-weight:950;
+  padding:10px 15px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));
+}
+.nav a.active{
+  color:#061006;
+  background:var(--green);
+  border-color:var(--green);
+  box-shadow:0 0 24px rgba(140,255,50,.35);
+}
+.live{
+  margin-left:auto;
+  border:1px solid rgba(140,255,50,.25);
+  border-radius:15px;
+  padding:9px 14px;
+  background:rgba(8,14,15,.78);
+  font-weight:1000;
+}
+.live small{display:block;color:var(--muted);font-size:11px}
+.live b:before{
+  content:"";
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--green);
+  box-shadow:0 0 13px var(--green);
+  margin-right:7px;
+}
+
+.wrap{
+  max-width:1500px;
+  margin:auto;
+  padding:30px 18px 70px;
+}
+
+.hero{
+  position:relative;
+  min-height:255px;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:22px;
+  align-items:center;
+  margin-bottom:20px;
+}
+.hero-copy{
+  position:relative;
+  z-index:2;
+  padding:16px 0 12px 78px;
+}
+.brain{
+  position:absolute;
+  left:0;
+  top:18px;
+  width:58px;
+  height:58px;
+  border-radius:22px;
+  display:grid;
+  place-items:center;
+  font-size:35px;
+  background:radial-gradient(circle at 30% 20%,rgba(255,0,230,.7),transparent 42%),radial-gradient(circle at 80% 55%,rgba(140,255,50,.7),transparent 44%),rgba(0,0,0,.25);
+  box-shadow:0 0 22px rgba(140,255,50,.35),0 0 30px rgba(255,0,230,.18);
+}
+.kicker{
+  color:var(--green);
+  font-size:15px;
+  font-weight:1000;
+  letter-spacing:.22em;
+}
+h1{
+  margin:8px 0 8px;
+  font-size:60px;
+  line-height:.95;
+  letter-spacing:-.065em;
+}
+h1 em{
+  font-style:italic;
+  color:var(--green2);
+  text-shadow:0 0 24px rgba(140,255,50,.35);
+}
+.sub{
+  max-width:680px;
+  color:#e9f4ef;
+  font-size:17px;
+  line-height:1.45;
+  font-weight:800;
+}
+.stat-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:18px;
+}
+.stat-pill{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:10px 14px;
+  border-radius:14px;
+  background:rgba(3,9,10,.62);
+  border:1px solid rgba(140,255,50,.18);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+.stat-pill strong{font-size:18px}
+.stat-pill span{font-size:11px;color:#dce8e2;text-transform:uppercase;font-weight:1000;line-height:1.1}
+
+.orb-wrap{
+  position:relative;
+  height:245px;
+}
+.orb{
+  position:absolute;
+  right:30px;
+  top:10px;
+  width:235px;
+  height:235px;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 38% 32%,#fff 0 10%,#f5e8c7 11% 35%,#d9c38f 36% 53%,#6a4c18 54% 70%,transparent 71%),
+    radial-gradient(circle at 50% 50%,rgba(255,204,24,.22),transparent 65%);
+  box-shadow:
+    0 0 40px rgba(255,204,24,.45),
+    0 0 90px rgba(140,255,50,.35),
+    inset -18px -18px 35px rgba(0,0,0,.42);
+  animation:float 4.2s ease-in-out infinite;
+}
+.orb:before,.orb:after{
+  content:"";
+  position:absolute;
+  inset:-24px;
+  border-radius:50%;
+  border:2px solid rgba(140,255,50,.48);
+  transform:rotate(-18deg) scaleX(1.55);
+  animation:ring 4.4s linear infinite;
+}
+.orb:after{
+  border-color:rgba(255,176,0,.55);
+  transform:rotate(28deg) scaleX(1.5);
+  animation-duration:5.2s;
+}
+@keyframes float{50%{transform:translateY(-10px)}}
+@keyframes ring{to{rotate:360deg}}
+.orb-spark{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 70% 20%,rgba(255,176,0,.8) 0 2px,transparent 3px),
+    radial-gradient(circle at 30% 65%,rgba(140,255,50,.8) 0 2px,transparent 3px),
+    radial-gradient(circle at 85% 75%,rgba(30,231,255,.75) 0 2px,transparent 3px);
+  filter:blur(.2px);
+  animation:pulse 1.9s ease-in-out infinite;
+}
+@keyframes pulse{50%{opacity:.35}}
+
+.feature{
+  display:grid;
+  grid-template-columns:1.02fr 1.18fr;
+  gap:16px;
+  margin-bottom:18px;
+}
+.lock{
+  position:relative;
+  overflow:hidden;
+  min-height:265px;
+  border-radius:24px;
+  padding:18px;
+  border:1px solid rgba(140,255,50,.42);
+  background:
+    linear-gradient(90deg,rgba(13,55,9,.82),rgba(4,13,13,.72)),
+    radial-gradient(circle at 20% 0%,rgba(140,255,50,.25),transparent 35%);
+  box-shadow:0 0 34px rgba(140,255,50,.18),inset 0 1px 0 rgba(255,255,255,.08);
+}
+.lock:before,.mini:before,.card:before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  background:linear-gradient(110deg,transparent 0%,rgba(140,255,50,.16) 42%,rgba(255,204,24,.18) 50%,transparent 62%);
+  transform:translateX(-76%);
+  animation:sweep 5.2s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes sweep{
+  0%,68%{transform:translateX(-76%);opacity:0}
+  80%{opacity:.75}
+  100%{transform:translateX(76%);opacity:0}
+}
+.lock-grid{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:140px 1fr 86px;
+  gap:18px;
+  align-items:start;
+}
+.avatar{
+  width:140px;
+  height:170px;
+  border-radius:18px;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(140,255,50,.20),transparent 45%),
+    linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02));
+  border:1px solid rgba(140,255,50,.20);
+  box-shadow:0 0 25px rgba(140,255,50,.10);
+  overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar-fallback{font-size:50px;font-weight:1000;color:var(--green)}
+.lock-label{
+  display:inline-flex;
+  gap:7px;
+  align-items:center;
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,204,24,.12);
+  border:1px solid rgba(255,204,24,.32);
+  color:var(--gold);
+  font-size:12px;
+  font-weight:1000;
+}
+.lock h2{
+  margin:10px 0 4px;
+  font-size:40px;
+  line-height:1;
+  letter-spacing:-.045em;
+}
+.teams{
+  color:#d8e4df;
+  font-size:14px;
+  font-weight:850;
+  margin-bottom:12px;
+}
+.lock p{
+  margin:0;
+  color:#edf7f1;
+  line-height:1.42;
+  font-size:15px;
+  font-weight:760;
+}
+.grade-big{
+  width:76px;
+  height:76px;
+  border-radius:15px;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  color:var(--green);
+  border:1px solid rgba(140,255,50,.45);
+  background:rgba(140,255,50,.12);
+  box-shadow:0 0 26px rgba(140,255,50,.25);
+}
+.grade-big b{font-size:34px;line-height:1}
+.grade-big small{display:block;font-size:11px;color:var(--green2);font-weight:1000}
+.tags{
+  position:relative;
+  z-index:2;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+.tags span{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(0,0,0,.35);
+  border:1px solid rgba(255,255,255,.12);
+  color:#f1fbf6;
+  font-size:11px;
+  font-weight:950;
+}
+
+.mini-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.mini{
+  position:relative;
+  overflow:hidden;
+  min-height:125px;
+  border-radius:18px;
+  padding:12px;
+  border:1px solid rgba(140,255,50,.28);
+  background:linear-gradient(180deg,rgba(22,38,13,.70),rgba(5,10,10,.72));
+  box-shadow:0 0 24px rgba(140,255,50,.10);
+  cursor:pointer;
+}
+.mini.orange{
+  border-color:rgba(255,123,47,.45);
+  box-shadow:0 0 24px rgba(255,123,47,.12);
+}
+.mini-top{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:56px 1fr;
+  gap:10px;
+  align-items:center;
+}
+.mini-avatar{
+  width:56px;
+  height:64px;
+  border-radius:12px;
+  overflow:hidden;
+  background:#111;
+  border:1px solid rgba(255,255,255,.12);
+}
+.mini-avatar img{width:100%;height:100%;object-fit:cover}
+.mini h3{margin:0;font-size:16px;line-height:1.05}
+.mini p{margin:4px 0 0;color:#b9c6c0;font-size:11px;font-weight:850}
+.mini .tags{margin-top:10px;gap:6px}
+.mini .tags span{font-size:10px;padding:5px 7px}
+
+.toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:18px 0 12px;
+  padding:14px 16px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(4,9,10,.68);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+}
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.filters label{
+  color:#fff;
+  font-size:12px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-right:8px;
+}
+.filters button{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(7,13,14,.82);
+  color:#fff;
+  border-radius:14px;
+  padding:10px 16px;
+  cursor:pointer;
+  font-weight:1000;
+  min-width:70px;
+}
+.filters button.active{
+  color:#061006;
+  background:var(--green);
+  border-color:var(--green);
+  box-shadow:0 0 22px rgba(140,255,50,.30);
+}
+.search{
+  display:flex;
+  gap:10px;
+}
+.search input,.search select{
+  height:42px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(2,8,9,.75);
+  color:#fff;
+  padding:0 14px;
+  font-weight:850;
+  outline:none;
+}
+.board{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+}
+.card{
+  position:relative;
+  overflow:hidden;
+  min-height:150px;
+  border-radius:18px;
+  border:1px solid rgba(140,255,50,.24);
+  background:
+    radial-gradient(circle at 95% 15%,rgba(140,255,50,.13),transparent 32%),
+    linear-gradient(180deg,rgba(8,20,17,.80),rgba(3,8,9,.86));
+  padding:14px;
+  box-shadow:0 0 22px rgba(140,255,50,.08);
+  cursor:pointer;
+}
+.card.orange{border-color:rgba(255,176,0,.35)}
+.card-top{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:54px 1fr 64px;
+  gap:10px;
+  align-items:center;
+}
+.grade{
+  width:48px;
+  height:48px;
+  display:grid;
+  place-items:center;
+  border-radius:12px;
+  font-size:20px;
+  font-weight:1000;
+}
+.aplus,.a{color:var(--green);background:rgba(140,255,50,.13);border:1px solid rgba(140,255,50,.45);box-shadow:0 0 18px rgba(140,255,50,.20)}
+.bplus{color:var(--gold);background:rgba(255,176,0,.13);border:1px solid rgba(255,176,0,.42);box-shadow:0 0 18px rgba(255,176,0,.16)}
+.b{color:#dfe7ef;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16)}
+.card h3{margin:0;font-size:18px;line-height:1.1}
+.card small{display:block;color:#aebdb8;font-size:11px;font-weight:850;margin-top:3px}
+.conf{
+  width:56px;
+  height:56px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  color:var(--green2);
+  font-size:15px;
+  font-weight:1000;
+  border:2px solid rgba(140,255,50,.45);
+  box-shadow:0 0 18px rgba(140,255,50,.18);
+}
+.conf span{display:block;font-size:9px;color:#d9e8df;line-height:1}
+.one-line{
+  position:relative;
+  z-index:2;
+  margin-top:10px;
+  color:#dce9e3;
+  font-size:13px;
+  line-height:1.35;
+  font-weight:750;
+}
+.icons{
+  position:relative;
+  z-index:2;
+  display:flex;
+  gap:10px;
+  margin-top:10px;
+  font-size:18px;
+}
+
+.footer-glow{
+  text-align:center;
+  margin-top:18px;
+  color:#d9ff97;
+  font-size:12px;
+  letter-spacing:.28em;
+  font-weight:1000;
+  text-transform:uppercase;
+  text-shadow:0 0 18px rgba(140,255,50,.45);
+}
+
+@media(max-width:1200px){
+  .hero,.feature{grid-template-columns:1fr}
+  .mini-grid,.board{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:760px){
+  .topbar-inner{display:block}
+  .nav{margin-top:12px}
+  .hero-copy{padding-left:0}
+  .brain{display:none}
+  h1{font-size:42px}
+  .lock-grid{grid-template-columns:1fr}
+  .avatar{display:none}
+  .mini-grid,.board{grid-template-columns:1fr}
+  .toolbar{display:block}
+  .search{margin-top:12px;display:grid}
+}
 </style>
 </head>
 <body>
-<div class="topbar"><div class="topbar-inner">
-  <a class="brand" href="./index.html">The Slip Lab</a>
-  <nav class="nav">
-    <a href="./mlb.html">Slate</a><a href="./full-board.html">Full Board</a><a href="./matchup-lab.html">Matchup Lab</a><a href="./power-zones.html">Power Zones</a><a href="./quick-target.html">Quick Target</a><a href="./heat-check.html">Heat Check</a><a href="./streak-lab.html">Streak Lab</a><a href="./weather.html">Weather</a><a href="./results.html">Results</a><a href="./hr-decision-center.html">Decision Center</a><a class="active" href="./ai-says.html">AI Says</a>
-  </nav>
-</div></div>
+<div class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="./index.html">THE <span>SLIP</span> LAB ⚗</a>
+    <nav class="nav">
+      <a href="./mlb.html">Slate</a>
+      <a href="./full-board.html">Full Board</a>
+      <a href="./matchup-lab.html">Matchup Lab</a>
+      <a href="./power-zones.html">Power Zones</a>
+      <a href="./quick-target.html">Quick Target</a>
+      <a href="./heat-check.html">Heat Check</a>
+      <a href="./streak-lab.html">Streak Lab</a>
+      <a href="./weather.html">Weather</a>
+      <a href="./results.html">Results</a>
+      <a href="./hr-decision-center.html">Decision Center</a>
+      <a class="active" href="./ai-says.html">AI Says</a>
+    </nav>
+    <div class="live"><b>MLB LIVE</b><small id="updated">Loading</small></div>
+  </div>
+</div>
 
 <main class="wrap">
   <section class="hero">
-    <div class="hero-row">
-      <div>
-        <div class="kicker">🧠 AI SAYS</div>
-        <h1>Model Favorites Today</h1>
-        <div class="sub">Plain-English HR breakdowns generated from confidence, pitcher risk, pitch mix, weather, bullpen, power profile, and matchup context.</div>
+    <div class="hero-copy">
+      <div class="brain">🧠</div>
+      <div class="kicker">AI SAYS</div>
+      <h1>Model <em>Favorites</em> Today</h1>
+      <div class="sub">AI-powered HR breakdowns using confidence, pitcher risk, pitch mix, weather, bullpen, power profile, and matchup context.</div>
+      <div class="stat-row">
+        <div class="stat-pill">👥 <div><strong id="playerCount">0</strong><span>Players Analyzed</span></div></div>
+        <div class="stat-pill">⭐ <div><strong id="gradeCount">0</strong><span>AI Grades</span></div></div>
+        <div class="stat-pill">⏱ <div><strong id="fresh">Live</strong><span>Daily Updates</span></div></div>
+        <div class="stat-pill">⚡ <div><strong>100%</strong><span>AI Powered</span></div></div>
       </div>
-      <div class="count" id="count">Loading</div>
+    </div>
+    <div class="orb-wrap">
+      <div class="orb"><div class="orb-spark"></div></div>
     </div>
   </section>
 
-  <section class="lock-wrap" id="lockWrap"></section>
+  <section class="feature">
+    <article class="lock player-card" id="lockCard"></article>
+    <section class="mini-grid" id="miniGrid"></section>
+  </section>
 
-  <div class="filters" id="filters">
-    <button class="active" data-grade="all">All AI Grades</button>
-    <button data-grade="A+">A+</button>
-    <button data-grade="A">A</button>
-    <button data-grade="B+">B+</button>
-    <button data-grade="B">B</button>
-  </div>
+  <section class="toolbar">
+    <div class="filters" id="filters">
+      <label>Filter by Grade</label>
+      <button class="active" data-grade="all">All</button>
+      <button data-grade="A+">A+</button>
+      <button data-grade="A">A</button>
+      <button data-grade="B+">B+</button>
+      <button data-grade="B">B</button>
+    </div>
+    <div class="search">
+      <input id="search" placeholder="Search player..." />
+      <select id="sort">
+        <option value="score">Sort: AI Score</option>
+        <option value="confidence">Sort: HR Confidence</option>
+        <option value="grade">Sort: Grade</option>
+      </select>
+    </div>
+  </section>
 
-  <section class="grid" id="grid"></section>
+  <section class="board" id="board"></section>
+
+  <div class="footer-glow">⚡ Real Time Analysis • Daily Updates • AI Powered ⚡</div>
 </main>
 
-<script src="./player_card_patch.js?v=ai-says"></script>
+<script src="./player_card_patch.js?v=ai-page-2"></script>
 <script>
 let rows = [];
 let activeGrade = "all";
+let query = "";
+let sortBy = "score";
 
 const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-const gradeClass = g => g === "A+" ? "aplus" : g === "A" ? "a" : g === "B+" ? "bplus" : "b";
-const iconFor = r => {
+const num = v => Number.isFinite(Number(v)) ? Number(v) : 0;
+
+function gradeClass(g){
+  if(g === "A+") return "aplus";
+  if(g === "A") return "a";
+  if(g === "B+") return "bplus";
+  return "b";
+}
+
+function iconFor(r){
   const x = String(r || "").toLowerCase();
   if(x.includes("confidence")) return "📈";
   if(x.includes("power")) return "⚡";
   if(x.includes("pitcher")) return "🎯";
-  if(x.includes("weather") || x.includes("carry")) return "🌪";
+  if(x.includes("weather") || x.includes("carry")) return "🌧";
   if(x.includes("bullpen")) return "🔥";
   if(x.includes("pitch-type") || x.includes("arsenal")) return "🧬";
   if(x.includes("launch")) return "🚀";
   if(x.includes("ballpark")) return "🏟";
   return "✅";
-};
+}
+
+function confidence(row){
+  const hit = (row.reasons || []).find(r => String(r).includes("%"));
+  if(!hit) return "";
+  const m = String(hit).match(/[\d.]+%/);
+  return m ? m[0] : "";
+}
+
+function oneLine(row){
+  const reasons = row.reasons || [];
+  const clean = reasons.find(r => !String(r).toLowerCase().includes("confidence")) || reasons[0] || "Strong model profile";
+  return clean + ".";
+}
+
+function playerImg(row){
+  if(!row.playerId) return "";
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_180,q_auto:best/v1/people/${row.playerId}/headshot/67/current`;
+}
+
+function initials(name){
+  return String(name || "?").split(" ").map(x=>x[0]).slice(0,2).join("").toUpperCase();
+}
+
+function avatar(row, cls="avatar"){
+  const img = playerImg(row);
+  if(!img) return `<div class="${cls}"><div class="avatar-fallback">${esc(initials(row.player))}</div></div>`;
+  return `<div class="${cls}"><img src="${img}" onerror="this.parentElement.innerHTML='<div class=&quot;avatar-fallback&quot;>${esc(initials(row.player))}</div>'"></div>`;
+}
+
+function tags(row, max=4){
+  return `<div class="tags">${(row.reasons || []).slice(0,max).map(x=>`<span>${iconFor(x)} ${esc(x)}</span>`).join("")}</div>`;
+}
 
 function wireClicks(){
   document.querySelectorAll(".player-card").forEach(card=>{
@@ -98,38 +688,78 @@ function wireClicks(){
   });
 }
 
-function render(){
-  const shown = rows.filter(r => activeGrade === "all" || r.grade === activeGrade);
-  document.getElementById("count").textContent = `${shown.length} AI grades`;
-
-  const lock = rows[0];
-  document.getElementById("lockWrap").innerHTML = lock ? `
-    <article class="lock player-card" data-player-name="${esc(lock.player)}" data-player-id="${esc(lock.playerId || "")}">
-      <span class="lock-label">MODEL FAVORITE TODAY</span>
-      <h2>${esc(lock.player)}</h2>
-      <p>${esc(lock.summary)}</p>
-      <div class="lock-meta"><span>${esc(lock.team || "")}${lock.opponent ? " vs " + esc(lock.opponent) : ""}</span><span class="grade ${gradeClass(lock.grade)}">${esc(lock.grade)}</span></div>
-    </article>
-    <div class="grid">
-      ${rows.slice(1,5).map(card).join("")}
-    </div>
-  ` : "";
-
-  document.getElementById("grid").innerHTML = shown.slice(0,40).map(card).join("");
-  wireClicks();
+function filterRows(){
+  let out = rows.filter(r => activeGrade === "all" || r.grade === activeGrade);
+  if(query) out = out.filter(r => String(r.player || "").toLowerCase().includes(query));
+  if(sortBy === "confidence") out.sort((a,b)=>num(confidence(b).replace("%",""))-num(confidence(a).replace("%","")));
+  else if(sortBy === "grade") out.sort((a,b)=>String(a.grade).localeCompare(String(b.grade)));
+  else out.sort((a,b)=>num(b.score)-num(a.score));
+  return out;
 }
 
-function card(r){
-  return `
-    <article class="card player-card" data-player-name="${esc(r.player)}" data-player-id="${esc(r.playerId || "")}">
-      <div class="card-top">
-        <span class="grade ${gradeClass(r.grade)}">${esc(r.grade || "B")}</span>
-        <div><h3>${esc(r.player)}</h3><div class="meta">${esc(r.team || "")}${r.opponent ? " vs " + esc(r.opponent) : ""}</div></div>
+function renderLock(row){
+  document.getElementById("lockCard").dataset.playerName = row.player || "";
+  document.getElementById("lockCard").dataset.playerId = row.playerId || "";
+  document.getElementById("lockCard").innerHTML = `
+    <div class="lock-grid">
+      ${avatar(row)}
+      <div>
+        <span class="lock-label">👑 MODEL FAVORITE TODAY</span>
+        <h2>${esc(row.player)}</h2>
+        <div class="teams">${esc(row.team || "")} vs ${esc(row.opponent || "")}</div>
+        <p>${esc(row.summary)}</p>
       </div>
-      <div class="summary">${esc(r.summary)}</div>
-      <div class="tags">${(r.reasons || []).slice(0,5).map(x=>`<span>${iconFor(x)} ${esc(x)}</span>`).join("")}</div>
+      <div class="grade-big"><div><b>${esc(row.grade || "A")}</b><small>GRADE</small></div></div>
+    </div>
+    ${tags(row,4)}
+  `;
+}
+
+function miniCard(row, i){
+  return `
+    <article class="mini ${row.grade === "B+" ? "orange" : ""} player-card" data-player-name="${esc(row.player)}" data-player-id="${esc(row.playerId || "")}">
+      <div class="mini-top">
+        ${avatar(row,"mini-avatar")}
+        <div>
+          <span class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</span>
+          <h3>${esc(row.player)}</h3>
+          <p>${esc(row.team || "")} vs ${esc(row.opponent || "")}</p>
+        </div>
+      </div>
+      ${tags(row,3)}
     </article>
   `;
+}
+
+function card(row){
+  return `
+    <article class="card ${row.grade === "B+" ? "orange" : ""} player-card" data-player-name="${esc(row.player)}" data-player-id="${esc(row.playerId || "")}">
+      <div class="card-top">
+        <span class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</span>
+        <div>
+          <h3>${esc(row.player)}</h3>
+          <small>${esc(row.team || "")} vs ${esc(row.opponent || "")}</small>
+        </div>
+        <div class="conf">${esc(confidence(row).replace("%","")) || "--"}<span>CONF</span></div>
+      </div>
+      <div class="one-line">${esc(oneLine(row))}</div>
+      <div class="icons">${(row.reasons || []).slice(0,3).map(iconFor).join(" ")}</div>
+    </article>
+  `;
+}
+
+function render(){
+  if(!rows.length) return;
+  const shown = filterRows();
+
+  document.getElementById("playerCount").textContent = rows.length;
+  document.getElementById("gradeCount").textContent = shown.length;
+  document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
+
+  renderLock(rows[0]);
+  document.getElementById("miniGrid").innerHTML = rows.slice(1,5).map(miniCard).join("");
+  document.getElementById("board").innerHTML = shown.slice(5,41).map(card).join("");
+  wireClicks();
 }
 
 document.getElementById("filters").addEventListener("click", e=>{
@@ -140,9 +770,20 @@ document.getElementById("filters").addEventListener("click", e=>{
   render();
 });
 
+document.getElementById("search").addEventListener("input", e=>{
+  query = e.target.value.toLowerCase().trim();
+  render();
+});
+
+document.getElementById("sort").addEventListener("change", e=>{
+  sortBy = e.target.value;
+  render();
+});
+
 async function load(){
   const data = await (await fetch("./data/hr_ai_breakdowns.json?v=" + Date.now())).json();
-  rows = Object.values(data.players || {}).sort((a,b)=>Number(b.score || 0)-Number(a.score || 0));
+  rows = Object.values(data.players || {}).sort((a,b)=>num(b.score)-num(a.score));
+  document.getElementById("updated").textContent = data.updatedAt ? "Updated " + new Date(data.updatedAt).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "Updated today";
   render();
 }
 load();
