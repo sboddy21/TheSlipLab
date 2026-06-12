@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
+  const state = { games: [], spray: {}, weather: [], aiSays: {}, active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -809,7 +809,7 @@
   function injectShell() {
     const wrap = document.querySelector("main.wrap");
     if (!wrap) return;
-    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
+    for (const id of ["hero", "aiSaysPanel", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
       const el = document.getElementById(id);
       if (el) el.remove();
     }
@@ -827,9 +827,73 @@
         <button data-market="pitcherKs" type="button">Pitcher Ks<small>Board</small></button>
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
+      <section class="ai-says-panel" id="aiSaysPanel"></section>
       <div class="tabs" id="tabs"></div>
       <section class="games" id="games"></section>
     `);
+  }
+
+
+  function aiRows(limit = 5) {
+    const players = state.aiSays?.players || {};
+    return Object.values(players)
+      .filter(row => row && row.player && row.summary)
+      .sort((a, b) => num(b.score) - num(a.score))
+      .slice(0, limit);
+  }
+
+  function aiOneLine(row) {
+    const reasons = Array.isArray(row.reasons) ? row.reasons : [];
+    const best = reasons.find(r => !String(r).toLowerCase().includes("confidence")) || reasons[0] || "Strong model profile";
+    return `${best}.`;
+  }
+
+  function gradeClass(grade) {
+    if (grade === "A+") return "aplus";
+    if (grade === "A") return "a";
+    if (grade === "B+") return "bplus";
+    return "watch";
+  }
+
+  function renderAiSaysHome() {
+    const box = document.getElementById("aiSaysPanel");
+    if (!box) return;
+
+    const rows = aiRows(5);
+    if (!rows.length) {
+      box.innerHTML = "";
+      return;
+    }
+
+    const lock = rows[0];
+    const rest = rows.slice(1);
+
+    box.innerHTML = `
+      <div class="ai-says-hero">
+        <div class="ai-says-lock player-card" data-player-name="${esc(lock.player)}" data-player-id="${esc(lock.playerId || "")}">
+          <div class="ai-kicker">🧠 AI SAYS</div>
+          <div class="ai-lock-label">MODEL FAVORITE TODAY</div>
+          <h2>${esc(lock.player)}</h2>
+          <p>${esc(aiOneLine(lock))}</p>
+          <div class="ai-lock-bottom">
+            <span class="ai-grade ${gradeClass(lock.grade)}">${esc(lock.grade || "A")}</span>
+            <small>${esc(lock.team || "")}${lock.opponent ? " vs " + esc(lock.opponent) : ""}</small>
+          </div>
+        </div>
+
+        <div class="ai-says-list">
+          ${rest.map(row => `
+            <article class="ai-says-row player-card" data-player-name="${esc(row.player)}" data-player-id="${esc(row.playerId || "")}">
+              <span class="ai-grade ${gradeClass(row.grade)}">${esc(row.grade || "A")}</span>
+              <div>
+                <b>${esc(row.player)}</b>
+                <p>${esc(aiOneLine(row))}</p>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </div>
+    `;
   }
 
   function projectedSlateHRs(rows) {
@@ -1225,6 +1289,7 @@
       renderTopVulnerabilities();
       renderTabs();
       document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
+      renderAiSaysHome();
       const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
       document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
       wireCards();
@@ -1234,6 +1299,8 @@
 
     const vuln = document.getElementById("topVulnPanel");
     if (vuln) vuln.style.display = "none";
+    const aiPanel = document.getElementById("aiSaysPanel");
+    if (aiPanel) aiPanel.style.display = "none";
     renderTabs();
     renderMarketBoard();
   }
@@ -1429,6 +1496,7 @@
     injectStyles();
     injectShell();
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
+    state.aiSays = await json("./data/hr_ai_breakdowns.json", { players: {} });
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
