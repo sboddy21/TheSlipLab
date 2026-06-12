@@ -547,6 +547,51 @@ h1 em{
   .toolbar{display:block}
   .search{margin-top:12px;display:grid}
 }
+
+/* Exact AI Says compact polish */
+.topbar-inner{max-width:1540px;padding:12px 16px}
+.brand{font-size:26px}
+.nav a{padding:9px 14px;font-size:13px}
+.wrap{max-width:1480px;padding:26px 18px 46px}
+.hero{min-height:250px;grid-template-columns:1.15fr .85fr;margin-bottom:10px}
+.hero-copy{padding-left:74px}
+.brain{width:58px;height:58px}
+h1{font-size:62px}
+.sub{font-size:17px;max-width:660px}
+.stat-row{gap:12px;margin-top:16px}
+.stat-pill{height:48px;min-width:160px;padding:8px 13px}
+.stat-pill strong{font-size:18px;line-height:1}
+.stat-pill span{display:block;font-size:10px;letter-spacing:.02em}
+.orb{width:230px;height:230px;right:90px;top:0;background:
+  radial-gradient(circle at 42% 32%,#fff 0 8%,#f6e7bf 9% 32%,#d4b66f 33% 52%,#5f4212 53% 70%,transparent 71%),
+  radial-gradient(circle at 50% 50%,rgba(255,204,24,.22),transparent 65%)}
+.feature{grid-template-columns:1.02fr 1.12fr;gap:16px;margin-top:8px;margin-bottom:14px}
+.lock{min-height:260px;padding:18px}
+.lock-grid{grid-template-columns:140px 1fr 76px}
+.avatar{width:140px;height:170px;background:#071111}
+.avatar img{object-fit:cover;object-position:top center}
+.lock h2{font-size:38px}
+.lock p{font-size:16px;max-width:520px}
+.grade-big{width:70px;height:70px}
+.mini-grid{grid-template-columns:repeat(4,1fr);gap:12px}
+.mini{min-height:248px;padding:12px}
+.mini-top{display:block}
+.mini-avatar{width:74px;height:82px;margin-bottom:8px}
+.mini .grade{position:absolute;right:12px;top:12px;width:48px;height:48px}
+.mini h3{font-size:18px;line-height:1.05;max-width:110px}
+.mini p{font-size:11px;line-height:1.15}
+.mini .tags{display:grid;gap:7px;margin-top:12px}
+.mini .tags span{width:max-content;max-width:100%;font-size:10px}
+.toolbar{margin-top:12px}
+.board{grid-template-columns:repeat(4,1fr);gap:14px}
+.card{min-height:132px;padding:12px}
+.card-top{grid-template-columns:48px 1fr 56px}
+.grade{width:46px;height:46px;font-size:19px}
+.card h3{font-size:18px}
+.one-line{font-size:13px;min-height:36px}
+.conf{width:54px;height:54px}
+.footer-glow{padding-bottom:6px}
+
 </style>
 </head>
 <body>
@@ -580,7 +625,7 @@ h1 em{
       <div class="stat-row">
         <div class="stat-pill">👥 <div><strong id="playerCount">0</strong><span>Players Analyzed</span></div></div>
         <div class="stat-pill">⭐ <div><strong id="gradeCount">0</strong><span>AI Grades</span></div></div>
-        <div class="stat-pill">⏱ <div><strong id="fresh">Live</strong><span>Daily Updates</span></div></div>
+        <div class="stat-pill">⏱ <div><strong id="fresh">Updated</strong><span>Daily Updates</span></div></div>
         <div class="stat-pill">⚡ <div><strong>100%</strong><span>AI Powered</span></div></div>
       </div>
     </div>
@@ -661,9 +706,16 @@ function oneLine(row){
   return clean + ".";
 }
 
+function shortSummary(row){
+  const reasons = row.reasons || [];
+  const first = reasons.find(r => !String(r).toLowerCase().includes("confidence")) || "Strong model profile";
+  const second = reasons.find(r => String(r).toLowerCase().includes("pitcher")) || reasons.find(r => String(r).toLowerCase().includes("bullpen")) || "";
+  return second && second !== first ? `${first} with ${second.toLowerCase()}.` : `${first}.`;
+}
+
 function playerImg(row){
   if(!row.playerId) return "";
-  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_180,q_auto:best/v1/people/${row.playerId}/headshot/67/current`;
+  return `https://img.mlbstatic.com/mlb-photos/image/upload/w_240,q_auto:best/v1/people/${row.playerId}/headshot/67/current`;
 }
 
 function initials(name){
@@ -707,7 +759,7 @@ function renderLock(row){
         <span class="lock-label">👑 MODEL FAVORITE TODAY</span>
         <h2>${esc(row.player)}</h2>
         <div class="teams">${esc(row.team || "")} vs ${esc(row.opponent || "")}</div>
-        <p>${esc(row.summary)}</p>
+        <p>${esc(shortSummary(row))}</p>
       </div>
       <div class="grade-big"><div><b>${esc(row.grade || "A")}</b><small>GRADE</small></div></div>
     </div>
