@@ -116,7 +116,7 @@ body:before{
 .wrap{
   max-width:1500px;
   margin:auto;
-  padding:30px 18px 70px;
+  padding:20px 18px 70px;
 }
 
 .hero{
@@ -575,7 +575,7 @@ h1{font-size:46px}
       <a href="./weather.html">Weather</a>
       <a href="./results.html">Results</a>
       <a href="./hr-decision-center.html">Decision Center</a>
-      <a class="active" href="./ai-says.html">AI Says</a>
+      <a class="active" href="./ai-says.html">AI Says</a><a href="./ai-hall-of-fame.html">Hall of Fame</a>
     </nav>
     <div class="live"><b>MLB LIVE</b><small id="updated">Loading</small></div>
   </div>
@@ -844,7 +844,19 @@ function filterRows(){
 }
 
 function pickValue(){
-  return rows.find(r => (r.reasons || []).some(x => String(x).toLowerCase().includes("pitch")) && r !== rows[0]) || rows[1];
+
+  const used = new Set([
+    rows[0]?.player,
+    rows[1]?.player
+  ]);
+
+  return rows.find(r =>
+    !used.has(r.player) &&
+    (r.reasons || []).some(x =>
+      String(x).toLowerCase().includes("pitch")
+    )
+  ) || rows[2] || rows[0];
+
 }
 
 function pickLongshot(){
