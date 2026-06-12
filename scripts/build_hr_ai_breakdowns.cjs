@@ -3,6 +3,7 @@ const path = require("path");
 
 const ROOT = process.cwd();
 const DC_FILE = path.join(ROOT, "website/data/hr_decision_center.json");
+const POOL_FILE = path.join(ROOT, "website/data/mlb_player_pool.json");
 const OUT_FILE = path.join(ROOT, "website/data/hr_ai_breakdowns.json");
 
 function readJson(file, fallback) {
@@ -103,7 +104,7 @@ function buildBreakdown(r) {
   }
 
   return {
-    playerId: r.playerId || r.id || null,
+    playerId: r.playerId || r.id || idByName.get(String(player).toLowerCase().trim()) || null,
     player,
     team,
     opponent,
@@ -117,6 +118,9 @@ function buildBreakdown(r) {
 }
 
 const dc = readJson(DC_FILE, {});
+const poolRaw = readJson(POOL_FILE, []);
+const poolRows = Array.isArray(poolRaw) ? poolRaw : (poolRaw.players || poolRaw.allPlayers || []);
+const idByName = new Map(poolRows.filter(x => x.player || x.name).map(x => [String(x.player || x.name).toLowerCase().trim(), x.playerId || x.id]));
 const rows = [];
 
 if (Array.isArray(dc.allPlayers)) rows.push(...dc.allPlayers);

@@ -195,58 +195,31 @@ h1 em{
 }
 .orb{
   position:absolute;
-  right:30px;
-  top:10px;
-  width:235px;
-  height:235px;
+  right:42px;
+  top:0;
+  width:255px;
+  height:255px;
   border-radius:50%;
   background:
-    radial-gradient(circle at 38% 32%,#fff 0 10%,#f5e8c7 11% 35%,#d9c38f 36% 53%,#6a4c18 54% 70%,transparent 71%),
-    radial-gradient(circle at 50% 50%,rgba(255,204,24,.22),transparent 65%);
-  box-shadow:
-    0 0 40px rgba(255,204,24,.45),
-    0 0 90px rgba(140,255,50,.35),
-    inset -18px -18px 35px rgba(0,0,0,.42);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300'%3E%3Cdefs%3E%3CradialGradient id='g' cx='35%25' cy='25%25' r='75%25'%3E%3Cstop offset='0' stop-color='%23fffdf0'/%3E%3Cstop offset='.45' stop-color='%23f7eed0'/%3E%3Cstop offset='.72' stop-color='%23d9b96b'/%3E%3Cstop offset='1' stop-color='%23643d10'/%3E%3C/radialGradient%3E%3Cfilter id='s'%3E%3CfeDropShadow dx='0' dy='18' stdDeviation='18' flood-color='%23000' flood-opacity='.55'/%3E%3C/filter%3E%3C/defs%3E%3Ccircle cx='150' cy='150' r='118' fill='url(%23g)' filter='url(%23s)'/%3E%3Cpath d='M91 56 C44 103 44 200 91 244' fill='none' stroke='%23c33125' stroke-width='6'/%3E%3Cpath d='M209 56 C256 103 256 200 209 244' fill='none' stroke='%23c33125' stroke-width='6'/%3E%3Cg stroke='%23c33125' stroke-width='4' stroke-linecap='round'%3E%3Cpath d='M75 88 l24 16 M66 119 l27 10 M64 151 l29 0 M67 183 l27 -10 M78 214 l23 -17 M225 88 l-24 16 M234 119 l-27 10 M236 151 l-29 0 M233 183 l-27 -10 M222 214 l-23 -17'/%3E%3C/g%3E%3C/svg%3E") center/contain no-repeat;
+  filter:drop-shadow(0 0 34px rgba(255,204,24,.62)) drop-shadow(0 0 70px rgba(140,255,50,.45));
   animation:float 4.2s ease-in-out infinite;
 }
 .orb:before,.orb:after{
   content:"";
   position:absolute;
-  inset:-24px;
+  inset:-35px;
   border-radius:50%;
-  border:2px solid rgba(140,255,50,.48);
+  border:2px solid rgba(140,255,50,.55);
   transform:rotate(-18deg) scaleX(1.55);
   animation:ring 4.4s linear infinite;
 }
 .orb:after{
-  border-color:rgba(255,176,0,.55);
+  border-color:rgba(255,176,0,.62);
   transform:rotate(28deg) scaleX(1.5);
   animation-duration:5.2s;
 }
-.orb .ball-seam{
-  position:absolute;
-  top:17%;
-  bottom:17%;
-  width:34%;
-  border-radius:50%;
-  border:4px solid transparent;
-  border-left-color:#c83222;
-  opacity:.95;
-}
-.orb .ball-seam.left{left:16%;transform:rotate(-14deg)}
-.orb .ball-seam.right{right:16%;transform:rotate(166deg)}
-.orb .stitches{
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  background:
-    repeating-radial-gradient(ellipse at 28% 50%, transparent 0 12px, rgba(200,50,34,.95) 13px 15px, transparent 16px 24px),
-    repeating-radial-gradient(ellipse at 72% 50%, transparent 0 12px, rgba(200,50,34,.95) 13px 15px, transparent 16px 24px);
-  clip-path:circle(47% at 50% 50%);
-  opacity:.38;
-}
-@keyframes float{50%{transform:translateY(-10px)}}
-@keyframes ring{to{rotate:360deg}}
+.ball-seam,.stitches{display:none}
 .orb-spark{
   position:absolute;
   inset:0;
@@ -864,3 +837,12 @@ load();
 </script>
 </body>
 </html>
+
+<style>
+.avatar,.mini-avatar{background:#071111!important}
+.avatar img,.mini-avatar img{display:block!important;object-position:top center!important}
+.mini{min-height:236px!important}
+.mini-avatar{width:76px!important;height:84px!important}
+.lock{min-height:250px!important}
+.board{margin-bottom:10px!important}
+</style>
