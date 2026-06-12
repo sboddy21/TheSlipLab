@@ -168,6 +168,25 @@ sorted.forEach(([, info], index) => {
   if (reasonText.includes("bullpen")) info.badges.push("💣 HR Upside");
   if (reasonText.includes("pitch-type") || reasonText.includes("arsenal")) info.badges.push("🧬 Pitch Mix Edge");
 
+  info.explanationScores = {
+    power: Math.min(100, Math.round(
+      num(info.powerScore || 0) * 0.7 +
+      num(info.launchHrProfileScore || 0) * 0.3
+    )),
+
+    matchup: Math.min(100, Math.round(
+      num(info.pitcherRisk || 0) * 0.7 +
+      num(info.pitchTypeDestructionScore || 0) * 0.3
+    )),
+
+    environment: Math.min(100, Math.round(
+      num(info.bullpenInheritanceScore || 0) * 0.55 +
+      num(info.pullWindHrScore || 0) * 0.45
+    )),
+
+    certainty: Math.min(100, Math.round(info.score || 0))
+  };
+
   info.consensus = [];
   if (sectionHit(info.player, "bestPicks")) info.consensus.push("🔥 AI + Best Pick");
   if (sectionHit(info.player, "bestValue")) info.consensus.push("💰 AI + Best Value");

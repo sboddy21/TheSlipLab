@@ -745,6 +745,25 @@ function openAiModal(row){
       <div><span>Environment</span><b>${esc(shortTag(row.environmentReason || "Run environment reviewed"))}</b></div>
     </div>
 
+    <div class="explain-grid">
+      <div><span>🔥 Power</span><strong>${row.explanationScores?.power ?? "-"}</strong></div>
+      <div><span>🎯 Matchup</span><strong>${row.explanationScores?.matchup ?? "-"}</strong></div>
+      <div><span>🌪 Environment</span><strong>${row.explanationScores?.environment ?? "-"}</strong></div>
+      <div><span>🤖 Certainty</span><strong>${row.explanationScores?.certainty ?? "-"}</strong></div>
+    </div>
+
+    <div class="ai-timeline">
+      <div>📈 HR Confidence</div>
+      <div>↓</div>
+      <div>🔥 Power Profile</div>
+      <div>↓</div>
+      <div>🎯 Matchup Strength</div>
+      <div>↓</div>
+      <div>💣 Pitcher/Bullpen Edge</div>
+      <div>↓</div>
+      <div>🏁 ${esc(row.grade || "B")} Grade</div>
+    </div>
+
     <div class="ai-modal-summary">${esc(row.summary)}</div>
 
     <div class="ai-modal-tags">
@@ -1308,6 +1327,58 @@ load();
 
 @media(max-width:700px){
   .report-card{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+</style>
+
+
+<style>
+.explain-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin-top:12px;
+}
+
+.explain-grid div{
+  text-align:center;
+  padding:12px;
+  border-radius:14px;
+  background:rgba(140,255,50,.07);
+  border:1px solid rgba(140,255,50,.18);
+}
+
+.explain-grid span{
+  display:block;
+  color:#aab9b4;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+
+.explain-grid strong{
+  display:block;
+  margin-top:4px;
+  color:#8cff32;
+  font-size:22px;
+  font-weight:1000;
+}
+
+.ai-timeline{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid rgba(255,176,0,.18);
+  background:rgba(255,176,0,.05);
+  text-align:center;
+  color:#fff;
+  font-weight:900;
+  line-height:1.5;
+}
+
+@media(max-width:900px){
+  .explain-grid{
     grid-template-columns:repeat(2,1fr);
   }
 }
