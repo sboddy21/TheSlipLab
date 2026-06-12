@@ -718,11 +718,15 @@ function wireClicks(){
   });
 }
 
+function normGrade(g){
+  return String(g || "").trim().toUpperCase();
+}
+
 function filterRows(){
-  let out = rows.filter(r => activeGrade === "all" || r.grade === activeGrade);
+  let out = rows.filter(r => activeGrade === "all" || normGrade(r.grade) === normGrade(activeGrade));
   if(query) out = out.filter(r => String(r.player || "").toLowerCase().includes(query));
   if(sortBy === "confidence") out.sort((a,b)=>num(confidence(b).replace("%",""))-num(confidence(a).replace("%","")));
-  else if(sortBy === "grade") out.sort((a,b)=>String(a.grade).localeCompare(String(b.grade)));
+  else if(sortBy === "grade") out.sort((a,b)=>normGrade(a.grade).localeCompare(normGrade(b.grade)));
   else out.sort((a,b)=>num(b.score)-num(a.score));
   return out;
 }
@@ -788,7 +792,7 @@ function render(){
 
   renderLock(rows[0]);
   document.getElementById("miniGrid").innerHTML = rows.slice(1,5).map(miniCard).join("");
-  document.getElementById("board").innerHTML = shown.slice(5,41).map(card).join("");
+  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(5,41) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match this grade.</div>`;
   wireClicks();
 }
 
@@ -841,5 +845,18 @@ load();
   white-space:nowrap!important;
   font-size:9px!important;
   line-height:1.1!important;
+}
+</style>
+
+<style>
+.empty-ai{
+  grid-column:1/-1;
+  padding:22px;
+  border:1px solid rgba(140,255,50,.22);
+  border-radius:18px;
+  background:rgba(255,255,255,.035);
+  color:#dce8e2;
+  font-weight:1000;
+  text-align:center;
 }
 </style>
