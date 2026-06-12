@@ -714,7 +714,9 @@ function shortTag(x){
 
 function tags(row, max=4){
   const source = row.badges && row.badges.length ? row.badges : row.reasons;
-  return `<div class="tags">${(source || []).slice(0,max).map(x=>`<span>${esc(String(x).startsWith("🧠") || String(x).startsWith("🔥") || String(x).startsWith("🎯") || String(x).startsWith("🌪") || String(x).startsWith("💣") || String(x).startsWith("🧬") ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}</div>`;
+  const consensus = row.consensus || [];
+  const merged = [...consensus, ...(source || [])];
+  return `<div class="tags">${merged.slice(0,max).map(x=>`<span>${esc(String(x).match(/^[🧠🔥🎯🌪💣🧬⚡✅💰⏳]/) ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}</div>`;
 }
 
 function openAiModal(row){
@@ -744,7 +746,7 @@ function openAiModal(row){
     <div class="ai-modal-summary">${esc(row.summary)}</div>
 
     <div class="ai-modal-tags">
-      ${((row.badges && row.badges.length ? row.badges : row.reasons) || []).map(x=>`<span>${esc(String(x).startsWith("🧠") || String(x).startsWith("🔥") || String(x).startsWith("🎯") || String(x).startsWith("🌪") || String(x).startsWith("💣") || String(x).startsWith("🧬") ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}
+      ${([...(row.consensus || []), ...((row.badges && row.badges.length ? row.badges : row.reasons) || [])]).map(x=>`<span>${esc(String(x).match(/^[🧠🔥🎯🌪💣🧬⚡✅💰⏳]/) ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}
     </div>
     <button class="copy-ai" type="button" onclick="navigator.clipboard.writeText('${esc(row.summary).replace(/'/g,"\'")}')">Copy AI Breakdown</button>
   `;

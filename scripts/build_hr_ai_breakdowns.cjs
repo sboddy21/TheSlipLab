@@ -144,6 +144,12 @@ for (const r of rows) {
   }
 }
 
+function sectionHit(player, sectionName) {
+  const arr = dc?.sections?.[sectionName] || [];
+  const name = String(player || "").toLowerCase().trim();
+  return arr.some(r => String(r.player || r.name || "").toLowerCase().trim() === name);
+}
+
 const sorted = [...map.entries()].sort((a, b) => b[1].score - a[1].score);
 
 sorted.forEach(([, info], index) => {
@@ -161,6 +167,17 @@ sorted.forEach(([, info], index) => {
   if (reasonText.includes("weather") || reasonText.includes("carry")) info.badges.push("🌪 Weather Carry");
   if (reasonText.includes("bullpen")) info.badges.push("💣 HR Upside");
   if (reasonText.includes("pitch-type") || reasonText.includes("arsenal")) info.badges.push("🧬 Pitch Mix Edge");
+
+  info.consensus = [];
+  if (sectionHit(info.player, "bestPicks")) info.consensus.push("🔥 AI + Best Pick");
+  if (sectionHit(info.player, "bestValue")) info.consensus.push("💰 AI + Best Value");
+  if (sectionHit(info.player, "dueForHr")) info.consensus.push("⏳ AI + Due List");
+  if (sectionHit(info.player, "weatherCarry")) info.consensus.push("🌪 AI + Weather");
+  if (sectionHit(info.player, "pitchTypeEdges")) info.consensus.push("🧬 AI + Pitch Edge");
+  if (sectionHit(info.player, "bullpenBoosts")) info.consensus.push("💣 AI + Bullpen");
+
+  if (info.consensus.length >= 3) info.badges.unshift("⚡ Triple Consensus");
+  else if (info.consensus.length >= 2) info.badges.unshift("✅ Multi-Model Agree");
 
   info.matchupReason = (info.reasons || []).find(r => /pitch-type|arsenal|power|confidence/i.test(r)) || "";
   info.pitcherReason = (info.reasons || []).find(r => /pitcher|bullpen/i.test(r)) || "";
