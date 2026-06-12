@@ -598,6 +598,8 @@ h1{font-size:46px}
 
   </section>
 
+  <section class="report-card" id="reportCard"></section>
+
   <section class="feature">
     <article class="lock player-card" id="lockCard"></article>
     <section class="spotlight-grid" id="spotlightGrid"></section>
@@ -855,6 +857,70 @@ function card(row){
   `;
 }
 
+function avgConfidence(rows){
+  const vals = rows.map(r=>{
+    const c = confidence(r);
+    return Number(String(c).replace("%","")) || 0;
+  }).filter(v=>v > 0);
+
+  if(!vals.length) return 0;
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function strongestTeam(){
+  const teams = {};
+
+  rows.forEach(r=>{
+    const t = r.team || "Unknown";
+    teams[t] = (teams[t] || 0) + num(r.score);
+  });
+
+  const winner = Object.entries(teams)
+    .sort((a,b)=>b[1]-a[1])[0];
+
+  return winner ? winner[0] : "-";
+}
+
+function renderReportCard(){
+  const aPlus = rows.filter(r=>normGrade(r.grade)==="A+").length;
+  const a = rows.filter(r=>normGrade(r.grade)==="A").length;
+  const values = rows.filter(r=>(r.consensus||[]).some(x=>x.includes("Best Value"))).length;
+  const longshots = rows.filter(r=>normGrade(r.grade)==="B").length;
+  const consensus = rows.filter(r=>(r.consensus||[]).length >= 2).length;
+
+  document.getElementById("reportCard").innerHTML = `
+    <div class="rc-card">
+      <span>🤖 AI Locks</span>
+      <strong>${aPlus + a}</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>💰 AI Values</span>
+      <strong>${values}</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>💣 Longshots</span>
+      <strong>${longshots}</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>📈 Avg Confidence</span>
+      <strong>${avgConfidence(rows).toFixed(1)}%</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>⚡ Consensus</span>
+      <strong>${consensus}</strong>
+    </div>
+
+    <div class="rc-card">
+      <span>🏆 Strongest Team</span>
+      <strong>${strongestTeam()}</strong>
+    </div>
+  `;
+}
+
 function render(){
   if(!rows.length) return;
   const shown = filterRows();
@@ -863,6 +929,7 @@ function render(){
   document.getElementById("gradeCount").textContent = shown.length;
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
+  renderReportCard();
   renderLock(rows[0]);
   document.getElementById("spotlightGrid").innerHTML = [
     renderSpotlightCard(rows[1], "AI Runner-Up", "🥈"),
@@ -1192,5 +1259,56 @@ load();
 }
 @media(max-width:720px){
   .why-ai-boxes{grid-template-columns:1fr}
+}
+</style>
+
+<style>
+.report-card{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.rc-card{
+  position:relative;
+  overflow:hidden;
+  border-radius:18px;
+  padding:14px;
+  text-align:center;
+  border:1px solid rgba(140,255,50,.18);
+  background:
+    radial-gradient(circle at 50% 0%,rgba(140,255,50,.10),transparent 60%),
+    linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.02));
+  box-shadow:0 0 18px rgba(140,255,50,.08);
+}
+
+.rc-card span{
+  display:block;
+  color:#aebdb8;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.rc-card strong{
+  display:block;
+  margin-top:6px;
+  color:#8cff32;
+  font-size:22px;
+  font-weight:1000;
+}
+
+@media(max-width:1100px){
+  .report-card{
+    grid-template-columns:repeat(3,1fr);
+  }
+}
+
+@media(max-width:700px){
+  .report-card{
+    grid-template-columns:repeat(2,1fr);
+  }
 }
 </style>
