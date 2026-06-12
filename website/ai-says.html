@@ -223,6 +223,28 @@ h1 em{
   transform:rotate(28deg) scaleX(1.5);
   animation-duration:5.2s;
 }
+.orb .ball-seam{
+  position:absolute;
+  top:17%;
+  bottom:17%;
+  width:34%;
+  border-radius:50%;
+  border:4px solid transparent;
+  border-left-color:#c83222;
+  opacity:.95;
+}
+.orb .ball-seam.left{left:16%;transform:rotate(-14deg)}
+.orb .ball-seam.right{right:16%;transform:rotate(166deg)}
+.orb .stitches{
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:
+    repeating-radial-gradient(ellipse at 28% 50%, transparent 0 12px, rgba(200,50,34,.95) 13px 15px, transparent 16px 24px),
+    repeating-radial-gradient(ellipse at 72% 50%, transparent 0 12px, rgba(200,50,34,.95) 13px 15px, transparent 16px 24px);
+  clip-path:circle(47% at 50% 50%);
+  opacity:.38;
+}
 @keyframes float{50%{transform:translateY(-10px)}}
 @keyframes ring{to{rotate:360deg}}
 .orb-spark{
@@ -395,7 +417,7 @@ h1 em{
 .mini h3{margin:0;font-size:16px;line-height:1.05}
 .mini p{margin:4px 0 0;color:#b9c6c0;font-size:11px;font-weight:850}
 .mini .tags{margin-top:10px;gap:6px}
-.mini .tags span{font-size:10px;padding:5px 7px}
+.mini .tags span{font-size:9px;padding:5px 7px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .toolbar{
   display:flex;
@@ -566,19 +588,19 @@ h1{font-size:62px}
   radial-gradient(circle at 42% 32%,#fff 0 8%,#f6e7bf 9% 32%,#d4b66f 33% 52%,#5f4212 53% 70%,transparent 71%),
   radial-gradient(circle at 50% 50%,rgba(255,204,24,.22),transparent 65%)}
 .feature{grid-template-columns:1.02fr 1.12fr;gap:16px;margin-top:8px;margin-bottom:14px}
-.lock{min-height:260px;padding:18px}
+.lock{min-height:230px;padding:18px}
 .lock-grid{grid-template-columns:140px 1fr 76px}
 .avatar{width:140px;height:170px;background:#071111}
 .avatar img{object-fit:cover;object-position:top center}
 .lock h2{font-size:38px}
-.lock p{font-size:16px;max-width:520px}
+.lock p{font-size:15px;max-width:510px}
 .grade-big{width:70px;height:70px}
 .mini-grid{grid-template-columns:repeat(4,1fr);gap:12px}
-.mini{min-height:248px;padding:12px}
+.mini{min-height:224px;padding:12px}
 .mini-top{display:block}
 .mini-avatar{width:74px;height:82px;margin-bottom:8px}
 .mini .grade{position:absolute;right:12px;top:12px;width:48px;height:48px}
-.mini h3{font-size:18px;line-height:1.05;max-width:110px}
+.mini h3{font-size:17px;line-height:1.02;max-width:118px}
 .mini p{font-size:11px;line-height:1.15}
 .mini .tags{display:grid;gap:7px;margin-top:12px}
 .mini .tags span{width:max-content;max-width:100%;font-size:10px}
@@ -630,7 +652,7 @@ h1{font-size:62px}
       </div>
     </div>
     <div class="orb-wrap">
-      <div class="orb"><div class="orb-spark"></div></div>
+      <div class="orb"><div class="ball-seam left"></div><div class="ball-seam right"></div><div class="stitches"></div><div class="orb-spark"></div></div>
     </div>
   </section>
 
