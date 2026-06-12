@@ -835,11 +835,25 @@ function normGrade(g){
 }
 
 function filterRows(){
-  let out = rows.filter(r => activeGrade === "all" || normGrade(r.grade) === normGrade(activeGrade));
-  if(query) out = out.filter(r => String(r.player || "").toLowerCase().includes(query));
+  let out = rows.slice();
+
+  // If searching, search across ALL players regardless of selected grade.
+  if(query){
+    out = out.filter(r =>
+      String(r.player || "").toLowerCase().includes(query) ||
+      String(r.team || "").toLowerCase().includes(query) ||
+      String(r.opponent || "").toLowerCase().includes(query)
+    );
+  } else {
+    out = out.filter(r =>
+      activeGrade === "all" || normGrade(r.grade) === normGrade(activeGrade)
+    );
+  }
+
   if(sortBy === "confidence") out.sort((a,b)=>num(confidence(b).replace("%",""))-num(confidence(a).replace("%","")));
   else if(sortBy === "grade") out.sort((a,b)=>normGrade(a.grade).localeCompare(normGrade(b.grade)));
   else out.sort((a,b)=>num(b.score)-num(a.score));
+
   return out;
 }
 
@@ -1305,7 +1319,7 @@ function render(){
 
   updateFilterCounts();
 
-  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match this grade.</div>`;
+  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
   wireClicks();
 }
 
