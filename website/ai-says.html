@@ -733,6 +733,26 @@ function openAiModal(row){
       </div>
       <div class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</div>
     </div>
+    <div class="consensus-meter">
+      <div class="consensus-top">
+        <span>⚡ Consensus Meter</span>
+        <strong>${row.consensusScore || 0}</strong>
+      </div>
+
+      <div class="consensus-track">
+        <div class="consensus-fill ${
+          (row.consensusScore || 0) >= 80 ? "elite" :
+          (row.consensusScore || 0) >= 60 ? "strong" :
+          (row.consensusScore || 0) >= 40 ? "medium" : "light"
+        }"
+        style="width:${row.consensusScore || 0}%"></div>
+      </div>
+
+      <div class="consensus-note">
+        ${(row.agreementCount || 0)} engines agree
+      </div>
+    </div>
+
     <div class="ai-modal-grid">
       <div><span>Grade</span><b>${esc(row.grade || "B")}</b></div>
       <div><span>HR Confidence</span><b>${esc(confidence(row) || "N/A")}</b></div>
@@ -1417,4 +1437,77 @@ load();
   bottom:0;
   margin-top:12px!important;
 }
+</style>
+
+<style>
+
+.consensus-meter{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid rgba(140,255,50,.22);
+  background:
+    radial-gradient(circle at top,
+      rgba(140,255,50,.10),
+      transparent 70%);
+}
+
+.consensus-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.consensus-top span{
+  color:#8cff32;
+  font-size:11px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+
+.consensus-top strong{
+  color:white;
+  font-size:24px;
+  font-weight:1000;
+}
+
+.consensus-track{
+  height:10px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,255,255,.08);
+}
+
+.consensus-fill{
+  height:100%;
+  border-radius:999px;
+}
+
+.consensus-fill.elite{
+  background:#8cff32;
+  box-shadow:0 0 18px rgba(140,255,50,.65);
+}
+
+.consensus-fill.strong{
+  background:#ffcc18;
+  box-shadow:0 0 18px rgba(255,204,24,.45);
+}
+
+.consensus-fill.medium{
+  background:#ff8a45;
+}
+
+.consensus-fill.light{
+  background:#8a8a8a;
+}
+
+.consensus-note{
+  margin-top:8px;
+  color:#c6d3ce;
+  font-size:11px;
+  font-weight:900;
+}
+
 </style>

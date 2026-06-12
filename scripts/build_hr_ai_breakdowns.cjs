@@ -195,6 +195,18 @@ sorted.forEach(([, info], index) => {
   if (sectionHit(info.player, "pitchTypeEdges")) info.consensus.push("🧬 AI + Pitch Edge");
   if (sectionHit(info.player, "bullpenBoosts")) info.consensus.push("💣 AI + Bullpen");
 
+  let consensusScore = 0;
+
+  if (sectionHit(info.player, "bestPicks")) consensusScore += 20;
+  if (sectionHit(info.player, "bestValue")) consensusScore += 15;
+  if (sectionHit(info.player, "dueForHr")) consensusScore += 15;
+  if (sectionHit(info.player, "weatherCarry")) consensusScore += 15;
+  if (sectionHit(info.player, "pitchTypeEdges")) consensusScore += 15;
+  if (sectionHit(info.player, "bullpenBoosts")) consensusScore += 20;
+
+  info.consensusScore = Math.min(100, consensusScore);
+  info.agreementCount = info.consensus.length;
+
   if (info.consensus.length >= 3) info.badges.unshift("⚡ Triple Consensus");
   else if (info.consensus.length >= 2) info.badges.unshift("✅ Multi-Model Agree");
 
