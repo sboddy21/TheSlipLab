@@ -6,6 +6,7 @@
   let PITCH_DAMAGE = {};
   let ATTACK_ZONES = {};
   let SPOT_DATA = {};
+  let HR_AI = {};
   let activePlayer = null;
   const l7Cache = {};
 
@@ -155,6 +156,7 @@
     return enrich({
       ...found,
       cardData: extra,
+      aiBreakdown: aiFor(found),
       last7: extra.last7 || found.last7,
       last15: extra.last15 || found.last15,
       gameLogs: extra.gameLogs || found.gameLogs,
@@ -705,6 +707,62 @@
   }
 
 
+  function aiFor(row) {
+    const players = HR_AI?.players || {};
+    return players[String(row.playerId || "")] ||
+      players[row.player] ||
+      players[key(row.player)] ||
+      null;
+  }
+
+  function aiReasonIcon(reason) {
+    const r = key(reason);
+    if (r.includes("confidence")) return "📈";
+    if (r.includes("power")) return "⚡";
+    if (r.includes("pitcher")) return "🎯";
+    if (r.includes("weather") || r.includes("carry")) return "🌪";
+    if (r.includes("bullpen")) return "🔥";
+    if (r.includes("pitch-type") || r.includes("arsenal")) return "🧬";
+    if (r.includes("launch")) return "🚀";
+    if (r.includes("ballpark")) return "🏟";
+    return "✓";
+  }
+
+  function renderAiBreakdown(row) {
+    const ai = aiFor(row);
+    if (!ai?.summary) return "";
+
+    const reasons = Array.isArray(ai.reasons) ? ai.reasons.slice(0, 6) : [];
+    const grade = ai.grade || "A";
+    const spot =
+      grade === "A+" ? "Elite HR Spot" :
+      grade === "A" ? "Strong HR Spot" :
+      grade === "B+" ? "Live HR Spot" :
+      "Model Watch";
+
+    return `
+      <section class="pcai-card">
+        <div class="pcai-glow"></div>
+        <div class="pcsection-head pcai-head">
+          <div>
+            <h3>🧠 Slip Lab AI Breakdown</h3>
+            <p>Model-generated explanation built from today’s HR inputs</p>
+          </div>
+          <span class="pcai-grade">${esc(grade)} · ${esc(spot)}</span>
+        </div>
+
+        <p class="pcai-summary">${esc(ai.summary)}</p>
+
+        ${reasons.length ? `
+          <div class="pcai-reasons">
+            ${reasons.map(r => `<span>${aiReasonIcon(r)} ${esc(r)}</span>`).join("")}
+          </div>
+        ` : ""}
+      </section>
+    `;
+  }
+
+
   function bullpenRowsFor(row) {
     const opponent = key(row.opponent);
     const collapseRows = arr(window.__SLIP_BULLPEN_DATA__ || []);
@@ -1249,7 +1307,7 @@
     const h = stats(row);
 
     if (id === "why") {
-      body.innerHTML = renderWhyTab(row);
+      body.innerHTML = renderAiBreakdown(row) + renderWhyTab(row);
       return;
     }
 
@@ -7647,6 +7705,7 @@
     css();
 
     const decision = await getJSON("./data/hr_decision_center.json", {});
+    HR_AI = await getJSON("./data/hr_ai_breakdowns.json", { players: {} });
     const homeRuns = await getJSON("./data/mlb_home_runs.json", []);
     const cardDataRaw = await getJSON("./data/player_card_data.json", { players: [] });
     ZONES = await getJSON("./data/statcast_zones.json", {});
@@ -8224,6 +8283,104 @@
       .pczone-legend-explained{
         grid-template-columns:repeat(2,max-content)!important;
       }
+    }
+  `;
+  document.head.appendChild(s);
+})();
+
+
+
+/* Slip Lab AI Breakdown Card */
+(function(){
+  const s = document.createElement("style");
+  s.textContent = `
+    .pcai-card{
+      position:relative!important;
+      overflow:hidden!important;
+      margin:14px 0!important;
+      padding:15px!important;
+      border-radius:20px!important;
+      border:1px solid rgba(140,255,50,.25)!important;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(140,255,50,.16), transparent 34%),
+        radial-gradient(circle at 88% 18%, rgba(255,176,0,.13), transparent 32%),
+        linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.025))!important;
+      box-shadow:
+        0 0 28px rgba(140,255,50,.13),
+        inset 0 1px 0 rgba(255,255,255,.10)!important;
+    }
+
+    .pcai-card:before{
+      content:"";
+      position:absolute;
+      inset:-2px;
+      background:linear-gradient(110deg, transparent 0%, rgba(140,255,50,.18) 42%, rgba(255,176,0,.16) 50%, transparent 62%);
+      transform:translateX(-70%);
+      animation:pcaiSweep 5.5s ease-in-out infinite;
+      pointer-events:none;
+    }
+
+    @keyframes pcaiSweep{
+      0%,68%{transform:translateX(-75%);opacity:.0}
+      76%{opacity:.75}
+      100%{transform:translateX(75%);opacity:0}
+    }
+
+    .pcai-head{
+      position:relative!important;
+      z-index:2!important;
+      margin-bottom:10px!important;
+    }
+
+    .pcai-head h3{
+      color:#fff!important;
+      text-shadow:0 0 18px rgba(140,255,50,.22)!important;
+    }
+
+    .pcai-grade{
+      background:rgba(140,255,50,.12)!important;
+      border:1px solid rgba(140,255,50,.34)!important;
+      color:#8cff32!important;
+      box-shadow:0 0 18px rgba(140,255,50,.13)!important;
+    }
+
+    .pcai-summary{
+      position:relative!important;
+      z-index:2!important;
+      margin:0!important;
+      color:#eef3f8!important;
+      font-size:13px!important;
+      line-height:1.55!important;
+      font-weight:750!important;
+    }
+
+    .pcai-reasons{
+      position:relative!important;
+      z-index:2!important;
+      display:flex!important;
+      flex-wrap:wrap!important;
+      gap:7px!important;
+      margin-top:12px!important;
+    }
+
+    .pcai-reasons span{
+      display:inline-flex!important;
+      align-items:center!important;
+      gap:5px!important;
+      padding:6px 9px!important;
+      border-radius:999px!important;
+      background:rgba(0,0,0,.22)!important;
+      border:1px solid rgba(255,255,255,.10)!important;
+      color:#dfe7ef!important;
+      font-size:10px!important;
+      font-weight:950!important;
+      letter-spacing:.2px!important;
+    }
+
+    @media(max-width:720px){
+      .pcai-card{padding:13px!important}
+      .pcai-summary{font-size:12px!important}
+      .pcai-grade{margin-top:8px!important}
     }
   `;
   document.head.appendChild(s);
