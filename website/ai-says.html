@@ -1061,6 +1061,9 @@ load();
 }
 .ai-modal-bg.open{display:flex}
 .ai-modal-card{
+  max-height:88vh;
+  overflow-y:auto;
+  scrollbar-width:thin;
   position:relative;
   width:min(680px,96vw);
   border-radius:26px;
@@ -1100,6 +1103,7 @@ load();
   letter-spacing:.16em;
 }
 .ai-modal-head h2{
+  font-size:28px!important;
   margin:7px 0 3px;
   font-size:34px;
   letter-spacing:-.04em;
@@ -1110,6 +1114,9 @@ load();
   font-weight:900;
 }
 .ai-modal-summary{
+  padding:12px!important;
+  font-size:13px!important;
+  line-height:1.45!important;
   margin-top:16px;
   padding:14px;
   border-radius:18px;
@@ -1127,6 +1134,8 @@ load();
   margin-top:13px;
 }
 .ai-modal-tags span{
+  padding:5px 8px!important;
+  font-size:10px!important;
   padding:7px 10px;
   border-radius:999px;
   background:rgba(0,0,0,.30);
@@ -1252,6 +1261,8 @@ load();
   margin-top:10px;
 }
 .why-ai-boxes div{
+  min-height:58px!important;
+  padding:8px!important;
   min-height:72px;
   padding:10px;
   border-radius:14px;
@@ -1267,6 +1278,7 @@ load();
   letter-spacing:.08em;
 }
 .why-ai-boxes b{
+  font-size:11px!important;
   display:block;
   margin-top:5px;
   color:#fff;
@@ -1335,6 +1347,7 @@ load();
 
 <style>
 .explain-grid{
+  gap:8px!important;
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:10px;
@@ -1342,6 +1355,7 @@ load();
 }
 
 .explain-grid div{
+  padding:8px!important;
   text-align:center;
   padding:12px;
   border-radius:14px;
@@ -1358,6 +1372,7 @@ load();
 }
 
 .explain-grid strong{
+  font-size:18px!important;
   display:block;
   margin-top:4px;
   color:#8cff32;
@@ -1366,6 +1381,10 @@ load();
 }
 
 .ai-timeline{
+  padding:10px!important;
+  margin-top:10px!important;
+  font-size:12px!important;
+  line-height:1.25!important;
   margin-top:14px;
   padding:14px;
   border-radius:18px;
@@ -1379,7 +1398,23 @@ load();
 
 @media(max-width:900px){
   .explain-grid{
+  gap:8px!important;
     grid-template-columns:repeat(2,1fr);
   }
+}
+</style>
+
+<style>
+.ai-modal-card::-webkit-scrollbar{
+  width:8px;
+}
+.ai-modal-card::-webkit-scrollbar-thumb{
+  background:rgba(140,255,50,.35);
+  border-radius:999px;
+}
+.copy-ai{
+  position:sticky;
+  bottom:0;
+  margin-top:12px!important;
 }
 </style>
