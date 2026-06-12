@@ -784,6 +784,23 @@ function openAiModal(row){
       <div>🏁 ${esc(row.grade || "B")} Grade</div>
     </div>
 
+    <div class="ai-vs-dc">
+      <div class="ai-vs-head">⚡ AI vs Decision Center</div>
+
+      <div class="dc-checks">
+        <div>${(row.consensus || []).some(x=>x.includes("Best Pick")) ? "✓" : "✗"} Best Pick</div>
+        <div>${(row.consensus || []).some(x=>x.includes("Best Value")) ? "✓" : "✗"} Best Value</div>
+        <div>${(row.consensus || []).some(x=>x.includes("Weather")) ? "✓" : "✗"} Weather Carry</div>
+        <div>${(row.consensus || []).some(x=>x.includes("Pitch Edge")) ? "✓" : "✗"} Pitch Edge</div>
+        <div>${(row.consensus || []).some(x=>x.includes("Due")) ? "✓" : "✗"} Due List</div>
+        <div>${(row.consensus || []).some(x=>x.includes("Bullpen")) ? "✓" : "✗"} Bullpen Boost</div>
+      </div>
+
+      <div class="dc-agree">
+        ${(row.agreementCount || 0)} systems agree
+      </div>
+    </div>
+
     <div class="ai-modal-summary">${esc(row.summary)}</div>
 
     <div class="ai-modal-tags">
@@ -1529,6 +1546,57 @@ load();
   color:#c6d3ce;
   font-size:11px;
   font-weight:900;
+}
+
+</style>
+
+<style>
+
+.ai-vs-dc{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(255,255,255,.03);
+}
+
+.ai-vs-head{
+  color:#ffcc18;
+  font-size:12px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:10px;
+}
+
+.dc-checks{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:8px;
+}
+
+.dc-checks div{
+  padding:8px 10px;
+  border-radius:12px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.06);
+  color:#edf5f1;
+  font-size:11px;
+  font-weight:900;
+}
+
+.dc-agree{
+  margin-top:10px;
+  text-align:center;
+  color:#8cff32;
+  font-size:13px;
+  font-weight:1000;
+}
+
+@media(max-width:700px){
+  .dc-checks{
+    grid-template-columns:1fr;
+  }
 }
 
 </style>
