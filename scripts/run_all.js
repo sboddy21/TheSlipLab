@@ -39,6 +39,7 @@ const steps = [
   ["HR AI History", "scripts/build_hr_ai_history.cjs"],
   ["HR AI Movement", "scripts/build_hr_ai_movement.cjs"],
   ["HR AI Stacks", "scripts/build_hr_ai_stacks.cjs"],
+  ["HR AI Hall Of Fame", "scripts/build_hr_ai_hof.cjs"],
 
   ["Batting Spot Profiles", "scripts/mlb/build_batting_spot_profiles.js"],
   ["NBA Today", "scripts/nba/fetch_nba_today.js"],
