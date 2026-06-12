@@ -713,7 +713,8 @@ function shortTag(x){
 }
 
 function tags(row, max=4){
-  return `<div class="tags">${(row.reasons || []).slice(0,max).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}</div>`;
+  const source = row.badges && row.badges.length ? row.badges : row.reasons;
+  return `<div class="tags">${(source || []).slice(0,max).map(x=>`<span>${esc(String(x).startsWith("🧠") || String(x).startsWith("🔥") || String(x).startsWith("🎯") || String(x).startsWith("🌪") || String(x).startsWith("💣") || String(x).startsWith("🧬") ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}</div>`;
 }
 
 function openAiModal(row){
@@ -729,13 +730,21 @@ function openAiModal(row){
       <div class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</div>
     </div>
     <div class="ai-modal-grid">
-      <div><span>Confidence</span><b>${esc(confidence(row) || "N/A")}</b></div>
-      <div><span>AI Score</span><b>${Number(row.score || 0).toFixed(1)}</b></div>
       <div><span>Grade</span><b>${esc(row.grade || "B")}</b></div>
+      <div><span>HR Confidence</span><b>${esc(confidence(row) || "N/A")}</b></div>
+      <div><span>AI Rank</span><b>#${esc(row.rank || "-")}</b></div>
     </div>
+
+    <div class="why-ai-boxes">
+      <div><span>Matchup</span><b>${esc(shortTag(row.matchupReason || "Strong matchup profile"))}</b></div>
+      <div><span>Pitcher</span><b>${esc(shortTag(row.pitcherReason || "Pitcher profile supports upside"))}</b></div>
+      <div><span>Environment</span><b>${esc(shortTag(row.environmentReason || "Run environment reviewed"))}</b></div>
+    </div>
+
     <div class="ai-modal-summary">${esc(row.summary)}</div>
+
     <div class="ai-modal-tags">
-      ${(row.reasons || []).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}
+      ${((row.badges && row.badges.length ? row.badges : row.reasons) || []).map(x=>`<span>${esc(String(x).startsWith("🧠") || String(x).startsWith("🔥") || String(x).startsWith("🎯") || String(x).startsWith("🌪") || String(x).startsWith("💣") || String(x).startsWith("🧬") ? x : iconFor(x) + " " + shortTag(x))}</span>`).join("")}
     </div>
     <button class="copy-ai" type="button" onclick="navigator.clipboard.writeText('${esc(row.summary).replace(/'/g,"\'")}')">Copy AI Breakdown</button>
   `;
@@ -1144,5 +1153,42 @@ load();
 }
 @media(max-width:1100px){
   .spotlight-grid{grid-template-columns:1fr}
+}
+</style>
+
+<style>
+.why-ai-boxes{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:10px;
+}
+.why-ai-boxes div{
+  min-height:72px;
+  padding:10px;
+  border-radius:14px;
+  background:rgba(255,176,0,.07);
+  border:1px solid rgba(255,176,0,.18);
+}
+.why-ai-boxes span{
+  display:block;
+  color:#ffcc18;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+.why-ai-boxes b{
+  display:block;
+  margin-top:5px;
+  color:#fff;
+  font-size:12px;
+  line-height:1.25;
+}
+.tags span{
+  box-shadow:0 0 12px rgba(140,255,50,.08);
+}
+@media(max-width:720px){
+  .why-ai-boxes{grid-template-columns:1fr}
 }
 </style>

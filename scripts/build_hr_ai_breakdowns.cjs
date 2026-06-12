@@ -16,13 +16,12 @@ function num(v, d = 0) {
   return Number.isFinite(n) ? n : d;
 }
 
-function grade(score) {
-  if (score >= 85) return "A+";
-  if (score >= 75) return "A";
-  if (score >= 65) return "B+";
-  if (score >= 55) return "B";
-  if (score >= 45) return "C+";
-  return "C";
+function grade(score, rank = 999) {
+  if (rank === 1 && score >= 78) return "A+";
+  if (rank <= 5 && score >= 68) return "A";
+  if (rank <= 20 && score >= 58) return "B+";
+  if (score >= 48) return "B";
+  return "Watch";
 }
 
 function pct(v) {
@@ -65,7 +64,7 @@ function buildBreakdown(r) {
     launch * 0.12 +
     Math.max(park, 0) * 0.15;
 
-  const g = grade(score);
+  const g = "PENDING";
 
   const reasons = [];
 
@@ -145,11 +144,34 @@ for (const r of rows) {
   }
 }
 
+const sorted = [...map.entries()].sort((a, b) => b[1].score - a[1].score);
+
+sorted.forEach(([, info], index) => {
+  const rank = index + 1;
+  info.rank = rank;
+  info.grade = grade(info.score, rank);
+  info.badges = [];
+
+  if (rank === 1) info.badges.push("🧠 AI #1");
+  else if (rank <= 5) info.badges.push(`🧠 AI #${rank}`);
+
+  const reasonText = (info.reasons || []).join(" ").toLowerCase();
+  if (reasonText.includes("power")) info.badges.push("🔥 Power Fit");
+  if (reasonText.includes("pitcher")) info.badges.push("🎯 Pitcher Leak");
+  if (reasonText.includes("weather") || reasonText.includes("carry")) info.badges.push("🌪 Weather Carry");
+  if (reasonText.includes("bullpen")) info.badges.push("💣 HR Upside");
+  if (reasonText.includes("pitch-type") || reasonText.includes("arsenal")) info.badges.push("🧬 Pitch Mix Edge");
+
+  info.matchupReason = (info.reasons || []).find(r => /pitch-type|arsenal|power|confidence/i.test(r)) || "";
+  info.pitcherReason = (info.reasons || []).find(r => /pitcher|bullpen/i.test(r)) || "";
+  info.environmentReason = (info.reasons || []).find(r => /weather|carry|ballpark|launch/i.test(r)) || "";
+});
+
 const out = {
   updatedAt: new Date().toISOString(),
   source: "hr_decision_center.json",
   count: map.size,
-  players: Object.fromEntries([...map.entries()].sort((a, b) => b[1].score - a[1].score))
+  players: Object.fromEntries(sorted)
 };
 
 fs.writeFileSync(OUT_FILE, JSON.stringify(out, null, 2));
