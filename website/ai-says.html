@@ -600,7 +600,7 @@ h1{font-size:46px}
 
   <section class="feature">
     <article class="lock player-card" id="lockCard"></article>
-    <section class="mini-grid" id="miniGrid"></section>
+    <section class="spotlight-grid" id="spotlightGrid"></section>
   </section>
 
   <section class="toolbar">
@@ -728,10 +728,16 @@ function openAiModal(row){
       </div>
       <div class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</div>
     </div>
+    <div class="ai-modal-grid">
+      <div><span>Confidence</span><b>${esc(confidence(row) || "N/A")}</b></div>
+      <div><span>AI Score</span><b>${Number(row.score || 0).toFixed(1)}</b></div>
+      <div><span>Grade</span><b>${esc(row.grade || "B")}</b></div>
+    </div>
     <div class="ai-modal-summary">${esc(row.summary)}</div>
     <div class="ai-modal-tags">
       ${(row.reasons || []).map(x=>`<span>${iconFor(x)} ${esc(shortTag(x))}</span>`).join("")}
     </div>
+    <button class="copy-ai" type="button" onclick="navigator.clipboard.writeText('${esc(row.summary).replace(/'/g,"\'")}')">Copy AI Breakdown</button>
   `;
   modal.classList.add("open");
 }
@@ -758,6 +764,33 @@ function filterRows(){
   else if(sortBy === "grade") out.sort((a,b)=>normGrade(a.grade).localeCompare(normGrade(b.grade)));
   else out.sort((a,b)=>num(b.score)-num(a.score));
   return out;
+}
+
+function pickValue(){
+  return rows.find(r => (r.reasons || []).some(x => String(x).toLowerCase().includes("pitch")) && r !== rows[0]) || rows[1];
+}
+
+function pickLongshot(){
+  return [...rows].reverse().find(r => ["B+","B"].includes(normGrade(r.grade))) || rows[2];
+}
+
+function renderSpotlightCard(row, label, icon){
+  if(!row) return "";
+  return `
+    <article class="spotlight player-card" data-player-name="${esc(row.player)}" data-player-id="${esc(row.playerId || "")}">
+      <div class="spotlight-label">${icon} ${label}</div>
+      <div class="spotlight-main">
+        ${avatar(row,"mini-avatar")}
+        <div>
+          <h3>${esc(row.player)}</h3>
+          <p>${esc(row.team || "")} vs ${esc(row.opponent || "")}</p>
+        </div>
+        <span class="grade ${gradeClass(row.grade)}">${esc(row.grade || "B")}</span>
+      </div>
+      <div class="spotlight-line">${esc(oneLine(row))}</div>
+      ${tags(row,3)}
+    </article>
+  `;
 }
 
 function renderLock(row){
@@ -820,9 +853,31 @@ function render(){
   document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
 
   renderLock(rows[0]);
-  document.getElementById("miniGrid").innerHTML = rows.slice(1,5).map(miniCard).join("");
-  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(5,41) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match this grade.</div>`;
+  document.getElementById("spotlightGrid").innerHTML = [
+    renderSpotlightCard(rows[1], "AI Runner-Up", "🥈"),
+    renderSpotlightCard(pickValue(), "AI Value", "💰"),
+    renderSpotlightCard(pickLongshot(), "AI Longshot", "💣")
+  ].join("");
+
+  updateFilterCounts();
+
+  document.getElementById("board").innerHTML = (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40)).map(card).join("") || `<div class="empty-ai">No players match this grade.</div>`;
   wireClicks();
+}
+
+function updateFilterCounts(){
+  const counts = rows.reduce((acc,r)=>{
+    const g = normGrade(r.grade);
+    acc[g] = (acc[g] || 0) + 1;
+    acc.all += 1;
+    return acc;
+  }, {all:0});
+
+  document.querySelectorAll("#filters button").forEach(btn=>{
+    const g = btn.dataset.grade;
+    const label = g === "all" ? "All" : g;
+    btn.innerHTML = `${label} <small>${counts[g] || counts[normGrade(g)] || 0}</small>`;
+  });
 }
 
 document.getElementById("filters").addEventListener("click", e=>{
@@ -982,5 +1037,112 @@ load();
   color:#e7f1ec;
   font-size:11px;
   font-weight:950;
+}
+</style>
+
+<style>
+.spotlight-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.spotlight{
+  position:relative;
+  overflow:hidden;
+  min-height:155px;
+  padding:12px;
+  border-radius:18px;
+  border:1px solid rgba(255,176,0,.30);
+  background:linear-gradient(180deg,rgba(28,24,8,.72),rgba(5,10,10,.76));
+  box-shadow:0 0 22px rgba(255,176,0,.08);
+  cursor:pointer;
+}
+.spotlight:before{
+  content:"";
+  position:absolute;
+  inset:-3px;
+  background:linear-gradient(110deg,transparent,rgba(140,255,50,.12),rgba(255,176,0,.15),transparent);
+  transform:translateX(-75%);
+  animation:sweep 5.8s ease-in-out infinite;
+  pointer-events:none;
+}
+.spotlight-label{
+  position:relative;
+  z-index:2;
+  color:#ffcc18;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.08em;
+  margin-bottom:9px;
+  text-transform:uppercase;
+}
+.spotlight-main{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:56px 1fr 48px;
+  gap:9px;
+  align-items:center;
+}
+.spotlight h3{margin:0;color:white;font-size:16px;line-height:1.05}
+.spotlight p{margin:3px 0 0;color:#aebdb8;font-size:10px;font-weight:900;line-height:1.15}
+.spotlight-line{
+  position:relative;
+  z-index:2;
+  margin-top:9px;
+  color:#e6eee9;
+  font-size:12px;
+  font-weight:800;
+  line-height:1.3;
+}
+.filters button small{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:20px;
+  height:18px;
+  margin-left:6px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  font-size:10px;
+}
+.ai-modal-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-top:15px;
+}
+.ai-modal-grid div{
+  padding:10px;
+  border-radius:14px;
+  background:rgba(140,255,50,.07);
+  border:1px solid rgba(140,255,50,.18);
+}
+.ai-modal-grid span{
+  display:block;
+  color:#9fb0ad;
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+.ai-modal-grid b{
+  display:block;
+  margin-top:4px;
+  color:#8cff32;
+  font-size:18px;
+}
+.copy-ai{
+  margin-top:14px;
+  width:100%;
+  border:1px solid rgba(140,255,50,.30);
+  border-radius:14px;
+  background:#8cff32;
+  color:#061006;
+  font-weight:1000;
+  padding:12px;
+  cursor:pointer;
+}
+@media(max-width:1100px){
+  .spotlight-grid{grid-template-columns:1fr}
 }
 </style>
