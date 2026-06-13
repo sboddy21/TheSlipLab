@@ -109,6 +109,25 @@ function buildPlayer(r) {
   const game = clean(r.game || context.game || context.matchup || (team && opponent ? `${team} vs ${opponent}` : ""));
   const pitcher = clean(r.pitcher || r.opposingPitcher || r.probablePitcher || context.pitcher || context.opposingPitcher || context.probablePitcher || "opposing starter");
 
+  const headshot = clean(
+    r.headshot ||
+    r.headshotUrl ||
+    r.image ||
+    r.imageUrl ||
+    r.photo ||
+    r.photoUrl ||
+    r.playerImage ||
+    r.mlbHeadshot ||
+    context.headshot ||
+    context.headshotUrl ||
+    context.image ||
+    context.imageUrl ||
+    context.photo ||
+    context.photoUrl ||
+    context.playerImage ||
+    context.mlbHeadshot
+  );
+
   const hr = num(r.hrConfidence ?? r.realHrProbability ?? r.hrProbability);
   const power = num(r.powerScore);
   const pitcherRisk = num(r.pitcherRisk);
@@ -173,6 +192,8 @@ function buildPlayer(r) {
     opponent,
     game,
     pitcher,
+    headshot,
+    image: headshot,
     title,
     aiRole: r.aiRole || title,
     aiSections: meta.sections,
