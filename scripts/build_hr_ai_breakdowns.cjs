@@ -40,9 +40,13 @@ function labelPlayer(r) {
 
 function buildBreakdown(r) {
   const player = labelPlayer(r);
-  const team = r.team || "";
-  const opponent = r.opponent || r.vs || "";
-  const pitcher = r.pitcher || r.opposingPitcher || r.probablePitcher || "the opposing starter";
+  const key = String(player).toLowerCase().trim();
+  const context = contextByName.get(key) || contextById.get(String(r.playerId || r.id || "")) || {};
+
+  const team = r.team || context.team || context.playerTeam || context.batterTeam || "";
+  const opponent = r.opponent || r.vs || context.opponent || context.opp || "";
+  const game = r.game || context.game || context.matchup || (team && opponent ? `${team} vs ${opponent}` : "");
+  const pitcher = r.pitcher || r.opposingPitcher || r.probablePitcher || context.pitcher || context.opposingPitcher || context.probablePitcher || "the opposing starter";
 
   const hr = num(r.hrConfidence ?? r.realHrProbability ?? r.hrProbability);
   const power = num(r.powerScore);
@@ -107,6 +111,7 @@ function buildBreakdown(r) {
     player,
     team,
     opponent,
+    game,
     pitcher,
     grade: g,
     score: Number(score.toFixed(1)),
@@ -120,6 +125,19 @@ const dc = readJson(DC_FILE, {});
 const poolRaw = readJson(POOL_FILE, []);
 const poolRows = Array.isArray(poolRaw) ? poolRaw : (poolRaw.players || poolRaw.allPlayers || []);
 const idByName = new Map(poolRows.filter(x => x.player || x.name).map(x => [String(x.player || x.name).toLowerCase().trim(), x.playerId || x.id]));
+
+const contextByName = new Map(
+  poolRows
+    .filter(x => x.player || x.name)
+    .map(x => [String(x.player || x.name).toLowerCase().trim(), x])
+);
+
+const contextById = new Map(
+  poolRows
+    .filter(x => x.playerId || x.id)
+    .map(x => [String(x.playerId || x.id), x])
+);
+
 const rows = [];
 
 if (Array.isArray(dc.allPlayers)) rows.push(...dc.allPlayers);
