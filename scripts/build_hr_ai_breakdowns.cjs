@@ -30,6 +30,18 @@ function pct(v) {
   return `${n.toFixed(1)}%`;
 }
 
+
+function dailyHash(name) {
+  const seed = `${new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" })}:${name}`;
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
+  return Math.abs(h % 1000) / 1000;
+}
+
+function sameName(a, b) {
+  return String(a || "").toLowerCase().trim() === String(b || "").toLowerCase().trim();
+}
+
 function playerKey(r) {
   return String(r.playerId || r.id || r.player || r.name || "").trim();
 }
@@ -58,27 +70,42 @@ function buildBreakdown(r) {
   const volatility = num(r.volatilityScore);
   const park = num(r.parkFactor ?? r.parkBoost);
 
-  const dailySectionBoost =
+  const rawSectionBoost =
     num(r.aiDailyBoost) +
-    num(r.consensusScore) * 0.12 +
-    num(r.valueScore) * 0.10;
+    num(r.consensusScore) * 0.04 +
+    num(r.valueScore) * 0.04;
+
+  const dailySectionBoost = Math.max(-20, Math.min(rawSectionBoost, 18));
 
   const lineupBoost =
     /confirmed/i.test(String(r.lineupStatus || r.teamLineupStatus || "")) ? 4 :
     /projected/i.test(String(r.lineupStatus || r.teamLineupStatus || "")) ? 1.5 :
     0;
 
+  const dailyRandomizer = dailyHash(player) * 18;
+
+  const topBoardPenalty =
+    /bestPicks|safestPlays/i.test(String(r.aiDailySection || "")) ? 28 : 0;
+
+  const eliteRepeatPenalty =
+    (power >= 80 && hr >= 8) ? 18 :
+    (power >= 70 && hr >= 7) ? 12 :
+    0;
+
   const dailyContextScore =
-    pitcherRisk * 0.34 +
-    Math.max(weather, 0) * 0.28 +
-    pitchType * 0.22 +
-    launch * 0.16 +
-    Math.max(bullpen, 0) * 0.14 +
-    Math.max(park, 0) * 0.12 +
-    hr * 0.85 +
-    power * 0.08 +
-    dailySectionBoost +
-    lineupBoost;
+    pitcherRisk * 0.55 +
+    pitchType * 0.45 +
+    Math.max(weather, 0) * 0.42 +
+    Math.max(bullpen, 0) * 0.34 +
+    launch * 0.30 +
+    Math.max(park, 0) * 0.25 +
+    dailySectionBoost * 0.25 +
+    lineupBoost +
+    dailyRandomizer -
+    eliteRepeatPenalty -
+    topBoardPenalty -
+    hr * 0.15 -
+    power * 0.04;
 
   const score = dailyContextScore;
 
