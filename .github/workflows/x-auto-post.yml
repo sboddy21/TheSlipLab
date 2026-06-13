@@ -32,17 +32,20 @@ jobs:
           echo "X_ACCESS_SECRET=${{ secrets.X_ACCESS_SECRET }}" >> .env
           echo "X_DRY_RUN=${{ secrets.X_DRY_RUN }}" >> .env
 
+      - name: Refresh MLB data before X posts
+        run: node scripts/run_fast_refresh.js
+
       - name: Build daily X queue
         run: node scripts/content/build_x_daily_queue_v2.js
 
       - name: Post X queue
         run: node scripts/content/post_x_queue.js
 
-      - name: Commit updated queue
+      - name: Commit updated data and queue
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-          git add website/data/content/
+          git add website/data exports/content
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
       - name: Push updates
