@@ -58,15 +58,30 @@ function buildBreakdown(r) {
   const volatility = num(r.volatilityScore);
   const park = num(r.parkFactor ?? r.parkBoost);
 
-  const score =
-    hr * 1.5 +
-    power * 0.22 +
-    pitcherRisk * 0.20 +
-    Math.max(weather, 0) * 0.35 +
-    Math.max(bullpen, 0) * 0.15 +
-    pitchType * 0.12 +
-    launch * 0.12 +
-    Math.max(park, 0) * 0.15;
+  const dailySectionBoost =
+    num(r.aiDailyBoost) ||
+    num(r.consensusScore) ||
+    num(r.valueScore) * 0.20 ||
+    0;
+
+  const lineupBoost =
+    /confirmed/i.test(String(r.lineupStatus || r.teamLineupStatus || "")) ? 4 :
+    /projected/i.test(String(r.lineupStatus || r.teamLineupStatus || "")) ? 1.5 :
+    0;
+
+  const dailyContextScore =
+    pitcherRisk * 0.34 +
+    Math.max(weather, 0) * 0.28 +
+    pitchType * 0.22 +
+    launch * 0.16 +
+    Math.max(bullpen, 0) * 0.14 +
+    Math.max(park, 0) * 0.12 +
+    hr * 0.85 +
+    power * 0.08 +
+    dailySectionBoost +
+    lineupBoost;
+
+  const score = dailyContextScore;
 
   const g = "PENDING";
 
