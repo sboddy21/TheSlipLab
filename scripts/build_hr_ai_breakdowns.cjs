@@ -59,10 +59,9 @@ function buildBreakdown(r) {
   const park = num(r.parkFactor ?? r.parkBoost);
 
   const dailySectionBoost =
-    num(r.aiDailyBoost) ||
-    num(r.consensusScore) ||
-    num(r.valueScore) * 0.20 ||
-    0;
+    num(r.aiDailyBoost) +
+    num(r.consensusScore) * 0.12 +
+    num(r.valueScore) * 0.10;
 
   const lineupBoost =
     /confirmed/i.test(String(r.lineupStatus || r.teamLineupStatus || "")) ? 4 :
@@ -155,11 +154,43 @@ const contextById = new Map(
 
 const rows = [];
 
-if (Array.isArray(dc.allPlayers)) rows.push(...dc.allPlayers);
+const sectionWeights = {
+  ifOnlyOne: 48,
+  bestPicks: 44,
+  pitchTypeEdges: 36,
+  weatherCarry: 32,
+  bullpenBoosts: 28,
+  bestValue: 26,
+  safestPlays: 22,
+  lottoBombs: 18
+};
+
+function pushDailySection(sectionName, arr) {
+  const boost = sectionWeights[sectionName] || 10;
+  if (!Array.isArray(arr)) return;
+
+  for (const row of arr) {
+    rows.push({
+      ...row,
+      aiDailySection: sectionName,
+      aiDailyBoost: Math.max(num(row.aiDailyBoost), boost)
+    });
+  }
+}
 
 if (dc.sections && typeof dc.sections === "object") {
-  for (const arr of Object.values(dc.sections)) {
-    if (Array.isArray(arr)) rows.push(...arr);
+  for (const [sectionName, arr] of Object.entries(dc.sections)) {
+    pushDailySection(sectionName, arr);
+  }
+}
+
+if (Array.isArray(dc.allPlayers)) {
+  for (const row of dc.allPlayers) {
+    rows.push({
+      ...row,
+      aiDailySection: "allPlayers",
+      aiDailyBoost: Math.max(num(row.aiDailyBoost), 4)
+    });
   }
 }
 
@@ -173,7 +204,11 @@ const existingPlayers = new Set(rows.map(r => String(r.player || r.name || "").t
 for (const p of poolRows) {
   const name = String(p.player || p.name || "").toLowerCase().trim();
   if (!name || existingPlayers.has(name)) continue;
-  rows.push(p);
+  rows.push({
+    ...p,
+    aiDailySection: "poolOnly",
+    aiDailyBoost: -35
+  });
 }
 
 const map = new Map();
