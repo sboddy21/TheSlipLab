@@ -1,2 +1,131 @@
 <!doctype html>
-<html><body>AI Hall fixed</body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Slip Lab | AI Hall of Fame</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#020706;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 18% 5%,rgba(255,176,0,.18),transparent 32%),radial-gradient(circle at 92% 20%,rgba(140,255,50,.10),transparent 34%),linear-gradient(180deg,#07110d,#020706);z-index:-2}
+body:after{content:"";position:fixed;inset:0;background-image:radial-gradient(rgba(255,176,0,.16) 1px,transparent 1px);background-size:46px 46px;opacity:.24;z-index:-1}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(2,7,6,.94);border-bottom:1px solid rgba(255,176,0,.18);backdrop-filter:blur(12px)}
+.nav{max-width:1500px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.brand{font-size:22px;font-weight:1000;color:white;text-decoration:none;margin-right:10px}.brand span{color:#8cff32}
+.nav a{color:white;text-decoration:none;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900}
+.nav a.active{background:#ffb000;color:#110900;box-shadow:0 0 22px rgba(255,176,0,.34)}
+.wrap{max-width:1500px;margin:0 auto;padding:22px 18px 38px}
+.hero{border:1px solid rgba(255,176,0,.30);border-radius:24px;padding:20px;background:radial-gradient(circle at 0 0,rgba(255,176,0,.18),transparent 38%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));box-shadow:0 0 34px rgba(255,176,0,.13)}
+.kicker{color:#ffb000;font-size:11px;font-weight:1000;letter-spacing:.18em}
+h1{margin:7px 0 6px;font-size:44px;line-height:1}.hero p{margin:0;color:#c8d4d0;font-weight:800;font-size:14px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:13px}
+.stat{border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.20);border-radius:15px;padding:10px;text-align:center}
+.stat span{display:block;color:#aebbb7;font-size:9px;font-weight:1000;letter-spacing:.08em}.stat strong{display:block;margin-top:3px;color:#8cff32;font-size:22px}
+.section{margin-top:18px}.section h2{font-size:22px;margin:0 0 9px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.card{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.045);border-radius:17px;padding:12px;min-height:112px}
+.card.gold{border-color:rgba(255,176,0,.35);box-shadow:0 0 18px rgba(255,176,0,.16)}.card.green{border-color:rgba(140,255,50,.28);box-shadow:0 0 18px rgba(140,255,50,.13)}.card.red{border-color:rgba(255,90,45,.28);box-shadow:0 0 18px rgba(255,90,45,.13)}
+.card h3{margin:0 0 5px;font-size:17px;padding-right:50px}.meta{color:#aebbb7;font-size:11px;font-weight:800}.grade{position:absolute;top:10px;right:10px;border:1px solid rgba(255,176,0,.4);color:#ffb000;border-radius:12px;padding:6px 9px;font-weight:1000}.score{margin-top:9px;color:#8cff32;font-size:22px;font-weight:1000}
+.card-row{display:flex;align-items:center;gap:10px}.face{width:44px;height:44px;border-radius:50%;overflow:hidden;background:rgba(140,255,50,.10);display:flex;align-items:center;justify-content:center;color:#8cff32;font-weight:1000;flex:0 0 44px}.face img{width:100%;height:100%;object-fit:cover}
+.goat{display:grid;gap:7px}.goat-row{display:grid;grid-template-columns:54px 42px 1fr 95px;align-items:center;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);border-radius:14px;padding:9px 12px}.goat-row span{color:#ffb000;font-weight:1000}.goat-row b{font-size:15px}.goat-row strong{color:#8cff32;text-align:right}
+.empty{padding:16px;border-radius:16px;border:1px solid rgba(255,255,255,.08);color:#cbd5d1;background:rgba(255,255,255,.035)}
+@media(max-width:1000px){.grid,.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:34px}.goat-row{grid-template-columns:45px 38px 1fr 70px}}
+@media(max-width:650px){.grid,.stats{grid-template-columns:1fr}.nav{padding:10px}.wrap{padding:16px 12px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <nav class="nav">
+    <a class="brand" href="./index.html">THE <span>SLIP</span> LAB</a>
+    <a href="./mlb.html">Slate</a>
+    <a href="./full-board.html">Full Board</a>
+    <a href="./matchup-lab.html">Matchup Lab</a>
+    <a href="./power-zones.html">Power Zones</a>
+    <a href="./weather.html">Weather</a>
+    <a href="./results.html">Results</a>
+    <a href="./hr-decision-center.html">Decision Center</a>
+    <a href="./ai-says.html">AI Says</a>
+    <a class="active" href="./ai-hall-of-fame.html">Hall of Fame</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="kicker">AI HALL OF FAME</div>
+    <h1>Best AI HR Calls</h1>
+    <p>Tracking Slip Lab AI calls that turned into real home runs.</p>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <section class="section">
+    <h2>Best AI Calls</h2>
+    <div class="grid" id="bestCalls"></div>
+  </section>
+
+  <section class="section">
+    <h2>Value Hits</h2>
+    <div class="grid" id="valueHits"></div>
+  </section>
+
+  <section class="section">
+    <h2>Longshot Legends</h2>
+    <div class="grid" id="longshots"></div>
+  </section>
+
+  <section class="section">
+    <h2>AI GOAT Leaderboard</h2>
+    <div class="goat" id="goatBoard"></div>
+  </section>
+</main>
+
+<script>
+const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
+function initials(name){return String(name||"").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()}
+function face(r){
+  const src = r.headshot || (r.playerId ? `https://img.mlbstatic.com/mlb-photos/image/upload/w_100,q_auto:best/v1/people/${r.playerId}/headshot/67/current` : "");
+  if(!src) return `<div class="face">${initials(r.player)}</div>`;
+  return `<div class="face"><img src="${src}" onerror="this.parentElement.textContent='${initials(r.player)}';this.remove();"></div>`;
+}
+function card(r, cls){
+  return `<article class="card ${cls}">
+    <div class="grade">${esc(r.grade || "B")}</div>
+    <div class="card-row">
+      ${face(r)}
+      <div>
+        <h3>${esc(r.player)}</h3>
+        <div class="meta">${esc(r.date || "")} • Rank #${esc(r.rank || "-")}</div>
+      </div>
+    </div>
+    <div class="score">${esc(r.score ?? "-")}</div>
+    <div class="meta">${esc(r.distance || "-")} ft ${r.pitcher ? "vs " + esc(r.pitcher) : ""}</div>
+  </article>`;
+}
+function empty(){return `<div class="empty">No qualifying AI hits yet.</div>`}
+async function load(){
+  const data = await (await fetch("./data/hr_ai_hof.json?v=" + Date.now())).json();
+
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><span>TOTAL AI HITS</span><strong>${data.totalAiHits || 0}</strong></div>
+    <div class="stat"><span>BEST CALLS</span><strong>${data.bestCalls?.length || 0}</strong></div>
+    <div class="stat"><span>VALUE HITS</span><strong>${data.valueHits?.length || 0}</strong></div>
+    <div class="stat"><span>LONGSHOTS</span><strong>${data.longshots?.length || 0}</strong></div>
+    <div class="stat"><span>GOATS</span><strong>${data.goatBoard?.length || 0}</strong></div>
+  `;
+
+  document.getElementById("bestCalls").innerHTML = (data.bestCalls || []).slice(0,24).map(r=>card(r,"gold")).join("") || empty();
+  document.getElementById("valueHits").innerHTML = (data.valueHits || []).slice(0,24).map(r=>card(r,"green")).join("") || empty();
+  document.getElementById("longshots").innerHTML = (data.longshots || []).slice(0,24).map(r=>card(r,"red")).join("") || empty();
+
+  document.getElementById("goatBoard").innerHTML = (data.goatBoard || []).slice(0,50).map((r,i)=>`
+    <div class="goat-row">
+      <span>#${i+1}</span>
+      ${face(r)}
+      <b>${esc(r.player)}</b>
+      <strong>${esc(r.count)} HR</strong>
+    </div>
+  `).join("") || empty();
+}
+load();
+</script>
+</body>
+</html>
