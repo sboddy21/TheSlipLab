@@ -6,253 +6,223 @@ const DC_FILE = path.join(ROOT, "website/data/hr_decision_center.json");
 const POOL_FILE = path.join(ROOT, "website/data/mlb_player_pool.json");
 const OUT_FILE = path.join(ROOT, "website/data/hr_ai_breakdowns.json");
 
-function readJson(file, fallback) {
-  try { return JSON.parse(fs.readFileSync(file, "utf8")); }
+function readJson(file, fallback){
+  try { return JSON.parse(fs.readFileSync(file,"utf8")); }
   catch { return fallback; }
 }
 
-function num(v, d = 0) {
+function arr(x){
+  if (Array.isArray(x)) return x;
+  return x?.players || x?.allPlayers || x?.rows || x?.data || [];
+}
+
+function num(v){
   const n = Number(v);
-  return Number.isFinite(n) ? n : d;
+  return Number.isFinite(n) ? n : 0;
 }
 
-function clean(v) {
-  return String(v ?? "").trim();
+function clean(v){
+  return String(v || "").trim();
 }
 
-function todayKey() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).format(new Date());
+function key(v){
+  return clean(v).toLowerCase();
 }
 
-function dailyHash(name) {
-  const seed = `${todayKey()}:${name}`;
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = ((h << 5) - h + seed.charCodeAt(i)) | 0;
-  return Math.abs(h % 1000) / 1000;
+function playerName(r){
+  return clean(r.player || r.name || r.batter || r.fullName);
 }
 
-function keyName(r) {
-  return clean(r.player || r.name || r.batter || r.hitter).toLowerCase();
+function getScore(r){
+  return Math.max(
+    num(r.aiDailyScore),
+    num(r.dailyContextScore),
+    num(r.hrConfidence) > 1 ? num(r.hrConfidence) * 4 : num(r.hrConfidence) * 100,
+    num(r.realHrProbability) * 100,
+    num(r.hrProbability) * 100,
+    num(r.score),
+    num(r.powerScore) * .8,
+    num(r.pitcherRisk) * .75,
+    28
+  );
 }
 
-function playerId(r) {
-  return r.playerId || r.id || null;
-}
-
-function grade(score, rank) {
-  if (rank === 1 && score >= 82) return "A+";
-  if (rank <= 6 && score >= 74) return "A";
-  if (score >= 62) return "B+";
-  if (score >= 48) return "B";
-  return "C+";
-}
-
-function pct(v) {
-  const n = num(v);
-  return n ? `${n.toFixed(1)}%` : null;
-}
-
-const dc = readJson(DC_FILE, {});
-const poolRaw = readJson(POOL_FILE, []);
-const poolRows = Array.isArray(poolRaw) ? poolRaw : (poolRaw.players || poolRaw.allPlayers || []);
-
-const contextByName = new Map(poolRows.map(p => [keyName(p), p]));
-const contextById = new Map(poolRows.filter(p => playerId(p)).map(p => [String(playerId(p)), p]));
-
-const rows = [];
-const sectionMap = new Map();
-
-function pushSection(section, weight, role, arr) {
-  if (!Array.isArray(arr)) return;
-  arr.forEach((r, i) => {
-    const name = keyName(r);
-    const prev = sectionMap.get(name) || { sections: [], boost: 0, bestRank: 999 };
-    prev.sections.push(section);
-    prev.boost += Math.max(0, weight - i * 1.25);
-    prev.bestRank = Math.min(prev.bestRank, i + 1);
-    sectionMap.set(name, prev);
-    rows.push({ ...r, aiSection: section, aiRole: role, aiSectionWeight: weight });
-  });
-}
-
-const sections = dc.sections || {};
-
-pushSection("ifOnlyOne", 42, "AI Favorite Candidate", sections.ifOnlyOne);
-pushSection("pitchTypeEdges", 38, "Pitch Mix Exploit", sections.pitchTypeEdges);
-pushSection("weatherCarry", 34, "Environment Boost", sections.weatherCarry);
-pushSection("bullpenBoosts", 30, "Late Game Edge", sections.bullpenBoosts);
-pushSection("bestValue", 28, "Hidden Value", sections.bestValue);
-pushSection("lottoBombs", 24, "Volatile Ceiling", sections.lottoBombs);
-pushSection("bestPicks", 18, "Main Board Overlap", sections.bestPicks);
-pushSection("safestPlays", 12, "Safety Profile", sections.safestPlays);
-
-if (Array.isArray(dc.allPlayers)) {
-  dc.allPlayers.forEach(r => rows.push({ ...r, aiSection: "allPlayers", aiRole: "Slate Context", aiSectionWeight: 4 }));
-}
-
-const existing = new Set(rows.map(keyName));
-for (const p of poolRows) {
-  if (!keyName(p) || existing.has(keyName(p))) continue;
-  rows.push({ ...p, aiSection: "poolOnly", aiRole: "Player Pool Depth", aiSectionWeight: -30 });
-}
-
-function buildPlayer(r) {
-  const name = clean(r.player || r.name || r.batter || r.hitter);
-  const context = contextByName.get(name.toLowerCase()) || contextById.get(String(playerId(r))) || {};
-  const team = clean(r.team || context.team || context.playerTeam || context.batterTeam);
-  const opponent = clean(r.opponent || r.vs || context.opponent || context.opp);
-  const game = clean(r.game || context.game || context.matchup || (team && opponent ? `${team} vs ${opponent}` : ""));
-  const pitcher = clean(r.pitcher || r.opposingPitcher || r.probablePitcher || context.pitcher || context.opposingPitcher || context.probablePitcher || "opposing starter");
-
-  const headshot = clean(
-    r.headshot ||
-    r.headshotUrl ||
-    r.image ||
-    r.imageUrl ||
-    r.photo ||
-    r.photoUrl ||
-    r.playerImage ||
-    r.mlbHeadshot ||
-    context.headshot ||
-    context.headshotUrl ||
-    context.image ||
-    context.imageUrl ||
-    context.photo ||
-    context.photoUrl ||
-    context.playerImage ||
-    context.mlbHeadshot
+function getConfidence(score, r){
+  const direct = Math.max(
+    num(r.hrConfidence),
+    num(r.realHrProbability) * 100,
+    num(r.hrProbability) * 100
   );
 
-  const hr = num(r.hrConfidence ?? r.realHrProbability ?? r.hrProbability);
-  const power = num(r.powerScore);
-  const pitcherRisk = num(r.pitcherRisk);
-  const weather = num(r.weatherBoost ?? r.weatherCarry ?? r.pullWindBoost);
-  const bullpen = num(r.bullpenBoost ?? r.bullpen);
-  const pitchType = num(r.pitchTypeEdge ?? r.pitchTypeDestructionScore);
-  const launch = num(r.launchProfileScore ?? r.launchScore);
-  const park = num(r.parkFactor ?? r.parkBoost);
-  const volatility = num(r.volatilityScore);
+  if (direct > 0) return direct > 1 ? direct : direct * 100;
 
-  const meta = sectionMap.get(name.toLowerCase()) || { sections: [], boost: 0, bestRank: 999 };
-  const dailyNoise = dailyHash(name) * 10;
+  return Math.max(4.5, Math.min(22, 4 + score * .18));
+}
 
-  const intelligenceScore =
-    pitcherRisk * 0.48 +
-    pitchType * 0.42 +
-    Math.max(weather, 0) * 0.40 +
-    launch * 0.30 +
-    Math.max(bullpen, 0) * 0.26 +
-    Math.max(park, 0) * 0.22 +
-    Math.min(meta.boost, 28) +
-    dailyNoise +
-    hr * 0.22 +
-    power * 0.05 -
-    (meta.sections.includes("bestPicks") ? 8 : 0) -
-    (power >= 75 && hr >= 15 ? 6 : 0);
+function grade(score, rank){
+  if (rank === 1) return "A+";
+  if (rank <= 7) return "A";
+  if (rank <= 56) return "B+";
+  return "B";
+}
 
+function sectionHit(dc, player, sectionName){
+  const rows = dc?.sections?.[sectionName] || [];
+  const name = key(player);
+  return rows.some(r => key(playerName(r)) === name);
+}
+
+function reasonPack(r, conf){
   const reasons = [];
-  if (pitcherRisk >= 85) reasons.push("Pitcher vulnerability is one of the strongest daily signals.");
-  else if (pitcherRisk >= 70) reasons.push("Positive pitcher vulnerability on today’s slate.");
 
-  if (pitchType >= 65) reasons.push("Pitch mix lines up with the hitter damage profile.");
-  if (weather >= 6) reasons.push("Weather/park carry adds a real environment boost.");
-  if (bullpen >= 8) reasons.push("Bullpen path adds late-game HR upside.");
-  if (launch >= 60) reasons.push("Launch profile fits the type of contact needed today.");
-  if (meta.sections.includes("bestValue")) reasons.push("The model sees a hidden value angle beyond the main board.");
-  if (meta.sections.includes("lottoBombs")) reasons.push("Volatile profile, but the ceiling is live.");
-  if (meta.sections.includes("ifOnlyOne")) reasons.push("Strong enough to enter the AI final-decision conversation.");
+  reasons.push(`${conf.toFixed(1)}% model HR confidence`);
 
-  if (!reasons.length) reasons.push("The full daily context is stronger than the raw season profile suggests.");
+  const power = num(r.powerScore || r.hrPowerScore || r.batterPower || r.valueScore);
+  const pitcher = num(r.pitcherRisk || r.pitcherVulnerability || r.pitcherScore);
+  const pitch = num(r.pitchTypeDestructionScore || r.pitchTypeEdge || r.pitchEdge);
+  const bullpen = num(r.bullpenInheritanceScore || r.bullpen || r.bullpenBoost);
+  const weather = num(r.weatherScore || r.weatherCarryScore || r.pullWindHrScore || r.weather);
 
-  let title = "AI Slate Read";
-  if (meta.sections.includes("ifOnlyOne")) title = "AI Finalist";
-  else if (meta.sections.includes("pitchTypeEdges")) title = "AI Pitch Mix Exploit";
-  else if (meta.sections.includes("weatherCarry")) title = "AI Environment Play";
-  else if (meta.sections.includes("bestValue")) title = "AI Sneaky Play";
-  else if (meta.sections.includes("lottoBombs")) title = "AI Ceiling Shot";
+  if (power >= 75) reasons.push("Elite power profile");
+  else if (power >= 55) reasons.push("Above-average power profile");
+  else reasons.push("Strong model profile");
 
-  const badges = [];
-  if (meta.sections.length >= 3) badges.push("⚡ Multi-Signal");
-  if (pitcherRisk >= 75) badges.push("🎯 Pitcher Leak");
-  if (pitchType >= 65) badges.push("🧬 Pitch Mix Edge");
-  if (weather >= 6) badges.push("🌬️ Carry Boost");
-  if (bullpen >= 8) badges.push("🔥 Bullpen Edge");
-  if (meta.sections.includes("bestValue")) badges.push("💎 Hidden Angle");
-  if (meta.sections.includes("lottoBombs")) badges.push("💣 Ceiling Shot");
+  if (pitcher >= 90) reasons.push("Extremely vulnerable opposing pitcher");
+  else if (pitcher >= 75) reasons.push("Pitcher vulnerability is one of the strongest daily signals");
+  else if (pitcher >= 55) reasons.push("Positive pitcher vulnerability on today's slate");
+
+  if (pitch >= 55) reasons.push("Pitch mix lines up with the hitter damage profile");
+  if (weather >= 55) reasons.push("Weather environment supports carry");
+  if (bullpen >= 45) reasons.push("Bullpen path adds late-game HR upside");
+
+  return reasons.slice(0,5);
+}
+
+function buildExplanationScores(info){
+  const txt = (info.reasons || []).join(" ").toLowerCase();
+
+  let power = 70;
+  let matchup = 70;
+  let environment = 65;
+
+  if (txt.includes("elite power")) power = 95;
+  else if (txt.includes("above-average power")) power = 82;
+  else if (txt.includes("strong model")) power = 75;
+
+  if (txt.includes("extremely vulnerable")) matchup = 96;
+  else if (txt.includes("strongest daily signals")) matchup = 90;
+  else if (txt.includes("positive pitcher")) matchup = 82;
+
+  if (txt.includes("weather")) environment = 92;
+  else if (txt.includes("bullpen")) environment = 88;
 
   return {
-    playerId: playerId(r),
-    player: name,
-    team,
-    opponent,
-    game,
-    pitcher,
-    headshot,
-    image: headshot,
-    title,
-    aiRole: r.aiRole || title,
-    aiSections: meta.sections,
-    score: Number(intelligenceScore.toFixed(1)),
-    grade: "PENDING",
-    confidence: pct(Math.max(0, Math.min(99, intelligenceScore))),
-    summary: `${name} is not being graded as a season-long power profile here. AI Says likes this spot because ${reasons.join(" ")}`,
-    reasons,
-    badges,
-    explanationScores: {
-      power: Math.round(Math.min(100, power || 55)),
-      matchup: Math.round(Math.min(100, pitcherRisk || 55)),
-      environment: Math.round(Math.min(100, Math.max(weather, park, bullpen, launch, 55))),
-      certainty: Math.round(Math.min(100, Math.max(40, intelligenceScore)))
-    },
-    pitcherReason: pitcherRisk >= 70 ? `${pitcher} creates a daily matchup edge.` : `${pitcher} is not the whole reason for the grade.`,
-    matchupReason: pitchType >= 60 ? "Pitch-type fit is driving the AI read." : "The edge comes from combined daily context.",
-    environmentReason: weather >= 6 || park >= 6 || bullpen >= 8 ? "Environment adds support to the HR path." : "Environment is not the primary driver."
+    power,
+    matchup,
+    environment,
+    certainty: Math.round(info.score || 0)
   };
+}
+
+const dc = readJson(DC_FILE,{});
+const pool = readJson(POOL_FILE,[]);
+const poolRows = arr(pool);
+
+const rows = [];
+
+if (Array.isArray(dc.allPlayers)) rows.push(...dc.allPlayers);
+
+if (dc.sections && typeof dc.sections === "object") {
+  for (const section of Object.values(dc.sections)) {
+    if (Array.isArray(section)) rows.push(...section);
+  }
+}
+
+const existing = new Set(rows.map(r => key(playerName(r))));
+for (const p of poolRows) {
+  const name = key(playerName(p));
+  if (!name || existing.has(name)) continue;
+  rows.push(p);
 }
 
 const map = new Map();
 
 for (const r of rows) {
-  const name = keyName(r);
-  if (!name) continue;
-  const built = buildPlayer(r);
-  const old = map.get(name);
-  if (!old || built.score > old.score) map.set(name, built);
+  const player = playerName(r);
+  if (!player) continue;
+
+  const score = getScore(r);
+  const conf = getConfidence(score, r);
+
+  const info = {
+    player,
+    playerId: r.playerId || r.id || r.mlbId || "",
+    team: r.team || r.Team || "",
+    opponent: r.opponent || r.opp || r.Opponent || "",
+    pitcher: r.pitcher || r.opposingPitcher || r.probablePitcher || "TBD",
+    score: Number(score.toFixed(1)),
+    grade: "B",
+    confidence: Number(conf.toFixed(1)),
+    title: "Slip Lab AI Breakdown",
+    reasons: reasonPack(r, conf)
+  };
+
+  info.summary = `The AI model gives ${info.player} a strong HR profile against ${info.pitcher}. ${info.reasons.slice(1,4).join(". ")}.`;
+  info.matchupReason = info.reasons.find(x => /pitch|power|confidence/i.test(x)) || "Strong matchup profile";
+  info.pitcherReason = info.reasons.find(x => /pitcher|bullpen/i.test(x)) || "Pitcher profile reviewed";
+  info.environmentReason = info.reasons.find(x => /weather|bullpen|carry/i.test(x)) || "Run environment reviewed";
+
+  const old = map.get(key(player));
+  if (!old || info.score > old.score) map.set(key(player), info);
 }
 
-const sorted = [...map.values()].sort((a, b) => b.score - a.score);
+const sorted = [...map.values()].sort((a,b)=>b.score-a.score);
 
-sorted.forEach((p, i) => {
-  p.rank = i + 1;
-  p.grade = grade(p.score, p.rank);
-  if (p.rank === 1) p.badges.unshift("🧠 AI #1");
-  else if (p.rank <= 5) p.badges.unshift(`🧠 AI #${p.rank}`);
+sorted.forEach((info, i) => {
+  const rank = i + 1;
+  info.rank = rank;
+  info.grade = grade(info.score, rank);
+
+  info.consensus = [];
+  if (sectionHit(dc, info.player, "bestPicks")) info.consensus.push("🔥 AI + Best Pick");
+  if (sectionHit(dc, info.player, "bestValue")) info.consensus.push("💰 AI + Best Value");
+  if (sectionHit(dc, info.player, "dueForHr")) info.consensus.push("⏳ AI + Due List");
+  if (sectionHit(dc, info.player, "weatherCarry")) info.consensus.push("🌪 AI + Weather");
+  if (sectionHit(dc, info.player, "pitchTypeEdges")) info.consensus.push("🧬 AI + Pitch Edge");
+  if (sectionHit(dc, info.player, "bullpenBoosts")) info.consensus.push("💣 AI + Bullpen");
+
+  let consensusScore = 0;
+  if (sectionHit(dc, info.player, "bestPicks")) consensusScore += 20;
+  if (sectionHit(dc, info.player, "bestValue")) consensusScore += 15;
+  if (sectionHit(dc, info.player, "dueForHr")) consensusScore += 15;
+  if (sectionHit(dc, info.player, "weatherCarry")) consensusScore += 15;
+  if (sectionHit(dc, info.player, "pitchTypeEdges")) consensusScore += 15;
+  if (sectionHit(dc, info.player, "bullpenBoosts")) consensusScore += 20;
+
+  info.consensusScore = Math.min(100, consensusScore);
+  info.agreementCount = info.consensus.length;
+
+  info.badges = [];
+  if (rank === 1) info.badges.push("🧠 AI #1");
+  else if (rank <= 5) info.badges.push(`🧠 AI #${rank}`);
+  if (info.consensus.length >= 3) info.badges.push("⚡ Triple Consensus");
+  if ((info.reasons || []).join(" ").toLowerCase().includes("power")) info.badges.push("🔥 Power Fit");
+  if ((info.reasons || []).join(" ").toLowerCase().includes("pitcher")) info.badges.push("🎯 Pitcher Leak");
+  if ((info.reasons || []).join(" ").toLowerCase().includes("bullpen")) info.badges.push("💣 HR Upside");
+  if ((info.reasons || []).join(" ").toLowerCase().includes("pitch mix")) info.badges.push("🧬 Pitch Mix Edge");
+
+  info.explanationScores = buildExplanationScores(info);
 });
 
-const output = {
-  date: todayKey(),
+const out = {
   updatedAt: new Date().toISOString(),
-  source: "AI intelligence layer using daily Decision Center, pitcher, pitch mix, environment, bullpen, and slate movement signals.",
-  philosophy: "AI Says is not a copy of the HR board. It identifies the smartest daily angles, traps, overlooked players, and matchup paths.",
-  playerCount: sorted.length,
-  featured: {
-    favorite: sorted[0] || null,
-    runnerUp: sorted[1] || null,
-    sneakyPlay: sorted.find(p => p.aiSections.includes("bestValue")) || sorted[2] || null,
-    pitchExploit: sorted.find(p => p.aiSections.includes("pitchTypeEdges")) || sorted[3] || null,
-    environmentPlay: sorted.find(p => p.aiSections.includes("weatherCarry") || p.badges.includes("🌬️ Carry Boost")) || sorted[4] || null,
-    ceilingShot: sorted.find(p => p.aiSections.includes("lottoBombs")) || sorted[5] || null
-  },
+  source: "hr_decision_center.json + mlb_player_pool.json",
+  count: sorted.length,
   players: Object.fromEntries(sorted.map(p => [p.player, p]))
 };
 
-fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
+fs.writeFileSync(OUT_FILE, JSON.stringify(out,null,2));
 
-console.log("HR AI INTELLIGENCE ENGINE COMPLETE");
+console.log("HR AI BREAKDOWNS COMPLETE");
 console.log("Players:", sorted.length);
 console.log("Saved:", OUT_FILE);
