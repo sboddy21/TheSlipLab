@@ -128,6 +128,12 @@ const dc = readJson(DC_FILE,{});
 const pool = readJson(POOL_FILE,[]);
 const poolRows = arr(pool);
 
+const poolByName = new Map();
+for (const p of poolRows) {
+  const n = key(playerName(p));
+  if (n) poolByName.set(n, p);
+}
+
 const rows = [];
 
 if (Array.isArray(dc.allPlayers)) rows.push(...dc.allPlayers);
