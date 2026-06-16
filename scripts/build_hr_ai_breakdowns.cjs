@@ -211,6 +211,24 @@ sorted.forEach((info, i) => {
   if ((info.reasons || []).join(" ").toLowerCase().includes("bullpen")) info.badges.push("💣 HR Upside");
   if ((info.reasons || []).join(" ").toLowerCase().includes("pitch mix")) info.badges.push("🧬 Pitch Mix Edge");
 
+  const poolFix = poolByName.get(key(info.player)) || {};
+
+  if (!info.playerId) {
+    info.playerId =
+      poolFix.playerId ||
+      poolFix.mlbId ||
+      poolFix.mlbID ||
+      poolFix.id ||
+      "";
+  }
+
+  if (!info.headshot && info.playerId) {
+    info.headshot = `https://img.mlbstatic.com/mlb-photos/image/upload/w_160,q_auto:best/v1/people/${info.playerId}/headshot/67/current`;
+  }
+
+  if (!info.team && poolFix.team) info.team = poolFix.team;
+  if (!info.opponent && poolFix.opponent) info.opponent = poolFix.opponent;
+
   info.explanationScores = buildExplanationScores(info);
 });
 
