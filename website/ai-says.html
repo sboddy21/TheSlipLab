@@ -721,9 +721,7 @@ function confidence(row){
 }
 
 function oneLine(row){
-  const reasons = row.reasons || [];
-  const clean = reasons.find(r => !String(r).toLowerCase().includes("confidence")) || reasons[0] || "Strong model profile";
-  return clean + ".";
+  return row.cardTake || row.analystTake || row.summary || "Strong model profile.";
 }
 
 function shortSummary(row){

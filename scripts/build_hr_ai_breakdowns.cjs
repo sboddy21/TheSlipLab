@@ -124,6 +124,29 @@ function buildExplanationScores(info){
   };
 }
 
+
+function buildAnalystTake(info){
+  const reasons = info.reasons || [];
+  const conf = info.confidence ? `${info.confidence}%` : "model-backed";
+  const game = `${info.team || "his team"} vs ${info.opponent || "opponent"}`;
+  const pitcher = info.pitcher || "the expected starter";
+
+  const mainReasons = reasons
+    .filter(r => !String(r).includes("%"))
+    .slice(0,3)
+    .join(", ");
+
+  if (info.grade === "A+" || info.grade === "A") {
+    return `${info.player} is one of the model's strongest HR targets in ${game}, carrying a ${info.grade} grade with ${conf} HR confidence against ${pitcher}. The profile is driven by ${mainReasons || "a strong blend of power, matchup, and slate context"}, giving him one of the cleaner AI-backed paths on the board.`;
+  }
+
+  if (info.grade === "B+") {
+    return `${info.player} checks in as a strong secondary AI target in ${game}. The grade is not built on one signal alone — ${mainReasons || "the matchup, power profile, and game context"} all keep him firmly in the mix against ${pitcher}.`;
+  }
+
+  return `${info.player} lands in the AI watch range for ${game}. The model sees enough in the matchup against ${pitcher} to keep him on the radar, but the profile is more of a lower-priority HR lean than a core target.`;
+}
+
 const dc = readJson(DC_FILE,{});
 const pool = readJson(POOL_FILE,[]);
 const poolRows = arr(pool);
@@ -234,6 +257,9 @@ sorted.forEach((info, i) => {
 
   if (!info.team && poolFix.team) info.team = poolFix.team;
   if (!info.opponent && poolFix.opponent) info.opponent = poolFix.opponent;
+
+  info.analystTake = buildAnalystTake(info);
+  info.cardTake = info.analystTake;
 
   info.explanationScores = buildExplanationScores(info);
 });
