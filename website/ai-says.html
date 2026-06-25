@@ -1375,33 +1375,108 @@ function renderReportCard(){
   `;
 }
 
+
+function aiGradeTake(grade, list){
+  const names = list.slice(0,4).map(r=>r.player).filter(Boolean).join(", ");
+
+  if(grade === "A+"){
+    return `This is the elite AI tier today. These bats have the strongest overall blend of power, matchup quality, confidence, and model agreement. The AI sees this group as the cleanest home run profile on the board${names ? `, led by ${esc(names)}` : ""}.`;
+  }
+
+  if(grade === "A"){
+    return `This tier is still very strong, but slightly behind the A+ group. These players carry real upside with one or two small factors keeping them out of the top tier. The AI still views them as serious candidates.`;
+  }
+
+  if(grade === "B+"){
+    return `This is the upside tier. These hitters have enough power, matchup help, or recent form to matter, but the profile is less complete than the A grades. The AI sees them as playable but not automatic.`;
+  }
+
+  if(grade === "B"){
+    return `This is the secondary watchlist. These players have some paths to a home run, usually through power, park, pitcher weakness, or value, but the confidence is more mixed.`;
+  }
+
+  return `This is the lower confidence tier. These players are not fully dead, but the AI needs more support from matchup, lineup, weather, or recent form before treating them as priority plays.`;
+}
+
+function renderGradeSection(grade, label, icon){
+  const list = rows
+    .filter(r=>normGrade(r.grade) === grade)
+    .sort((a,b)=>num(b.score)-num(a.score));
+
+  return `
+    <section class="grade-report ${grade.replace("+","plus").toLowerCase()}">
+      <div class="grade-report-head">
+        <div>
+          <span>${icon} ${label}</span>
+          <h2>${grade} Tier</h2>
+        </div>
+        <strong>${list.length}</strong>
+      </div>
+
+      <p class="grade-ai-take">${aiGradeTake(grade, list)}</p>
+
+      <div class="grade-player-list">
+        ${list.slice(0,30).map((r,i)=>`
+          <button class="grade-player player-card" data-player-name="${esc(r.player)}" data-player-id="${esc(r.playerId || "")}">
+            <span>${i+1}</span>
+            <b>${esc(r.player)}</b>
+            <small>${esc(r.team || "")}${r.opponent ? " vs " + esc(r.opponent) : ""}</small>
+            <em>${Math.round(num(r.score))}</em>
+          </button>
+        `).join("") || `<div class="empty-ai">No ${grade} players today.</div>`}
+      </div>
+    </section>
+  `;
+}
+
+
 function render(){
   if(!rows.length) return;
+
   const shown = filterRows();
 
   document.getElementById("playerCount").textContent = rows.length;
   document.getElementById("gradeCount").textContent = shown.length;
-  document.getElementById("lockCard").style.display = rows[0] ? "" : "none";
+
+  const lock = document.getElementById("lockCard");
+  if(lock) lock.style.display = "none";
+
+  const spotlight = document.getElementById("spotlightGrid");
+  if(spotlight) spotlight.innerHTML = "";
 
   renderPulse();
   renderMovement();
-  renderVerdict();
-  renderStacks();
   renderReportCard();
-  renderLock(rows[0]);
-  document.getElementById("spotlightGrid").innerHTML = [
-    renderSpotlightCard(rows[1], "AI Runner-Up", "🥈"),
-    renderSpotlightCard(pickValue(), "AI Value", "💰"),
-    renderSpotlightCard(pickLongshot(), "AI Longshot", "💣")
-  ].join("");
 
   updateFilterCounts();
 
-  const boardRows = query
-    ? shown.slice(0,80)
-    : (activeGrade === "all" ? shown.slice(4,40) : shown.slice(0,40));
+  const grades = [
+    ["A+", "Elite AI Targets", "⭐"],
+    ["A", "Strong AI Targets", "🔥"],
+    ["B+", "Upside AI Targets", "🟠"],
+    ["B", "Secondary Watchlist", "⚖️"],
+    ["C", "Lower Confidence", "⚠️"]
+  ];
 
-  document.getElementById("board").innerHTML = boardRows.map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
+  const board = document.getElementById("board");
+
+  if(query){
+    board.innerHTML = shown.slice(0,80).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
+  } else if(activeGrade !== "all"){
+    const g = normGrade(activeGrade);
+    const meta = grades.find(x=>x[0] === g) || [g, `${g} Tier`, "🤖"];
+    board.innerHTML = renderGradeSection(meta[0], meta[1], meta[2]);
+  } else {
+    board.innerHTML = `
+      <div class="ai-simple-intro">
+        <span>🤖 AI SAYS</span>
+        <h2>Today’s AI Grade Report</h2>
+        <p>The board is grouped by AI grade instead of individual card overload. Each tier shows the players the model likes in that range, plus a quick AI explanation of what the tier means today.</p>
+      </div>
+      ${grades.map(g=>renderGradeSection(g[0], g[1], g[2])).join("")}
+    `;
+  }
+
   wireClicks();
 }
 
@@ -3055,3 +3130,102 @@ load();
 }
 
 </style>
+
+
+<style>
+.ai-simple-intro{
+  margin:18px 0;
+  padding:22px;
+  border-radius:24px;
+  background:linear-gradient(135deg,rgba(12,34,20,.96),rgba(3,8,7,.98));
+  border:1px solid rgba(143,255,45,.20);
+  box-shadow:0 0 30px rgba(143,255,45,.08);
+}
+.ai-simple-intro span,
+.grade-report-head span{
+  color:#8fff2d;
+  font-weight:1000;
+  font-size:12px;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+}
+.ai-simple-intro h2{
+  margin:8px 0;
+  font-size:32px;
+}
+.ai-simple-intro p,
+.grade-ai-take{
+  color:rgba(255,255,255,.74);
+  font-weight:750;
+  line-height:1.45;
+}
+.grade-report{
+  margin:18px 0;
+  padding:18px;
+  border-radius:24px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+}
+.grade-report-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:10px;
+}
+.grade-report-head h2{
+  margin:4px 0 0;
+  font-size:25px;
+}
+.grade-report-head strong{
+  min-width:54px;
+  height:54px;
+  border-radius:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#8fff2d;
+  background:rgba(143,255,45,.10);
+  border:1px solid rgba(143,255,45,.25);
+  font-size:24px;
+}
+.grade-player-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:10px;
+  margin-top:14px;
+}
+.grade-player{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.10);
+  background:rgba(0,0,0,.22);
+  border-radius:16px;
+  padding:12px;
+  color:white;
+  display:grid;
+  grid-template-columns:30px 1fr 46px;
+  grid-template-areas:
+    "num name score"
+    "num meta score";
+  gap:2px 8px;
+  text-align:left;
+  cursor:pointer;
+}
+.grade-player:hover{
+  transform:translateY(-2px);
+  border-color:rgba(143,255,45,.35);
+  box-shadow:0 0 18px rgba(143,255,45,.12);
+}
+.grade-player span{grid-area:num;color:#8fff2d;font-weight:1000}
+.grade-player b{grid-area:name;font-size:14px}
+.grade-player small{grid-area:meta;color:rgba(255,255,255,.58);font-weight:800}
+.grade-player em{
+  grid-area:score;
+  align-self:center;
+  justify-self:end;
+  font-style:normal;
+  font-weight:1000;
+  color:#8fff2d;
+}
+</style>
+
