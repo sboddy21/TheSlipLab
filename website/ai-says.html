@@ -1194,15 +1194,45 @@ function renderMovement(){
 
   const risers = movementData?.risers || [];
   const fallers = movementData?.fallers || [];
+  const stable = movementData?.stable || [];
 
   const box = document.getElementById("aiMovement");
+  if(!box) return;
+
+  const renderRows = (rows, type) => rows.slice(0,5).map(r=>`
+    <div class="move-row ${type}">
+      <b>${r.player}</b>
+      <span>${type === "rise" ? "+" : ""}${r.rankChange || r.scoreChange || Math.round(r.currentScore || 0)}</span>
+    </div>
+  `).join("");
 
   if(!risers.length && !fallers.length){
     box.innerHTML = `
-      <div class="movement-empty">
-        <div class="movement-title">📈 AI MOVEMENT TRACKER</div>
-        <h3>Collecting history...</h3>
-        <p>Waiting for additional refreshes.</p>
+      <div class="movement-wrap">
+        <div class="movement-head">
+          <span>📈 AI MOVEMENT TRACKER</span>
+          <h2>Baseline Established</h2>
+          <p>The model is live. Movement will appear after the next score change.</p>
+        </div>
+
+        <div class="movement-grid">
+          <div class="movement-side">
+            <h3>🧠 Current AI Leaders</h3>
+            ${stable.length ? renderRows(stable, "rise") : `<p>No AI player data loaded yet.</p>`}
+          </div>
+
+          <div class="movement-side">
+            <h3>⏱ Tracking Status</h3>
+            <div class="move-row">
+              <b>History Engine</b>
+              <span>LIVE</span>
+            </div>
+            <div class="move-row">
+              <b>Next Refresh</b>
+              <span>~5 min</span>
+            </div>
+          </div>
+        </div>
       </div>
     `;
     return;
@@ -1220,24 +1250,12 @@ function renderMovement(){
 
         <div class="movement-side">
           <h3>📈 Biggest Risers</h3>
-
-          ${risers.slice(0,5).map(r=>`
-            <div class="move-row rise">
-              <b>${r.player}</b>
-              <span>+${r.rankChange || r.scoreChange}</span>
-            </div>
-          `).join("")}
+          ${risers.length ? renderRows(risers, "rise") : `<p>No risers yet.</p>`}
         </div>
 
         <div class="movement-side">
           <h3>📉 Biggest Fallers</h3>
-
-          ${fallers.slice(0,5).map(r=>`
-            <div class="move-row fall">
-              <b>${r.player}</b>
-              <span>${r.rankChange || r.scoreChange}</span>
-            </div>
-          `).join("")}
+          ${fallers.length ? renderRows(fallers, "fall") : `<p>No fallers yet.</p>`}
         </div>
 
       </div>
