@@ -1430,6 +1430,69 @@ function renderGradeSection(grade, label, icon){
 }
 
 
+
+function aiTierTake(grade, list){
+  if(grade === "A+") return "These are the strongest AI targets on the board. The model sees the best overall blend of power profile, matchup, confidence, recent form, and agreement across the board.";
+  if(grade === "A") return "This tier is still very strong, but slightly behind the A+ group. These players carry real upside with one or two small factors keeping them out of the top tier.";
+  if(grade === "B+") return "This is the upside tier. These hitters have enough power, matchup help, or recent form to matter, but the profile is less complete than the A grades.";
+  if(grade === "B") return "This is the secondary watchlist. These players have a path to a home run through power, park, pitcher weakness, or value, but confidence is more mixed.";
+  return "This is the lower confidence tier. These players are not dead, but the AI needs more support from matchup, lineup, weather, or recent form before treating them as priority plays.";
+}
+
+function tierIcon(grade){
+  return grade === "A+" ? "⭐" : grade === "A" ? "🔥" : grade === "B+" ? "🟠" : grade === "B" ? "⚖️" : "⚠️";
+}
+
+function tierLabel(grade){
+  return grade === "A+" ? "Elite Targets" : grade === "A" ? "Strong Targets" : grade === "B+" ? "Upside Targets" : grade === "B" ? "Secondary Watchlist" : "Lower Confidence";
+}
+
+function renderTierBlock(grade){
+  const list = rows.filter(r=>normGrade(r.grade) === grade).sort((a,b)=>num(b.score)-num(a.score));
+
+  return `
+    <section class="ai-tier-block tier-${grade.replace("+","plus").toLowerCase()}">
+      <div class="tier-badge">${esc(grade)}</div>
+
+      <div class="tier-main">
+        <div class="tier-head">
+          <div>
+            <h2>${tierIcon(grade)} ${esc(grade)} ${tierLabel(grade)}</h2>
+            <p>${aiTierTake(grade, list)}</p>
+          </div>
+          <strong>COUNT: ${list.length}</strong>
+        </div>
+
+        <div class="tier-players">
+          ${list.slice(0,12).map(r=>`
+            <button class="tier-player player-card" data-player-name="${esc(r.player)}" data-player-id="${esc(r.playerId || "")}">
+              ${r.headshot ? `<img src="${esc(r.headshot)}" alt="">` : `<span>${esc((r.player||"?").slice(0,1))}</span>`}
+              <b>${esc(r.player)}</b>
+              <small>${esc(r.team || "")}${r.opponent ? " vs " + esc(r.opponent) : ""}</small>
+            </button>
+          `).join("") || `<div class="empty-ai">No ${grade} players today.</div>`}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderSimpleAISays(){
+  const grades = ["A+","A","B+","B","C"];
+  return `
+    <div class="ai-report-left">
+      <div class="ai-summary-box">
+        <span>🧠 TODAY'S AI SUMMARY</span>
+        <p>Today’s board is grouped by AI grade so the page reads more like a true model report. The top tiers show the cleanest targets, while the lower tiers stay as watchlist plays.</p>
+      </div>
+
+      ${grades.map(renderTierBlock).join("")}
+    </div>
+
+    <aside class="ai-report-right" id="aiReportMovement"></aside>
+  `;
+}
+
 function render(){
   if(!rows.length) return;
 
@@ -1445,38 +1508,31 @@ function render(){
   if(spotlight) spotlight.innerHTML = "";
 
   renderPulse();
-  renderMovement();
   renderReportCard();
-
   updateFilterCounts();
 
-  const grades = [
-    ["A+", "Elite AI Targets", "⭐"],
-    ["A", "Strong AI Targets", "🔥"],
-    ["B+", "Upside AI Targets", "🟠"],
-    ["B", "Secondary Watchlist", "⚖️"],
-    ["C", "Lower Confidence", "⚠️"]
-  ];
-
   const board = document.getElementById("board");
+  board.classList.add("ai-report-board");
 
   if(query){
+    board.classList.remove("ai-report-board");
     board.innerHTML = shown.slice(0,80).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
-  } else if(activeGrade !== "all"){
-    const g = normGrade(activeGrade);
-    const meta = grades.find(x=>x[0] === g) || [g, `${g} Tier`, "🤖"];
-    board.innerHTML = renderGradeSection(meta[0], meta[1], meta[2]);
-  } else {
-    board.innerHTML = `
-      <div class="ai-simple-intro">
-        <span>🤖 AI SAYS</span>
-        <h2>Today’s AI Grade Report</h2>
-        <p>The board is grouped by AI grade instead of individual card overload. Each tier shows the players the model likes in that range, plus a quick AI explanation of what the tier means today.</p>
-      </div>
-      ${grades.map(g=>renderGradeSection(g[0], g[1], g[2])).join("")}
-    `;
+    renderMovement();
+    wireClicks();
+    return;
   }
 
+  board.innerHTML = renderSimpleAISays();
+
+  let movement = document.getElementById("aiMovement");
+  if(!movement){
+    movement = document.createElement("section");
+    movement.className = "ai-movement";
+    movement.id = "aiMovement";
+  }
+
+  document.getElementById("aiReportMovement").appendChild(movement);
+  renderMovement();
   wireClicks();
 }
 
@@ -3229,3 +3285,130 @@ load();
 }
 </style>
 
+
+
+<style>
+#board.ai-report-board{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 430px!important;
+  gap:22px!important;
+  align-items:start!important;
+}
+.ai-report-left{display:flex;flex-direction:column;gap:14px}
+.ai-report-right{position:sticky;top:18px}
+.ai-summary-box{
+  padding:20px 22px;
+  border-radius:20px;
+  background:linear-gradient(135deg,rgba(10,34,18,.96),rgba(4,12,8,.96));
+  border:1px solid rgba(143,255,45,.35);
+  box-shadow:0 0 26px rgba(143,255,45,.10);
+}
+.ai-summary-box span{
+  color:#8fff2d;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:1px;
+}
+.ai-summary-box p{
+  margin:8px 0 0;
+  color:rgba(255,255,255,.82);
+  font-weight:750;
+  line-height:1.45;
+}
+.ai-tier-block{
+  display:grid;
+  grid-template-columns:94px 1fr;
+  gap:18px;
+  padding:18px;
+  border-radius:22px;
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(143,255,45,.18);
+}
+.tier-badge{
+  height:78px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(143,255,45,.08);
+  border:1px solid rgba(143,255,45,.28);
+  color:#8fff2d;
+  font-size:36px;
+  font-weight:1000;
+  box-shadow:inset 0 0 22px rgba(143,255,45,.08);
+}
+.tier-bplus .tier-badge{color:#ffd447;border-color:rgba(255,212,71,.35);background:rgba(255,212,71,.09)}
+.tier-b .tier-badge{color:#ff9f36;border-color:rgba(255,159,54,.35);background:rgba(255,159,54,.09)}
+.tier-c .tier-badge{color:#ff5f55;border-color:rgba(255,95,85,.35);background:rgba(255,95,85,.09)}
+.tier-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+}
+.tier-head h2{
+  margin:0;
+  color:#8fff2d;
+  font-size:18px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+.tier-head p{
+  margin:7px 0 0;
+  color:rgba(255,255,255,.78);
+  font-size:14px;
+  font-weight:750;
+  line-height:1.38;
+}
+.tier-head strong{
+  color:#8fff2d;
+  font-size:12px;
+  white-space:nowrap;
+}
+.tier-players{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(185px,1fr));
+  gap:8px;
+  margin-top:13px;
+}
+.tier-player{
+  border:1px solid rgba(143,255,45,.16);
+  background:rgba(0,0,0,.20);
+  border-radius:12px;
+  padding:8px 10px;
+  display:grid;
+  grid-template-columns:34px 1fr;
+  grid-template-areas:"img name" "img meta";
+  gap:1px 9px;
+  color:white;
+  text-align:left;
+  cursor:pointer;
+}
+.tier-player:hover{
+  transform:translateY(-2px);
+  border-color:rgba(143,255,45,.45);
+}
+.tier-player img,.tier-player span{
+  grid-area:img;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  object-fit:cover;
+  background:#06110b;
+}
+.tier-player span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#8fff2d;
+  font-weight:1000;
+}
+.tier-player b{grid-area:name;font-size:13px}
+.tier-player small{grid-area:meta;color:rgba(255,255,255,.58);font-size:11px;font-weight:800}
+.ai-report-right .ai-movement{margin:0!important}
+.ai-report-right .movement-grid{grid-template-columns:1fr!important}
+@media(max-width:1050px){
+  #board.ai-report-board{grid-template-columns:1fr!important}
+  .ai-report-right{position:static}
+}
+</style>
