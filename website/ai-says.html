@@ -1444,7 +1444,16 @@ document.getElementById("aiModal").addEventListener("click", e=>{
 });
 
 async function load(){
-  const data = await (await fetch("./data/hr_ai_breakdowns.json?v=" + Date.now())).json();
+  const stamp = Date.now();
+
+  const data = await (await fetch("./data/hr_ai_breakdowns.json?v=" + stamp)).json();
+
+  try {
+    movementData = await (await fetch("./data/hr_ai_movement.json?v=" + stamp)).json();
+  } catch (err) {
+    movementData = { risers: [], fallers: [], stable: [] };
+  }
+
   rows = Object.values(data.players || {}).sort((a,b)=>num(b.score)-num(a.score));
   document.getElementById("updated").textContent = data.updatedAt ? "Updated " + new Date(data.updatedAt).toLocaleTimeString([], {hour:"numeric", minute:"2-digit"}) : "Updated today";
   render();
