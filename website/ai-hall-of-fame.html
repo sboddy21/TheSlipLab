@@ -359,6 +359,13 @@ h1{
   </section>
 
   <div id="content"></div>
+
+  <div class="receipt-modal" id="receiptModal">
+    <div class="receipt-box">
+      <button class="receipt-close" id="receiptClose">×</button>
+      <div id="receiptContent"></div>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -470,6 +477,8 @@ function playerCard(g){
       <div class="detail">Latest: ${esc(latest.date || "-")} vs ${esc(latest.pitcher || "TBD")}</div>
       <div class="badges">${badgeList.slice(0,4).map(b=>`<span class="badge">${b}</span>`).join("")}</div>
 
+      <button class="receipt-btn" data-receipt-player="${esc(g.player)}">📄 View Receipt</button>
+
       <details class="timeline">
         <summary>View Timeline</summary>
         <div class="timeline-list">
@@ -550,6 +559,7 @@ function render(){
 
   if(activeFilter === "goat"){
     content.innerHTML = section("AI GOAT Leaderboard", "Players with the most AI called home runs.", `<div class="goat">${goatBoard()}</div>`);
+    wireReceipts();
     return;
   }
 
@@ -558,6 +568,7 @@ function render(){
   if(activeFilter !== "all" || query){
     const grouped = groupPlayers(rows);
     content.innerHTML = section("Filtered AI Players", `${grouped.length} matching players from ${rows.length} historical AI calls.`, `<div class="grid">${grouped.map(playerCard).join("")}</div>`);
+    wireReceipts();
     return;
   }
 
@@ -571,7 +582,90 @@ function render(){
     ${section("Longshot Legends", "Higher risk AI hitters that still left the yard.", `<div class="grid">${longshotGrouped.map(playerCard).join("")}</div>`)}
     ${section("AI GOAT Leaderboard", "The players who keep rewarding the model.", `<div class="goat">${goatBoard()}</div>`)}
   `;
+  wireReceipts();
 }
+
+
+function findPlayerCalls(player){
+  return allCalls()
+    .filter(r=>String(r.player || "") === String(player || ""))
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+}
+
+function receiptHtml(player){
+  const calls = findPlayerCalls(player);
+  const best = [...calls].sort((a,b)=>
+    num(b.score)-num(a.score) ||
+    num(a.rank)-num(b.rank)
+  )[0] || {};
+
+  return `
+    <div class="receipt-head">
+      <span>THE SLIP LAB RECEIPT</span>
+      <h2>${esc(player)}</h2>
+      <p>Proof of the AI call before the home run result.</p>
+    </div>
+
+    <div class="receipt-proof">
+      <div>
+        <span>Best AI Grade</span>
+        <b>${esc(best.grade || "-")}</b>
+      </div>
+      <div>
+        <span>Best Rank</span>
+        <b>#${esc(best.rank || "-")}</b>
+      </div>
+      <div>
+        <span>Best Score</span>
+        <b>${num(best.score).toFixed(1)}</b>
+      </div>
+      <div>
+        <span>Total AI HR Calls</span>
+        <b>${calls.length}</b>
+      </div>
+    </div>
+
+    <div class="receipt-callout">
+      <b>Original AI Call:</b>
+      The model had ${esc(player)} graded as a ${esc(best.grade || "tracked")} HR target with a score of ${num(best.score).toFixed(1)} and rank #${esc(best.rank || "-")} before he homered against ${esc(best.pitcher || "the opposing pitcher")}.
+    </div>
+
+    <div class="receipt-table">
+      ${calls.map(r=>`
+        <div class="receipt-row">
+          <span>${esc(r.date || "-")}</span>
+          <b>${esc(r.grade || "B")} • Rank #${esc(r.rank || "-")}</b>
+          <em>${esc(r.distance || "-")} ft</em>
+          <small>vs ${esc(r.pitcher || "TBD")} • ${esc(r.pitchType || "Pitch TBD")}</small>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function openReceipt(player){
+  document.getElementById("receiptContent").innerHTML = receiptHtml(player);
+  document.getElementById("receiptModal").classList.add("open");
+}
+
+function wireReceipts(){
+  document.querySelectorAll("[data-receipt-player]").forEach(btn=>{
+    btn.onclick = ()=>{
+      openReceipt(btn.dataset.receiptPlayer);
+    };
+  });
+}
+
+document.getElementById("receiptClose").addEventListener("click", ()=>{
+  document.getElementById("receiptModal").classList.remove("open");
+});
+
+document.getElementById("receiptModal").addEventListener("click", e=>{
+  if(e.target.id === "receiptModal"){
+    e.currentTarget.classList.remove("open");
+  }
+});
+
 
 document.getElementById("filters").addEventListener("click", e=>{
   const btn = e.target.closest("button");
@@ -660,5 +754,146 @@ load();
 }
 .player-hof-card{
   min-height:220px;
+}
+</style>
+\n
+<style>
+.receipt-btn{
+  position:relative;
+  margin-top:10px;
+  width:100%;
+  border:1px solid rgba(255,196,0,.35);
+  background:rgba(255,196,0,.10);
+  color:#ffc400;
+  border-radius:12px;
+  padding:9px 10px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.receipt-btn:hover{
+  background:rgba(255,196,0,.18);
+  box-shadow:0 0 18px rgba(255,196,0,.18);
+}
+.receipt-modal{
+  position:fixed;
+  inset:0;
+  z-index:100;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(10px);
+}
+.receipt-modal.open{
+  display:flex;
+}
+.receipt-box{
+  width:min(760px,94vw);
+  max-height:86vh;
+  overflow:auto;
+  position:relative;
+  padding:22px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#09150f,#050706);
+  border:1px solid rgba(255,196,0,.42);
+  box-shadow:0 0 48px rgba(255,196,0,.20);
+}
+.receipt-close{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+.receipt-head span{
+  color:#ffc400;
+  font-size:11px;
+  letter-spacing:1.6px;
+  font-weight:1000;
+}
+.receipt-head h2{
+  margin:6px 0 4px;
+  font-size:34px;
+}
+.receipt-head p{
+  margin:0;
+  color:rgba(255,255,255,.65);
+  font-weight:800;
+}
+.receipt-proof{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+.receipt-proof div{
+  padding:12px;
+  border-radius:14px;
+  background:rgba(255,196,0,.08);
+  border:1px solid rgba(255,196,0,.18);
+}
+.receipt-proof span{
+  display:block;
+  color:rgba(255,255,255,.54);
+  font-size:10px;
+  font-weight:1000;
+  text-transform:uppercase;
+}
+.receipt-proof b{
+  display:block;
+  margin-top:5px;
+  color:#8fff2d;
+  font-size:22px;
+}
+.receipt-callout{
+  padding:14px;
+  border-radius:16px;
+  background:rgba(143,255,45,.08);
+  border:1px solid rgba(143,255,45,.18);
+  color:rgba(255,255,255,.82);
+  font-weight:850;
+  line-height:1.45;
+}
+.receipt-table{
+  margin-top:14px;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.receipt-row{
+  display:grid;
+  grid-template-columns:90px 130px 80px 1fr;
+  gap:10px;
+  align-items:center;
+  padding:10px;
+  border-radius:13px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+}
+.receipt-row span,
+.receipt-row small{
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:900;
+}
+.receipt-row b{
+  color:white;
+  font-size:12px;
+}
+.receipt-row em{
+  color:#8fff2d;
+  font-style:normal;
+  font-weight:1000;
+}
+@media(max-width:760px){
+  .receipt-proof{grid-template-columns:repeat(2,1fr)}
+  .receipt-row{grid-template-columns:1fr}
 }
 </style>
