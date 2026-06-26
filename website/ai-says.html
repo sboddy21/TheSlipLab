@@ -1493,6 +1493,155 @@ function renderSimpleAISays(){
   `;
 }
 
+
+function shortTeam(name){
+  return String(name || "")
+    .replace("New York Yankees","NYY")
+    .replace("Boston Red Sox","BOS")
+    .replace("Washington Nationals","WSH")
+    .replace("Philadelphia Phillies","PHI")
+    .replace("Pittsburgh Pirates","PIT")
+    .replace("Seattle Mariners","SEA")
+    .replace("Toronto Blue Jays","TOR")
+    .replace("Texas Rangers","TEX")
+    .replace("Detroit Tigers","DET")
+    .replace("Houston Astros","HOU")
+    .replace("Kansas City Royals","KC")
+    .replace("Tampa Bay Rays","TB")
+    .replace("St. Louis Cardinals","STL")
+    .replace("Arizona Diamondbacks","ARI")
+    .replace("Los Angeles Dodgers","LAD")
+    .replace("San Francisco Giants","SF")
+    .replace("Chicago Cubs","CHC")
+    .replace("Baltimore Orioles","BAL")
+    .replace("Cincinnati Reds","CIN")
+    .replace("Cleveland Guardians","CLE")
+    .replace("Minnesota Twins","MIN")
+    .replace("Chicago White Sox","CWS")
+    .replace("Atlanta Braves","ATL")
+    .replace("Miami Marlins","MIA")
+    .replace("Milwaukee Brewers","MIL")
+    .replace("New York Mets","NYM")
+    .replace("Colorado Rockies","COL")
+    .replace("San Diego Padres","SD")
+    .replace("Los Angeles Angels","LAA")
+    .replace("Athletics","ATH");
+}
+
+function gameKey(row){
+  const a = shortTeam(row.team);
+  const b = shortTeam(row.opponent);
+  return [a,b].sort().join(" @ ");
+}
+
+function gameTitle(list){
+  const r = list[0] || {};
+  return `${shortTeam(r.team)} vs ${shortTeam(r.opponent)}`;
+}
+
+function gradeScore(g){
+  return g === "A+" ? 5 : g === "A" ? 4 : g === "B+" ? 3 : g === "B" ? 2 : 1;
+}
+
+function buildGameParagraph(list){
+  const top = list[0] || {};
+  const second = list[1] || {};
+  const third = list[2] || {};
+  const value = list.find(r => (r.consensus || []).some(x => String(x).includes("Best Value"))) || second || top;
+
+  const topName = esc(top.player || "The top hitter");
+  const pitcher = esc(top.pitcher || "the opposing starter");
+  const team = esc(shortTeam(top.team));
+  const opp = esc(shortTeam(top.opponent));
+  const confidence = top.confidence ? `${Number(top.confidence).toFixed(1)}%` : "strong";
+  const grade = esc(top.grade || "A");
+  const valueName = esc(value.player || "");
+  const secondName = esc(second.player || "");
+  const thirdName = esc(third.player || "");
+
+  return `
+    <p>
+      <b>${topName}</b> is the clear top AI target in this game, drawing a <b>${grade}</b> grade against <b>${pitcher}</b>. The model gives him <b>${confidence}</b> HR confidence, with the profile built around ${esc((top.reasons || []).slice(1,4).join(", ") || "power, matchup quality, and model agreement")}. In this ${team} vs ${opp} matchup, the AI sees him as the cleanest swing on the board.
+    </p>
+
+    <p>
+      ${valueName && valueName !== topName ? `<b>${valueName}</b> stands out as the value angle in this game, especially when the board shows extra model agreement or a softer market number. ` : ""}
+      ${secondName ? `<b>${secondName}</b>` : "The next bat"}${thirdName ? ` and <b>${thirdName}</b>` : ""} sit behind the top play as secondary HR options. They do not carry the same full profile as the top target, but the AI still sees enough power, pitcher vulnerability, or matchup fit to keep them in the mix.
+    </p>
+  `;
+}
+
+function renderGameBreakdown(list){
+  list = [...list].sort((a,b)=>
+    gradeScore(normGrade(b.grade)) - gradeScore(normGrade(a.grade)) ||
+    num(b.score) - num(a.score)
+  );
+
+  const top = list[0] || {};
+  const targets = list.slice(0,5);
+
+  return `
+    <section class="ai-game-card">
+      <div class="ai-game-head">
+        <div>
+          <span>🤖 AI GAME BREAKDOWN</span>
+          <h2>${gameTitle(list)}</h2>
+        </div>
+        <strong>${esc(top.grade || "A")}</strong>
+      </div>
+
+      <div class="ai-game-paragraph">
+        ${buildGameParagraph(list)}
+      </div>
+
+      <div class="ai-target-title">TOP HR TARGETS</div>
+
+      <div class="ai-target-list">
+        ${targets.map(r=>`
+          <button class="ai-target-row player-card" data-player-name="${esc(r.player)}" data-player-id="${esc(r.playerId || "")}">
+            ${r.headshot ? `<img src="${esc(r.headshot)}" alt="">` : `<span>${esc((r.player || "?").slice(0,1))}</span>`}
+            <div>
+              <b>${esc(r.player)}</b>
+              <small>${esc(shortTeam(r.team))} vs ${esc(shortTeam(r.opponent))} • vs ${esc(r.pitcher || "TBD")}</small>
+            </div>
+            <em>${Number(r.confidence || 0).toFixed(1)}%</em>
+            <strong>${esc(r.grade || "B")}</strong>
+          </button>
+        `).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderAIGameReport(){
+  const groups = new Map();
+
+  rows.forEach(r=>{
+    const key = gameKey(r);
+    if(!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(r);
+  });
+
+  const games = [...groups.values()]
+    .filter(g => g.length)
+    .sort((a,b)=>num(b[0]?.score)-num(a[0]?.score));
+
+  return `
+    <div class="ai-game-layout">
+      <div class="ai-game-left">
+        <div class="ai-summary-box">
+          <span>🧠 TODAY'S AI SUMMARY</span>
+          <p>The AI is reading today’s board game by game. Each report highlights the top HR target, the value angle, the secondary bats, and the main matchup reason behind the model’s confidence.</p>
+        </div>
+
+        ${games.slice(0,12).map(renderGameBreakdown).join("")}
+      </div>
+
+      <aside class="ai-game-right" id="aiReportMovement"></aside>
+    </div>
+  `;
+}
+
 function render(){
   if(!rows.length) return;
 
@@ -1512,17 +1661,17 @@ function render(){
   updateFilterCounts();
 
   const board = document.getElementById("board");
-  board.classList.add("ai-report-board");
 
   if(query){
-    board.classList.remove("ai-report-board");
+    board.classList.remove("ai-game-board");
     board.innerHTML = shown.slice(0,80).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
     renderMovement();
     wireClicks();
     return;
   }
 
-  board.innerHTML = renderSimpleAISays();
+  board.classList.add("ai-game-board");
+  board.innerHTML = renderAIGameReport();
 
   let movement = document.getElementById("aiMovement");
   if(!movement){
@@ -3410,5 +3559,190 @@ load();
 @media(max-width:1050px){
   #board.ai-report-board{grid-template-columns:1fr!important}
   .ai-report-right{position:static}
+}
+</style>
+
+
+<style>
+#board.ai-game-board{
+  display:block!important;
+}
+.ai-game-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 420px;
+  gap:22px;
+  align-items:start;
+}
+.ai-game-left{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.ai-game-right{
+  position:sticky;
+  top:18px;
+}
+.ai-summary-box,
+.ai-game-card{
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(11,20,36,.96),rgba(12,8,32,.96));
+  border:1px solid rgba(143,45,255,.35);
+  box-shadow:0 0 28px rgba(143,45,255,.10);
+}
+.ai-summary-box{
+  padding:20px 22px;
+  border-color:rgba(143,255,45,.30);
+}
+.ai-summary-box span{
+  color:#8fff2d;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:1px;
+}
+.ai-summary-box p{
+  margin:8px 0 0;
+  color:rgba(255,255,255,.82);
+  font-weight:750;
+  line-height:1.45;
+}
+.ai-game-card{
+  padding:18px;
+}
+.ai-game-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  margin-bottom:14px;
+}
+.ai-game-head span,
+.ai-target-title{
+  color:rgba(255,255,255,.50);
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.ai-game-head h2{
+  margin:5px 0 0;
+  font-size:23px;
+  color:white;
+}
+.ai-game-head strong{
+  min-width:48px;
+  height:48px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#0ff28a;
+  color:#06110b;
+  font-weight:1000;
+}
+.ai-game-paragraph{
+  padding:16px;
+  border-radius:18px;
+  background:rgba(84,40,170,.20);
+  border:1px solid rgba(143,45,255,.38);
+}
+.ai-game-paragraph p{
+  margin:0 0 18px;
+  color:rgba(255,255,255,.88);
+  font-size:15px;
+  font-weight:650;
+  line-height:1.55;
+}
+.ai-game-paragraph p:last-child{
+  margin-bottom:0;
+}
+.ai-game-paragraph b{
+  color:white;
+  font-weight:1000;
+}
+.ai-target-title{
+  margin:16px 0 8px;
+}
+.ai-target-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+.ai-target-row{
+  appearance:none;
+  width:100%;
+  border:0;
+  border-radius:13px;
+  padding:9px 10px;
+  display:grid;
+  grid-template-columns:42px minmax(0,1fr) 70px 38px;
+  gap:10px;
+  align-items:center;
+  text-align:left;
+  color:white;
+  background:rgba(255,255,255,.045);
+  cursor:pointer;
+}
+.ai-target-row:hover{
+  transform:translateY(-1px);
+  background:rgba(143,255,45,.08);
+}
+.ai-target-row img,
+.ai-target-row span{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  object-fit:cover;
+  background:#06110b;
+}
+.ai-target-row span{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#8fff2d;
+  font-weight:1000;
+}
+.ai-target-row b{
+  display:block;
+  font-size:14px;
+}
+.ai-target-row small{
+  display:block;
+  margin-top:2px;
+  color:rgba(255,255,255,.55);
+  font-size:11px;
+  font-weight:800;
+}
+.ai-target-row em{
+  font-style:normal;
+  color:#10f29a;
+  font-weight:1000;
+  text-align:right;
+}
+.ai-target-row strong{
+  width:30px;
+  height:30px;
+  border-radius:9px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  justify-self:end;
+  background:#10dff2;
+  color:#06110b;
+  font-size:12px;
+  font-weight:1000;
+}
+.ai-game-right .ai-movement{
+  margin:0!important;
+}
+.ai-game-right .movement-grid{
+  grid-template-columns:1fr!important;
+}
+@media(max-width:1100px){
+  .ai-game-layout{
+    grid-template-columns:1fr;
+  }
+  .ai-game-right{
+    position:static;
+  }
 }
 </style>
