@@ -1338,20 +1338,20 @@ function renderReportCard(){
   const consensus = rows.filter(r=>(r.consensus||[]).length >= 2).length;
 
   document.getElementById("reportCard").innerHTML = `
-    <div class="rc-card">
+    <button class="rc-card rc-click" data-ai-category="locks">
       <span>🤖 AI Locks</span>
       <strong>${aPlus + a}</strong>
-    </div>
+    </button>
 
-    <div class="rc-card">
+    <button class="rc-card rc-click" data-ai-category="values">
       <span>💰 AI Values</span>
       <strong>${values}</strong>
-    </div>
+    </button>
 
-    <div class="rc-card">
+    <button class="rc-card rc-click" data-ai-category="longshots">
       <span>💣 Longshots</span>
       <strong>${longshots}</strong>
-    </div>
+    </button>
 
     <div class="rc-card">
       <span>📈 Avg Confidence</span>
@@ -1642,6 +1642,55 @@ function renderAIGameReport(){
   `;
 }
 
+
+function categoryRows(type){
+  if(type === "locks"){
+    return rows.filter(r=>["A+","A"].includes(normGrade(r.grade))).sort((a,b)=>num(b.score)-num(a.score));
+  }
+  if(type === "values"){
+    return rows.filter(r=>(r.consensus||[]).some(x=>String(x).includes("Best Value"))).sort((a,b)=>num(b.score)-num(a.score));
+  }
+  if(type === "longshots"){
+    return rows.filter(r=>["B+","B"].includes(normGrade(r.grade))).sort((a,b)=>num(b.score)-num(a.score));
+  }
+  return [];
+}
+
+function categoryTitle(type){
+  if(type === "locks") return "🤖 AI Locks";
+  if(type === "values") return "💰 AI Values";
+  if(type === "longshots") return "💣 AI Longshots";
+  return "AI Category";
+}
+
+function categoryTake(type, list){
+  if(type === "locks") return "These are the players the AI trusts most today. They carry the best blend of grade, confidence, matchup strength, and model agreement.";
+  if(type === "values") return "These are the players where the AI sees the biggest gap between model strength and market perception. They may not all be the safest plays, but the value profile is strong.";
+  if(type === "longshots") return "These are the higher-risk swings. The AI sees enough power, matchup help, or price appeal to keep them alive, but they are not clean top-tier locks.";
+  return "This category groups players by the current AI model view.";
+}
+
+function renderCategoryView(type){
+  const list = categoryRows(type);
+
+  return `
+    <div class="ai-category-view">
+      <div class="ai-category-head">
+        <div>
+          <span>${categoryTitle(type)}</span>
+          <h2>${list.length} Players</h2>
+          <p>${categoryTake(type, list)}</p>
+        </div>
+        <button class="ai-back-button" data-ai-back="1">Back to Game Reports</button>
+      </div>
+
+      <div class="ai-category-grid">
+        ${list.map(card).join("") || `<div class="empty-ai">No players in this category right now.</div>`}
+      </div>
+    </div>
+  `;
+}
+
 function render(){
   if(!rows.length) return;
 
@@ -1667,6 +1716,25 @@ function render(){
     board.innerHTML = shown.slice(0,80).map(card).join("") || `<div class="empty-ai">No players match your search.</div>`;
     renderMovement();
     wireClicks();
+    wireCategoryClicks();
+    return;
+  }
+
+  if(window.activeAICategory){
+    board.classList.remove("ai-game-board");
+    board.innerHTML = renderCategoryView(window.activeAICategory);
+    renderMovement();
+    wireClicks();
+    wireCategoryClicks();
+    return;
+  }
+
+  if(activeGrade !== "all"){
+    board.classList.remove("ai-game-board");
+    board.innerHTML = shown.slice(0,80).map(card).join("") || `<div class="empty-ai">No ${esc(activeGrade)} players right now.</div>`;
+    renderMovement();
+    wireClicks();
+    wireCategoryClicks();
     return;
   }
 
@@ -1683,6 +1751,7 @@ function render(){
   document.getElementById("aiReportMovement").appendChild(movement);
   renderMovement();
   wireClicks();
+  wireCategoryClicks();
 }
 
 function updateFilterCounts(){
@@ -1703,12 +1772,14 @@ function updateFilterCounts(){
 document.getElementById("filters").addEventListener("click", e=>{
   const btn = e.target.closest("button");
   if(!btn) return;
+  window.activeAICategory = "";
   activeGrade = btn.dataset.grade;
   document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active", b === btn));
   render();
 });
 
 document.getElementById("search").addEventListener("input", e=>{
+  window.activeAICategory = "";
   query = e.target.value.toLowerCase().trim();
   render();
 });
@@ -1722,6 +1793,27 @@ document.getElementById("aiModalClose").addEventListener("click", ()=>document.g
 document.getElementById("aiModal").addEventListener("click", e=>{
   if(e.target.id === "aiModal") e.currentTarget.classList.remove("open");
 });
+
+
+function wireCategoryClicks(){
+  document.querySelectorAll("[data-ai-category]").forEach(btn=>{
+    btn.onclick = ()=>{
+      window.activeAICategory = btn.dataset.aiCategory;
+      activeGrade = "all";
+      document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active", b.dataset.grade === "all"));
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+  });
+
+  document.querySelectorAll("[data-ai-back]").forEach(btn=>{
+    btn.onclick = ()=>{
+      window.activeAICategory = "";
+      render();
+      window.scrollTo({top:0, behavior:"smooth"});
+    };
+  });
+}
 
 async function load(){
   const stamp = Date.now();
@@ -3744,5 +3836,68 @@ load();
   .ai-game-right{
     position:static;
   }
+}
+</style>
+
+
+<style>
+.rc-card.rc-click{
+  appearance:none;
+  color:white;
+  text-align:left;
+  cursor:pointer;
+}
+.rc-card.rc-click:hover{
+  transform:translateY(-2px);
+  border-color:rgba(143,255,45,.45)!important;
+  box-shadow:0 0 22px rgba(143,255,45,.14);
+}
+.ai-category-view{
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.ai-category-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:22px;
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(10,34,18,.96),rgba(4,12,8,.96));
+  border:1px solid rgba(143,255,45,.32);
+}
+.ai-category-head span{
+  color:#8fff2d;
+  font-size:12px;
+  font-weight:1000;
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+.ai-category-head h2{
+  margin:8px 0;
+  font-size:30px;
+}
+.ai-category-head p{
+  margin:0;
+  color:rgba(255,255,255,.76);
+  font-weight:750;
+  line-height:1.45;
+  max-width:850px;
+}
+.ai-back-button{
+  border:1px solid rgba(143,255,45,.30);
+  background:rgba(143,255,45,.08);
+  color:#8fff2d;
+  border-radius:999px;
+  padding:10px 14px;
+  font-weight:1000;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.ai-category-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:14px;
 }
 </style>
