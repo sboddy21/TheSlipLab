@@ -395,24 +395,99 @@ function badges(r){
   if(num(r.exitVelocity) >= 108) out.push("⚡ Hard Contact");
   return out.slice(0,3);
 }
-function card(r){
-  const cls = r._type === "value" ? "value" : r._type === "longshot" ? "longshot" : "";
+function groupPlayers(list){
+  const map = new Map();
+
+  list.forEach(r=>{
+    const key = String(r.player || "").trim();
+    if(!key) return;
+
+    if(!map.has(key)){
+      map.set(key, {
+        player:r.player,
+        playerId:r.playerId,
+        headshot:r.headshot,
+        team:r.team,
+        calls:[],
+        bestScore:0,
+        bestRank:999,
+        bestGrade:"B",
+        longest:0,
+        type:r._type
+      });
+    }
+
+    const g = map.get(key);
+    g.calls.push(r);
+    g.bestScore = Math.max(g.bestScore, num(r.score));
+    g.bestRank = Math.min(g.bestRank, num(r.rank) || 999);
+    g.longest = Math.max(g.longest, num(r.distance));
+
+    const order = {"A+":5,"A":4,"B+":3,"B":2,"C":1};
+    if((order[r.grade] || 0) > (order[g.bestGrade] || 0)) g.bestGrade = r.grade;
+
+    if(r.headshot) g.headshot = r.headshot;
+  });
+
+  return [...map.values()].sort((a,b)=>
+    b.calls.length - a.calls.length ||
+    b.bestScore - a.bestScore ||
+    a.bestRank - b.bestRank
+  );
+}
+
+function playerCard(g){
+  const latest = [...g.calls].sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0] || {};
+  const timeline = [...g.calls]
+    .sort((a,b)=>String(b.date).localeCompare(String(a.date)))
+    .slice(0,8);
+
+  const badgeList = [];
+  if(g.bestRank === 1) badgeList.push("🔥 #1 Pick");
+  if(g.bestGrade === "A+") badgeList.push("🏆 A+ Call");
+  if(g.longest >= 430) badgeList.push("💣 430+ FT");
+  if(g.calls.length >= 5) badgeList.push("🐐 Repeat Hit");
+  if(g.type === "value") badgeList.push("💰 Value Smash");
+  if(g.type === "longshot") badgeList.push("🎯 Longshot Legend");
+
   return `
-    <article class="card ${cls}">
+    <article class="card player-hof-card ${g.type || ""}">
       <div class="topline">
-        <div class="avatar">${r.headshot ? `<img src="${esc(r.headshot)}" alt="">` : esc(initials(r.player))}</div>
+        <div class="avatar">${g.headshot ? `<img src="${esc(g.headshot)}" alt="">` : esc(initials(g.player))}</div>
         <div>
-          <div class="name">${esc(r.player)}</div>
-          <div class="meta">${esc(r.date || "")} • Rank #${esc(r.rank || "-")}</div>
+          <div class="name">${esc(g.player)}</div>
+          <div class="meta">${g.calls.length} AI HR calls • Best Rank #${g.bestRank === 999 ? "-" : g.bestRank}</div>
         </div>
-        <div class="grade">${esc(r.grade || "B")}</div>
+        <div class="grade">${esc(g.bestGrade || "B")}</div>
       </div>
-      <div class="score">${num(r.score).toFixed(1)}</div>
-      <div class="detail">${esc(r.distance || "-")} ft vs ${esc(r.pitcher || "TBD")}</div>
-      <div class="detail">${esc(r.team || "")} vs ${esc(r.opponent || "")}</div>
-      <div class="badges">${badges(r).map(b=>`<span class="badge">${b}</span>`).join("")}</div>
+
+      <div class="hof-player-stats">
+        <div><span>AI Hits</span><b>${g.calls.length}</b></div>
+        <div><span>Best Score</span><b>${g.bestScore.toFixed(1)}</b></div>
+        <div><span>Longest</span><b>${g.longest || "-"} ft</b></div>
+      </div>
+
+      <div class="detail">Latest: ${esc(latest.date || "-")} vs ${esc(latest.pitcher || "TBD")}</div>
+      <div class="badges">${badgeList.slice(0,4).map(b=>`<span class="badge">${b}</span>`).join("")}</div>
+
+      <details class="timeline">
+        <summary>View Timeline</summary>
+        <div class="timeline-list">
+          ${timeline.map(r=>`
+            <div class="timeline-row">
+              <span>${esc(r.date || "-")}</span>
+              <b>${esc(r.distance || "-")} ft</b>
+              <small>Rank #${esc(r.rank || "-")} • ${esc(r.grade || "B")} • vs ${esc(r.pitcher || "TBD")}</small>
+            </div>
+          `).join("")}
+        </div>
+      </details>
     </article>
   `;
+}
+
+function card(r){
+  return playerCard(groupPlayers([r])[0]);
 }
 function goatBoard(){
   const source = HOF.goatBoard || [];
@@ -481,14 +556,19 @@ function render(){
   const rows = filterCalls();
 
   if(activeFilter !== "all" || query){
-    content.innerHTML = section("Filtered AI Calls", `${rows.length} matching historical AI calls.`, `<div class="grid">${rows.map(card).join("")}</div>`);
+    const grouped = groupPlayers(rows);
+    content.innerHTML = section("Filtered AI Players", `${grouped.length} matching players from ${rows.length} historical AI calls.`, `<div class="grid">${grouped.map(playerCard).join("")}</div>`);
     return;
   }
 
+  const bestGrouped = groupPlayers((HOF.bestCalls || []).map(r=>({...r,_type:"best"}))).slice(0,12);
+  const valueGrouped = groupPlayers((HOF.valueHits || []).map(r=>({...r,_type:"value"}))).slice(0,12);
+  const longshotGrouped = groupPlayers((HOF.longshots || HOF.longshotLegends || []).map(r=>({...r,_type:"longshot"}))).slice(0,12);
+
   content.innerHTML = `
-    ${section("Best AI Calls", "The cleanest, highest graded AI home run hits.", `<div class="grid">${(HOF.bestCalls || []).slice(0,12).map(r=>card({...r,_type:"best"})).join("")}</div>`)}
-    ${section("Value Hits", "AI calls where the model found strong market value.", `<div class="grid">${(HOF.valueHits || []).slice(0,12).map(r=>card({...r,_type:"value"})).join("")}</div>`)}
-    ${section("Longshot Legends", "Higher risk AI calls that still left the yard.", `<div class="grid">${(HOF.longshots || HOF.longshotLegends || []).slice(0,12).map(r=>card({...r,_type:"longshot"})).join("")}</div>`)}
+    ${section("Best AI Calls", "The cleanest, highest graded AI home run hitters, grouped by player.", `<div class="grid">${bestGrouped.map(playerCard).join("")}</div>`)}
+    ${section("Value Hits", "Players where the model repeatedly found strong market value.", `<div class="grid">${valueGrouped.map(playerCard).join("")}</div>`)}
+    ${section("Longshot Legends", "Higher risk AI hitters that still left the yard.", `<div class="grid">${longshotGrouped.map(playerCard).join("")}</div>`)}
     ${section("AI GOAT Leaderboard", "The players who keep rewarding the model.", `<div class="goat">${goatBoard()}</div>`)}
   `;
 }
@@ -513,3 +593,72 @@ load();
 </script>
 </body>
 </html>
+\n
+<style>
+.hof-player-stats{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin:13px 0 9px;
+}
+.hof-player-stats div{
+  padding:8px;
+  border-radius:12px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.08);
+}
+.hof-player-stats span{
+  display:block;
+  color:rgba(255,255,255,.48);
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.hof-player-stats b{
+  display:block;
+  margin-top:3px;
+  color:#8fff2d;
+  font-size:18px;
+}
+.timeline{
+  position:relative;
+  margin-top:10px;
+}
+.timeline summary{
+  cursor:pointer;
+  color:#ffc400;
+  font-weight:1000;
+  font-size:12px;
+}
+.timeline-list{
+  margin-top:8px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.timeline-row{
+  display:grid;
+  grid-template-columns:80px 70px 1fr;
+  gap:8px;
+  align-items:center;
+  padding:7px;
+  border-radius:10px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+}
+.timeline-row span,
+.timeline-row small{
+  color:rgba(255,255,255,.58);
+  font-size:10px;
+  font-weight:900;
+}
+.timeline-row b{
+  color:#8fff2d;
+  font-size:12px;
+}
+.player-hof-card{
+  min-height:220px;
+}
+</style>
