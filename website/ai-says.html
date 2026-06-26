@@ -1548,27 +1548,61 @@ function buildGameParagraph(list){
   const second = list[1] || {};
   const third = list[2] || {};
   const value = list.find(r => (r.consensus || []).some(x => String(x).includes("Best Value"))) || second || top;
-
-  const topName = esc(top.player || "The top hitter");
-  const pitcher = esc(top.pitcher || "the opposing starter");
-  const team = esc(shortTeam(top.team));
-  const opp = esc(shortTeam(top.opponent));
-  const confidence = top.confidence ? `${Number(top.confidence).toFixed(1)}%` : "strong";
-  const grade = esc(top.grade || "A");
-  const valueName = esc(value.player || "");
-  const secondName = esc(second.player || "");
-  const thirdName = esc(third.player || "");
+  const sleeper = list.find(r => ["B+","B"].includes(normGrade(r.grade))) || third || second || top;
+  const avoid = [...list].reverse().find(r => ["C","B"].includes(normGrade(r.grade))) || list[list.length - 1] || top;
 
   return `
     <p>
-      <b>${topName}</b> is the clear top AI target in this game, drawing a <b>${grade}</b> grade against <b>${pitcher}</b>. The model gives him <b>${confidence}</b> HR confidence, with the profile built around ${esc((top.reasons || []).slice(1,4).join(", ") || "power, matchup quality, and model agreement")}. In this ${team} vs ${opp} matchup, the AI sees him as the cleanest swing on the board.
+      <b>${esc(top.player || "The top hitter")}</b> is the preferred AI home run target in this matchup. The model gives him a <b>${esc(top.grade || "A")}</b> grade with <b>${Number(top.confidence || 0).toFixed(1)}%</b> HR confidence against <b>${esc(top.pitcher || "the opposing starter")}</b>. The strongest drivers are ${esc((top.reasons || []).slice(1,4).join(", ") || "power profile, pitcher vulnerability, and model agreement")}.
     </p>
 
     <p>
-      ${valueName && valueName !== topName ? `<b>${valueName}</b> stands out as the value angle in this game, especially when the board shows extra model agreement or a softer market number. ` : ""}
-      ${secondName ? `<b>${secondName}</b>` : "The next bat"}${thirdName ? ` and <b>${thirdName}</b>` : ""} sit behind the top play as secondary HR options. They do not carry the same full profile as the top target, but the AI still sees enough power, pitcher vulnerability, or matchup fit to keep them in the mix.
+      <b>${esc(value.player || top.player || "The value option")}</b> profiles as the value angle, while <b>${esc(sleeper.player || second.player || top.player || "the sleeper option")}</b> is the higher-risk upside swing. ${second?.player ? `<b>${esc(second.player)}</b>` : "The next bat"}${third?.player ? ` and <b>${esc(third.player)}</b>` : ""} remain in the mix, but the AI views the top target as the cleanest combination of matchup, confidence, and ceiling.
+    </p>
+
+    <p>
+      <b>AI Recommendation:</b> If playing only one hitter from this game, the model prefers <b>${esc(top.player || "-")}</b>. For value or tournament-style upside, the better pivot is <b>${esc(value.player || sleeper.player || "-")}</b>. The lower-confidence name to be careful with is <b>${esc(avoid.player || "-")}</b>, mainly because the profile does not carry the same full model support.
     </p>
   `;
+}
+
+
+function confidenceLevel(row){
+  const c = num(row.confidence);
+  const score = num(row.score);
+  return Math.max(5, Math.min(98, Math.round((c * 3.4) + (score * .45))));
+}
+
+function reasonChips(row){
+  const chips = [];
+  const text = `${(row.reasons || []).join(" ")} ${(row.consensus || []).join(" ")} ${(row.badges || []).join(" ")}`;
+
+  if(/power|barrel|hard|elite/i.test(text)) chips.push("🔥 Power Edge");
+  if(/pitch|vulnerable|leak|mix/i.test(text)) chips.push("🎯 Pitcher Leak");
+  if(/weather|wind|carry/i.test(text)) chips.push("🌪 Weather Boost");
+  if(/bullpen/i.test(text)) chips.push("💣 Bullpen Path");
+  if(/value/i.test(text)) chips.push("💰 Value Angle");
+  if(/consensus|agreement/i.test(text)) chips.push("⚡ Model Agreement");
+
+  return [...new Set(chips)].slice(0,5);
+}
+
+function verdictStars(row){
+  const level = confidenceLevel(row);
+  const stars = level >= 85 ? 5 : level >= 72 ? 4 : level >= 58 ? 3 : level >= 44 ? 2 : 1;
+  return "★".repeat(stars) + "☆".repeat(5 - stars);
+}
+
+function pickGameValue(list){
+  return list.find(r => (r.consensus || []).some(x => String(x).includes("Best Value"))) || list[1] || list[0] || {};
+}
+
+function pickGameSleeper(list){
+  return list.find(r => ["B+","B"].includes(normGrade(r.grade))) || list[2] || list[1] || list[0] || {};
+}
+
+function pickGameAvoid(list){
+  return [...list].reverse().find(r => ["C","B"].includes(normGrade(r.grade))) || list[list.length - 1] || list[0] || {};
 }
 
 function renderGameBreakdown(list){
@@ -1578,7 +1612,12 @@ function renderGameBreakdown(list){
   );
 
   const top = list[0] || {};
+  const value = pickGameValue(list);
+  const sleeper = pickGameSleeper(list);
+  const avoid = pickGameAvoid(list);
   const targets = list.slice(0,5);
+  const conf = confidenceLevel(top);
+  const chips = reasonChips(top);
 
   return `
     <section class="ai-game-card">
@@ -1588,6 +1627,26 @@ function renderGameBreakdown(list){
           <h2>${gameTitle(list)}</h2>
         </div>
         <strong>${esc(top.grade || "A")}</strong>
+      </div>
+
+      <div class="ai-verdict-box">
+        <div class="ai-verdict-main">
+          <span>AI VERDICT</span>
+          <b>${verdictStars(top)}</b>
+          <small>Confidence ${conf}%</small>
+          <div class="ai-confidence-bar"><i style="width:${conf}%"></i></div>
+        </div>
+
+        <div class="ai-verdict-grid">
+          <div><span>Best HR Bet</span><b>${esc(top.player || "-")}</b></div>
+          <div><span>Best Value</span><b>${esc(value.player || "-")}</b></div>
+          <div><span>Sleeper</span><b>${esc(sleeper.player || "-")}</b></div>
+          <div><span>Be Careful</span><b>${esc(avoid.player || "-")}</b></div>
+        </div>
+      </div>
+
+      <div class="ai-reason-chips">
+        ${chips.map(c=>`<span>${c}</span>`).join("") || `<span>🧠 AI Matchup Read</span>`}
       </div>
 
       <div class="ai-game-paragraph">
@@ -3899,5 +3958,86 @@ load();
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
   gap:14px;
+}
+</style>
+
+
+<style>
+.ai-verdict-box{
+  display:grid;
+  grid-template-columns:220px 1fr;
+  gap:12px;
+  margin:12px 0 14px;
+}
+.ai-verdict-main,
+.ai-verdict-grid div{
+  border-radius:16px;
+  background:rgba(143,255,45,.075);
+  border:1px solid rgba(143,255,45,.22);
+  padding:13px;
+}
+.ai-verdict-main span,
+.ai-verdict-grid span{
+  display:block;
+  color:rgba(255,255,255,.55);
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.ai-verdict-main b{
+  display:block;
+  margin:5px 0;
+  color:#8fff2d;
+  font-size:22px;
+  letter-spacing:1px;
+}
+.ai-verdict-main small{
+  color:white;
+  font-weight:900;
+}
+.ai-confidence-bar{
+  margin-top:10px;
+  height:8px;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  overflow:hidden;
+}
+.ai-confidence-bar i{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,#8fff2d,#10f29a);
+}
+.ai-verdict-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+.ai-verdict-grid b{
+  display:block;
+  margin-top:5px;
+  color:white;
+  font-size:13px;
+  line-height:1.2;
+}
+.ai-reason-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin:8px 0 14px;
+}
+.ai-reason-chips span{
+  padding:6px 9px;
+  border-radius:999px;
+  background:rgba(16,242,154,.09);
+  border:1px solid rgba(16,242,154,.22);
+  color:#10f29a;
+  font-size:11px;
+  font-weight:1000;
+}
+@media(max-width:850px){
+  .ai-verdict-box{grid-template-columns:1fr}
+  .ai-verdict-grid{grid-template-columns:repeat(2,1fr)}
 }
 </style>
