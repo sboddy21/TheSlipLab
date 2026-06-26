@@ -1,129 +1,513 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>The Slip Lab | AI Hall of Fame</title>
+
 <style>
+:root{
+  --bg:#020806;
+  --card:#07110d;
+  --card2:#0b1711;
+  --green:#8fff2d;
+  --gold:#ffc400;
+  --orange:#ff9f2d;
+  --red:#ff5c52;
+  --muted:rgba(255,255,255,.62);
+  --line:rgba(255,255,255,.10);
+}
 *{box-sizing:border-box}
-body{margin:0;background:#020706;color:#fff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 18% 5%,rgba(255,176,0,.18),transparent 32%),radial-gradient(circle at 92% 20%,rgba(140,255,50,.10),transparent 34%),linear-gradient(180deg,#07110d,#020706);z-index:-2}
-body:after{content:"";position:fixed;inset:0;background-image:radial-gradient(rgba(255,176,0,.16) 1px,transparent 1px);background-size:46px 46px;opacity:.24;z-index:-1}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(2,7,6,.94);border-bottom:1px solid rgba(255,176,0,.18);backdrop-filter:blur(12px)}
-.nav{max-width:1500px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.brand{font-size:22px;font-weight:1000;color:white;text-decoration:none;margin-right:10px}.brand span{color:#8cff32}
-.nav a{color:white;text-decoration:none;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.10);font-size:12px;font-weight:900}
-.nav a.active{background:#ffb000;color:#110900;box-shadow:0 0 22px rgba(255,176,0,.34)}
-.wrap{max-width:1500px;margin:0 auto;padding:22px 18px 38px}
-.hero{border:1px solid rgba(255,176,0,.30);border-radius:24px;padding:20px;background:radial-gradient(circle at 0 0,rgba(255,176,0,.18),transparent 38%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025));box-shadow:0 0 34px rgba(255,176,0,.13)}
-.kicker{color:#ffb000;font-size:11px;font-weight:1000;letter-spacing:.18em}
-h1{margin:7px 0 6px;font-size:44px;line-height:1}.hero p{margin:0;color:#c8d4d0;font-weight:800;font-size:14px}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:13px}
-.stat{border:1px solid rgba(255,255,255,.09);background:rgba(0,0,0,.20);border-radius:15px;padding:10px;text-align:center}
-.stat span{display:block;color:#aebbb7;font-size:9px;font-weight:1000;letter-spacing:.08em}.stat strong{display:block;margin-top:3px;color:#8cff32;font-size:22px}
-.section{margin-top:18px}.section h2{font-size:22px;margin:0 0 9px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-.card{position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.045);border-radius:17px;padding:12px;min-height:112px}
-.card.gold{border-color:rgba(255,176,0,.35);box-shadow:0 0 18px rgba(255,176,0,.16)}.card.green{border-color:rgba(140,255,50,.28);box-shadow:0 0 18px rgba(140,255,50,.13)}.card.red{border-color:rgba(255,90,45,.28);box-shadow:0 0 18px rgba(255,90,45,.13)}
-.card h3{margin:0 0 5px;font-size:17px;padding-right:50px}.meta{color:#aebbb7;font-size:11px;font-weight:800}.grade{position:absolute;top:10px;right:10px;border:1px solid rgba(255,176,0,.4);color:#ffb000;border-radius:12px;padding:6px 9px;font-weight:1000}.score{margin-top:9px;color:#8cff32;font-size:22px;font-weight:1000}
-.card-row{display:flex;align-items:center;gap:10px}.face{width:44px;height:44px;border-radius:50%;overflow:hidden;background:rgba(140,255,50,.10);display:flex;align-items:center;justify-content:center;color:#8cff32;font-weight:1000;flex:0 0 44px}.face img{width:100%;height:100%;object-fit:cover}
-.goat{display:grid;gap:7px}.goat-row{display:grid;grid-template-columns:54px 42px 1fr 95px;align-items:center;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);border-radius:14px;padding:9px 12px}.goat-row span{color:#ffb000;font-weight:1000}.goat-row b{font-size:15px}.goat-row strong{color:#8cff32;text-align:right}
-.empty{padding:16px;border-radius:16px;border:1px solid rgba(255,255,255,.08);color:#cbd5d1;background:rgba(255,255,255,.035)}
-@media(max-width:1000px){.grid,.stats{grid-template-columns:repeat(2,1fr)}h1{font-size:34px}.goat-row{grid-template-columns:45px 38px 1fr 70px}}
-@media(max-width:650px){.grid,.stats{grid-template-columns:1fr}.nav{padding:10px}.wrap{padding:16px 12px}}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,196,0,.16),transparent 34%),
+    radial-gradient(circle at 90% 20%,rgba(45,255,120,.14),transparent 30%),
+    linear-gradient(180deg,#020806,#030806 55%,#010302);
+  color:white;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body:before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:radial-gradient(rgba(143,255,45,.13) 1px,transparent 1px);
+  background-size:34px 34px;
+  opacity:.22;
+}
+.nav{
+  position:sticky;
+  top:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 7vw;
+  background:rgba(0,0,0,.78);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(143,255,45,.18);
+}
+.nav a{
+  color:white;
+  text-decoration:none;
+  font-weight:1000;
+  font-size:13px;
+  padding:9px 15px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.10);
+}
+.nav a.active{
+  background:var(--gold);
+  color:#111;
+  box-shadow:0 0 22px rgba(255,196,0,.35);
+}
+.wrap{
+  width:min(1500px,88vw);
+  margin:0 auto;
+  padding:0 0 60px;
+}
+.hero{
+  padding:28px 20px 20px;
+  border:1px solid rgba(255,196,0,.35);
+  border-top:0;
+  border-radius:0 0 28px 28px;
+  background:linear-gradient(135deg,rgba(65,48,0,.92),rgba(4,16,10,.92));
+  box-shadow:0 0 45px rgba(255,196,0,.10);
+}
+.kicker{
+  color:var(--gold);
+  font-size:12px;
+  letter-spacing:2px;
+  font-weight:1000;
+}
+h1{
+  margin:6px 0 4px;
+  font-size:42px;
+  line-height:1;
+}
+.sub{
+  margin:0;
+  color:rgba(255,255,255,.76);
+  font-weight:800;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+  margin-top:14px;
+}
+.stat{
+  padding:13px;
+  border-radius:16px;
+  background:rgba(0,0,0,.24);
+  border:1px solid rgba(255,255,255,.10);
+  text-align:center;
+}
+.stat span{
+  display:block;
+  color:rgba(255,255,255,.58);
+  font-size:10px;
+  letter-spacing:1.4px;
+  font-weight:1000;
+}
+.stat strong{
+  display:block;
+  margin-top:4px;
+  color:var(--green);
+  font-size:24px;
+}
+.controls{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  justify-content:space-between;
+  margin:18px 0;
+}
+.search{
+  flex:1;
+  padding:14px 16px;
+  border-radius:16px;
+  border:1px solid rgba(143,255,45,.20);
+  background:rgba(0,0,0,.28);
+  color:white;
+  font-weight:900;
+  outline:none;
+}
+.filters{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.filters button{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  color:white;
+  padding:11px 13px;
+  border-radius:999px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.filters button.active{
+  background:var(--gold);
+  color:#111;
+  border-color:var(--gold);
+}
+.section{
+  margin:24px 0 12px;
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+}
+.section h2{
+  margin:0;
+  font-size:24px;
+}
+.section p{
+  margin:4px 0 0;
+  color:var(--muted);
+  font-weight:800;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px;
+}
+.card{
+  position:relative;
+  min-height:142px;
+  padding:14px;
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(12,18,14,.96),rgba(14,32,17,.90));
+  border:1px solid rgba(255,196,0,.40);
+  box-shadow:0 0 22px rgba(255,196,0,.08);
+  overflow:hidden;
+}
+.card.value{border-color:rgba(143,255,45,.42)}
+.card.longshot{border-color:rgba(255,126,45,.44)}
+.card:before{
+  content:"";
+  position:absolute;
+  inset:-30%;
+  background:radial-gradient(circle at 80% 10%,rgba(143,255,45,.12),transparent 34%);
+  pointer-events:none;
+}
+.topline{
+  position:relative;
+  display:grid;
+  grid-template-columns:46px 1fr 42px;
+  gap:10px;
+  align-items:center;
+}
+.avatar{
+  width:46px;
+  height:46px;
+  border-radius:999px;
+  background:#14300f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--green);
+  font-weight:1000;
+  overflow:hidden;
+}
+.avatar img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.name{
+  font-weight:1000;
+  font-size:16px;
+}
+.meta{
+  margin-top:2px;
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:900;
+}
+.grade{
+  width:38px;
+  height:38px;
+  border-radius:12px;
+  border:1px solid rgba(255,196,0,.65);
+  color:var(--gold);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:1000;
+}
+.score{
+  position:relative;
+  margin-top:14px;
+  color:var(--green);
+  font-size:25px;
+  font-weight:1000;
+}
+.detail{
+  position:relative;
+  color:rgba(255,255,255,.68);
+  font-size:12px;
+  font-weight:850;
+}
+.badges{
+  position:relative;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin-top:10px;
+}
+.badge{
+  padding:5px 7px;
+  border-radius:999px;
+  background:rgba(255,196,0,.10);
+  color:var(--gold);
+  border:1px solid rgba(255,196,0,.22);
+  font-size:10px;
+  font-weight:1000;
+}
+.goat{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.goat-row{
+  display:grid;
+  grid-template-columns:54px 1fr 120px 120px 120px;
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+}
+.rank{
+  color:var(--gold);
+  font-weight:1000;
+  font-size:18px;
+}
+.playerline{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:1000;
+}
+.pill{
+  justify-self:end;
+  color:var(--green);
+  font-weight:1000;
+}
+.empty{
+  padding:30px;
+  border-radius:18px;
+  color:var(--muted);
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.10);
+}
+@media(max-width:1100px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .goat-row{grid-template-columns:44px 1fr 80px}
+  .goat-row .hide-sm{display:none}
+}
+@media(max-width:700px){
+  .wrap{width:94vw}
+  .nav{padding:10px 3vw;overflow:auto}
+  .controls{flex-direction:column;align-items:stretch}
+  .grid{grid-template-columns:1fr}
+}
 </style>
 </head>
+
 <body>
-<header class="topbar">
-  <nav class="nav">
-    <a class="brand" href="./index.html">THE <span>SLIP</span> LAB</a>
-    <a href="./mlb.html">Slate</a>
-    <a href="./full-board.html">Full Board</a>
-    <a href="./matchup-lab.html">Matchup Lab</a>
-    <a href="./power-zones.html">Power Zones</a>
-    <a href="./weather.html">Weather</a>
-    <a href="./results.html">Results</a>
-    <a href="./hr-decision-center.html">Decision Center</a>
-    <a href="./ai-says.html">AI Says</a>
-    <a class="active" href="./ai-hall-of-fame.html">Hall of Fame</a>
-  </nav>
-</header>
+<nav class="nav">
+  <a href="/">THE <span style="color:#8fff2d">SLIP LAB</span></a>
+  <a href="/index.html">Slate</a>
+  <a href="/full-board.html">Full Board</a>
+  <a href="/matchup-lab.html">Matchup Lab</a>
+  <a href="/power-zones.html">Power Zones</a>
+  <a href="/weather.html">Weather</a>
+  <a href="/results.html">Results</a>
+  <a href="/decision-center.html">Decision Center</a>
+  <a href="/ai-says.html">AI Says</a>
+  <a class="active" href="/ai-hall-of-fame.html">Hall of Fame</a>
+</nav>
 
 <main class="wrap">
   <section class="hero">
     <div class="kicker">AI HALL OF FAME</div>
     <h1>Best AI HR Calls</h1>
-    <p>Tracking Slip Lab AI calls that turned into real home runs.</p>
+    <p class="sub">Historical proof that The Slip Lab AI called real home runs before they happened.</p>
     <div class="stats" id="stats"></div>
   </section>
 
-  <section class="section">
-    <h2>Best AI Calls</h2>
-    <div class="grid" id="bestCalls"></div>
+  <section class="controls">
+    <input class="search" id="search" placeholder="Search Hall of Fame by player, team, pitcher, grade..." />
+    <div class="filters" id="filters">
+      <button class="active" data-filter="all">All</button>
+      <button data-filter="best">Best Calls</button>
+      <button data-filter="value">Value Hits</button>
+      <button data-filter="longshot">Longshots</button>
+      <button data-filter="goat">GOATs</button>
+      <button data-filter="A+">A+</button>
+      <button data-filter="A">A</button>
+      <button data-filter="B+">B+</button>
+      <button data-filter="B">B</button>
+    </div>
   </section>
 
-  <section class="section">
-    <h2>Value Hits</h2>
-    <div class="grid" id="valueHits"></div>
-  </section>
-
-  <section class="section">
-    <h2>Longshot Legends</h2>
-    <div class="grid" id="longshots"></div>
-  </section>
-
-  <section class="section">
-    <h2>AI GOAT Leaderboard</h2>
-    <div class="goat" id="goatBoard"></div>
-  </section>
+  <div id="content"></div>
 </main>
 
 <script>
-const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[c]));
-function initials(name){return String(name||"").split(/\s+/).slice(0,2).map(x=>x[0]||"").join("").toUpperCase()}
-function face(r){
-  const src = r.headshot || (r.playerId ? `https://img.mlbstatic.com/mlb-photos/image/upload/w_100,q_auto:best/v1/people/${r.playerId}/headshot/67/current` : "");
-  if(!src) return `<div class="face">${initials(r.player)}</div>`;
-  return `<div class="face"><img src="${src}" onerror="this.parentElement.textContent='${initials(r.player)}';this.remove();"></div>`;
+let HOF = null;
+let activeFilter = "all";
+let query = "";
+
+function esc(v){
+  return String(v ?? "").replace(/[&<>"']/g, m => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[m]));
 }
-function card(r, cls){
-  return `<article class="card ${cls}">
-    <div class="grade">${esc(r.grade || "B")}</div>
-    <div class="card-row">
-      ${face(r)}
+function num(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+function initials(name){
+  return String(name || "?").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase();
+}
+function allCalls(){
+  return [
+    ...(HOF.bestCalls || []).map(r=>({...r,_type:"best"})),
+    ...(HOF.valueHits || []).map(r=>({...r,_type:"value"})),
+    ...(HOF.longshots || HOF.longshotLegends || []).map(r=>({...r,_type:"longshot"}))
+  ];
+}
+function badges(r){
+  const out = [];
+  if(num(r.rank) === 1) out.push("🔥 #1 Pick");
+  if(String(r.grade) === "A+") out.push("🏆 A+ Call");
+  if(num(r.distance) >= 430) out.push("💣 430+ FT");
+  if(r._type === "value") out.push("💰 Value Smash");
+  if(r._type === "longshot") out.push("🎯 Longshot Legend");
+  if(num(r.exitVelocity) >= 108) out.push("⚡ Hard Contact");
+  return out.slice(0,3);
+}
+function card(r){
+  const cls = r._type === "value" ? "value" : r._type === "longshot" ? "longshot" : "";
+  return `
+    <article class="card ${cls}">
+      <div class="topline">
+        <div class="avatar">${r.headshot ? `<img src="${esc(r.headshot)}" alt="">` : esc(initials(r.player))}</div>
+        <div>
+          <div class="name">${esc(r.player)}</div>
+          <div class="meta">${esc(r.date || "")} • Rank #${esc(r.rank || "-")}</div>
+        </div>
+        <div class="grade">${esc(r.grade || "B")}</div>
+      </div>
+      <div class="score">${num(r.score).toFixed(1)}</div>
+      <div class="detail">${esc(r.distance || "-")} ft vs ${esc(r.pitcher || "TBD")}</div>
+      <div class="detail">${esc(r.team || "")} vs ${esc(r.opponent || "")}</div>
+      <div class="badges">${badges(r).map(b=>`<span class="badge">${b}</span>`).join("")}</div>
+    </article>
+  `;
+}
+function goatBoard(){
+  const source = HOF.goatBoard || [];
+  return source.map((r,i)=>`
+    <div class="goat-row">
+      <div class="rank">#${i+1}</div>
+      <div class="playerline">
+        <div class="avatar">${r.headshot ? `<img src="${esc(r.headshot)}" alt="">` : esc(initials(r.player))}</div>
+        <span>${esc(r.player)}</span>
+      </div>
+      <div class="pill">${esc(r.hrCount || r.hits || r.total || 0)} HR</div>
+      <div class="pill hide-sm">Best #${esc(r.bestRank || r.rank || "-")}</div>
+      <div class="pill hide-sm">${esc(r.avgGrade || r.grade || "AI")}</div>
+    </div>
+  `).join("");
+}
+function section(title, sub, html){
+  return `
+    <div class="section">
       <div>
-        <h3>${esc(r.player)}</h3>
-        <div class="meta">${esc(r.date || "")} • Rank #${esc(r.rank || "-")}</div>
+        <h2>${title}</h2>
+        <p>${sub}</p>
       </div>
     </div>
-    <div class="score">${esc(r.score ?? "-")}</div>
-    <div class="meta">${esc(r.distance || "-")} ft ${r.pitcher ? "vs " + esc(r.pitcher) : ""}</div>
-  </article>`;
-}
-function empty(){return `<div class="empty">No qualifying AI hits yet.</div>`}
-async function load(){
-  const data = await (await fetch("./data/hr_ai_hof.json?v=" + Date.now())).json();
-
-  document.getElementById("stats").innerHTML = `
-    <div class="stat"><span>TOTAL AI HITS</span><strong>${data.totalAiHits || 0}</strong></div>
-    <div class="stat"><span>BEST CALLS</span><strong>${data.bestCalls?.length || 0}</strong></div>
-    <div class="stat"><span>VALUE HITS</span><strong>${data.valueHits?.length || 0}</strong></div>
-    <div class="stat"><span>LONGSHOTS</span><strong>${data.longshots?.length || 0}</strong></div>
-    <div class="stat"><span>GOATS</span><strong>${data.goatBoard?.length || 0}</strong></div>
+    ${html || `<div class="empty">No results found.</div>`}
   `;
+}
+function filterCalls(){
+  let rows = allCalls();
 
-  document.getElementById("bestCalls").innerHTML = (data.bestCalls || []).slice(0,24).map(r=>card(r,"gold")).join("") || empty();
-  document.getElementById("valueHits").innerHTML = (data.valueHits || []).slice(0,24).map(r=>card(r,"green")).join("") || empty();
-  document.getElementById("longshots").innerHTML = (data.longshots || []).slice(0,24).map(r=>card(r,"red")).join("") || empty();
+  if(activeFilter === "best") rows = rows.filter(r=>r._type === "best");
+  else if(activeFilter === "value") rows = rows.filter(r=>r._type === "value");
+  else if(activeFilter === "longshot") rows = rows.filter(r=>r._type === "longshot");
+  else if(["A+","A","B+","B"].includes(activeFilter)) rows = rows.filter(r=>String(r.grade) === activeFilter);
 
-  document.getElementById("goatBoard").innerHTML = (data.goatBoard || []).slice(0,50).map((r,i)=>`
-    <div class="goat-row">
-      <span>#${i+1}</span>
-      ${face(r)}
-      <b>${esc(r.player)}</b>
-      <strong>${esc(r.count)} HR</strong>
-    </div>
-  `).join("") || empty();
+  if(query){
+    const q = query.toLowerCase();
+    rows = rows.filter(r => [
+      r.player,r.team,r.opponent,r.pitcher,r.grade,r.date,r.pitchType
+    ].join(" ").toLowerCase().includes(q));
+  }
+
+  return rows;
+}
+function renderStats(){
+  const biggest = allCalls().sort((a,b)=>num(b.distance)-num(a.distance))[0] || {};
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><span>TOTAL AI HITS</span><strong>${esc(HOF.totalAiHits || allCalls().length)}</strong></div>
+    <div class="stat"><span>A+ CALLS</span><strong>${esc(HOF.gradeTotals?.["A+"] || 0)}</strong></div>
+    <div class="stat"><span>A CALLS</span><strong>${esc(HOF.gradeTotals?.["A"] || 0)}</strong></div>
+    <div class="stat"><span>GOATS</span><strong>${esc(HOF.goatBoard?.length || 0)}</strong></div>
+    <div class="stat"><span>BIGGEST BLAST</span><strong>${esc(biggest.distance || "-")} FT</strong></div>
+  `;
+}
+function render(){
+  if(!HOF) return;
+  renderStats();
+
+  const content = document.getElementById("content");
+
+  if(activeFilter === "goat"){
+    content.innerHTML = section("AI GOAT Leaderboard", "Players with the most AI called home runs.", `<div class="goat">${goatBoard()}</div>`);
+    return;
+  }
+
+  const rows = filterCalls();
+
+  if(activeFilter !== "all" || query){
+    content.innerHTML = section("Filtered AI Calls", `${rows.length} matching historical AI calls.`, `<div class="grid">${rows.map(card).join("")}</div>`);
+    return;
+  }
+
+  content.innerHTML = `
+    ${section("Best AI Calls", "The cleanest, highest graded AI home run hits.", `<div class="grid">${(HOF.bestCalls || []).slice(0,12).map(r=>card({...r,_type:"best"})).join("")}</div>`)}
+    ${section("Value Hits", "AI calls where the model found strong market value.", `<div class="grid">${(HOF.valueHits || []).slice(0,12).map(r=>card({...r,_type:"value"})).join("")}</div>`)}
+    ${section("Longshot Legends", "Higher risk AI calls that still left the yard.", `<div class="grid">${(HOF.longshots || HOF.longshotLegends || []).slice(0,12).map(r=>card({...r,_type:"longshot"})).join("")}</div>`)}
+    ${section("AI GOAT Leaderboard", "The players who keep rewarding the model.", `<div class="goat">${goatBoard()}</div>`)}
+  `;
+}
+
+document.getElementById("filters").addEventListener("click", e=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  activeFilter = btn.dataset.filter;
+  document.querySelectorAll("#filters button").forEach(b=>b.classList.toggle("active", b === btn));
+  render();
+});
+document.getElementById("search").addEventListener("input", e=>{
+  query = e.target.value.trim();
+  render();
+});
+
+async function load(){
+  HOF = await (await fetch("./data/hr_ai_hof.json?v=" + Date.now())).json();
+  render();
 }
 load();
 </script>
