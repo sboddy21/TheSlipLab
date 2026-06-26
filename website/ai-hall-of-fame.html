@@ -366,6 +366,13 @@ h1{
       <div id="receiptContent"></div>
     </div>
   </div>
+
+  <div class="profile-modal" id="profileModal">
+    <div class="profile-box">
+      <button class="profile-close" id="profileClose">×</button>
+      <div id="profileContent"></div>
+    </div>
+  </div>
 </main>
 
 <script>
@@ -477,7 +484,10 @@ function playerCard(g){
       <div class="detail">Latest: ${esc(latest.date || "-")} vs ${esc(latest.pitcher || "TBD")}</div>
       <div class="badges">${badgeList.slice(0,4).map(b=>`<span class="badge">${b}</span>`).join("")}</div>
 
-      <button class="receipt-btn" data-receipt-player="${esc(g.player)}">📄 View Receipt</button>
+      <div class="hof-actions">
+        <button class="profile-btn" data-profile-player="${esc(g.player)}">👤 AI Career Profile</button>
+        <button class="receipt-btn" data-receipt-player="${esc(g.player)}">📄 View Receipt</button>
+      </div>
 
       <details class="timeline">
         <summary>View Timeline</summary>
@@ -560,6 +570,7 @@ function render(){
   if(activeFilter === "goat"){
     content.innerHTML = section("AI GOAT Leaderboard", "Players with the most AI called home runs.", `<div class="goat">${goatBoard()}</div>`);
     wireReceipts();
+    wireProfiles();
     return;
   }
 
@@ -569,6 +580,7 @@ function render(){
     const grouped = groupPlayers(rows);
     content.innerHTML = section("Filtered AI Players", `${grouped.length} matching players from ${rows.length} historical AI calls.`, `<div class="grid">${grouped.map(playerCard).join("")}</div>`);
     wireReceipts();
+    wireProfiles();
     return;
   }
 
@@ -583,7 +595,128 @@ function render(){
     ${section("AI GOAT Leaderboard", "The players who keep rewarding the model.", `<div class="goat">${goatBoard()}</div>`)}
   `;
   wireReceipts();
+    wireProfiles();
 }
+
+
+
+function gradeRank(g){
+  return {"A+":5,"A":4,"B+":3,"B":2,"C":1}[String(g || "").trim()] || 0;
+}
+
+function avg(arr){
+  return arr.length ? arr.reduce((a,b)=>a+num(b),0) / arr.length : 0;
+}
+
+function profileHtml(player){
+  const calls = findPlayerCalls(player);
+  const best = [...calls].sort((a,b)=>
+    gradeRank(b.grade) - gradeRank(a.grade) ||
+    num(b.score)-num(a.score) ||
+    num(a.rank)-num(b.rank)
+  )[0] || {};
+
+  const longest = [...calls].sort((a,b)=>num(b.distance)-num(a.distance))[0] || {};
+  const bestRank = Math.min(...calls.map(r=>num(r.rank) || 999));
+  const avgScore = avg(calls.map(r=>r.score));
+  const avgDistance = avg(calls.map(r=>r.distance));
+  const grades = calls.reduce((acc,r)=>{
+    const g = r.grade || "B";
+    acc[g] = (acc[g] || 0) + 1;
+    return acc;
+  }, {});
+
+  const teams = [...new Set(calls.map(r=>r.team).filter(Boolean))].join(", ");
+  const pitchers = [...new Set(calls.map(r=>r.pitcher).filter(Boolean))].slice(0,8);
+
+  return `
+    <div class="career-head">
+      <div class="avatar big">${best.headshot ? `<img src="${esc(best.headshot)}" alt="">` : esc(initials(player))}</div>
+      <div>
+        <span>AI CAREER PROFILE</span>
+        <h2>${esc(player)}</h2>
+        <p>${esc(teams || "Historical AI HR profile")}</p>
+      </div>
+    </div>
+
+    <div class="career-stats">
+      <div><span>AI HR Calls</span><b>${calls.length}</b></div>
+      <div><span>Best Rank</span><b>#${bestRank === 999 ? "-" : bestRank}</b></div>
+      <div><span>Best Grade</span><b>${esc(best.grade || "-")}</b></div>
+      <div><span>Avg Score</span><b>${avgScore.toFixed(1)}</b></div>
+      <div><span>Longest HR</span><b>${esc(longest.distance || "-")} ft</b></div>
+      <div><span>Avg Distance</span><b>${avgDistance.toFixed(0)} ft</b></div>
+    </div>
+
+    <div class="career-section">
+      <h3>AI Career Summary</h3>
+      <p>
+        ${esc(player)} has been one of the model's historical HR hits with <b>${calls.length}</b> AI-called home runs.
+        His best model profile was a <b>${esc(best.grade || "-")}</b> grade, ranked <b>#${esc(best.rank || "-")}</b>,
+        with a score of <b>${num(best.score).toFixed(1)}</b>. The longest tracked home run in the Hall of Fame profile
+        was <b>${esc(longest.distance || "-")} feet</b>.
+      </p>
+    </div>
+
+    <div class="career-split">
+      <div class="career-section">
+        <h3>Grade Breakdown</h3>
+        <div class="grade-breakdown">
+          ${["A+","A","B+","B","C"].map(g=>`
+            <div>
+              <span>${g}</span>
+              <b>${grades[g] || 0}</b>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+
+      <div class="career-section">
+        <h3>Pitchers Hit Against</h3>
+        <div class="pitcher-tags">
+          ${pitchers.map(x=>`<span>${esc(x)}</span>`).join("") || `<span>No pitcher data</span>`}
+        </div>
+      </div>
+    </div>
+
+    <div class="career-section">
+      <h3>Full AI HR Timeline</h3>
+      <div class="career-timeline">
+        ${calls.map(r=>`
+          <div class="career-row">
+            <span>${esc(r.date || "-")}</span>
+            <b>${esc(r.grade || "B")} • Rank #${esc(r.rank || "-")}</b>
+            <em>${esc(r.distance || "-")} ft</em>
+            <small>${esc(r.team || "")} vs ${esc(r.opponent || "")} • vs ${esc(r.pitcher || "TBD")}</small>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function openProfile(player){
+  document.getElementById("profileContent").innerHTML = profileHtml(player);
+  document.getElementById("profileModal").classList.add("open");
+}
+
+function wireProfiles(){
+  document.querySelectorAll("[data-profile-player]").forEach(btn=>{
+    btn.onclick = ()=>{
+      openProfile(btn.dataset.profilePlayer);
+    };
+  });
+}
+
+document.getElementById("profileClose").addEventListener("click", ()=>{
+  document.getElementById("profileModal").classList.remove("open");
+});
+
+document.getElementById("profileModal").addEventListener("click", e=>{
+  if(e.target.id === "profileModal"){
+    e.currentTarget.classList.remove("open");
+  }
+});
 
 
 function findPlayerCalls(player){
@@ -895,5 +1028,209 @@ load();
 @media(max-width:760px){
   .receipt-proof{grid-template-columns:repeat(2,1fr)}
   .receipt-row{grid-template-columns:1fr}
+}
+</style>
+\n
+<style>
+.hof-actions{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.profile-btn{
+  border:1px solid rgba(143,255,45,.35);
+  background:rgba(143,255,45,.10);
+  color:#8fff2d;
+  border-radius:12px;
+  padding:9px 10px;
+  font-weight:1000;
+  cursor:pointer;
+}
+.profile-btn:hover{
+  background:rgba(143,255,45,.18);
+  box-shadow:0 0 18px rgba(143,255,45,.18);
+}
+.profile-modal{
+  position:fixed;
+  inset:0;
+  z-index:101;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  background:rgba(0,0,0,.74);
+  backdrop-filter:blur(10px);
+}
+.profile-modal.open{
+  display:flex;
+}
+.profile-box{
+  width:min(900px,94vw);
+  max-height:88vh;
+  overflow:auto;
+  position:relative;
+  padding:22px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#08140e,#050706);
+  border:1px solid rgba(143,255,45,.42);
+  box-shadow:0 0 52px rgba(143,255,45,.18);
+}
+.profile-close{
+  position:absolute;
+  top:12px;
+  right:12px;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  color:white;
+  font-size:22px;
+  cursor:pointer;
+}
+.career-head{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.avatar.big{
+  width:78px;
+  height:78px;
+  font-size:24px;
+}
+.career-head span{
+  color:#8fff2d;
+  font-size:11px;
+  letter-spacing:1.6px;
+  font-weight:1000;
+}
+.career-head h2{
+  margin:5px 0 2px;
+  font-size:36px;
+}
+.career-head p{
+  margin:0;
+  color:rgba(255,255,255,.62);
+  font-weight:850;
+}
+.career-stats{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:10px;
+  margin:18px 0;
+}
+.career-stats div,
+.career-section{
+  border-radius:16px;
+  background:rgba(143,255,45,.06);
+  border:1px solid rgba(143,255,45,.16);
+}
+.career-stats div{
+  padding:12px;
+}
+.career-stats span{
+  display:block;
+  color:rgba(255,255,255,.52);
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.8px;
+  text-transform:uppercase;
+}
+.career-stats b{
+  display:block;
+  margin-top:5px;
+  color:#8fff2d;
+  font-size:22px;
+}
+.career-section{
+  padding:14px;
+  margin-top:12px;
+}
+.career-section h3{
+  margin:0 0 8px;
+}
+.career-section p{
+  margin:0;
+  color:rgba(255,255,255,.78);
+  line-height:1.5;
+  font-weight:750;
+}
+.career-split{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.grade-breakdown{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+}
+.grade-breakdown div{
+  padding:10px;
+  border-radius:12px;
+  background:rgba(0,0,0,.20);
+  text-align:center;
+}
+.grade-breakdown span{
+  display:block;
+  color:rgba(255,255,255,.58);
+  font-weight:1000;
+}
+.grade-breakdown b{
+  color:#8fff2d;
+  font-size:20px;
+}
+.pitcher-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.pitcher-tags span{
+  padding:7px 9px;
+  border-radius:999px;
+  background:rgba(255,255,255,.06);
+  color:white;
+  font-size:11px;
+  font-weight:900;
+}
+.career-timeline{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.career-row{
+  display:grid;
+  grid-template-columns:90px 130px 80px 1fr;
+  gap:10px;
+  align-items:center;
+  padding:10px;
+  border-radius:13px;
+  background:rgba(255,255,255,.045);
+  border:1px solid rgba(255,255,255,.08);
+}
+.career-row span,
+.career-row small{
+  color:rgba(255,255,255,.58);
+  font-size:11px;
+  font-weight:900;
+}
+.career-row b{
+  color:white;
+  font-size:12px;
+}
+.career-row em{
+  color:#8fff2d;
+  font-style:normal;
+  font-weight:1000;
+}
+@media(max-width:900px){
+  .career-stats{grid-template-columns:repeat(2,1fr)}
+  .career-split{grid-template-columns:1fr}
+  .career-row{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .hof-actions{grid-template-columns:1fr}
 }
 </style>
