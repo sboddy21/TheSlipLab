@@ -188,23 +188,6 @@ if (Array.isArray(homeRuns)) {
   console.log("Updated mlb_home_runs.json:", rows.length);
 }
 
-const dc = read("hr_decision_center.json", null);
-
-if (dc?.allPlayers) {
-  const rows = dc.allPlayers
-    .map(row => enrich(row, weather))
-    .sort((a, b) => num(b.hrConfidence) - num(a.hrConfidence));
-
-  write("hr_decision_center.json", {
-    ...dc,
-    updatedAt: new Date().toISOString(),
-    pullWindHrUpdatedAt: new Date().toISOString(),
-    sections: rebuildSections(rows),
-    allPlayers: rows
-  });
-
-  console.log("Updated hr_decision_center.json:", rows.length);
-}
 
 const cardData = read("player_card_data.json", null);
 

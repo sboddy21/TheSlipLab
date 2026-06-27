@@ -344,24 +344,5 @@ if (Array.isArray(hrRows)) {
   console.log("Updated mlb_home_runs.json:", fixed.length);
 }
 
-const dc = read("hr_decision_center.json", null);
-if (dc?.allPlayers) {
-  const rows = dc.allPlayers.map(volatility).sort((a, b) => num(b.hrConfidence) - num(a.hrConfidence));
-
-  const output = {
-    ...dc,
-    updatedAt: new Date().toISOString(),
-    scoringMode: "HR volatility weighted",
-    volatilityWeights: {
-      currentModel: 3,
-      hrVolatility: 97
-    },
-    sections: rebuildDecisionSections(rows),
-    allPlayers: rows
-  };
-
-  write("hr_decision_center.json", output);
-  console.log("Updated hr_decision_center.json:", rows.length);
-}
 
 console.log("HR VOLATILITY ENGINE COMPLETE");
