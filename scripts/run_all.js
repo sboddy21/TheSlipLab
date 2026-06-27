@@ -1,80 +1,30 @@
 import { spawnSync } from "child_process";
-import fs from "fs";
-import path from "path";
 
 const steps = [
-  ["Slate", "scripts/mlb/fetch_mlb_today.js"],
-  ["Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
-  ["HR Power Profiles", "scripts/mlb/build_hr_power_profiles.js"],
-  ["Full Board", "scripts/mlb/build_home_run_board.js"],
-  ["Hits Board", "scripts/mlb/build_hits_board.js"],
-  ["Total Bases Board", "scripts/mlb/build_total_bases_board.js"],
-  ["RBI Board", "scripts/mlb/build_rbi_board.js"],
-  ["Pitcher Strikeouts Board", "scripts/mlb/build_pitcher_strikeouts_board.js"],
-  ["HR Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
-  ["Game Pitcher Matchups", "scripts/mlb/build_game_pitcher_matchups.mjs"],
-  ["Team Stacks", "scripts/mlb/build_team_stacks.js"],
-  ["Weather", "scripts/mlb/build_weather_board.js"],
-  ["Context Factors", "scripts/mlb/build_context_factors.js"],
-  ["Results", "scripts/mlb/build_hr_results.js"],
-  ["Results X Content", "scripts/content/build_results_x_content.js"],
-  ["Power Zones", "scripts/mlb/build_statcast_zones.js"],
-  ["Pitcher Attack Zones", "scripts/mlb/build_pitcher_attack_zones.js"],
-  ["Decision Center", "scripts/mlb/build_hr_decision_center.js"],
-  ["Decision Pitcher Enrichment", "scripts/mlb/enrich_hr_decision_pitchers.js"],
-  ["Decision Volatility Engine", "scripts/mlb/build_hr_volatility_engine.js"],
-  ["Pitch Type Destruction Engine", "scripts/mlb/build_pitch_type_destruction_engine.js"],
-  ["Pull Wind HR Engine", "scripts/mlb/build_pull_wind_hr_engine.js"],
-  ["Launch HR Profile Engine", "scripts/mlb/build_launch_hr_profile_engine.js"],
-  ["Bullpen Inheritance Engine", "scripts/mlb/build_bullpen_inheritance_engine.js"],
-  ["Bullpen Relievers", "scripts/mlb/build_bullpen_relievers.js"],
-  ["Multi HR Ceiling Engine", "scripts/mlb/build_multi_hr_ceiling_engine.js"],
-  ["Real HR Probability Engine", "scripts/mlb/build_real_hr_probability_engine.js"],
-  ["Finalize Decision Center", "scripts/mlb/finalize_hr_decision_center.js"],
-  ["HR Calibration Report", "scripts/mlb/build_hr_calibration_report.js"],
-  ["Advanced Player Intelligence", "scripts/build_advanced_player_intelligence.js"],
-  ["Player Card Data", "scripts/build_player_card_data.js"],
-
-  ["HR AI Breakdowns", "scripts/build_hr_ai_breakdowns.cjs"],
-  ["HR AI History", "scripts/build_hr_ai_history.cjs"],
-  ["HR AI Movement", "scripts/build_hr_ai_movement.cjs"],
-  ["HR AI Stacks", "scripts/build_hr_ai_stacks.cjs"],
-  ["HR AI Hall Of Fame", "scripts/build_hr_ai_hof.cjs"],
-
-  ["Batting Spot Profiles", "scripts/mlb/build_batting_spot_profiles.js"],
-  ["NBA Today", "scripts/nba/fetch_nba_today.js"],
-  ["NBA Player Pool", "scripts/nba/build_nba_player_pool.js"],
-  ["NBA History", "scripts/nba/build_nba_history.js"],
-  ["NBA Minutes Engine", "scripts/nba/build_minutes_engine.js"],
-  ["NBA Usage Engine", "scripts/nba/build_usage_engine.js"],
-  ["NBA Core", "scripts/nba/build_nba_core.js"],
-  ["NBA Team Defense", "scripts/nba/build_team_defense.js"],
-  ["NBA Pace Engine", "scripts/nba/build_pace_engine.js"],
-  ["NBA Defender Engine", "scripts/nba/build_defender_engine.js"],
-  ["NBA Points Board", "scripts/nba/build_points_board.js"],
-  ["NBA Rebounds Board", "scripts/nba/build_rebounds_board.js"],
-  ["NBA Assists Board", "scripts/nba/build_assists_board.js"],
-  ["NBA Threes Board", "scripts/nba/build_threes_board.js"],
-  ["NBA Matchup Engine", "scripts/nba/build_matchup_engine.js"],
-  ["NBA Player Cards", "scripts/nba/build_nba_player_cards.js"],
-  ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"],
-  ["Live Intelligence", "scripts/run_live_intelligence.js"]
+  ["MLB Today", "scripts/mlb/fetch_mlb_today.js"],
+  ["MLB Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
+  ["Home Run Board", "scripts/mlb/build_home_run_board.js"],
+  ["Weather Board", "scripts/mlb/build_weather_board.js"],
+  ["HR Decision Center", "scripts/mlb/build_hr_decision_center.js"],
+  ["Finalize HR Decision Center", "scripts/mlb/finalize_hr_decision_center.js"],
+  ["Player Cards", "scripts/build_player_card_data.js"],
+  ["AI Breakdowns", "scripts/build_hr_ai_breakdowns.cjs"],
+  ["AI Stacks", "scripts/build_hr_ai_stacks.cjs"],
+  ["AI History", "scripts/build_hr_ai_history.cjs"],
+  ["AI Movement", "scripts/build_hr_ai_movement.cjs"],
+  ["AI HOF", "scripts/build_hr_ai_hof.cjs"],
+  ["X Content", "scripts/build_x_content.js"],
+  ["Health Status", "scripts/build_health_status.js"]
 ];
 
-console.log("THE SLIP LAB FULL AUTO REFRESH");
-console.log("==============================");
+console.log("");
+console.log("THE SLIP LAB MAIN MLB REFRESH");
+console.log("Time:", new Date().toISOString());
 
-for (const [label, file] of steps) {
-  if (!fs.existsSync(file)) {
-    console.log("");
-    console.log(`SKIPPED: ${label}`);
-    console.log(`Missing file: ${file}`);
-    continue;
-  }
-
+for (const [name, file] of steps) {
   console.log("");
-  console.log(`RUNNING: ${label}`);
-  console.log(`node ${file}`);
+  console.log("RUNNING:", name);
+  console.log("node", file);
 
   const result = spawnSync("node", [file], {
     stdio: "inherit",
@@ -83,56 +33,11 @@ for (const [label, file] of steps) {
 
   if (result.status !== 0) {
     console.log("");
-    console.log(`FAILED: ${label}`);
-    console.log(`File: ${file}`);
+    console.log("FAILED:", name);
+    console.log("File:", file);
     process.exit(result.status || 1);
   }
 }
 
-fs.mkdirSync("website/data", { recursive: true });
-
-const now = new Date().toISOString();
-
-fs.writeFileSync(
-  path.join("website", "data", "site_last_updated.json"),
-  JSON.stringify({
-    updatedAt: now,
-    updated_at: now,
-    source: "run_all",
-    sections: [
-      "slate",
-      "full_board",
-      "matchup_lab",
-      "power_zones",
-      "quick_target",
-      "heat_check",
-      "streak_lab",
-      "weather",
-      "results",
-      "decision_center",
-      "nba_today",
-      "nba_points",
-      "nba_rebounds",
-      "nba_assists",
-      "nba_threes",
-      "nba_matchups",
-      "nba_decision_center"
-    ]
-  }, null, 2)
-);
-
 console.log("");
-console.log("RUNNING: MLB Health Status");
-const healthResult = spawnSync("node", ["scripts/build_health_status.js"], {
-  stdio: "inherit",
-  env: process.env
-});
-
-if (healthResult.status !== 0) {
-  console.log("");
-  console.log("FAILED: MLB Health Status");
-  process.exit(healthResult.status || 1);
-}
-
-console.log("");
-console.log("THE SLIP LAB FULL AUTO REFRESH COMPLETE");
+console.log("THE SLIP LAB MAIN MLB REFRESH COMPLETE");
