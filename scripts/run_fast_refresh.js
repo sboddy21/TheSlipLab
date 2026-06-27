@@ -38,7 +38,6 @@ const steps = [
 
   ["HR Decision Center", "node scripts/mlb/build_hr_decision_center.js"],
   ["Decision Pitcher Enrichment", "node scripts/mlb/enrich_hr_decision_pitchers.js"],
-  ["Finalize HR Decision Center", "node scripts/mlb/finalize_hr_decision_center.js"],
   ["Final Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
 
   ["Player Card Data", "node scripts/build_player_card_data.js"],
