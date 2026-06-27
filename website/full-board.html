@@ -160,9 +160,79 @@ tbody tr{cursor:pointer}
 @media(max-width:800px){
   .zone-wrap{grid-template-columns:1fr}
 }
-</style>
+
+    /* Shared The Slip Lab header */
+    .tsl-site-header{
+      width:100%;
+      background:#050909;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      position:sticky;
+      top:0;
+      z-index:99999;
+    }
+    .tsl-site-header-inner{
+      max-width:1800px;
+      margin:0 auto;
+      padding:14px 22px;
+      display:flex;
+      align-items:center;
+      gap:22px;
+      overflow-x:auto;
+      scrollbar-width:none;
+    }
+    .tsl-site-header-inner::-webkit-scrollbar{display:none}
+    .tsl-brand{
+      color:#f4fff8;
+      text-decoration:none;
+      font-size:24px;
+      font-weight:950;
+      letter-spacing:-.03em;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .tsl-nav{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:nowrap;
+      white-space:nowrap;
+      flex:0 0 auto;
+    }
+    .tsl-nav a{
+      color:#f4fff8;
+      text-decoration:none;
+      background:#101719;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:16px;
+      padding:10px 17px;
+      font-size:14px;
+      font-weight:950;
+      line-height:1;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.02);
+    }
+    .tsl-nav a.active{
+      background:#7cff24;
+      border-color:#7cff24;
+      color:#061006;
+      box-shadow:0 0 22px rgba(124,255,36,.18);
+    }
+    body{margin-top:0!important}
+    @media(max-width:900px){
+      .tsl-site-header-inner{padding:12px 14px;gap:14px}
+      .tsl-brand{font-size:20px}
+      .tsl-nav a{font-size:12px;padding:9px 12px;border-radius:14px}
+    }
+
+  </style>
 </head>
 <body>
+<header class="tsl-site-header">
+  <div class="tsl-site-header-inner">
+    <a class="tsl-brand" href="./index.html">The Slip Lab</a>
+    <nav class="tsl-nav"><a href="./mlb.html">Slate</a><a class="active" href="./full-board.html">Full Board</a><a href="./matchup-lab.html">Matchup Lab</a><a href="./power-zones.html">Power Zones</a><a href="./quick-target.html">Quick Target</a><a href="./heat-check.html">Heat Check</a><a href="./streak-lab.html">Streak Lab</a><a href="./weather.html">Weather</a><a href="./results.html">Results</a><a href="./hr-decision-center.html">Decision Center</a><a href="./ai-says.html">AI Says</a><a href="./ai-hall-of-fame.html">Hall of Fame</a></nav>
+  </div>
+</header>
+
 
 <div class="topbar">
   <div class="topbar-inner">
