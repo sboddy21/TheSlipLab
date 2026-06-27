@@ -4,6 +4,7 @@ const path = require("path");
 const ROOT = process.cwd();
 const DC_FILE = path.join(ROOT, "website/data/hr_decision_center.json");
 const POOL_FILE = path.join(ROOT, "website/data/mlb_player_pool.json");
+const HR_FILE = path.join(ROOT, "website/data/mlb_home_runs.json");
 const OUT_FILE = path.join(ROOT, "website/data/hr_ai_breakdowns.json");
 
 function readJson(file, fallback){
@@ -149,12 +150,83 @@ function buildAnalystTake(info){
 
 const dc = readJson(DC_FILE,{});
 const pool = readJson(POOL_FILE,[]);
+const hrRows = arr(readJson(HR_FILE, []));
 const poolRows = arr(pool);
 
 const poolByName = new Map();
 for (const p of poolRows) {
   const n = key(playerName(p));
   if (n) poolByName.set(n, p);
+}
+
+const hrByName = new Map();
+for (const h of hrRows) {
+  const n = key(playerName(h));
+  if (n) hrByName.set(n, h);
+}
+
+const dcByName = new Map();
+for (const d of arr(dc)) {
+  const n = key(playerName(d));
+  if (n) dcByName.set(n, d);
+}
+
+function liveContextFor(player){
+  const k = key(player);
+  return {
+    hr: hrByName.get(k) || {},
+    dc: dcByName.get(k) || {},
+    pool: poolByName.get(k) || {}
+  };
+}
+
+function bestLivePitch(ctx){
+  return clean(
+    ctx.hr.pitchTypeDestructionPitch ||
+    ctx.hr.bestPitch ||
+    ctx.dc.bestPitch ||
+    "Live pitch edge unavailable"
+  );
+}
+
+function bestLiveZone(ctx){
+  const zoneOverlap = num(ctx.dc.zoneOverlap);
+  const hotZones = num(ctx.dc.hotZoneCount);
+  const leak = num(ctx.dc.pitcherLeak);
+
+  if (zoneOverlap || hotZones || leak) {
+    return `${Math.round(zoneOverlap)} overlap / ${hotZones} hot zones / ${Math.round(leak)} pitcher leak`;
+  }
+
+  return "Live zone edge unavailable";
+}
+
+function projectedDistance(ctx){
+  const launch = num(ctx.hr.launchHrProfileScore);
+  const ceiling = num(ctx.hr.multiHrCeilingScore);
+  const pullWind = num(ctx.hr.pullWindHrScore);
+  const volatility = num(ctx.hr.hrVolatilityScore);
+
+  const distance = 382 + launch * 0.18 + ceiling * 0.14 + pullWind * 0.10 + volatility * 0.08;
+  return Math.round(Math.max(380, Math.min(455, distance)));
+}
+
+function liveBreakdownScores(ctx, fallback){
+  const hr = ctx.hr || {};
+  const dc = ctx.dc || {};
+  const fb = fallback || {};
+
+  return {
+    power: Math.round(num(fb.power) || num(dc.powerScore) || num(hr.truePowerScore) || num(hr.hrPowerIndex) || 0),
+    matchup: Math.round(num(fb.matchup) || num(dc.pitcherRisk) || num(hr.pitchTypeDestructionScore) || 0),
+    environment: Math.round(num(fb.environment) || Math.max(num(hr.pullWindHrScore), num(hr.bullpenInheritanceScore), num(dc.weather), num(dc.bullpen))),
+    bullpen: Math.round(num(hr.bullpenInheritanceScore) || num(dc.bullpen) || 0),
+    pitch: Math.round(num(hr.pitchTypeDestructionScore) || num(dc.pitchEdge) || 0),
+    launch: Math.round(num(hr.launchHrProfileScore) || 0),
+    ceiling: Math.round(num(hr.multiHrCeilingScore) || 0),
+    volatility: Math.round(num(hr.hrVolatilityScore) || num(fb.certainty) || 0),
+    zone: Math.round(num(dc.zoneOverlap) || 0)
+  };
 }
 
 const rows = [];
@@ -258,10 +330,36 @@ sorted.forEach((info, i) => {
   if (!info.team && poolFix.team) info.team = poolFix.team;
   if (!info.opponent && poolFix.opponent) info.opponent = poolFix.opponent;
 
+  const ctx = liveContextFor(info.player);
+  const existingScores = buildExplanationScores(info);
+  const liveScores = liveBreakdownScores(ctx, existingScores);
+
+  info.bestPitch = bestLivePitch(ctx);
+  info.expectedPitch = info.bestPitch;
+  info.expectedZone = bestLiveZone(ctx);
+  info.projectedDistance = projectedDistance(ctx);
+
+  info.liveModelSignals = {
+    hrConfidence: num(ctx.hr.hrConfidence || ctx.dc.hrConfidence),
+    pitchTypeDestructionScore: num(ctx.hr.pitchTypeDestructionScore),
+    pullWindHrScore: num(ctx.hr.pullWindHrScore),
+    launchHrProfileScore: num(ctx.hr.launchHrProfileScore),
+    bullpenInheritanceScore: num(ctx.hr.bullpenInheritanceScore),
+    multiHrCeilingScore: num(ctx.hr.multiHrCeilingScore),
+    hrVolatilityScore: num(ctx.hr.hrVolatilityScore),
+    zoneOverlap: num(ctx.dc.zoneOverlap),
+    hotZoneCount: num(ctx.dc.hotZoneCount),
+    pitcherLeak: num(ctx.dc.pitcherLeak)
+  };
+
+  info.explanationScores = {
+    ...existingScores,
+    ...liveScores,
+    certainty: Math.round(num(ctx.hr.score || info.score || existingScores.certainty))
+  };
+
   info.analystTake = buildAnalystTake(info);
   info.cardTake = info.analystTake;
-
-  info.explanationScores = buildExplanationScores(info);
 });
 
 const out = {

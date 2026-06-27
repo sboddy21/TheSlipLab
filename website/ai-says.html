@@ -434,8 +434,8 @@
               <b>${pct(r.probability)}%</b>
             </div>
             <div class="metric">
-              <small>History</small>
-              <b>${pct(r.history?.similarity)}%</b>
+              <small>Trust</small>
+              <b>${pct(r.trustBreakdown?.modelAgreement)}%</b>
             </div>
           </div>
 
@@ -536,15 +536,15 @@
               pitchMatch: explanation.matchup || 0,
               powerProfile: explanation.power || 0,
               weather: explanation.environment || 0,
-              bullpen: explanation.environment || 0,
+              bullpen: explanation.bullpen || 0,
               market: player.consensusScore || 0,
-              history: explanation.certainty || 0,
-              recentForm: explanation.certainty || 0
+              history: explanation.ceiling || 0,
+              recentForm: explanation.volatility || 0
             },
             expected: {
-              pitch: player.bestPitch || "Best matchup pitch",
-              zone: "Damage zone",
-              distance: 410
+              pitch: player.expectedPitch || player.bestPitch || "Live pitch edge unavailable",
+              zone: player.expectedZone || "Live zone edge unavailable",
+              distance: player.projectedDistance || 410
             }
           };
         });
