@@ -3,15 +3,8 @@ const path = require("path");
 
 const ROOT = process.cwd();
 
-const canonicalOwner = "scripts/mlb/build_home_run_board.js";
-
-const temporaryWriters = new Set([
-  "scripts/mlb/build_hr_volatility_engine.js",
-  "scripts/mlb/build_pitch_type_destruction_engine.js",
-  "scripts/mlb/build_pull_wind_hr_engine.js",
-  "scripts/mlb/build_launch_hr_profile_engine.js",
-  "scripts/mlb/build_bullpen_inheritance_engine.js",
-  "scripts/mlb/build_multi_hr_ceiling_engine.js"
+const allowedWriters = new Set([
+  "scripts/mlb/build_master_hr_model.js"
 ]);
 
 function walk(dir, out = []) {
@@ -38,39 +31,31 @@ function writesMlbHomeRuns(text) {
 }
 
 const files = walk(path.join(ROOT, "scripts"));
-const writers = [];
+const offenders = [];
 
 for (const file of files) {
   const rel = path.relative(ROOT, file);
   const text = fs.readFileSync(file, "utf8");
 
-  if (writesMlbHomeRuns(text)) {
-    writers.push(rel);
+  if (writesMlbHomeRuns(text) && !allowedWriters.has(rel)) {
+    offenders.push(rel);
   }
 }
 
-const unknown = writers.filter(file => file !== canonicalOwner && !temporaryWriters.has(file));
-const missingOwner = !writers.includes(canonicalOwner);
+for (const required of allowedWriters) {
+  if (!fs.existsSync(path.join(ROOT, required))) {
+    offenders.push(`MISSING REQUIRED OWNER: ${required}`);
+  }
+}
 
-if (missingOwner) {
+if (offenders.length) {
   console.error("");
-  console.error("FAILED: Canonical MLB home run owner is missing:");
-  console.error(" - " + canonicalOwner);
+  console.error("FAILED: Unauthorized MLB home run writers found");
+  for (const file of offenders) console.error(" - " + file);
   console.error("");
   process.exit(1);
 }
 
-if (unknown.length) {
-  console.error("");
-  console.error("FAILED: Unknown scripts write mlb_home_runs.json");
-  for (const file of unknown) console.error(" - " + file);
-  console.error("");
-  process.exit(1);
-}
-
-console.log("MLB home runs ownership audit passed.");
-console.log("Canonical owner:", canonicalOwner);
-console.log("Temporary writers pending Phase 4B:", temporaryWriters.size);
-for (const file of [...temporaryWriters].filter(file => writers.includes(file))) {
-  console.log(" - " + file);
-}
+console.log("MLB home runs ownership check passed.");
+console.log("Sole owner:");
+for (const file of allowedWriters) console.log(" - " + file);

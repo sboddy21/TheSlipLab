@@ -24,17 +24,11 @@ const steps = [
 
   ["MLB Today", "node scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],
-  ["Home Run Board", "node scripts/mlb/build_home_run_board.js"],
 
-  ["HR Volatility Engine", "node scripts/mlb/build_hr_volatility_engine.js"],
   ["Pitch Type Damage", "node scripts/mlb/build_pitch_type_damage.js"],
-  ["Pitch Type Destruction Engine", "node scripts/mlb/build_pitch_type_destruction_engine.js"],
   ["Weather Board", "node scripts/mlb/build_weather_board.js"],
-  ["Pull Wind HR Engine", "node scripts/mlb/build_pull_wind_hr_engine.js"],
-  ["Launch HR Profile Engine", "node scripts/mlb/build_launch_hr_profile_engine.js"],
   ["Bullpen Relievers", "node scripts/mlb/build_bullpen_relievers.js"],
-  ["Bullpen Inheritance Engine", "node scripts/mlb/build_bullpen_inheritance_engine.js"],
-  ["Multi HR Ceiling Engine", "node scripts/mlb/build_multi_hr_ceiling_engine.js"],
+  ["Master HR Model", "node scripts/mlb/build_master_hr_model.js"],
   ["Real HR Probability Engine", "node scripts/mlb/build_real_hr_probability_engine.js"],
 
   ["HR Decision Center", "node scripts/mlb/build_hr_decision_center.js"],

@@ -5,7 +5,7 @@ const steps = [
   ["MLB Home Runs Ownership Check", "scripts/validate_mlb_home_runs_ownership.cjs"],
   ["MLB Today", "scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
-  ["Home Run Board", "scripts/mlb/build_home_run_board.js"],
+  ["Master HR Model", "scripts/mlb/build_master_hr_model.js"],
   ["Weather Board", "scripts/mlb/build_weather_board.js"],
   ["HR Decision Center", "scripts/mlb/build_hr_decision_center.js"],
   ["Player Cards", "scripts/build_player_card_data.js"],
