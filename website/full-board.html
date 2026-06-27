@@ -219,7 +219,7 @@ tbody tr{cursor:pointer}
     <div class="modal-top">
       <div>
         <h2 id="modalName">Player Card</h2>
-        <p id="modalSub">HR scouting profile</p>
+        <p id="modalSub">Live HR scouting profile</p>
       </div>
       <button class="close" id="closeModal">Close</button>
     </div>
@@ -238,6 +238,11 @@ tbody tr{cursor:pointer}
       <div class="deep-stat"><div class="deep-label">Hitter Zone Power</div><div class="deep-value" id="mHitterZonePower">0</div></div>
       <div class="deep-stat"><div class="deep-label">Pitcher Leak</div><div class="deep-value" id="mPitcherLeak">0</div></div>
       <div class="deep-stat"><div class="deep-label">Hot Zones</div><div class="deep-value" id="mHotZones">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Ceiling</div><div class="deep-value" id="mCeiling">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Volatility</div><div class="deep-value" id="mVolatility">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Lineup Role</div><div class="deep-value" id="mLineupRole">N/A</div></div>
+      <div class="deep-stat"><div class="deep-label">Plate Apps</div><div class="deep-value" id="mPlateApps">0</div></div>
+      <div class="deep-stat"><div class="deep-label">Protection</div><div class="deep-value" id="mProtection">0</div></div>
     </div>
 
     <div class="zone-wrap">
@@ -347,7 +352,14 @@ function openPlayerCard(name){
   if(!row) return;
 
   document.getElementById("modalName").textContent = clean(row.player);
-  document.getElementById("modalSub").textContent = clean(row.team) + " vs " + clean(row.opponent);
+
+  const pitcherName = clean(row.pitcher || row.opposingPitcher || row.probablePitcher || "TBD");
+  const lineupText = row.confirmedLineup
+    ? "Confirmed lineup"
+    : (row.lineupSource ? clean(row.lineupSource) : "Projected lineup");
+
+  document.getElementById("modalSub").textContent =
+    clean(row.team) + " vs " + clean(row.opponent) + " · Pitcher: " + pitcherName + " · " + lineupText;
 
   document.getElementById("mConfidence").textContent = score(row.hrConfidence);
   document.getElementById("mPower").textContent = score(row.powerScore);
@@ -362,6 +374,11 @@ function openPlayerCard(name){
   document.getElementById("mHitterZonePower").textContent = score(row.hitterZonePower);
   document.getElementById("mPitcherLeak").textContent = score(row.pitcherLeak);
   document.getElementById("mHotZones").textContent = clean(row.hotZoneCount);
+  document.getElementById("mCeiling").textContent = score(row.ceilingScore);
+  document.getElementById("mVolatility").textContent = score(row.volatilityScore);
+  document.getElementById("mLineupRole").textContent = clean(row.lineupRole || (row.lineupSpot ? "Bats " + row.lineupSpot : ""));
+  document.getElementById("mPlateApps").textContent = score(row.projectedPlateAppearances);
+  document.getElementById("mProtection").textContent = score(row.protectionScore);
 
   renderZoneGrid("avgZoneGrid", row.avgZones, null, "decimal");
   renderZoneGrid("isoZoneGrid", row.isoZones, null, "decimal");
@@ -373,14 +390,32 @@ function openPlayerCard(name){
 
   const reasons = Array.isArray(row.reasons) && row.reasons.length
     ? row.reasons.join(", ")
-    : "HR profile connected through The Slip Lab model.";
+    : "live confidence, power, pitch edge, pitcher risk, weather, bullpen, zone overlap, lineup role, and due signals";
+
+  const lineupDetails = [];
+  if (row.lineupRole) lineupDetails.push("lineup role is " + clean(row.lineupRole));
+  if (row.lineupSpot) lineupDetails.push("batting spot is " + clean(row.lineupSpot));
+  if (Number(row.projectedPlateAppearances || 0) > 0) {
+    lineupDetails.push("projected plate appearances are " + score(row.projectedPlateAppearances));
+  }
+  if (Number(row.protectionScore || 0) > 0) {
+    lineupDetails.push("protection score is " + score(row.protectionScore));
+  }
 
   const zoneText = Number(row.zoneOverlap || 0) > 0
     ? " Zone overlap is " + score(row.zoneOverlap) + " with " + clean(row.hotZoneCount) + " hot zones."
     : "";
 
+  const ceilingText = Number(row.ceilingScore || 0) > 0
+    ? " Ceiling is " + score(row.ceilingScore) + " and volatility is " + score(row.volatilityScore) + "."
+    : "";
+
+  const lineupText = lineupDetails.length
+    ? " " + lineupDetails.join(", ") + "."
+    : "";
+
   document.getElementById("mWhy").textContent =
-    clean(row.player) + " is ranked because of " + reasons + "." + zoneText;
+    clean(row.player) + " is ranked because of " + reasons + "." + zoneText + ceilingText + lineupText;
 
   document.getElementById("playerModal").classList.add("show");
 }
