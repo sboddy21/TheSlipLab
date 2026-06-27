@@ -1854,6 +1854,89 @@ function renderCategoryView(type){
   `;
 }
 
+
+function fillCompareSelects(){
+  const opts = rows.map(r=>`<option value="${esc(r.player)}">${esc(r.player)} • ${esc(r.grade || "B")}</option>`).join("");
+  const a = document.getElementById("compareA");
+  const b = document.getElementById("compareB");
+  if(!a || !b) return;
+  a.innerHTML = opts;
+  b.innerHTML = opts;
+  if(rows[1]) b.value = rows[1].player;
+}
+
+function comparePlayer(player){
+  return rows.find(r=>String(r.player) === String(player)) || {};
+}
+
+function compareTrust(row){
+  return trustData?.byPlayer?.[row.player] || {};
+}
+
+function betterText(a,b){
+  const ta = compareTrust(a);
+  const tb = compareTrust(b);
+  const ba = ta.breakdown || {};
+  const bb = tb.breakdown || {};
+
+  const diffs = [
+    ["power", "Power"],
+    ["matchup", "Matchup"],
+    ["pitchMix", "Pitch Mix"],
+    ["environment", "Environment"],
+    ["consensus", "Consensus"],
+    ["trend", "Trend"]
+  ].map(([k,l])=>({label:l, diff:num(ba[k])-num(bb[k])}))
+   .sort((x,y)=>Math.abs(y.diff)-Math.abs(x.diff));
+
+  const winner = num(ta.trustScore) >= num(tb.trustScore) ? a : b;
+  const loser = winner === a ? b : a;
+  const topEdge = diffs[0];
+
+  return `${winner.player} has the stronger AI profile today because the Trust Score is higher and the biggest separation comes from ${topEdge.label}. ${loser.player} can still be playable, but the model gives the edge to ${winner.player} based on the full breakdown.`;
+}
+
+function renderCompare(){
+  const a = comparePlayer(document.getElementById("compareA").value);
+  const b = comparePlayer(document.getElementById("compareB").value);
+  const ta = compareTrust(a);
+  const tb = compareTrust(b);
+  const ba = ta.breakdown || {};
+  const bb = tb.breakdown || {};
+
+  const rowsHtml = [
+    ["Trust Score", ta.trustScore, tb.trustScore],
+    ["Power", ba.power, bb.power],
+    ["Matchup", ba.matchup, bb.matchup],
+    ["Pitch Mix", ba.pitchMix, bb.pitchMix],
+    ["Environment", ba.environment, bb.environment],
+    ["Consensus", ba.consensus, bb.consensus],
+    ["Trend", ba.trend, bb.trend],
+    ["Risk", ta.risk, tb.risk]
+  ].map(x=>`
+    <div class="compare-row">
+      <span>${esc(x[0])}</span>
+      <b>${esc(x[1] ?? "-")}</b>
+      <b>${esc(x[2] ?? "-")}</b>
+    </div>
+  `).join("");
+
+  document.getElementById("compareResult").innerHTML = `
+    <div class="compare-table">
+      <div class="compare-head">
+        <span>Metric</span>
+        <b>${esc(a.player)}</b>
+        <b>${esc(b.player)}</b>
+      </div>
+      ${rowsHtml}
+    </div>
+    <div class="compare-take">
+      <span>AI EXPLANATION</span>
+      <p>${esc(betterText(a,b))}</p>
+    </div>
+  `;
+}
+
 function render(){
   if(!rows.length) return;
 
@@ -1869,6 +1952,7 @@ function render(){
   if(spotlight) spotlight.innerHTML = "";
 
   renderPulse();
+  fillCompareSelects();
   renderReportCard();
   updateFilterCounts();
 
@@ -2006,6 +2090,12 @@ async function load(){
   render();
 }
 load();
+
+document.addEventListener("click", e=>{
+  if(e.target && e.target.id === "compareBtn"){
+    renderCompare();
+  }
+});
 </script>
 <script src="/js/ai_player_profile.js"></script>
 </body>
@@ -4303,5 +4393,91 @@ load();
   font-size:11px;
   font-weight:1000;
   cursor:pointer;
+}
+</style>
+
+
+<style>
+.ai-compare-box{
+  margin:18px 0;
+  padding:18px;
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(10,34,18,.96),rgba(4,12,8,.96));
+  border:1px solid rgba(143,255,45,.28);
+}
+.ai-compare-box span{
+  color:#8fff2d;
+  font-size:11px;
+  font-weight:1000;
+  letter-spacing:1px;
+}
+.ai-compare-box h2{
+  margin:5px 0;
+}
+.ai-compare-box p{
+  margin:0;
+  color:rgba(255,255,255,.68);
+  font-weight:800;
+}
+.compare-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr 150px;
+  gap:10px;
+  margin-top:14px;
+}
+.compare-controls select,
+.compare-controls button{
+  border-radius:13px;
+  padding:12px;
+  border:1px solid rgba(143,255,45,.22);
+  background:rgba(0,0,0,.28);
+  color:white;
+  font-weight:1000;
+}
+.compare-controls button{
+  cursor:pointer;
+  background:rgba(143,255,45,.13);
+  color:#8fff2d;
+}
+.compare-table{
+  margin-top:14px;
+  border-radius:16px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+}
+.compare-head,
+.compare-row{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:10px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.045);
+}
+.compare-head{
+  background:rgba(143,255,45,.10);
+}
+.compare-row span,
+.compare-head span{
+  color:rgba(255,255,255,.62);
+  font-weight:1000;
+}
+.compare-row b,
+.compare-head b{
+  color:white;
+}
+.compare-take{
+  margin-top:12px;
+  padding:14px;
+  border-radius:16px;
+  background:rgba(143,255,45,.07);
+  border:1px solid rgba(143,255,45,.16);
+}
+.compare-take p{
+  margin-top:6px;
+  color:rgba(255,255,255,.82);
+  line-height:1.45;
+}
+@media(max-width:760px){
+  .compare-controls{grid-template-columns:1fr}
 }
 </style>
