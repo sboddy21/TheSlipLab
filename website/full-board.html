@@ -200,12 +200,12 @@ tbody tr{cursor:pointer}
           <th>Team</th>
           <th>Opponent</th>
           <th>Tier</th>
-          <th>HR Conf</th>
+          <th>Board</th>
           <th>Power</th>
           <th>Pitch Edge</th>
           <th>Pitcher Risk</th>
           <th>Weather</th>
-          <th>Best Pitch</th>
+          <th>Live Edge</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -385,10 +385,41 @@ function openPlayerCard(name){
   document.getElementById("playerModal").classList.add("show");
 }
 
+function boardScore(row){
+  return (
+    Number(row.hrConfidence || 0) * 0.30 +
+    Number(row.powerScore || 0) * 0.18 +
+    Number(row.pitchEdge || 0) * 0.16 +
+    Number(row.pitcherRisk || 0) * 0.14 +
+    Number(row.zoneOverlap || 0) * 0.10 +
+    Number(row.bullpen || 0) * 0.05 +
+    Number(row.weather || 0) * 0.04 +
+    Number(row.ceilingScore || 0) * 0.03
+  );
+}
+
+function liveEdge(row){
+  const labels = [];
+
+  if (row.confirmedLineup) labels.push("CONFIRMED");
+  if (Number(row.lineupSpot || 0)) labels.push("BATS " + row.lineupSpot);
+  if (Number(row.zoneOverlap || 0) >= 55) labels.push("ZONE EDGE");
+  if (Number(row.ceilingScore || 0) >= 60) labels.push("CEILING");
+  if (Number(row.volatilityScore || 0) >= 20) labels.push("VOLATILE");
+
+  if (!labels.length && row.bestPitch) labels.push(String(row.bestPitch).toUpperCase());
+
+  return labels.slice(0, 3).map(label => `<span class="tier">${label}</span>`).join(" ");
+}
+
 function render(){
   const q = document.getElementById("search").value.toLowerCase();
 
   const rows = players
+    .map(row => ({
+      ...row,
+      boardScore: boardScore(row)
+    }))
     .filter(row => {
       const hay = [
         row.player,
@@ -396,12 +427,17 @@ function render(){
         row.opponent,
         row.game,
         row.bestPitch,
-        row.tier
+        row.tier,
+        row.pitcher,
+        row.opposingPitcher,
+        row.lineupRole,
+        row.lineupSpot,
+        ...(row.tags || [])
       ].join(" ").toLowerCase();
 
       return hay.includes(q);
     })
-    .sort((a,b) => Number(b.hrConfidence || 0) - Number(a.hrConfidence || 0));
+    .sort((a,b) => Number(b.boardScore || 0) - Number(a.boardScore || 0));
 
   document.getElementById("status").textContent = `${rows.length} hitters`;
 
@@ -412,12 +448,12 @@ function render(){
       <td>${clean(row.team)}</td>
       <td>${clean(row.opponent)}</td>
       <td><span class="tier">${clean(row.tier)}</span></td>
-      <td class="score">${score(row.hrConfidence)}</td>
+      <td class="score">${score(row.boardScore)}</td>
       <td>${score(row.powerScore)}</td>
       <td>${score(row.pitchEdge)}</td>
       <td>${score(row.pitcherRisk)}</td>
       <td>${score(row.weather)}</td>
-      <td>${clean(row.bestPitch)}</td>
+      <td>${liveEdge(row)}</td>
     </tr>
   `).join("");
 }
