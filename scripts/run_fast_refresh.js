@@ -20,6 +20,7 @@ function run(label, command) {
 
 const steps = [
   ["Decision Center Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
+  ["MLB Home Runs Ownership Check", "node scripts/validate_mlb_home_runs_ownership.cjs"],
 
   ["MLB Today", "node scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],

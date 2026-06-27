@@ -1,6 +1,8 @@
 import { spawnSync } from "child_process";
 
 const steps = [
+  ["Decision Center Ownership Check", "scripts/validate_decision_center_ownership.cjs"],
+  ["MLB Home Runs Ownership Check", "scripts/validate_mlb_home_runs_ownership.cjs"],
   ["MLB Today", "scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "scripts/mlb/build_mlb_player_pool.js"],
   ["Home Run Board", "scripts/mlb/build_home_run_board.js"],
