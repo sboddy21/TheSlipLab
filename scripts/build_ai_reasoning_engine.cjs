@@ -26,196 +26,188 @@ function clamp(n, min = 0, max = 100) {
   return Math.max(min, Math.min(max, n));
 }
 
+function pct(v) {
+  const n = num(v);
+  return Math.round(clamp(n <= 1 && n > 0 ? n * 100 : n));
+}
+
 function getName(row) {
-  return (
-    row.player ||
-    row.name ||
-    row.playerName ||
-    row.batterName ||
-    row.hitter ||
-    ""
+  return text(
+    row?.player ||
+    row?.name ||
+    row?.playerName ||
+    row?.batterName ||
+    row?.hitter ||
+    row?.fullName ||
+    row?.displayName ||
+    row?.player_name
   );
 }
 
-function pct(v) {
-  return Math.round(clamp(num(v)));
+function extractPlayers(data) {
+  if (!data) return [];
+
+  if (Array.isArray(data)) return data.filter(x => x && typeof x === "object");
+
+  const rows = [];
+
+  for (const key of ["players", "rows", "data", "reports", "items", "picks", "projections"]) {
+    if (Array.isArray(data[key])) rows.push(...data[key]);
+  }
+
+  if (data.byPlayer && typeof data.byPlayer === "object") {
+    rows.push(...Object.values(data.byPlayer));
+  }
+
+  if (data.sections && typeof data.sections === "object") {
+    for (const [section, value] of Object.entries(data.sections)) {
+      if (Array.isArray(value)) {
+        rows.push(...value.map(r => ({ ...r, aiDailySection: r.aiDailySection || section })));
+      } else if (Array.isArray(value?.players)) {
+        rows.push(...value.players.map(r => ({ ...r, aiDailySection: r.aiDailySection || section })));
+      } else if (Array.isArray(value?.rows)) {
+        rows.push(...value.rows.map(r => ({ ...r, aiDailySection: r.aiDailySection || section })));
+      }
+    }
+  }
+
+  return rows.filter(x => x && typeof x === "object");
 }
 
-const decision = readJson("hr_decision_center.json", {});
-const breakdowns = readJson("hr_ai_breakdowns.json", {});
-const movement = readJson("hr_ai_movement.json", {});
-const history = readJson("hr_ai_history.json", {});
-const hof = readJson("hr_ai_hof.json", {});
-const stacks = readJson("hr_ai_stacks.json", {});
-const weather = readJson("weather_board.json", {});
-const powerZones = readJson("power_zones.json", {});
-const pitcherMatchups = readJson("game_pitcher_matchups.json", {});
-const bullpen = readJson("bullpen_relievers.json", {});
+function mergeRows(files) {
+  const map = new Map();
+  const debug = {};
 
-const allPlayers =
-  decision.allPlayers ||
-  decision.players ||
-  Object.values(decision.sections || {}).flat() ||
-  [];
+  for (const file of files) {
+    const data = readJson(file, null);
+    const rows = extractPlayers(data);
+    debug[file] = rows.length;
 
-const sectionByPlayer = {};
-for (const [section, rows] of Object.entries(decision.sections || {})) {
-  if (!Array.isArray(rows)) continue;
-  for (const row of rows) {
-    const name = getName(row);
-    if (!name) continue;
-    sectionByPlayer[name] ||= [];
-    sectionByPlayer[name].push(section);
+    for (const row of rows) {
+      const name = getName(row);
+      if (!name) continue;
+
+      const current = map.get(name) || {};
+      map.set(name, { ...current, ...row, player: name });
+    }
   }
+
+  return { rows: [...map.values()], debug };
 }
 
-function findByName(source, name) {
-  if (!source) return null;
+const SOURCE_FILES = [
+  "advanced_player_intelligence.json",
+  "ai_trust_engine.json",
+  "hr_power_profiles.json",
+  "hr_probability_tracking.json",
+  "player_card_profiles.json",
+  "unified_player_tags.json",
+  "mlb_hits.json",
+  "mlb_total_bases.json",
+  "mlb_rbis.json",
+  "mlb_team_stacks.json",
+  "mlb_context_factors.json"
+];
 
-  if (Array.isArray(source)) {
-    return source.find(r => getName(r) === name) || null;
+const { rows: allPlayers, debug } = mergeRows(SOURCE_FILES);
+
+function pickScore(row, keys, fallback = 70) {
+  for (const k of keys) {
+    if (row[k] !== undefined && row[k] !== null && row[k] !== "") return pct(row[k]);
   }
-
-  if (Array.isArray(source.players)) {
-    return source.players.find(r => getName(r) === name) || null;
-  }
-
-  if (Array.isArray(source.rows)) {
-    return source.rows.find(r => getName(r) === name) || null;
-  }
-
-  if (source[name]) return source[name];
-
-  return null;
+  return fallback;
 }
 
-function buildWhy(row, ctx) {
+function buildWhy(row) {
   const reasons = [];
 
-  const hr = num(row.hrProbability ?? row.probability ?? row.hrChance);
-  const score = num(row.aiScore ?? row.score ?? row.modelScore);
-  const consensus = num(row.consensusScore);
-  const value = num(row.valueScore);
-  const power = num(row.powerScore ?? row.powerProfile);
-  const weatherBoost = num(row.weatherBoost ?? row.carryScore);
-  const bullpenBoost = num(row.bullpenBoost);
-  const pitch = num(row.pitchMatchScore ?? row.pitchTypeScore);
+  const trust = pickScore(row, ["aiTrust", "trustScore", "confidence", "aiConfidence"], 70);
+  const power = pickScore(row, ["powerScore", "powerProfile", "hrPowerScore", "barrelScore", "damageScore"], 70);
+  const recent = pickScore(row, ["recentScore", "formScore", "trendScore", "last7Score"], 70);
+  const pitch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);
+  const value = pickScore(row, ["valueScore", "marketScore", "edgeScore"], 70);
+  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
 
-  if (hr >= 25) reasons.push("Elite home run probability compared to the rest of today's slate.");
-  else if (hr >= 18) reasons.push("Strong home run probability profile for today's matchup.");
+  if (probability >= 20) reasons.push("The AI sees a strong home run probability profile for today's slate.");
+  if (trust >= 85) reasons.push("The AI Trust Engine shows strong agreement across multiple signals.");
+  if (power >= 80) reasons.push("Power indicators support real home run upside.");
+  if (recent >= 78) reasons.push("Recent form is strong enough to support an aggressive power read.");
+  if (pitch >= 78) reasons.push("The pitch matchup fits this hitter's damage profile.");
+  if (value >= 78) reasons.push("The market/value profile is stronger than the raw price suggests.");
 
-  if (score >= 85) reasons.push("The overall model score grades as one of the strongest profiles on the board.");
-  if (consensus >= 80) reasons.push("Multiple independent engines are aligned on this player.");
-  if (value >= 75) reasons.push("The betting value profile is stronger than the raw market price suggests.");
-  if (power >= 80) reasons.push("Power profile supports legitimate home run upside.");
-  if (weatherBoost >= 8) reasons.push("Weather and carry conditions are helping the ball today.");
-  if (bullpenBoost >= 8) reasons.push("Late game bullpen context adds extra home run upside.");
-  if (pitch >= 80) reasons.push("Pitch mix matchup fits the hitter's power strengths.");
-
-  if (ctx.sections.includes("ifOnlyOne")) reasons.push("This player appears in the I Can Only Pick One pool.");
-  if (ctx.sections.includes("bestPicks")) reasons.push("This player appears in the top overall Decision Center group.");
-  if (ctx.sections.includes("safestPlays")) reasons.push("This player has one of the safer power profiles on today's slate.");
-  if (ctx.sections.includes("bestValue")) reasons.push("This player is flagged as a value target.");
-  if (ctx.sections.includes("lottoBombs")) reasons.push("This player has longshot home run upside.");
-
-  if (!reasons.length) {
-    reasons.push("The model found enough supporting signals to keep this player in the home run pool.");
+  if (row.tags && Array.isArray(row.tags) && row.tags.length) {
+    reasons.push(`Player tags support the profile: ${row.tags.slice(0,3).join(", ")}.`);
   }
 
-  return [...new Set(reasons)].slice(0, 7);
+  if (row.summary || row.cardTake || row.analystTake) {
+    reasons.push(text(row.summary || row.cardTake || row.analystTake));
+  }
+
+  if (!reasons.length) {
+    reasons.push("The AI found enough supporting signals to keep this player in the home run report pool.");
+  }
+
+  return [...new Set(reasons)].slice(0, 6);
 }
 
 function buildRisks(row) {
   const risks = [];
 
-  const kRisk = num(row.kRisk ?? row.strikeoutRisk);
-  const weatherBoost = num(row.weatherBoost ?? row.carryScore);
-  const probability = num(row.hrProbability ?? row.probability ?? row.hrChance);
-  const confidence = num(row.confidence ?? row.aiConfidence);
-  const value = num(row.valueScore);
+  const kRisk = pickScore(row, ["kRisk", "strikeoutRisk"], 0);
+  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb"], 0);
+  const trust = pickScore(row, ["aiTrust", "trustScore", "confidence", "aiConfidence"], 70);
 
-  if (kRisk >= 70) risks.push("Strikeout risk could limit the number of quality contact chances.");
-  if (weatherBoost < 0) risks.push("Weather is not helping carry today.");
-  if (probability < 15) risks.push("Raw home run probability is still volatile.");
-  if (confidence && confidence < 65) risks.push("Model agreement is not as strong as the top tier plays.");
-  if (value && value < 45) risks.push("Market price may not offer much value.");
+  if (kRisk >= 70) risks.push("Strikeout risk could limit quality contact chances.");
+  if (probability && probability < 15) risks.push("Raw home run probability remains volatile.");
+  if (trust < 65) risks.push("Model agreement is weaker than the top tier profiles.");
 
-  if (!risks.length) {
-    risks.push("Home run betting is naturally volatile, even with a strong profile.");
-  }
+  risks.push("Home run betting is naturally volatile, even when the process is strong.");
 
-  return risks.slice(0, 4);
+  return [...new Set(risks)].slice(0, 4);
 }
 
-function verdictLabel(confidence, probability) {
-  if (confidence >= 90 && probability >= 24) return "Elite AI Play";
-  if (confidence >= 82 && probability >= 18) return "Strong AI Play";
-  if (confidence >= 72 && probability >= 14) return "Playable HR Target";
+function verdict(confidence, probability) {
+  if (confidence >= 88 && probability >= 20) return "Elite AI Play";
+  if (confidence >= 80 && probability >= 16) return "Strong AI Play";
+  if (confidence >= 72) return "Playable HR Target";
   if (confidence >= 62) return "Lean / Watch List";
   return "Volatile Longshot";
 }
 
-function buildOne(row) {
-  const name = getName(row);
-  const sections = sectionByPlayer[name] || [];
+function buildReport(row) {
+  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
 
-  const b = findByName(breakdowns.players || breakdowns, name);
-  const m = findByName(movement.players || movement, name);
-  const h = findByName(history.players || history, name);
-  const z = findByName(powerZones.players || powerZones, name);
-  const hofRow = findByName(hof.players || hof, name);
-
-  const probability = pct(
-    row.hrProbability ??
-    row.probability ??
-    row.hrChance ??
-    row.aiProbability ??
-    row.modelProbability ??
-    0
-  );
-
-  const pitchMatch = pct(row.pitchMatchScore ?? row.pitchTypeScore ?? b?.pitchMatchScore ?? 70);
-  const weatherScore = pct(row.weatherScore ?? row.weatherBoost ?? b?.weatherScore ?? 70);
-  const bullpenEdge = pct(row.bullpenScore ?? row.bullpenBoost ?? b?.bullpenScore ?? 70);
-  const marketEdge = pct(row.valueScore ?? row.marketScore ?? row.consensusScore ?? 70);
-  const historyMatch = pct(h?.historyScore ?? h?.similarityScore ?? row.historyScore ?? 70);
-  const powerProfile = pct(row.powerScore ?? row.powerProfile ?? z?.powerScore ?? 70);
-  const recentForm = pct(row.recentScore ?? row.formScore ?? b?.recentScore ?? 70);
-  const modelAgreement = pct(row.consensusScore ?? row.aiTrust ?? row.aiScore ?? row.score ?? 70);
+  const modelAgreement = pickScore(row, ["aiTrust", "trustScore", "consensusScore", "confidence", "aiConfidence"], 70);
+  const pitchMatch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);
+  const powerProfile = pickScore(row, ["powerScore", "powerProfile", "hrPowerScore", "barrelScore", "damageScore"], 70);
+  const weather = pickScore(row, ["weatherScore", "weatherBoost", "carryScore"], 70);
+  const bullpen = pickScore(row, ["bullpenScore", "bullpenBoost"], 70);
+  const market = pickScore(row, ["valueScore", "marketScore", "edgeScore"], 70);
+  const history = pickScore(row, ["historyScore", "similarityScore", "trackRecordScore"], 70);
+  const recentForm = pickScore(row, ["recentScore", "formScore", "trendScore", "last7Score"], 70);
 
   const confidence = pct(
-    (
-      pitchMatch * 0.18 +
-      weatherScore * 0.13 +
-      bullpenEdge * 0.12 +
-      marketEdge * 0.12 +
-      historyMatch * 0.15 +
-      powerProfile * 0.15 +
-      recentForm * 0.08 +
-      modelAgreement * 0.07
-    )
+    modelAgreement * .20 +
+    powerProfile * .18 +
+    pitchMatch * .16 +
+    recentForm * .12 +
+    market * .10 +
+    history * .10 +
+    weather * .08 +
+    bullpen * .06
   );
 
-  const ctx = { sections };
-
-  const whyToday = buildWhy(row, ctx);
+  const whyToday = buildWhy(row);
   const riskFactors = buildRisks(row);
 
-  const aiVerdict = verdictLabel(confidence, probability);
-
-  const oneLine =
-    whyToday[0] ||
-    text(row.summary) ||
-    "Strong model profile for today's home run slate.";
-
   return {
-    player: name,
-    team: text(row.team ?? row.teamAbbr ?? row.teamName),
-    opponent: text(row.opponent ?? row.opp),
-    game: text(row.game ?? row.matchup),
-    sections,
-    aiVerdict,
-    oneLine,
+    player: getName(row),
+    team: text(row.team || row.teamAbbr || row.teamName),
+    opponent: text(row.opponent || row.opp),
+    game: text(row.game || row.matchup),
+    sections: Array.isArray(row.sections) ? row.sections : [row.aiDailySection].filter(Boolean),
+    aiVerdict: verdict(confidence, probability),
+    oneLine: whyToday[0],
     probability,
     confidence,
     stars: confidence >= 90 ? 5 : confidence >= 80 ? 4 : confidence >= 70 ? 3 : confidence >= 60 ? 2 : 1,
@@ -225,54 +217,37 @@ function buildOne(row) {
       modelAgreement,
       pitchMatch,
       powerProfile,
-      weather: weatherScore,
-      bullpen: bullpenEdge,
-      market: marketEdge,
-      history: historyMatch,
+      weather,
+      bullpen,
+      market,
+      history,
       recentForm
     },
     homeRunDNA: {
-      pullPower: pct(row.pullPower ?? z?.pullPower ?? powerProfile),
-      fastballHunter: pct(row.fastballScore ?? row.fastballHunter ?? pitchMatch),
-      mistakePunisher: pct(row.damageScore ?? row.barrelScore ?? powerProfile),
-      flyBallSwing: pct(row.flyBallScore ?? row.launchScore ?? recentForm),
-      weatherBoost: weatherScore,
-      bullpenHunter: bullpenEdge,
+      pullPower: pickScore(row, ["pullPower", "pullScore"], powerProfile),
+      fastballHunter: pickScore(row, ["fastballScore", "fastballHunter"], pitchMatch),
+      mistakePunisher: pickScore(row, ["mistakePunisher", "damageScore", "barrelScore"], powerProfile),
+      flyBallSwing: pickScore(row, ["flyBallScore", "launchScore"], recentForm),
+      weatherBoost: weather,
+      bullpenHunter: bullpen,
       recentForm
     },
     expected: {
-      pitch: text(row.expectedPitch ?? b?.expectedPitch ?? row.bestPitch ?? "Best matchup pitch"),
-      zone: text(row.expectedZone ?? b?.expectedZone ?? "Damage zone"),
-      distance: Math.round(num(row.expectedDistance ?? b?.expectedDistance ?? row.projectedDistance ?? 410)),
-      count: text(row.expectedCount ?? "Hitter's count")
+      pitch: text(row.expectedPitch || row.bestPitch || "Best matchup pitch"),
+      zone: text(row.expectedZone || row.damageZone || "Damage zone"),
+      distance: Math.round(num(row.expectedDistance || row.projectedDistance || 410)),
+      count: text(row.expectedCount || "Hitter's count")
     },
-    movement: {
-      previousScore: num(m?.previousScore ?? m?.yesterdayScore ?? 0),
-      currentScore: num(m?.currentScore ?? row.aiScore ?? row.score ?? 0),
-      change: num(m?.change ?? m?.movement ?? 0),
-      note: text(m?.note ?? "")
-    },
-    history: {
-      similarity: historyMatch,
-      hrHits: num(h?.hrHits ?? h?.wins ?? 0),
-      misses: num(h?.misses ?? 0),
-      note: text(h?.note ?? "")
-    },
-    hof: hofRow || null,
     source: {
-      decisionCenter: true,
-      breakdown: !!b,
-      movement: !!m,
-      history: !!h,
-      powerZones: !!z
+      fromAdvancedIntelligence: true
     }
   };
 }
 
 const reports = allPlayers
-  .map(buildOne)
+  .map(buildReport)
   .filter(r => r.player)
-  .sort((a, b) => {
+  .sort((a,b) => {
     if (b.confidence !== a.confidence) return b.confidence - a.confidence;
     return b.probability - a.probability;
   });
@@ -280,20 +255,23 @@ const reports = allPlayers
 const out = {
   sport: "MLB",
   market: "Home Runs",
-  version: "1.0",
+  version: "1.2",
   updatedAt: new Date().toISOString(),
   playerCount: reports.length,
+  sourceDebug: debug,
   notes: [
-    "AI Reasoning Engine 1.0 creates one unified player report for every home run candidate.",
-    "This file is designed to power AI Says, Decision Center cards, player modals, and Results explanations.",
-    "Existing pages remain unchanged until this file is connected to the frontend."
+    "AI Reasoning Engine 1.2 reads the actual active MLB player sources currently available in website/data.",
+    "Empty HR-specific files are skipped automatically.",
+    "This powers AI Says and future AI player reports."
   ],
-  topReports: reports.slice(0, 25),
+  topReports: reports.slice(0,25),
   reports
 };
 
-fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+fs.writeFileSync(OUT, JSON.stringify(out,null,2));
 
 console.log("AI REASONING ENGINE COMPLETE");
 console.log("Players:", reports.length);
+console.log("Debug:", debug);
+console.log("Top:", reports[0]?.player);
 console.log("Saved:", OUT);
