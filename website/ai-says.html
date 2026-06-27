@@ -55,22 +55,33 @@
       letter-spacing:.12em;
     }
 
-    .nav{
+    nav{
       display:flex;
       flex-wrap:wrap;
-      gap:10px;
+      gap:22px;
       justify-content:flex-end;
+      align-items:center;
+      font-size:13px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.04em;
     }
 
-    .nav a{
-      color:white;
+    nav a{
+      color:rgba(255,255,255,.82);
       text-decoration:none;
-      font-size:12px;
-      font-weight:1000;
-      padding:9px 12px;
-      border-radius:999px;
-      background:rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.10);
+      transition:.18s ease;
+    }
+
+    nav a:hover{
+      color:white;
+      text-shadow:0 0 18px rgba(53,255,169,.45);
+    }
+
+    nav a.active{
+      color:var(--green);
+      opacity:1;
+      text-shadow:0 0 18px rgba(53,255,169,.45);
     }
 
     .hero{
@@ -308,7 +319,7 @@
     @media(max-width:1050px){
       .grid{grid-template-columns:repeat(2,1fr)}
       .topbar{align-items:flex-start;flex-direction:column}
-      .nav{justify-content:flex-start}
+      nav{justify-content:flex-start}
     }
 
     @media(max-width:720px){
@@ -327,14 +338,16 @@
         <p>The Slip Lab Home Run Analyst</p>
       </div>
 
-      <div class="nav">
-        <a href="/">Home</a>
+      <nav>
+        <a href="/index.html">Dashboard</a>
+        <a href="/mlb.html">MLB</a>
+        <a href="/nba.html">NBA</a>
         <a href="/decision-center.html">Decision Center</a>
-        <a href="/results.html">Results</a>
+        <a class="active" href="/ai-says.html">AI Says</a>
         <a href="/weather.html">Weather</a>
         <a href="/power-zones.html">Power Zones</a>
-        <a class="active" href="/ai-says.html">AI Says</a>
-      </div>
+        <a href="/results.html">Results</a>
+      </nav>
     </div>
 
     <section class="hero">
