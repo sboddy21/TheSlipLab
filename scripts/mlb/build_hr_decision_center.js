@@ -32,6 +32,26 @@ function readRawJson(name) {
 
 const lineupImpactPayload = readRawJson("lineup_impact_engine.json") || {};
 const lineupImpactMap = new Map(Object.entries(lineupImpactPayload.byPlayer || {}));
+const playerPoolPayload = readRawJson("mlb_player_pool.json") || {};
+const playerPoolRows = Array.isArray(playerPoolPayload.players) ? playerPoolPayload.players : [];
+const playerPoolLineupMap = new Map();
+
+for (const row of playerPoolRows) {
+  const keys = [
+    norm(row.player),
+    String(row.playerId || ""),
+    String(row.player || "").toLowerCase().replace(/[^a-z0-9]/g, "")
+  ].filter(Boolean);
+
+  for (const key of keys) {
+    playerPoolLineupMap.set(key, {
+      lineupSpot: row.lineupSpot || null,
+      lineupStatus: row.lineupStatus || "",
+      lineupSource: row.lineupSource || "",
+      confirmedLineup: Boolean(row.confirmedLineup)
+    });
+  }
+}
 
 function readRows(name) {
   const parsed = readRawJson(name);
@@ -570,10 +590,28 @@ function buildCard(row) {
   const seasonHr = round(num(row?.stats?.hitter?.hr ?? pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
 
   const compactPlayerKey = String(player || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const liveLineup =
+    playerPoolLineupMap.get(norm(player)) ||
+    playerPoolLineupMap.get(String(row.playerId || "")) ||
+    playerPoolLineupMap.get(compactPlayerKey) ||
+    {};
+
   const lineupImpact =
     lineupImpactMap.get(norm(player)) ||
     lineupImpactMap.get(compactPlayerKey) ||
     {};
+
+  const hasLiveLineup = Boolean(liveLineup.lineupStatus || liveLineup.lineupSource || liveLineup.lineupSpot);
+
+  const lineupStatus = liveLineup.lineupStatus || (lineupImpact.confirmedLineup ? "CONFIRMED" : "PROJECTED");
+  const lineupSource = liveLineup.lineupSource || lineupImpact.lineupSource || "";
+  const confirmedLineup = hasLiveLineup
+    ? Boolean(liveLineup.confirmedLineup)
+    : Boolean(lineupImpact.confirmedLineup);
+
+  const lineupSpot = lineupStatus === "NOT IN LINEUP"
+    ? null
+    : (liveLineup.lineupSpot || lineupImpact.lineupSpot || null);
 
   const lineupBoost = round(num(lineupImpact.lineupBoost));
   const lineupImpactScore = round(num(lineupImpact.lineupImpactScore));
@@ -607,9 +645,10 @@ function buildCard(row) {
     lineupBoost,
     lineupImpactScore,
     lineupRole: lineupImpact.lineupRole || "",
-    lineupSpot: lineupImpact.lineupSpot || null,
-    lineupSource: lineupImpact.lineupSource || "",
-    confirmedLineup: Boolean(lineupImpact.confirmedLineup),
+    lineupSpot,
+    lineupStatus,
+    lineupSource,
+    confirmedLineup,
     projectedPlateAppearances,
     protectionScore,
     hitterBefore: lineupImpact.hitterBefore || "",

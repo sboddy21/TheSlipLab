@@ -19,6 +19,48 @@ function safe(value, fallback = "") {
   return value ?? fallback;
 }
 
+function lineupMap(rows) {
+  const map = new Map();
+
+  if (!Array.isArray(rows)) return map;
+
+  for (const row of rows) {
+    const playerId = row?.playerId ?? row?.id ?? row?.personId;
+    const name = row?.player ?? row?.name ?? row?.fullName;
+    const spot = Number(row?.order ?? row?.lineupSpot ?? row?.battingOrder ?? row?.spot);
+
+    const entry = {
+      lineupSpot: Number.isFinite(spot) && spot > 0 ? spot : null,
+      lineupStatus: "CONFIRMED",
+      lineupSource: "MLB_STATS_API",
+      confirmedLineup: true
+    };
+
+    if (playerId) map.set(String(playerId), entry);
+    if (name) map.set(String(name).toLowerCase(), entry);
+  }
+
+  return map;
+}
+
+function lineupInfo(player, map, confirmed, battingOrder) {
+  const entry =
+    map.get(String(player.playerId || "")) ||
+    map.get(String(player.player || "").toLowerCase());
+
+  if (entry) return entry;
+
+  const lineupPosted = Boolean(confirmed) || (Array.isArray(battingOrder) && battingOrder.length > 0);
+
+  return {
+    lineupSpot: null,
+    lineupStatus: lineupPosted ? "NOT IN LINEUP" : "PROJECTED",
+    lineupSource: lineupPosted ? "MLB_STATS_API" : "PROJECTED",
+    confirmedLineup: false
+  };
+}
+
+
 async function getRoster(teamId) {
   const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster/Active`;
   const data = await getJson(url);
@@ -53,7 +95,17 @@ async function main() {
     const awayRoster = await getRoster(game.awayTeamId);
     const homeRoster = await getRoster(game.homeTeamId);
 
+    const awayLineupMap = lineupMap(game.awayBattingOrder);
+    const homeLineupMap = lineupMap(game.homeBattingOrder);
+
     awayRoster.forEach(player => {
+      const lineup = lineupInfo(
+        player,
+        awayLineupMap,
+        game.awayConfirmedLineup,
+        game.awayBattingOrder
+      );
+
       pool.push({
         ...player,
         team: game.awayTeam,
@@ -66,11 +118,22 @@ async function main() {
         gameDate: game.gameDate,
         opposingProbablePitcher: game.homeProbablePitcher,
         opposingProbablePitcherId: game.homeProbablePitcherId,
-        homeAway: "away"
+        homeAway: "away",
+        lineupSpot: lineup.lineupSpot,
+        lineupStatus: lineup.lineupStatus,
+        lineupSource: lineup.lineupSource,
+        confirmedLineup: lineup.confirmedLineup
       });
     });
 
     homeRoster.forEach(player => {
+      const lineup = lineupInfo(
+        player,
+        homeLineupMap,
+        game.homeConfirmedLineup,
+        game.homeBattingOrder
+      );
+
       pool.push({
         ...player,
         team: game.homeTeam,
@@ -83,7 +146,11 @@ async function main() {
         gameDate: game.gameDate,
         opposingProbablePitcher: game.awayProbablePitcher,
         opposingProbablePitcherId: game.awayProbablePitcherId,
-        homeAway: "home"
+        homeAway: "home",
+        lineupSpot: lineup.lineupSpot,
+        lineupStatus: lineup.lineupStatus,
+        lineupSource: lineup.lineupSource,
+        confirmedLineup: lineup.confirmedLineup
       });
     });
   }
