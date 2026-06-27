@@ -19,6 +19,8 @@ function run(label, command) {
 }
 
 const steps = [
+  ["Decision Center Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
+
   ["MLB Today", "node scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],
   ["Home Run Board", "node scripts/mlb/build_home_run_board.js"],
@@ -37,6 +39,7 @@ const steps = [
   ["HR Decision Center", "node scripts/mlb/build_hr_decision_center.js"],
   ["Decision Pitcher Enrichment", "node scripts/mlb/enrich_hr_decision_pitchers.js"],
   ["Finalize HR Decision Center", "node scripts/mlb/finalize_hr_decision_center.js"],
+  ["Final Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
 
   ["Player Card Data", "node scripts/build_player_card_data.js"],
   ["AI Trust Engine", "node scripts/build_ai_trust_engine.cjs"],
