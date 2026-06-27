@@ -622,6 +622,24 @@ function buildCard(row) {
     due,
     seasonHr,
 
+    ceilingScore: round(
+      powerScore * 0.26 +
+      pitchEdge * 0.22 +
+      pitcherRisk * 0.18 +
+      zone.zoneOverlap * 0.14 +
+      bullpen * 0.10 +
+      weather * 0.06 +
+      due * 0.04
+    ),
+    volatilityScore: round(
+      Math.max(0, due - hrConfidence) * 0.30 +
+      Math.max(0, powerScore - hrConfidence) * 0.20 +
+      Math.max(0, pitchEdge - hrConfidence) * 0.18 +
+      Math.max(0, pitcherRisk - hrConfidence) * 0.16 +
+      Math.max(0, bullpen - hrConfidence) * 0.10 +
+      Math.max(0, weather - 20) * 0.06
+    ),
+
     bestPitch: pitchProfile.pitch,
     tier: tier(hrConfidence),
     reasons: [
@@ -689,37 +707,116 @@ async function main() {
     },
     sections: {
       ifOnlyOne: buildIfOnlyOne(cards),
-      bestPicks: topUnique(cards, "hrConfidence"),
-      safestPlays: topUnique(cards, "powerScore"),
+
+      bestPicks: topUnique(
+        cards.map(card => ({
+          ...card,
+          decisionScore:
+            num(card.hrConfidence) * 0.30 +
+            num(card.powerScore) * 0.18 +
+            num(card.pitchEdge) * 0.16 +
+            num(card.pitcherRisk) * 0.14 +
+            num(card.zoneOverlap) * 0.12 +
+            num(card.bullpen) * 0.05 +
+            num(card.weather) * 0.03 +
+            num(card.due) * 0.02
+        })),
+        "decisionScore"
+      ),
+
+      safestPlays: topUnique(
+        cards.map(card => ({
+          ...card,
+          safetyScore:
+            num(card.hrConfidence) * 0.36 +
+            num(card.powerScore) * 0.22 +
+            num(card.zoneOverlap) * 0.18 +
+            num(card.pitchEdge) * 0.14 +
+            num(card.pitcherRisk) * 0.10 -
+            num(card.volatilityScore) * 0.10
+        })),
+        "safetyScore"
+      ),
 
       bestValue: topUnique(
         cards.map(card => ({
           ...card,
           valueScore:
-            card.pitchEdge * 0.34 +
-            card.pitcherRisk * 0.24 +
-            card.zoneOverlap * 0.16 +
-            card.bullpen * 0.10 +
-            card.weather * 0.08 +
-            card.due * 0.08 -
-            card.seasonHr * 2.2 -
-            Math.max(0, card.hrConfidence - 48) * 1.6 -
-            Math.max(0, card.powerScore - 58) * 1.2
+            num(card.pitchEdge) * 0.28 +
+            num(card.pitcherRisk) * 0.22 +
+            num(card.zoneOverlap) * 0.18 +
+            num(card.bullpen) * 0.10 +
+            num(card.weather) * 0.08 +
+            num(card.due) * 0.08 +
+            num(card.ceilingScore) * 0.06 -
+            num(card.seasonHr) * 2.0 -
+            Math.max(0, num(card.hrConfidence) - 54) * 1.4 -
+            Math.max(0, num(card.powerScore) - 62) * 1.1
         }))
         .filter(card =>
-          card.seasonHr <= 10 &&
-          card.pitchEdge >= 35 &&
-          card.pitcherRisk >= 35 &&
-          card.hrConfidence <= 52 &&
-          card.powerScore <= 58
+          num(card.seasonHr) <= 10 &&
+          num(card.pitchEdge) >= 35 &&
+          num(card.pitcherRisk) >= 35 &&
+          num(card.hrConfidence) <= 56 &&
+          num(card.powerScore) <= 64
         ),
         "valueScore"
       ),
 
-      lottoBombs: topUnique(cards, "due"),
-      pitchTypeEdges: topUnique(cards, "pitchEdge"),
-      weatherCarry: topUnique(cards, "weather"),
-      bullpenBoosts: topUnique(cards, "bullpen")
+      lottoBombs: topUnique(
+        cards.map(card => ({
+          ...card,
+          lottoScore:
+            num(card.ceilingScore) * 0.32 +
+            num(card.due) * 0.24 +
+            num(card.powerScore) * 0.18 +
+            num(card.pitchEdge) * 0.12 +
+            num(card.pitcherRisk) * 0.08 +
+            num(card.bullpen) * 0.06
+        })),
+        "lottoScore"
+      ),
+
+      pitchTypeEdges: topUnique(
+        cards.map(card => ({
+          ...card,
+          pitchTypeScore:
+            num(card.pitchEdge) * 0.38 +
+            num(card.pitcherRisk) * 0.24 +
+            num(card.zoneOverlap) * 0.18 +
+            num(card.powerScore) * 0.12 +
+            num(card.hrConfidence) * 0.08
+        })),
+        "pitchTypeScore"
+      ),
+
+      weatherCarry: topUnique(
+        cards.map(card => ({
+          ...card,
+          weatherCarryScore:
+            num(card.weather) * 0.40 +
+            num(card.powerScore) * 0.20 +
+            num(card.zoneOverlap) * 0.14 +
+            num(card.pitchEdge) * 0.10 +
+            num(card.pitcherRisk) * 0.08 +
+            num(card.hrConfidence) * 0.08
+        })),
+        "weatherCarryScore"
+      ),
+
+      bullpenBoosts: topUnique(
+        cards.map(card => ({
+          ...card,
+          bullpenBoostScore:
+            num(card.bullpen) * 0.40 +
+            num(card.powerScore) * 0.18 +
+            num(card.pitchEdge) * 0.16 +
+            num(card.zoneOverlap) * 0.12 +
+            num(card.pitcherRisk) * 0.08 +
+            num(card.hrConfidence) * 0.06
+        })),
+        "bullpenBoostScore"
+      )
     },
     allPlayers: cards
   };
