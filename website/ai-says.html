@@ -360,7 +360,7 @@
   </div>
 
   <script>
-    const DATA_URL = "/data/ai_reasoning_engine.json";
+    const DATA_URL = "/data/hr_ai_breakdowns.json";
     let REPORTS = [];
 
     function esc(v){
@@ -499,22 +499,67 @@
 
       try{
         const res = await fetch(DATA_URL, { cache:"no-store" });
-        if (!res.ok) throw new Error("Missing ai_reasoning_engine.json");
+        if (!res.ok) throw new Error("Missing hr_ai_breakdowns.json");
 
         const data = await res.json();
-        REPORTS = Array.isArray(data.reports) ? data.reports : [];
+        const rawPlayers = data.players && typeof data.players === "object"
+          ? Object.values(data.players)
+          : Array.isArray(data.reports)
+            ? data.reports
+            : [];
+
+        REPORTS = rawPlayers.map(player => {
+          const explanation = player.explanationScores || {};
+          const confidence = Number(player.confidence || player.score || 0);
+
+          return {
+            player: player.player,
+            team: player.team,
+            opponent: player.opponent,
+            pitcher: player.pitcher,
+            aiVerdict: player.grade ? `${player.grade} AI HR Profile` : "AI HR Profile",
+            oneLine: player.cardTake || player.analystTake || player.summary || "",
+            probability: player.confidence,
+            confidence,
+            grade: player.grade,
+            rank: player.rank,
+            badges: player.badges || [],
+            consensus: player.consensus || [],
+            whyToday: player.reasons || [],
+            riskFactors: [
+              "Home run betting is naturally volatile.",
+              player.confidence < 10 ? "Lower raw HR confidence than the top tier." : "",
+              player.agreementCount < 2 ? "Limited cross-section consensus." : ""
+            ].filter(Boolean),
+            trustBreakdown: {
+              modelAgreement: player.consensusScore || 0,
+              pitchMatch: explanation.matchup || 0,
+              powerProfile: explanation.power || 0,
+              weather: explanation.environment || 0,
+              bullpen: explanation.environment || 0,
+              market: player.consensusScore || 0,
+              history: explanation.certainty || 0,
+              recentForm: explanation.certainty || 0
+            },
+            expected: {
+              pitch: player.bestPitch || "Best matchup pitch",
+              zone: "Damage zone",
+              distance: 410
+            }
+          };
+        });
 
         status.innerHTML = `
-          <span class="pill">Version ${esc(data.version || "1.0")}</span>
+          <span class="pill">${esc(data.source || "HR AI Breakdowns")}</span>
           <span class="pill">${REPORTS.length} Player Reports</span>
           <span class="pill">Updated ${esc(data.updatedAt ? new Date(data.updatedAt).toLocaleString() : "Today")}</span>
         `;
 
         render();
       }catch(err){
-        status.innerHTML = `<span class="pill">AI Reasoning Engine not found yet</span>`;
+        status.innerHTML = `<span class="pill">AI Breakdowns not found yet</span>`;
         document.getElementById("grid").innerHTML =
-          `<div class="empty">Run scripts/build_ai_reasoning_engine.cjs first, then refresh this page.</div>`;
+          `<div class="empty">Run scripts/build_hr_ai_breakdowns.cjs first, then refresh this page.</div>`;
       }
     }
 
