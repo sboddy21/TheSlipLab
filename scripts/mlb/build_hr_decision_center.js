@@ -5,10 +5,20 @@ const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 const OUTFILE = path.join(DATA_DIR, "hr_decision_center.json");
 
-const lineupImpactPayload = readRawJson("lineup_impact_engine.json") || {};
-const lineupImpactMap = new Map(
-  Object.entries(lineupImpactPayload.byPlayer || {})
-);
+const TEAM_ALIASES = {
+  "arizona dbacks": "arizona diamondbacks",
+  "az diamondbacks": "arizona diamondbacks",
+  "chi white sox": "chicago white sox",
+  "cws": "chicago white sox",
+  "sf giants": "san francisco giants",
+  "sd padres": "san diego padres",
+  "kc royals": "kansas city royals",
+  "la dodgers": "los angeles dodgers",
+  "ny yankees": "new york yankees",
+  "ny mets": "new york mets",
+  "tb rays": "tampa bay rays",
+  "was nationals": "washington nationals"
+};
 
 function readRawJson(name) {
   try {
@@ -20,10 +30,12 @@ function readRawJson(name) {
   }
 }
 
+const lineupImpactPayload = readRawJson("lineup_impact_engine.json") || {};
+const lineupImpactMap = new Map(Object.entries(lineupImpactPayload.byPlayer || {}));
+
 function readRows(name) {
   const parsed = readRawJson(name);
   if (!parsed) return [];
-
   if (Array.isArray(parsed)) return parsed;
   if (Array.isArray(parsed.rows)) return parsed.rows;
   if (Array.isArray(parsed.data)) return parsed.data;
@@ -45,6 +57,10 @@ function text(value, fallback = "") {
   return String(value).trim();
 }
 
+function clean(value) {
+  return text(value);
+}
+
 function num(value, fallback = 0) {
   if (value === null || value === undefined || value === "") return fallback;
   const n = Number(String(value).replace("%", "").replace("+", "").replace("N/A", "").trim());
@@ -64,8 +80,87 @@ function norm(value) {
   return text(value).toLowerCase();
 }
 
+function normTeam(value) {
+  const x = clean(value)
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return TEAM_ALIASES[x] || x;
+}
+
 function round(value) {
   return Math.round(num(value) * 100) / 100;
+}
+
+function todayEastern() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).formatToParts(new Date());
+
+  const y = parts.find(p => p.type === "year").value;
+  const m = parts.find(p => p.type === "month").value;
+  const d = parts.find(p => p.type === "day").value;
+
+  return `${y}-${m}-${d}`;
+}
+
+async function getSchedule(date) {
+  const url =
+    `https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${date}` +
+    `&hydrate=probablePitcher`;
+
+  const res = await fetch(url, {
+    headers: {
+      "user-agent": "TheSlipLab/1.0",
+      "accept": "application/json"
+    }
+  });
+
+  if (!res.ok) {
+    throw new Error(`MLB schedule failed ${res.status}`);
+  }
+
+  return await res.json();
+}
+
+function buildPitcherMaps(schedule) {
+  const gameMap = new Map();
+  const opponentMap = new Map();
+  const games = schedule?.dates?.flatMap(d => d.games || []) || [];
+
+  for (const game of games) {
+    const away = clean(game?.teams?.away?.team?.name);
+    const home = clean(game?.teams?.home?.team?.name);
+
+    const awayPitcher =
+      clean(game?.teams?.away?.probablePitcher?.fullName) ||
+      clean(game?.teams?.away?.probablePitcher?.name) ||
+      "TBD";
+
+    const homePitcher =
+      clean(game?.teams?.home?.probablePitcher?.fullName) ||
+      clean(game?.teams?.home?.probablePitcher?.name) ||
+      "TBD";
+
+    if (!away || !home) continue;
+
+    const awayKey = normTeam(away);
+    const homeKey = normTeam(home);
+
+    gameMap.set(`${awayKey}|${homeKey}`, { away, home, awayPitcher, homePitcher });
+    gameMap.set(`${homeKey}|${awayKey}`, { away, home, awayPitcher, homePitcher });
+
+    opponentMap.set(`${awayKey}|${homeKey}`, homePitcher);
+    opponentMap.set(`${homeKey}|${awayKey}`, awayPitcher);
+  }
+
+  return { gameMap, opponentMap, games };
 }
 
 function playerName(row) {
@@ -256,7 +351,6 @@ function weatherScore() {
   return round(avg);
 }
 
-
 function pickOneScore(row, type) {
   const hr = num(row.hrConfidence);
   const power = num(row.powerScore);
@@ -306,6 +400,10 @@ function shortPlayerCard(row, type, label, description) {
     team: row.team,
     opponent: row.opponent,
     game: row.game,
+    pitcher: row.pitcher,
+    opposingPitcher: row.opposingPitcher,
+    probablePitcher: row.probablePitcher,
+    pitcherStatus: row.pitcherStatus,
     hrConfidence: round(row.hrConfidence),
     powerScore: round(row.powerScore),
     pitchEdge: round(row.pitchEdge),
@@ -378,7 +476,6 @@ function buildIfOnlyOne(rows) {
   };
 }
 
-
 function bullpenScore(opponent) {
   const row = bullpenMap.get(norm(opponent));
   if (!row) return 0;
@@ -413,8 +510,6 @@ function tagsFor(card) {
   if (card.powerScore >= 60) tags.push("POWER");
   if (num(card.lineupBoost) >= 8) tags.push("LINEUP BOOST");
   if (card.confirmedLineup) tags.push("CONFIRMED");
-  if (num(card.lineupBoost) >= 8) tags.push("LINEUP BOOST");
-  if (card.confirmedLineup) tags.push("CONFIRMED");
 
   return tags.slice(0, 6);
 }
@@ -429,6 +524,26 @@ function reasonsFor(powerScore, pitchEdge, pitcherRisk, weather, due) {
   if (due >= 40) reasons.push("hard contact trend support");
 
   return reasons.slice(0, 3);
+}
+
+function enrichPitcher(card, opponentMap) {
+  const team = normTeam(card.team);
+  const opponent = normTeam(card.opponent);
+
+  const pitcher =
+    opponentMap.get(`${team}|${opponent}`) ||
+    opponentMap.get(`${opponent}|${team}`) ||
+    clean(card.pitcher) ||
+    clean(card.opposingPitcher) ||
+    "TBD";
+
+  return {
+    ...card,
+    pitcher,
+    opposingPitcher: pitcher,
+    probablePitcher: pitcher,
+    pitcherStatus: pitcher === "TBD" ? "TBD" : "Probable"
+  };
 }
 
 function buildCard(row) {
@@ -459,6 +574,7 @@ function buildCard(row) {
     lineupImpactMap.get(norm(player)) ||
     lineupImpactMap.get(compactPlayerKey) ||
     {};
+
   const lineupBoost = round(num(lineupImpact.lineupBoost));
   const lineupImpactScore = round(num(lineupImpact.lineupImpactScore));
   const projectedPlateAppearances = round(num(lineupImpact.projectedPlateAppearances));
@@ -549,73 +665,95 @@ function topUnique(rows, scoreKey, limit = 12) {
     .slice(0, limit);
 }
 
-const cards = uniqueRows(hrRows).map(buildCard).filter(row => row.player);
+async function main() {
+  const pitcherDate = todayEastern();
+  const schedule = await getSchedule(pitcherDate);
+  const { opponentMap, games } = buildPitcherMaps(schedule);
 
-const output = {
-  updatedAt: new Date().toISOString(),
-  totalPlayers: cards.length,
-  sections: {
-    ifOnlyOne: buildIfOnlyOne(cards),
-    bestPicks: topUnique(cards, "hrConfidence"),
-    safestPlays: topUnique(cards, "powerScore"),
+  const cards = uniqueRows(hrRows)
+    .map(buildCard)
+    .filter(row => row.player)
+    .map(card => enrichPitcher(card, opponentMap));
 
-    bestValue: topUnique(
+  const output = {
+    updatedAt: new Date().toISOString(),
+    totalPlayers: cards.length,
+    pitcherSource: "MLB Stats API probablePitcher",
+    pitcherDate,
+    pitcherDebug: {
+      scheduleGames: games.length,
+      pitcherPairs: opponentMap.size,
+      players: cards.length,
+      withPitchers: cards.filter(x => x.pitcher && x.pitcher !== "TBD").length,
+      tbd: cards.filter(x => !x.pitcher || x.pitcher === "TBD").length
+    },
+    sections: {
+      ifOnlyOne: buildIfOnlyOne(cards),
+      bestPicks: topUnique(cards, "hrConfidence"),
+      safestPlays: topUnique(cards, "powerScore"),
+
+      bestValue: topUnique(
+        cards.map(card => ({
+          ...card,
+          valueScore:
+            card.pitchEdge * 0.34 +
+            card.pitcherRisk * 0.24 +
+            card.zoneOverlap * 0.16 +
+            card.bullpen * 0.10 +
+            card.weather * 0.08 +
+            card.due * 0.08 -
+            card.seasonHr * 2.2 -
+            Math.max(0, card.hrConfidence - 48) * 1.6 -
+            Math.max(0, card.powerScore - 58) * 1.2
+        }))
+        .filter(card =>
+          card.seasonHr <= 10 &&
+          card.pitchEdge >= 35 &&
+          card.pitcherRisk >= 35 &&
+          card.hrConfidence <= 52 &&
+          card.powerScore <= 58
+        ),
+        "valueScore"
+      ),
+
+      lottoBombs: topUnique(cards, "due"),
+      pitchTypeEdges: topUnique(cards, "pitchEdge"),
+      weatherCarry: topUnique(cards, "weather"),
+      bullpenBoosts: topUnique(cards, "bullpen")
+    },
+    allPlayers: cards
+  };
+
+  if (!output.sections.ifOnlyOne) {
+    output.sections.ifOnlyOne = buildIfOnlyOne(cards);
+  }
+
+  if (!Array.isArray(output.sections.bestValue) || output.sections.bestValue.length === 0) {
+    output.sections.bestValue = topUnique(
       cards.map(card => ({
         ...card,
         valueScore:
-          card.pitchEdge * 0.34 +
-          card.pitcherRisk * 0.24 +
-          card.zoneOverlap * 0.16 +
-          card.bullpen * 0.10 +
-          card.weather * 0.08 +
-          card.due * 0.08 -
-          card.seasonHr * 2.2 -
-          Math.max(0, card.hrConfidence - 48) * 1.6 -
-          Math.max(0, card.powerScore - 58) * 1.2
-      }))
-      .filter(card =>
-        card.seasonHr <= 10 &&
-        card.pitchEdge >= 35 &&
-        card.pitcherRisk >= 35 &&
-        card.hrConfidence <= 52 &&
-        card.powerScore <= 58
-      ),
+          num(card.pitchEdge) * 0.30 +
+          num(card.pitcherRisk) * 0.24 +
+          num(card.zoneOverlap) * 0.18 +
+          num(card.powerScore) * 0.12 +
+          num(card.weather) * 0.08 +
+          num(card.bullpen) * 0.08
+      })),
       "valueScore"
-    ),
+    );
+  }
 
-    lottoBombs: topUnique(cards, "due"),
-    pitchTypeEdges: topUnique(cards, "pitchEdge"),
-    weatherCarry: topUnique(cards, "weather"),
-    bullpenBoosts: topUnique(cards, "bullpen")
-  },
-  allPlayers: cards
-};
+  fs.writeFileSync(OUTFILE, JSON.stringify(output, null, 2));
 
-
-// Final safety fills for Decision Center display sections
-if (!output.sections.ifOnlyOne) {
-  output.sections.ifOnlyOne = buildIfOnlyOne(cards);
+  console.log("HR DECISION CENTER COMPLETE");
+  console.log("Players:", cards.length);
+  console.log("Statcast rows:", statcastRows.length);
+  console.log("Pitcher debug:", output.pitcherDebug);
+  console.log("Saved:", OUTFILE);
 }
 
-if (!Array.isArray(output.sections.bestValue) || output.sections.bestValue.length === 0) {
-  output.sections.bestValue = topUnique(
-    cards.map(card => ({
-      ...card,
-      valueScore:
-        num(card.pitchEdge) * 0.30 +
-        num(card.pitcherRisk) * 0.24 +
-        num(card.zoneOverlap) * 0.18 +
-        num(card.powerScore) * 0.12 +
-        num(card.weather) * 0.08 +
-        num(card.bullpen) * 0.08
-    })),
-    "valueScore"
-  );
-}
-
-fs.writeFileSync(OUTFILE, JSON.stringify(output, null, 2));
-
-console.log("HR DECISION CENTER COMPLETE");
-console.log("Players:", cards.length);
-console.log("Statcast rows:", statcastRows.length);
-console.log("Saved:", OUTFILE);
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

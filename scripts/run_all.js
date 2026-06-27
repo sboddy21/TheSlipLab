@@ -6,7 +6,6 @@ const steps = [
   ["Home Run Board", "scripts/mlb/build_home_run_board.js"],
   ["Weather Board", "scripts/mlb/build_weather_board.js"],
   ["HR Decision Center", "scripts/mlb/build_hr_decision_center.js"],
-  ["Finalize HR Decision Center", "scripts/mlb/finalize_hr_decision_center.js"],
   ["Player Cards", "scripts/build_player_card_data.js"],
   ["AI Breakdowns", "scripts/build_hr_ai_breakdowns.cjs"],
   ["AI Stacks", "scripts/build_hr_ai_stacks.cjs"],

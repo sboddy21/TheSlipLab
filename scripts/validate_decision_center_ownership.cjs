@@ -4,9 +4,7 @@ const path = require("path");
 const ROOT = process.cwd();
 
 const allowedWriters = new Set([
-  "scripts/mlb/build_hr_decision_center.js",
-  "scripts/mlb/enrich_hr_decision_pitchers.js",
-  "scripts/mlb/finalize_hr_decision_center.js"
+  "scripts/mlb/build_hr_decision_center.js"
 ]);
 
 function walk(dir, out = []) {

@@ -37,7 +37,6 @@ const steps = [
   ["Real HR Probability Engine", "node scripts/mlb/build_real_hr_probability_engine.js"],
 
   ["HR Decision Center", "node scripts/mlb/build_hr_decision_center.js"],
-  ["Decision Pitcher Enrichment", "node scripts/mlb/enrich_hr_decision_pitchers.js"],
   ["Final Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
 
   ["Player Card Data", "node scripts/build_player_card_data.js"],
@@ -90,14 +89,25 @@ const requiredSections = [
   "ifOnlyOne"
 ];
 
-const missing = requiredSections.filter(key => !data.sections[key]);
+for (const section of requiredSections) {
+  if (!data.sections[section]) {
+    console.error(`FAILED: Decision Center missing section ${section}`);
+    process.exit(1);
+  }
+}
 
-if (missing.length) {
-  console.error("FAILED: Decision Center missing sections:", missing.join(", "));
+if (!Array.isArray(data.allPlayers)) {
+  console.error("FAILED: Decision Center missing allPlayers array");
+  process.exit(1);
+}
+
+if (!data.pitcherDebug || typeof data.pitcherDebug !== "object") {
+  console.error("FAILED: Decision Center missing pitcherDebug");
   process.exit(1);
 }
 
 console.log("");
-console.log("FAST REFRESH COMPLETE");
-console.log("Decision Center Updated:", data.updatedAt);
-console.log("Sections:", Object.keys(data.sections).length);
+console.log("FAST REFRESH VALIDATION PASSED");
+console.log("Players:", data.allPlayers.length);
+console.log("Pitcher Debug:", data.pitcherDebug);
+console.log("THE SLIP LAB FAST REFRESH COMPLETE");
