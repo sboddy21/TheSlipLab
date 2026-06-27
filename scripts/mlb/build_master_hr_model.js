@@ -906,9 +906,48 @@ function enrichMultiHrCeiling(row) {
   };
 }
 
+function finalHrScore(row) {
+  const confidence = num(row.hrConfidence ?? row.score);
+  const volatility = num(row.hrVolatilityScore);
+  const pitchDestroy = num(row.pitchTypeDestructionScore);
+  const pullWind = num(row.pullWindHrScore);
+  const launch = num(row.launchHrProfileScore);
+  const bullpen = num(row.bullpenInheritanceScore);
+  const ceiling = num(row.multiHrCeilingScore);
+  const truePower = num(row.truePowerScore);
+  const hrPower = num(row.hrPowerIndex);
+  const lineup = num(row.lineupAttackBoost);
+  const environment = num(row.hrEnvironmentScore);
+
+  const finalScore = clamp(
+    confidence * 0.38 +
+    volatility * 0.14 +
+    pitchDestroy * 0.12 +
+    launch * 0.10 +
+    ceiling * 0.09 +
+    truePower * 0.06 +
+    hrPower * 0.04 +
+    pullWind * 0.03 +
+    bullpen * 0.025 +
+    lineup * 0.015 +
+    environment * 0.01
+  );
+
+  return round1(finalScore);
+}
+
 function rankRows(rows) {
   return [...rows]
-    .sort((a, b) => num(b.hrConfidence ?? b.score) - num(a.hrConfidence ?? a.score))
+    .map(row => {
+      const finalScore = finalHrScore(row);
+      return {
+        ...row,
+        finalHrScore: finalScore,
+        score: finalScore,
+        hrConfidence: finalScore
+      };
+    })
+    .sort((a, b) => num(b.finalHrScore) - num(a.finalHrScore))
     .map((row, index) => ({ ...row, rank: index + 1 }));
 }
 
