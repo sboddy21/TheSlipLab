@@ -24,6 +24,7 @@ const steps = [
 
   ["MLB Today", "node scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],
+  ["Game Pitcher Matchups", "node scripts/mlb/build_game_pitcher_matchups.mjs"],
 
   ["Pitch Type Damage", "node scripts/mlb/build_pitch_type_damage.js"],
   ["Weather Board", "node scripts/mlb/build_weather_board.js"],
