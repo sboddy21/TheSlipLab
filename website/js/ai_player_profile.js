@@ -67,6 +67,66 @@
     `).join("");
   }
 
+  function replayHtml(player, today, trust, calls){
+    const best = [...calls].sort((a,b)=>
+      num(a.rank)-num(b.rank) ||
+      num(b.score)-num(a.score)
+    )[0] || {};
+
+    const result = [...calls].sort((a,b)=>num(b.distance)-num(a.distance))[0] || best || {};
+    const b = trust.breakdown || {};
+    const reasons = [
+      ...(today.reasons || []),
+      ...(today.badges || []),
+      ...(today.consensus || [])
+    ].slice(0,8);
+
+    return `
+      <div class="aipp-card replay-card">
+        <div class="replay-title">
+          <span>🤖 AI DECISION REPLAY</span>
+          <h3>${esc(player)}</h3>
+          <p>This shows the model profile behind the AI call and the Hall of Fame result that followed.</p>
+        </div>
+
+        <div class="replay-grid">
+          <div><span>AI Grade</span><b>${esc(today.grade || trust.grade || best.grade || "-")}</b></div>
+          <div><span>Trust Score</span><b>${esc(trust.trustScore || "-")}</b></div>
+          <div><span>AI Confidence</span><b>${today.confidence ? Number(today.confidence).toFixed(1) + "%" : "-"}</b></div>
+          <div><span>Best Rank</span><b>#${esc(today.rank || best.rank || "-")}</b></div>
+        </div>
+
+        <div class="replay-bars">
+          ${[
+            ["⚡ Power", b.power],
+            ["🎯 Matchup", b.matchup],
+            ["🧬 Pitch Mix", b.pitchMix],
+            ["🌤 Environment", b.environment],
+            ["🤝 Consensus", b.consensus],
+            ["📈 Trend", b.trend]
+          ].map(([label,val])=>`
+            <div class="aipp-line">
+              <span>${label}</span>
+              <div><i style="width:${Math.max(0, Math.min(100, num(val)))}%"></i></div>
+              <b>${Math.round(num(val))}</b>
+            </div>
+          `).join("")}
+        </div>
+
+        <div class="replay-reasons">
+          <h4>Why The AI Liked It</h4>
+          ${reasons.length ? reasons.map(r=>`<span>✓ ${esc(r)}</span>`).join("") : `<span>✓ AI matchup profile supported this player.</span>`}
+        </div>
+
+        <div class="replay-result">
+          <span>RESULT</span>
+          <b>${esc(result.distance || "-")} FT HOME RUN</b>
+          <small>${result.exitVelocity ? esc(result.exitVelocity) + " MPH" : "Exit velo unavailable"}${result.launchAngle ? " • " + esc(result.launchAngle) + "°" : ""}${result.pitchType ? " • " + esc(result.pitchType) : ""}</small>
+        </div>
+      </div>
+    `;
+  }
+
   function html(player, data){
     const today = findToday(data, player);
     const trust = findTrust(data, player);
@@ -99,6 +159,8 @@
         <p>${esc(trust.summary || today.analystTake || today.summary || "No AI summary available yet.")}</p>
         <div class="aipp-bars">${bars(trust.breakdown || {})}</div>
       </div>
+
+      ${replayHtml(player, today, trust, calls)}
 
       <div class="aipp-card">
         <h3>Hall of Fame Timeline</h3>
@@ -155,7 +217,25 @@
       .aipp-row span,.aipp-row small{color:rgba(255,255,255,.58);font-size:11px;font-weight:900}
       .aipp-row em{color:#8fff2d;font-style:normal;font-weight:1000}
       .ai-profile-chip,.ai-profile-btn{cursor:pointer}
-      @media(max-width:900px){.aipp-stats{grid-template-columns:repeat(2,1fr)}.aipp-row{grid-template-columns:1fr}}
+
+      .replay-card{border-color:rgba(255,196,0,.28);background:rgba(255,196,0,.055)}
+      .replay-title span{color:#ffc400;font-size:11px;letter-spacing:1.3px;font-weight:1000}
+      .replay-title h3{margin:5px 0 3px;font-size:24px}
+      .replay-title p{margin:0;color:rgba(255,255,255,.68);font-weight:800}
+      .replay-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:14px 0}
+      .replay-grid div{padding:10px;border-radius:13px;background:rgba(0,0,0,.24);border:1px solid rgba(255,255,255,.08)}
+      .replay-grid span{display:block;color:rgba(255,255,255,.52);font-size:9px;font-weight:1000;text-transform:uppercase}
+      .replay-grid b{display:block;margin-top:4px;color:#8fff2d;font-size:20px}
+      .replay-bars{margin-top:10px}
+      .replay-reasons{margin-top:14px;display:flex;flex-wrap:wrap;gap:7px}
+      .replay-reasons h4{width:100%;margin:0 0 2px;color:white}
+      .replay-reasons span{padding:7px 9px;border-radius:999px;background:rgba(143,255,45,.08);border:1px solid rgba(143,255,45,.18);color:#8fff2d;font-size:11px;font-weight:1000}
+      .replay-result{margin-top:14px;padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(255,196,0,.16),rgba(143,255,45,.08));border:1px solid rgba(255,196,0,.28)}
+      .replay-result span{display:block;color:#ffc400;font-size:10px;font-weight:1000;letter-spacing:1.2px}
+      .replay-result b{display:block;margin-top:4px;color:white;font-size:24px}
+      .replay-result small{display:block;margin-top:3px;color:rgba(255,255,255,.66);font-weight:900}
+
+      @media(max-width:900px){.aipp-stats,.replay-grid{grid-template-columns:repeat(2,1fr)}.aipp-row{grid-template-columns:1fr}}
     `;
     document.head.appendChild(css);
 
