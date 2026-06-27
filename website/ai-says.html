@@ -360,7 +360,7 @@
   </div>
 
   <script>
-    const DATA_URL = "/data/hr_ai_breakdowns.json";
+    const DATA_URL = "/data/hr_ai_breakdowns.json?v=" + Date.now();
     let REPORTS = [];
 
     function esc(v){
@@ -382,6 +382,32 @@
     function pct(v){
       const n = Number(v || 0);
       return Math.max(0, Math.min(100, Math.round(n)));
+    }
+
+    function textValue(value){
+      if (value === null || value === undefined || value === "") return "";
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+      if (Array.isArray(value)) {
+        return value.map(textValue).filter(Boolean).join(", ");
+      }
+      if (typeof value === "object") {
+        return Object.entries(value)
+          .filter(([,v]) => v !== null && v !== undefined && v !== "")
+          .map(([k,v]) => `${k}: ${textValue(v)}`)
+          .filter(Boolean)
+          .join(", ");
+      }
+      return String(value);
+    }
+
+    function cleanList(values){
+      return (Array.isArray(values) ? values : [values])
+        .map(textValue)
+        .map(x => x.trim())
+        .filter(Boolean)
+        .filter(x => x !== "[object Object]");
     }
 
     function trustRows(r){
@@ -408,8 +434,8 @@
     }
 
     function card(r){
-      const why = (r.whyToday || []).slice(0,4).map(x => `<li>${esc(x)}</li>`).join("");
-      const risks = (r.riskFactors || []).slice(0,3).map(x => `<li>${esc(x)}</li>`).join("");
+      const why = cleanList(r.whyToday).slice(0,4).map(x => `<li>${esc(x)}</li>`).join("");
+      const risks = cleanList(r.riskFactors).slice(0,3).map(x => `<li>${esc(x)}</li>`).join("");
 
       return `
         <article class="card">
@@ -431,7 +457,7 @@
             </div>
             <div class="metric">
               <small>HR Chance</small>
-              <b>${pct(r.probability)}%</b>
+              <b>${pct(r.probability || r.confidence)}%</b>
             </div>
             <div class="metric">
               <small>Trust</small>
@@ -519,13 +545,13 @@
             pitcher: player.pitcher,
             aiVerdict: player.grade ? `${player.grade} AI HR Profile` : "AI HR Profile",
             oneLine: player.cardTake || player.analystTake || player.summary || "",
-            probability: player.confidence,
+            probability: Number(player.probability || player.hrChance || player.confidence || confidence || 0),
             confidence,
             grade: player.grade,
             rank: player.rank,
             badges: player.badges || [],
             consensus: player.consensus || [],
-            whyToday: player.reasons || [],
+            whyToday: cleanList(player.reasons || player.whyToday || player.summary || []),
             riskFactors: [
               "Home run betting is naturally volatile.",
               player.confidence < 10 ? "Lower raw HR confidence than the top tier." : "",
