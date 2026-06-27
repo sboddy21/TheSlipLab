@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Says | The Slip Lab</title>
+
+  <style>
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      min-height:100vh;
+      background:
+        radial-gradient(circle at top left,rgba(255,89,0,.22),transparent 34%),
+        radial-gradient(circle at top right,rgba(255,190,80,.14),transparent 28%),
+        linear-gradient(180deg,#090909,#121212 45%,#070707);
+      color:white;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    .wrap{
+      width:min(1320px,94vw);
+      margin:0 auto;
+      padding:28px 0 60px;
+    }
+
+    .topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:24px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:-.04em;
+      text-transform:uppercase;
+    }
+
+    .brand p{
+      margin:0;
+      color:rgba(255,255,255,.62);
+      font-weight:800;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .nav{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:flex-end;
+    }
+
+    .nav a{
+      color:white;
+      text-decoration:none;
+      font-size:12px;
+      font-weight:1000;
+      padding:9px 12px;
+      border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+
+    .hero{
+      padding:22px;
+      border-radius:24px;
+      background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow:0 0 45px rgba(255,80,0,.12);
+      margin-bottom:18px;
+    }
+
+    .hero h2{
+      margin:0 0 8px;
+      font-size:28px;
+      letter-spacing:-.03em;
+    }
+
+    .hero p{
+      margin:0;
+      color:rgba(255,255,255,.74);
+      font-size:15px;
+      line-height:1.45;
+      max-width:920px;
+    }
+
+    .status{
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .pill{
+      padding:8px 11px;
+      border-radius:999px;
+      background:rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .controls{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:18px 0;
+    }
+
+    .controls input,
+    .controls select{
+      background:rgba(0,0,0,.42);
+      color:white;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:14px;
+      padding:12px 13px;
+      font-weight:800;
+      outline:none;
+    }
+
+    .controls input{
+      flex:1;
+      min-width:260px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+    }
+
+    .card{
+      border-radius:22px;
+      overflow:hidden;
+      background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.025));
+      border:1px solid rgba(255,255,255,.105);
+      box-shadow:0 18px 40px rgba(0,0,0,.24);
+    }
+
+    .card-head{
+      padding:15px;
+      background:
+        radial-gradient(circle at top right,rgba(255,120,30,.22),transparent 45%),
+        rgba(0,0,0,.22);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .name-row{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .name{
+      font-size:20px;
+      font-weight:1000;
+      letter-spacing:-.03em;
+      line-height:1.05;
+    }
+
+    .team{
+      margin-top:5px;
+      color:rgba(255,255,255,.6);
+      font-size:12px;
+      font-weight:900;
+      text-transform:uppercase;
+    }
+
+    .verdict{
+      text-align:right;
+      font-size:11px;
+      font-weight:1000;
+      text-transform:uppercase;
+      color:#ffbe58;
+      white-space:nowrap;
+    }
+
+    .stars{
+      margin-top:10px;
+      color:#ffb84d;
+      letter-spacing:2px;
+      font-size:16px;
+    }
+
+    .metrics{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:9px;
+      padding:13px;
+    }
+
+    .metric{
+      padding:10px;
+      border-radius:14px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .metric small{
+      display:block;
+      font-size:9px;
+      font-weight:1000;
+      color:rgba(255,255,255,.52);
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+
+    .metric b{
+      display:block;
+      margin-top:4px;
+      font-size:19px;
+    }
+
+    .section{
+      padding:0 14px 14px;
+    }
+
+    .section h3{
+      margin:2px 0 8px;
+      color:rgba(255,255,255,.72);
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.1em;
+    }
+
+    .section ul{
+      margin:0;
+      padding-left:18px;
+    }
+
+    .section li{
+      margin:6px 0;
+      color:rgba(255,255,255,.82);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .trust{
+      display:grid;
+      gap:7px;
+    }
+
+    .trust-row{
+      position:relative;
+      overflow:hidden;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .trust-row span,
+    .trust-row b{
+      position:relative;
+      z-index:2;
+      font-size:12px;
+    }
+
+    .trust-row i{
+      position:absolute;
+      left:0;
+      top:0;
+      bottom:0;
+      z-index:1;
+      opacity:.28;
+      background:linear-gradient(90deg,#ff4d1a,#ffb84d);
+    }
+
+    .expected{
+      display:grid;
+      gap:7px;
+    }
+
+    .expected span{
+      padding:8px 10px;
+      border-radius:12px;
+      background:rgba(255,255,255,.045);
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+    }
+
+    .empty{
+      padding:30px;
+      border-radius:20px;
+      background:rgba(255,255,255,.05);
+      border:1px solid rgba(255,255,255,.10);
+      color:rgba(255,255,255,.7);
+      font-weight:900;
+    }
+
+    @media(max-width:1050px){
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .topbar{align-items:flex-start;flex-direction:column}
+      .nav{justify-content:flex-start}
+    }
+
+    @media(max-width:720px){
+      .grid{grid-template-columns:1fr}
+      .brand h1{font-size:28px}
+      .hero h2{font-size:24px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>AI Says</h1>
+        <p>The Slip Lab Home Run Analyst</p>
+      </div>
+
+      <div class="nav">
+        <a href="/">Home</a>
+        <a href="/decision-center.html">Decision Center</a>
+        <a href="/results.html">Results</a>
+        <a href="/weather.html">Weather</a>
+        <a href="/power-zones.html">Power Zones</a>
+      </div>
+    </div>
+
+    <section class="hero">
+      <h2>Today’s AI Home Run Reports</h2>
+      <p>
+        The AI Reasoning Engine combines matchup data, pitch fit, weather, bullpen context,
+        market value, power profile, history, and recent form into one readable home run report.
+      </p>
+      <div class="status" id="status"></div>
+    </section>
+
+    <div class="controls">
+      <input id="search" placeholder="Search any player..." />
+      <select id="sort">
+        <option value="confidence">Sort by AI Confidence</option>
+        <option value="probability">Sort by HR Probability</option>
+        <option value="pitch">Sort by Pitch Match</option>
+        <option value="weather">Sort by Weather</option>
+        <option value="market">Sort by Market Edge</option>
+      </select>
+    </div>
+
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <script>
+    const DATA_URL = "/data/hr_ai_breakdowns.json?v=" + Date.now();
+    let REPORTS = [];
+
+    function esc(v){
+      return String(v ?? "").replace(/[&<>"']/g, m => ({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#39;"
+      }[m]));
+    }
+
+    function stars(n){
+      const v = Number(n || 0);
+      const s = v >= 90 ? 5 : v >= 80 ? 4 : v >= 70 ? 3 : v >= 60 ? 2 : 1;
+      return "★".repeat(s) + "☆".repeat(5 - s);
+    }
+
+    function pct(v){
+      const n = Number(v || 0);
+      return Math.max(0, Math.min(100, Math.round(n)));
+    }
+
+    function textValue(value){
+      if (value === null || value === undefined || value === "") return "";
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return String(value);
+      }
+      if (Array.isArray(value)) {
+        return value.map(textValue).filter(Boolean).join(", ");
+      }
+      if (typeof value === "object") {
+        return Object.entries(value)
+          .filter(([,v]) => v !== null && v !== undefined && v !== "")
+          .map(([k,v]) => `${k}: ${textValue(v)}`)
+          .filter(Boolean)
+          .join(", ");
+      }
+      return String(value);
+    }
+
+    function cleanList(values){
+      return (Array.isArray(values) ? values : [values])
+        .map(textValue)
+        .map(x => x.trim())
+        .filter(Boolean)
+        .filter(x => x !== "[object Object]");
+    }
+
+    function trustRows(r){
+      const t = r.trustBreakdown || {};
+      return [
+        ["Model", t.modelAgreement],
+        ["Pitch", t.pitchMatch],
+        ["Power", t.powerProfile],
+        ["Weather", t.weather],
+        ["Bullpen", t.bullpen],
+        ["Market", t.market],
+        ["History", t.history],
+        ["Recent", t.recentForm]
+      ].map(([k,v]) => {
+        const p = pct(v);
+        return `
+          <div class="trust-row">
+            <span>${esc(k)}</span>
+            <b>${p}%</b>
+            <i style="width:${Math.max(5,p)}%"></i>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function card(r){
+      const why = cleanList(r.whyToday).slice(0,4).map(x => `<li>${esc(x)}</li>`).join("");
+      const risks = cleanList(r.riskFactors).slice(0,3).map(x => `<li>${esc(x)}</li>`).join("");
+
+      return `
+        <article class="card">
+          <div class="card-head">
+            <div class="name-row">
+              <div>
+                <div class="name">${esc(r.player)}</div>
+                <div class="team">${esc([r.team,r.opponent].filter(Boolean).join(" vs "))}</div>
+              </div>
+              <div class="verdict">${esc(r.aiVerdict || "AI Play")}</div>
+            </div>
+            <div class="stars">${stars(r.confidence)}</div>
+          </div>
+
+          <div class="metrics">
+            <div class="metric">
+              <small>Confidence</small>
+              <b>${pct(r.confidence)}%</b>
+            </div>
+            <div class="metric">
+              <small>HR Chance</small>
+              <b>${pct(r.probability || r.confidence)}%</b>
+            </div>
+            <div class="metric">
+              <small>Trust</small>
+              <b>${pct(r.trustBreakdown?.modelAgreement)}%</b>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3>Why Today</h3>
+            <ul>${why || "<li>AI profile is active for today’s slate.</li>"}</ul>
+          </div>
+
+          <div class="section">
+            <h3>What Could Go Wrong</h3>
+            <ul>${risks || "<li>Home run betting is naturally volatile.</li>"}</ul>
+          </div>
+
+          <div class="section">
+            <h3>AI Trust</h3>
+            <div class="trust">${trustRows(r)}</div>
+          </div>
+
+          <div class="section">
+            <h3>Expected HR Profile</h3>
+            <div class="expected">
+              <span>Expected Pitch: <b>${esc(r.expected?.pitch || "Best matchup pitch")}</b></span>
+              <span>Expected Zone: <b>${esc(r.expected?.zone || "Damage zone")}</b></span>
+              <span>Projected Distance: <b>${esc(r.expected?.distance || 410)}'</b></span>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    function sortReports(rows){
+      const mode = document.getElementById("sort").value;
+
+      return [...rows].sort((a,b) => {
+        if (mode === "probability") return pct(b.probability) - pct(a.probability);
+        if (mode === "pitch") return pct(b.trustBreakdown?.pitchMatch) - pct(a.trustBreakdown?.pitchMatch);
+        if (mode === "weather") return pct(b.trustBreakdown?.weather) - pct(a.trustBreakdown?.weather);
+        if (mode === "market") return pct(b.trustBreakdown?.market) - pct(a.trustBreakdown?.market);
+        return pct(b.confidence) - pct(a.confidence);
+      });
+    }
+
+    function render(){
+      const q = document.getElementById("search").value.trim().toLowerCase();
+
+      let rows = REPORTS.filter(r => {
+        if (!q) return true;
+        return String(r.player || "").toLowerCase().includes(q) ||
+               String(r.team || "").toLowerCase().includes(q) ||
+               String(r.opponent || "").toLowerCase().includes(q);
+      });
+
+      rows = sortReports(rows);
+
+      document.getElementById("grid").innerHTML =
+        rows.length ? rows.map(card).join("") : `<div class="empty">No AI reports found.</div>`;
+    }
+
+    async function init(){
+      const status = document.getElementById("status");
+
+      try{
+        const res = await fetch(DATA_URL, { cache:"no-store" });
+        if (!res.ok) throw new Error("Missing hr_ai_breakdowns.json");
+
+        const data = await res.json();
+        const rawPlayers = data.players && typeof data.players === "object"
+          ? Object.values(data.players)
+          : Array.isArray(data.reports)
+            ? data.reports
+            : [];
+
+        REPORTS = rawPlayers.map(player => {
+          const explanation = player.explanationScores || {};
+          const confidence = Number(player.confidence || player.score || 0);
+
+          return {
+            player: player.player,
+            team: player.team,
+            opponent: player.opponent,
+            pitcher: player.pitcher,
+            aiVerdict: player.grade ? `${player.grade} AI HR Profile` : "AI HR Profile",
+            oneLine: player.cardTake || player.analystTake || player.summary || "",
+            probability: Number(player.probability || player.hrChance || player.confidence || confidence || 0),
+            confidence,
+            grade: player.grade,
+            rank: player.rank,
+            badges: player.badges || [],
+            consensus: player.consensus || [],
+            whyToday: cleanList(player.reasons || player.whyToday || player.summary || []),
+            riskFactors: [
+              "Home run betting is naturally volatile.",
+              player.confidence < 10 ? "Lower raw HR confidence than the top tier." : "",
+              player.agreementCount < 2 ? "Limited cross-section consensus." : ""
+            ].filter(Boolean),
+            trustBreakdown: {
+              modelAgreement: player.consensusScore || 0,
+              pitchMatch: explanation.matchup || 0,
+              powerProfile: explanation.power || 0,
+              weather: explanation.environment || 0,
+              bullpen: explanation.bullpen || 0,
+              market: player.consensusScore || 0,
+              history: explanation.ceiling || 0,
+              recentForm: explanation.volatility || 0
+            },
+            expected: {
+              pitch: player.expectedPitch || player.bestPitch || "Live pitch edge unavailable",
+              zone: player.expectedZone || "Live zone edge unavailable",
+              distance: player.projectedDistance || 410
+            }
+          };
+        });
+
+        status.innerHTML = `
+          <span class="pill">${esc(data.source || "HR AI Breakdowns")}</span>
+          <span class="pill">${REPORTS.length} Player Reports</span>
+          <span class="pill">Updated ${esc(data.updatedAt ? new Date(data.updatedAt).toLocaleString() : "Today")}</span>
+        `;
+
+        render();
+      }catch(err){
+        status.innerHTML = `<span class="pill">AI Breakdowns not found yet</span>`;
+        document.getElementById("grid").innerHTML =
+          `<div class="empty">Run scripts/build_hr_ai_breakdowns.cjs first, then refresh this page.</div>`;
+      }
+    }
+
+    document.getElementById("search").addEventListener("input", render);
+    document.getElementById("sort").addEventListener("change", render);
+
+    init();
+  </script>
+</body>
+</html>
