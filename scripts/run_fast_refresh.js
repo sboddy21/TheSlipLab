@@ -30,6 +30,7 @@ const steps = [
   ["HR AI Breakdowns", "node scripts/build_hr_ai_breakdowns.cjs"],
   ["HR AI History", "node scripts/build_hr_ai_history.cjs"],
   ["HR AI Movement", "node scripts/build_hr_ai_movement.cjs"],
+  ["AI Trust Engine", "node scripts/build_ai_trust_engine.cjs"],
   ["HR AI Stacks", "node scripts/build_hr_ai_stacks.cjs"],
   ["HR AI Hall Of Fame", "node scripts/build_hr_ai_hof.cjs"],
 
