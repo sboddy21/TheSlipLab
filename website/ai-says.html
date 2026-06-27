@@ -1735,6 +1735,7 @@ function renderGameBreakdown(list){
               <b>${esc(r.player)}</b>
               <small>${esc(shortTeam(r.team))} vs ${esc(shortTeam(r.opponent))} • vs ${esc(r.pitcher || "TBD")}</small>
               ${trustMini(r)}
+              <span class="ai-profile-chip" data-ai-profile-player="${esc(r.player)}">🏆 AI Profile</span>
             </div>
             <em>${Number(r.confidence || 0).toFixed(1)}%</em>
             <strong>${esc(r.grade || "B")}</strong>
@@ -1970,6 +1971,7 @@ async function load(){
 }
 load();
 </script>
+<script src="/js/ai_player_profile.js"></script>
 </body>
 </html>
 
