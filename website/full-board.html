@@ -283,6 +283,7 @@ tbody tr{cursor:pointer}
   </div>
 </div>
 
+<script src="/js/player-tags.js"></script>
 <script>
 let players = [];
 
@@ -464,7 +465,39 @@ async function load(){
   const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
   const json = await res.json();
 
-  players = json.allPlayers || [];
+  const sectionMap = {};
+  Object.entries(json.sections || {}).forEach(([sectionName, sectionRows]) => {
+    if (!Array.isArray(sectionRows)) return;
+
+    sectionRows.forEach(sectionRow => {
+      const name = String(sectionRow.player || sectionRow.name || "").trim().toLowerCase();
+      if (!name) return;
+
+      if (!sectionMap[name]) sectionMap[name] = [];
+      if (!sectionMap[name].includes(sectionName)) sectionMap[name].push(sectionName);
+    });
+  });
+
+  players = (json.allPlayers || []).map((row, index) => {
+    const rank = Number(row.modelRank || row.rank || index + 1);
+    const nameKey = String(row.player || row.name || "").trim().toLowerCase();
+    const aiSections = sectionMap[nameKey] || [];
+    const enrichedRow = {
+      ...row,
+      modelRank: rank,
+      aiSections
+    };
+
+    const tags = window.SlipLabTags && typeof window.SlipLabTags.build === "function"
+      ? window.SlipLabTags.build(enrichedRow, enrichedRow, rank)
+      : (row.tags || row.badges || []);
+
+    return {
+      ...enrichedRow,
+      tags,
+      badges: tags
+    };
+  });
 
   
 document.getElementById("search").addEventListener("input", render);

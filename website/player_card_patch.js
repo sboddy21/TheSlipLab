@@ -153,7 +153,7 @@
       CARD_DATA?.byName?.[key(found.player)] ||
       {};
 
-    return enrich({
+    const merged = {
       ...found,
       cardData: extra,
       aiBreakdown: aiFor(found),
@@ -162,6 +162,18 @@
       gameLogs: extra.gameLogs || found.gameLogs,
       enrichedTags: extra.tags || found.enrichedTags,
       season: extra.season || found.season
+    };
+
+    const rank = Number(merged.modelRank || merged.rank || 0);
+    const sharedTags = window.SlipLabTags && typeof window.SlipLabTags.build === "function"
+      ? window.SlipLabTags.build(merged, merged, rank)
+      : (Array.isArray(merged.tags) ? merged.tags : []);
+
+    return enrich({
+      ...merged,
+      tags: sharedTags,
+      badges: sharedTags,
+      enrichedTags: sharedTags
     });
   }
 

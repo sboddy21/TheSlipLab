@@ -775,6 +775,7 @@
   </div>
 </main>
 
+<script src="/js/player-tags.js"></script>
 <script>
 let results = [];
 let model = [];
@@ -1049,6 +1050,10 @@ function tagClass(tag){
 }
 
 function buildTags(row, m, rank){
+  if(window.SlipLabTags && typeof window.SlipLabTags.build === "function"){
+    return window.SlipLabTags.build(row, m, rank).slice(0, 10);
+  }
+
   const tags = [];
 
   if(m){
