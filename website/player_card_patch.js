@@ -1532,18 +1532,18 @@
       .pcprob{width:110px;height:84px;border-radius:16px;border:1px solid rgba(255,116,72,.55);display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.25)}
       .pcprob b{font-size:28px;color:#ff8a00}
       .pcprob span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}
-      .pcchips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;max-width:980px}
+      .pcchips{display:flex;gap:7px;flex-wrap:wrap;margin-top:11px;max-width:980px}
       .pcchip{
-        border-radius:11px;
-        padding:8px 12px;
-        font-size:12px;
+        border-radius:9px;
+        padding:6px 10px;
+        font-size:10px;
         font-weight:1000;
-        letter-spacing:.035em;
+        letter-spacing:.025em;
         text-transform:uppercase;
         border:1px solid rgba(255,255,255,.20);
         background:rgba(255,255,255,.07);
         color:#fff;
-        box-shadow:0 0 14px rgba(255,255,255,.05);
+        box-shadow:0 0 12px rgba(255,255,255,.05);
       }
       .pcchip-top{color:#ffe66d;border-color:#ffd000;background:rgba(255,208,0,.13);box-shadow:0 0 18px rgba(255,208,0,.42), inset 0 0 12px rgba(255,208,0,.10)}
       .pcchip-gold{color:#fff2a8;border-color:#ffc400;background:rgba(255,196,0,.16);box-shadow:0 0 20px rgba(255,196,0,.45), inset 0 0 14px rgba(255,196,0,.12)}
