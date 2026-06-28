@@ -293,7 +293,50 @@
     if (num(row.powerScore) >= 70) add("BARREL KING");
     if (num(row.protectionScore) >= 75) add("PROTECTION BOOST");
 
-    return out.slice(0, 14).map((x, i) => `<span class="pcchip c${i % 8}">${esc(x)}</span>`).join("");
+    const priority = [
+      "TOP 10",
+      "TOP 30",
+      "IF ONLY ONE",
+      "BEST PICK",
+      "DANGER",
+      "STRONG",
+      "POWER BAT",
+      "POWER ZONE",
+      "PITCH EDGE",
+      "PITCH TYPE EDGE",
+      "ZONE 5+",
+      "WEATHER CARRY",
+      "BULLPEN BOOST",
+      "BEST VALUE",
+      "LOTTO BOMB",
+      "HR LEAK",
+      "ZONE OVERLAP",
+      "LINEUP BOOST"
+    ];
+
+    const ordered = out.sort((a, b) => {
+      const aa = priority.indexOf(String(a).toUpperCase());
+      const bb = priority.indexOf(String(b).toUpperCase());
+      return (aa === -1 ? 999 : aa) - (bb === -1 ? 999 : bb);
+    });
+
+    const chipClass = label => {
+      const t = String(label || "").toUpperCase();
+      if (t.includes("TOP 10") || t.includes("TOP 30")) return "pcchip pcchip-top";
+      if (t.includes("IF ONLY ONE") || t.includes("BEST PICK")) return "pcchip pcchip-gold";
+      if (t.includes("DANGER") || t.includes("LEAK")) return "pcchip pcchip-danger";
+      if (t.includes("STRONG") || t.includes("ELITE")) return "pcchip pcchip-strong";
+      if (t.includes("POWER")) return "pcchip pcchip-power";
+      if (t.includes("PITCH")) return "pcchip pcchip-pitch";
+      if (t.includes("ZONE") || t.includes("OVERLAP")) return "pcchip pcchip-zone";
+      if (t.includes("WEATHER")) return "pcchip pcchip-weather";
+      if (t.includes("BULLPEN")) return "pcchip pcchip-bullpen";
+      if (t.includes("VALUE")) return "pcchip pcchip-value";
+      if (t.includes("LOTTO")) return "pcchip pcchip-lotto";
+      return "pcchip pcchip-base";
+    };
+
+    return ordered.slice(0, 22).map(x => `<span class="${chipClass(x)}">${esc(x)}</span>`).join("");
   }
 
   function whyText(row) {
@@ -1489,9 +1532,31 @@
       .pcprob{width:110px;height:84px;border-radius:16px;border:1px solid rgba(255,116,72,.55);display:flex;flex-direction:column;justify-content:center;align-items:center;background:rgba(0,0,0,.25)}
       .pcprob b{font-size:28px;color:#ff8a00}
       .pcprob span{font-size:10px;color:#aeb6c2;text-transform:uppercase;font-weight:900}
-      .pcchips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-      .pcchip{border-radius:7px;padding:5px 8px;font-size:10px;font-weight:950;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.07)}
-      .pcchip.c0{background:#ff6b00;border-color:#ff9a38}.pcchip.c1,.pcchip.c2{color:#ffb000;border-color:#ff8a00}.pcchip.c3,.pcchip.c4{color:#00e0a4;border-color:#00a981}
+      .pcchips{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;max-width:980px}
+      .pcchip{
+        border-radius:11px;
+        padding:8px 12px;
+        font-size:12px;
+        font-weight:1000;
+        letter-spacing:.035em;
+        text-transform:uppercase;
+        border:1px solid rgba(255,255,255,.20);
+        background:rgba(255,255,255,.07);
+        color:#fff;
+        box-shadow:0 0 14px rgba(255,255,255,.05);
+      }
+      .pcchip-top{color:#ffe66d;border-color:#ffd000;background:rgba(255,208,0,.13);box-shadow:0 0 18px rgba(255,208,0,.42), inset 0 0 12px rgba(255,208,0,.10)}
+      .pcchip-gold{color:#fff2a8;border-color:#ffc400;background:rgba(255,196,0,.16);box-shadow:0 0 20px rgba(255,196,0,.45), inset 0 0 14px rgba(255,196,0,.12)}
+      .pcchip-danger{color:#ff79c8;border-color:#ff3fb4;background:rgba(255,63,180,.14);box-shadow:0 0 18px rgba(255,63,180,.38), inset 0 0 12px rgba(255,63,180,.10)}
+      .pcchip-strong{color:#00f0a8;border-color:#00d084;background:rgba(0,208,132,.14);box-shadow:0 0 16px rgba(0,208,132,.34)}
+      .pcchip-power{color:#ff6b5f;border-color:#ff342a;background:rgba(255,52,42,.14);box-shadow:0 0 18px rgba(255,52,42,.38)}
+      .pcchip-pitch{color:#20e7ff;border-color:#00cfff;background:rgba(0,207,255,.14);box-shadow:0 0 16px rgba(0,207,255,.35)}
+      .pcchip-zone{color:#ff9d2e;border-color:#ff7a00;background:rgba(255,122,0,.15);box-shadow:0 0 16px rgba(255,122,0,.35)}
+      .pcchip-weather{color:#54c7ff;border-color:#2196ff;background:rgba(33,150,255,.14);box-shadow:0 0 16px rgba(33,150,255,.34)}
+      .pcchip-bullpen{color:#c084ff;border-color:#a855f7;background:rgba(168,85,247,.15);box-shadow:0 0 16px rgba(168,85,247,.35)}
+      .pcchip-value{color:#7cff6b;border-color:#6ee75f;background:rgba(110,231,95,.13);box-shadow:0 0 14px rgba(110,231,95,.30)}
+      .pcchip-lotto{color:#ffb86c;border-color:#ff8a00;background:rgba(255,138,0,.15);box-shadow:0 0 16px rgba(255,138,0,.34)}
+      .pcchip-base{color:#e8edf5;border-color:rgba(255,255,255,.20);background:rgba(255,255,255,.075)}
       .pcbiggrid,.pcgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
       .pcm{background:rgba(13,19,24,.86);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:8px;min-height:48px}
       .pcm label{display:block;color:#8e98a3;font-size:9px;font-weight:900;text-transform:uppercase;line-height:1;margin-bottom:5px}

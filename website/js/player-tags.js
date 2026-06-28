@@ -75,7 +75,7 @@
 
     if(tags.length === 0) tags.push("HR");
 
-    return uniqueTags(tags).slice(0, 10);
+    return uniqueTags(tags).slice(0, 22);
   }
 
   window.SlipLabTags = {
