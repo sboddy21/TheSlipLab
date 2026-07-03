@@ -15,7 +15,7 @@ function writeJSON(file, data) {
   fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
 }
 
-function rows(data) {
+function arr(data) {
   if (Array.isArray(data)) return data;
   if (!data || typeof data !== "object") return [];
   return data.games || data.players || data.rows || data.data || [];
@@ -29,12 +29,62 @@ function norm(v = "") {
   return clean(v).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function num(v, fallback = 0) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+function scale(value, min, max) {
+  const n = num(value);
+  return Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100));
+}
+
+async function getPitcherStats(playerId) {
+  if (!playerId) return null;
+
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching`;
+  const res = await fetch(url);
+
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
+
+  return {
+    era: num(stat.era),
+    whip: num(stat.whip),
+    hits: num(stat.hits),
+    homeRuns: num(stat.homeRuns),
+    inningsPitched: num(stat.inningsPitched),
+    strikeOuts: num(stat.strikeOuts),
+    walks: num(stat.baseOnBalls)
+  };
+}
+
+function pitcherVulnerability(stats) {
+  if (!stats) return 50;
+
+  const ip = stats.inningsPitched || 1;
+  const hitsPer9 = (stats.hits / ip) * 9;
+  const hrPer9 = (stats.homeRuns / ip) * 9;
+  const walkPressure = stats.walks / ip;
+
+  const score =
+    scale(stats.era, 2.5, 7.25) * 0.28 +
+    scale(stats.whip, 0.9, 1.85) * 0.26 +
+    scale(hitsPer9, 5.5, 12.5) * 0.20 +
+    scale(hrPer9, 0.4, 2.3) * 0.18 +
+    scale(walkPressure, 0.15, 0.65) * 0.08;
+
+  return Math.max(12, Math.min(98, Math.round(score)));
+}
+
 function gameKey(g) {
   return norm(g.matchup || g.game || `${g.awayTeam || g.away} at ${g.homeTeam || g.home}`);
 }
 
 function scoreOf(h) {
-  return Number(h.hrVolatilityScore ?? h.hrConfidence ?? h.score ?? h.powerScore ?? 0);
+  return num(h.hrVolatilityScore ?? h.hrConfidence ?? h.score ?? h.powerScore ?? 0);
 }
 
 function buildLineupMap(lineup) {
@@ -42,11 +92,11 @@ function buildLineupMap(lineup) {
   if (!Array.isArray(lineup)) return map;
 
   for (const row of lineup) {
-    const order = Number(row.order || row.lineupSpot || row.battingOrder || row.spot);
+    const order = num(row.order || row.lineupSpot || row.battingOrder || row.spot);
     const player = clean(row.player || row.name || row.fullName);
     const playerId = clean(row.playerId || row.id || row.mlbId);
 
-    if (!Number.isFinite(order) || order <= 0) continue;
+    if (!order || order <= 0) continue;
 
     const entry = {
       order,
@@ -68,7 +118,6 @@ function findLineupEntry(hitter, lineupMap) {
 
   if (playerId && lineupMap.has(playerId)) return lineupMap.get(playerId);
   if (player && lineupMap.has(norm(player))) return lineupMap.get(norm(player));
-
   return null;
 }
 
@@ -106,25 +155,25 @@ function applyLineupData(hitter, lineupMap, lineupStatus) {
 }
 
 const slatePayload = readJSON("mlb_games_today.json", { games: [] });
-const playerPoolPayload = readJSON("mlb_player_pool.json", { players: [] });
+const poolPayload = readJSON("mlb_player_pool.json", { players: [] });
 const hrPayload = readJSON("mlb_home_runs.json", []);
 
-const slateGames = rows(slatePayload);
-const poolHitters = rows(playerPoolPayload);
-const scoredHitters = rows(hrPayload);
+const slateGames = arr(slatePayload);
+const poolHitters = arr(poolPayload);
+const scoredHitters = arr(hrPayload);
 
-const scoreByPlayerId = new Map();
-const scoreByPlayerName = new Map();
+const scoredById = new Map();
+const scoredByName = new Map();
 
 for (const h of scoredHitters) {
-  if (h.playerId) scoreByPlayerId.set(String(h.playerId), h);
-  if (h.player) scoreByPlayerName.set(norm(h.player), h);
+  if (h.playerId) scoredById.set(String(h.playerId), h);
+  if (h.player) scoredByName.set(norm(h.player), h);
 }
 
 const hitters = poolHitters.map(h => {
   const scored =
-    scoreByPlayerId.get(String(h.playerId || "")) ||
-    scoreByPlayerName.get(norm(h.player)) ||
+    scoredById.get(String(h.playerId || "")) ||
+    scoredByName.get(norm(h.player)) ||
     {};
 
   return {
@@ -148,7 +197,20 @@ for (const hitter of hitters) {
   groupedHitters.get(key).push(hitter);
 }
 
+const pitcherCache = new Map();
+
+async function getVulnerability(id) {
+  const key = String(id || "");
+  if (!key) return { score: 50, stats: null };
+  if (!pitcherCache.has(key)) {
+    const stats = await getPitcherStats(key);
+    pitcherCache.set(key, { score: pitcherVulnerability(stats), stats });
+  }
+  return pitcherCache.get(key);
+}
+
 const finalGames = [];
+const pitcherRows = [];
 
 for (const slateGame of slateGames) {
   const key = gameKey(slateGame);
@@ -157,50 +219,84 @@ for (const slateGame of slateGames) {
   const awayTeam = slateGame.awayTeam || slateGame.away || "";
   const homeTeam = slateGame.homeTeam || slateGame.home || "";
 
+  const awayPitcherId = slateGame.awayProbablePitcherId || null;
+  const homePitcherId = slateGame.homeProbablePitcherId || null;
+
+  const awayVuln = await getVulnerability(awayPitcherId);
+  const homeVuln = await getVulnerability(homePitcherId);
+
   const awayLineupMap = buildLineupMap(slateGame.awayBattingOrder);
   const homeLineupMap = buildLineupMap(slateGame.homeBattingOrder);
 
   const awayHitters = bats
     .filter(h => norm(h.team) === norm(awayTeam))
-    .map(h => applyLineupData(h, awayLineupMap, slateGame.awayLineupStatus))
+    .map(h => ({
+      ...applyLineupData(h, awayLineupMap, slateGame.awayLineupStatus),
+      opponent: homeTeam,
+      opposingPitcher: clean(slateGame.homeProbablePitcher, "TBD"),
+      opposingPitcherId: homePitcherId,
+      pitcherRisk: homeVuln.score,
+      pitcherVulnerability: homeVuln.score
+    }))
     .sort((a, b) => scoreOf(b) - scoreOf(a));
 
   const homeHitters = bats
     .filter(h => norm(h.team) === norm(homeTeam))
-    .map(h => applyLineupData(h, homeLineupMap, slateGame.homeLineupStatus))
+    .map(h => ({
+      ...applyLineupData(h, homeLineupMap, slateGame.homeLineupStatus),
+      opponent: awayTeam,
+      opposingPitcher: clean(slateGame.awayProbablePitcher, "TBD"),
+      opposingPitcherId: awayPitcherId,
+      pitcherRisk: awayVuln.score,
+      pitcherVulnerability: awayVuln.score
+    }))
     .sort((a, b) => scoreOf(b) - scoreOf(a));
+
+  const awayPitcher = {
+    name: clean(slateGame.awayProbablePitcher, "TBD"),
+    pitcher: clean(slateGame.awayProbablePitcher, "TBD"),
+    id: awayPitcherId,
+    side: clean(slateGame.awayPitcherHand || slateGame.awayProbablePitcherHand),
+    team: awayTeam,
+    opponent: homeTeam,
+    vulnerability: awayVuln.score,
+    stats: awayVuln.stats
+  };
+
+  const homePitcher = {
+    name: clean(slateGame.homeProbablePitcher, "TBD"),
+    pitcher: clean(slateGame.homeProbablePitcher, "TBD"),
+    id: homePitcherId,
+    side: clean(slateGame.homePitcherHand || slateGame.homeProbablePitcherHand),
+    team: homeTeam,
+    opponent: awayTeam,
+    vulnerability: homeVuln.score,
+    stats: homeVuln.stats
+  };
+
+  pitcherRows.push(awayPitcher, homePitcher);
 
   finalGames.push({
     ...slateGame,
     game: slateGame.matchup || `${awayTeam} at ${homeTeam}`,
     matchup: slateGame.matchup || `${awayTeam} at ${homeTeam}`,
-
-    awayPitcher: {
-      name: clean(slateGame.awayProbablePitcher, "TBD"),
-      pitcher: clean(slateGame.awayProbablePitcher, "TBD"),
-      id: slateGame.awayProbablePitcherId || null,
-      side: clean(slateGame.awayPitcherHand || slateGame.awayProbablePitcherHand)
-    },
-
-    homePitcher: {
-      name: clean(slateGame.homeProbablePitcher, "TBD"),
-      pitcher: clean(slateGame.homeProbablePitcher, "TBD"),
-      id: slateGame.homeProbablePitcherId || null,
-      side: clean(slateGame.homePitcherHand || slateGame.homeProbablePitcherHand)
-    },
-
+    awayTeam,
+    homeTeam,
+    awayPitcher,
+    homePitcher,
     hitters: {
       away: awayHitters,
       home: homeHitters
     },
-
     topThreats: [...awayHitters, ...homeHitters]
       .sort((a, b) => scoreOf(b) - scoreOf(a))
       .slice(0, 5)
       .map(h => ({
         player: h.player,
         team: h.team,
+        opponent: h.opponent,
         score: scoreOf(h),
+        pitcherRisk: h.pitcherRisk,
         confirmedLineupSpot: h.confirmedLineupSpot || null,
         lineupSpot: h.lineupSpot || h.projectedLineupSpot || h.projectedSpot || null,
         lineupSource: h.lineupSource || "PROJECTED"
@@ -215,8 +311,16 @@ writeJSON("game_pitcher_matchups.json", {
   games: finalGames
 });
 
+writeJSON("pitcher_vulnerability.json", {
+  updatedAt: new Date().toISOString(),
+  date: slatePayload.date || "",
+  count: pitcherRows.length,
+  pitchers: pitcherRows
+});
+
 console.log("");
 console.log("GAME PITCHER MATCHUPS COMPLETE");
 console.log("Games:", finalGames.length);
-console.log("Hitters:", hitters.length);
-console.log("Saved:", path.join(DATA_DIR, "game_pitcher_matchups.json"));
+console.log("Pitchers:", pitcherRows.length);
+console.log("Saved: website/data/game_pitcher_matchups.json");
+console.log("Saved: website/data/pitcher_vulnerability.json");

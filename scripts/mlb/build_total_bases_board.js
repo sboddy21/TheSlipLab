@@ -2,9 +2,9 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-
-const POOL_FILE = path.join(ROOT, "website", "data", "mlb_player_pool.json");
-const OUT_FILE = path.join(ROOT, "website", "data", "mlb_total_bases.json");
+const DATA = path.join(ROOT, "website", "data");
+const MATCHUPS_FILE = path.join(DATA, "game_pitcher_matchups.json");
+const OUT_FILE = path.join(DATA, "mlb_total_bases.json");
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -12,11 +12,7 @@ function readJson(file) {
 
 async function getJson(url) {
   const res = await fetch(url);
-
-  if (!res.ok) {
-    throw new Error(`Request failed ${res.status}: ${url}`);
-  }
-
+  if (!res.ok) throw new Error(`Request failed ${res.status}: ${url}`);
   return res.json();
 }
 
@@ -27,24 +23,13 @@ function num(value, fallback = 0) {
 
 function scale(value, min, max) {
   const n = num(value);
-
-  return Math.max(
-    0,
-    Math.min(
-      100,
-      ((n - min) / (max - min)) * 100
-    )
-  );
+  return Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100));
 }
 
 async function getHitterStats(playerId) {
-  const url =
-    `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
-
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
   const data = await getJson(url);
-
-  const stat =
-    data?.stats?.[0]?.splits?.[0]?.stat || {};
+  const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
 
   const hits = num(stat.hits);
   const doubles = num(stat.doubles);
@@ -52,10 +37,6 @@ async function getHitterStats(playerId) {
   const homeRuns = num(stat.homeRuns);
   const singles = Math.max(0, hits - doubles - triples - homeRuns);
   const totalBases = singles + doubles * 2 + triples * 3 + homeRuns * 4;
-  const atBats = num(stat.atBats);
-  const slugging = num(stat.slg);
-  const avg = num(stat.avg);
-  const ops = num(stat.ops);
 
   return {
     hits,
@@ -64,61 +45,31 @@ async function getHitterStats(playerId) {
     triples,
     homeRuns,
     totalBases,
-    avg,
-    slg: slugging,
-    ops,
-    atBats,
+    avg: num(stat.avg),
+    slg: num(stat.slg),
+    ops: num(stat.ops),
+    atBats: num(stat.atBats),
     plateAppearances: num(stat.plateAppearances),
     strikeOuts: num(stat.strikeOuts)
   };
 }
 
-async function getPitcherStats(playerId) {
-  if (!playerId) return null;
-
-  const url =
-    `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching`;
-
-  const data = await getJson(url);
-
-  const stat =
-    data?.stats?.[0]?.splits?.[0]?.stat || {};
-
-  return {
-    era: num(stat.era),
-    whip: num(stat.whip),
-    hits: num(stat.hits),
-    homeRuns: num(stat.homeRuns),
-    inningsPitched: num(stat.inningsPitched)
-  };
-}
-
-function buildScore(hitter, pitcher) {
+function buildScore(hitter, pitcherRisk) {
   const powerContact =
     scale(hitter.slg, 0.300, 0.620) * 0.36 +
     scale(hitter.ops, 0.580, 1.050) * 0.24 +
     scale(hitter.totalBases, 25, 280) * 0.22 +
     scale(hitter.avg, 0.190, 0.340) * 0.18;
 
-  const pitcherAttack = pitcher
-    ? scale(pitcher.whip, 0.90, 1.75) * 0.42 +
-      scale(pitcher.era, 2.50, 6.80) * 0.34 +
-      scale(pitcher.hits, 20, 190) * 0.24
-    : 50;
-
-  const strikeoutPenalty =
-    scale(hitter.strikeOuts, 20, 120) * 0.10;
-
+  const strikeoutPenalty = scale(hitter.strikeOuts, 20, 120) * 0.10;
   const samplePenalty =
-    hitter.plateAppearances < 40
-      ? 10
-      : hitter.plateAppearances < 80
-      ? 5
-      : 0;
+    hitter.plateAppearances < 40 ? 10 :
+    hitter.plateAppearances < 80 ? 5 :
+    0;
 
   return Math.round(
     powerContact * 0.72 +
-    pitcherAttack * 0.28 -
+    num(pitcherRisk, 50) * 0.28 -
     strikeoutPenalty -
     samplePenalty
   );
@@ -129,58 +80,60 @@ function edge(score) {
   if (score >= 76) return "Strong";
   if (score >= 68) return "Value";
   if (score >= 60) return "Watch";
-
   return "Thin";
 }
 
-function projectedTotalBases(hitter, pitcher) {
+function projectedTotalBases(hitter, pitcherRisk) {
   const atBats = hitter.atBats > 0 ? hitter.atBats : 1;
   const tbRate = hitter.totalBases / atBats;
-  const baseAtBats = 4.1;
-  const pitcherBoost = pitcher
-    ? Math.max(-0.35, Math.min(0.45, (pitcher.whip - 1.25) * 0.55 + (pitcher.era - 4.20) * 0.045))
-    : 0;
-
-  const projection = baseAtBats * Math.max(0.250, tbRate + pitcherBoost);
+  const pitcherBoost = (num(pitcherRisk, 50) - 50) / 100;
+  const projection = 4.1 * Math.max(0.250, tbRate + pitcherBoost);
   return Number(Math.max(0.6, Math.min(4.2, projection)).toFixed(1));
 }
 
-async function main() {
-  if (!fs.existsSync(POOL_FILE)) {
-    throw new Error("Missing player pool");
+function flattenMatchupHitters(matchups) {
+  const rows = [];
+
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const hitters = game.hitters?.[side] || [];
+      for (const hitter of hitters) {
+        if (!hitter.playerId) continue;
+
+        rows.push({
+          ...hitter,
+          game: game.matchup || game.game,
+          gamePk: game.gamePk,
+          team: hitter.team,
+          opponent: hitter.opponent,
+          opposingPitcher: hitter.opposingPitcher,
+          opposingPitcherId: hitter.opposingPitcherId,
+          pitcherRisk: hitter.pitcherRisk,
+          pitcherVulnerability: hitter.pitcherVulnerability
+        });
+      }
+    }
   }
 
-  const poolData = readJson(POOL_FILE);
-  const players = poolData.players || [];
+  return rows;
+}
 
-  const pitcherCache = new Map();
+async function main() {
+  if (!fs.existsSync(MATCHUPS_FILE)) {
+    throw new Error("Missing canonical game_pitcher_matchups.json");
+  }
+
+  const matchups = readJson(MATCHUPS_FILE);
+  const players = flattenMatchupHitters(matchups);
   const rows = [];
 
   for (const player of players) {
-    if (!player.playerId) continue;
+    console.log(`Scoring TB ${player.player}`);
 
-    console.log(`Scoring ${player.player}`);
-
-    const hitter =
-      await getHitterStats(player.playerId);
-
-    let pitcher = null;
-
-    if (player.opposingProbablePitcherId) {
-      if (!pitcherCache.has(player.opposingProbablePitcherId)) {
-        pitcherCache.set(
-          player.opposingProbablePitcherId,
-          await getPitcherStats(player.opposingProbablePitcherId)
-        );
-      }
-
-      pitcher =
-        pitcherCache.get(player.opposingProbablePitcherId);
-    }
-
-    const score = buildScore(hitter, pitcher);
-
-    const projection = projectedTotalBases(hitter, pitcher);
+    const hitter = await getHitterStats(player.playerId);
+    const pitcherRisk = num(player.pitcherRisk || player.pitcherVulnerability, 50);
+    const score = buildScore(hitter, pitcherRisk);
+    const projection = projectedTotalBases(hitter, pitcherRisk);
 
     rows.push({
       rank: 0,
@@ -189,6 +142,14 @@ async function main() {
       team: player.team,
       opponent: player.opponent,
       game: player.game,
+      gamePk: player.gamePk,
+      opposingPitcher: player.opposingPitcher,
+      opposingPitcherId: player.opposingPitcherId,
+      pitcherRisk,
+      pitcherVulnerability: pitcherRisk,
+      lineupStatus: player.lineupStatus,
+      lineupSpot: player.lineupSpot,
+      confirmedLineup: player.confirmedLineup,
       score,
       projection,
       projectedTotalBases: projection,
@@ -197,33 +158,27 @@ async function main() {
       marketStatValue: projection,
       odds: "N/A",
       edge: edge(score),
-      note:
-        `Projected TB ${projection} • Season TB ${hitter.totalBases} • SLG ${hitter.slg || "--"} • OPS ${hitter.ops || "--"}`,
-      stats: {
-        hitter,
-        pitcher
-      }
+      note: `Projected TB ${projection} • ${player.team} vs ${player.opponent} • Opposing pitcher ${player.opposingPitcher || "TBD"} • Pitcher risk ${pitcherRisk}`,
+      stats: { hitter }
     });
   }
 
   rows.sort((a, b) => b.score - a.score);
 
-  const finalRows =
-    rows.slice(0, 40).map((row, index) => ({
-      ...row,
-      rank: index + 1
-    }));
+  const finalRows = rows.slice(0, 40).map((row, index) => ({
+    ...row,
+    rank: index + 1
+  }));
 
-  fs.writeFileSync(
-    OUT_FILE,
-    JSON.stringify(finalRows, null, 2)
-  );
+  fs.writeFileSync(OUT_FILE, JSON.stringify(finalRows, null, 2));
 
-  console.log("Total bases board saved");
+  console.log("");
+  console.log("TOTAL BASES BOARD COMPLETE");
   console.log("Players:", finalRows.length);
+  console.log("Saved: website/data/mlb_total_bases.json");
 }
 
 main().catch(err => {
-  console.error(err.message);
+  console.error(err);
   process.exit(1);
 });
