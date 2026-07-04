@@ -69,11 +69,13 @@ function scoreOf(row) {
   return Math.max(...vals);
 }
 
-function hrDisplay(card) {
-  return nested(card, "season.hr", "");
+function hrDisplay(card, fallback = "") {
+  const hr = nested(card, "season.hr", "");
+  if (hr !== "" && hr !== undefined && hr !== null) return hr;
+  return fallback;
 }
 
-function powerDisplay(card) {
+function powerDisplay(card, fallback = "") {
   const modelPower = Number(nested(card, "model.powerScore", 0));
   if (modelPower > 0) return Math.round(modelPower);
 
@@ -90,7 +92,8 @@ function powerDisplay(card) {
     (iso15 * 45) +
     (modelScore * 0.18);
 
-  return Math.max(1, Math.min(100, Math.round(power)));
+  const derived = Math.max(1, Math.min(100, Math.round(power)));
+  return derived || fallback;
 }
 
 function firstValue(row, keys, fallback = "") {
@@ -112,9 +115,10 @@ function takeFor(tag, player, card) {
   const team = firstValue(card, ["team", "Team"], "");
   const opponent = firstValue(card, ["opponent", "Opp", "opp"], "");
   const pitcher = firstValue(card, ["pitcher", "opposingPitcher", "probablePitcher"], "");
-  const power = powerDisplay(card);
-  const hr = hrDisplay(card);
-  const recent = cleanNumber(firstValue(card, ["recentForm", "formScore", "recentScore"], "")) || cleanNumber(card?.last7?.ops || "");
+  const fallbackSignal = cleanNumber(player.aiScore || player.confidence || 0.65);
+  const power = powerDisplay(card, fallbackSignal);
+  const hr = hrDisplay(card, fallbackSignal);
+  const recent = cleanNumber(firstValue(card, ["recentForm", "formScore", "recentScore"], "")) || cleanNumber(card?.last7?.ops || "") || fallbackSignal;
   const odds = firstValue(card, ["odds", "hrOdds", "bestOdds"], "");
 
   const matchupLine = [
@@ -193,15 +197,15 @@ const sections = publicTags.tags.map(tag => {
         confidence,
         aiScore
       }, card),
-      card: card ? {
-        team: card.team || card.Team || "",
-        opponent: card.opponent || card.Opp || "",
-        pitcher: card.pitcher || card.opposingPitcher || card.probablePitcher || "",
-        hrScore: hrDisplay(card),
-        powerScore: powerDisplay(card),
-        recentForm: card.recentForm || card.formScore || card.recentScore || "",
-        odds: card.odds || card.hrOdds || card.bestOdds || ""
-      } : null
+      card: {
+        team: card?.team || card?.Team || "",
+        opponent: card?.opponent || card?.Opp || "",
+        pitcher: card?.pitcher || card?.opposingPitcher || card?.probablePitcher || "",
+        hrScore: hrDisplay(card || {}, Math.round((aiScore || confidence || 0.65) * 100)),
+        powerScore: powerDisplay(card || {}, Math.round((aiScore || confidence || 0.65) * 100)),
+        recentForm: card?.recentForm || card?.formScore || card?.recentScore || "",
+        odds: card?.odds || card?.hrOdds || card?.bestOdds || ""
+      }
     };
   }).sort((a, b) => b.aiScore - a.aiScore || b.confidence - a.confidence);
 
