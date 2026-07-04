@@ -63,24 +63,62 @@ function scoreOf(row) {
   return Math.max(...vals);
 }
 
+function firstValue(row, keys, fallback = "") {
+  for (const key of keys) {
+    const value = row?.[key];
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return fallback;
+}
+
+function cleanNumber(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "";
+  return n > 1 ? Math.round(n) : Math.round(n * 100);
+}
+
 function takeFor(tag, player, card) {
   const name = player.name;
-  const score = Math.round((player.aiScore || player.confidence || 0) * 100);
+  const team = firstValue(card, ["team", "Team"], "");
+  const opponent = firstValue(card, ["opponent", "Opp", "opp"], "");
+  const pitcher = firstValue(card, ["pitcher", "opposingPitcher", "probablePitcher"], "");
+  const power = cleanNumber(firstValue(card, ["powerScore", "power", "powerRating"], ""));
+  const hr = cleanNumber(firstValue(card, ["hrScore", "score", "modelScore", "aiScore"], ""));
+  const recent = cleanNumber(firstValue(card, ["recentForm", "formScore", "recentScore"], ""));
+  const odds = firstValue(card, ["odds", "hrOdds", "bestOdds"], "");
 
-  const base = {
-    "SMASH SPOT": `${name} checks the key power and matchup boxes for a live HR profile.`,
-    "ELITE SMASH": `${name} grades as one of the strongest AI-backed HR profiles on the board.`,
-    "SMASH + PARK": `${name} carries a power profile with added park, weather, zone, or environment support.`,
-    "POWER PLAY": `${name} brings enough raw power to stay live even without needing every signal perfect.`,
-    "MODEL'S BEST": `${name} is being elevated by the model across confidence, board rank, and supporting signals.`,
-    "+EV VALUE": `${name} profiles as a value target where the underlying signal mix is stronger than the market price implies.`,
-    "HOMER AI": `${name} is being flagged by the AI from combined model, matchup, and player-form signals.`,
-    "TOP 10": `${name} sits inside today's top 10 by available board scoring.`,
-    "TOP 30": `${name} sits inside today's top 30 by available board scoring.`,
-    "ZONE 5+": `${name} has a damage-zone signal strong enough to matter in the HR model.`
-  };
+  const matchupLine = [
+    team ? `${name} is tied to ${team}` : `${name} is active in today's player pool`,
+    opponent ? `against ${opponent}` : "",
+    pitcher ? `with ${pitcher} listed on the opposing side` : ""
+  ].filter(Boolean).join(" ") + ".";
 
-  return card?.analystTake || card?.cardTake || card?.summary || base[tag] || `${name} fits this AI section with a ${score || "live"} confidence profile.`;
+  const signalParts = [];
+  if (power) signalParts.push(`a ${power}% power signal`);
+  if (hr) signalParts.push(`a ${hr}% HR/model score`);
+  if (recent) signalParts.push(`a ${recent}% recent-form read`);
+  if (odds) signalParts.push(`market context at ${odds}`);
+
+  const signalLine = signalParts.length
+    ? `The model is not tagging him blindly: the profile is supported by ${signalParts.join(", ")}.`
+    : `The model is not tagging him blindly: this section is being driven by the canonical public-tag layer, which is built from the internal signal registry.`;
+
+  const sectionRead = {
+    "SMASH SPOT": "This is the classic Slip Lab HR setup: power from the hitter side meeting enough matchup vulnerability to make the spot playable.",
+    "ELITE SMASH": "This is the higher-confidence version of a smash profile, where the player is not just live but elevated by the model against the rest of the slate.",
+    "SMASH + PARK": "This tag means the bat has help beyond the player profile, with park, weather, bullpen, or damage-zone support adding fuel to the HR case.",
+    "POWER PLAY": "This is a power-first read. The appeal is the hitter's raw damage ability, even if every secondary signal is not perfect.",
+    "MODEL'S BEST": "This is the AI priority bucket. The player is being pulled forward by board rank, confidence, and supporting model signals.",
+    "+EV VALUE": "This is a price-sensitive read. The player is not only live, but the signal mix suggests the market may not be fully respecting the profile.",
+    "HOMER AI": "This is the AI's home-run callout bucket, built from matchup watch, profile watch, model strength, and current power-form signals.",
+    "TOP 10": "This player sits inside the highest board tier, so the AI is treating him as one of the slate's strongest overall HR candidates.",
+    "TOP 30": "This player is inside the main playable board range, meaning the profile is strong enough to stay in the daily HR conversation.",
+    "ZONE 5+": "This is a damage-zone read. The player has a zone-based power signal that matters for HR upside when the pitch path lines up."
+  }[tag] || "This player fits the active AI section because his public tag was derived from the canonical internal signal registry.";
+
+  const riskLine = "The risk is still the normal HR volatility: one swing has to show up, lineup context can change, and a pitcher can avoid the damage area. But based on the live signal stack, this is why the AI is keeping him on the board.";
+
+  return `${matchupLine} ${sectionRead} ${signalLine} ${riskLine}`;
 }
 
 const publicTags = readJson(PUBLIC_TAGS);
