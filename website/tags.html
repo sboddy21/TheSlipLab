@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Slip Lab | Tags</title>
+  <style>
+    :root{
+      --bg:#070a12;
+      --panel:#101624;
+      --panel2:#151d2e;
+      --text:#f7f9ff;
+      --muted:#9ba7bd;
+      --line:rgba(255,255,255,.12);
+      --accent:#69f0ae;
+      --danger:#ff6b6b;
+      --gold:#ffe66d;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      background:radial-gradient(circle at top,#18233a 0,#070a12 42%,#05070d 100%);
+      color:var(--text);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    a{color:inherit;text-decoration:none}
+    .wrap{max-width:1320px;margin:0 auto;padding:26px 18px 60px}
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:22px;
+    }
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .brand h1{
+      margin:0;
+      font-size:34px;
+      letter-spacing:-.04em;
+      line-height:1;
+    }
+    .brand p{
+      margin:0;
+      color:var(--muted);
+      font-size:14px;
+    }
+    .nav{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .nav a{
+      padding:10px 13px;
+      border:1px solid var(--line);
+      border-radius:12px;
+      background:rgba(255,255,255,.05);
+      color:#dce5f7;
+      font-size:13px;
+      font-weight:800;
+    }
+    .summary{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:18px;
+    }
+    .metric{
+      border:1px solid var(--line);
+      background:rgba(16,22,36,.78);
+      border-radius:18px;
+      padding:15px;
+    }
+    .metric b{
+      display:block;
+      font-size:25px;
+      letter-spacing:-.03em;
+    }
+    .metric span{
+      color:var(--muted);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      font-weight:900;
+    }
+    .layout{
+      display:grid;
+      grid-template-columns:360px 1fr;
+      gap:16px;
+      align-items:start;
+    }
+    .panel{
+      border:1px solid var(--line);
+      background:rgba(16,22,36,.86);
+      border-radius:20px;
+      overflow:hidden;
+      box-shadow:0 18px 44px rgba(0,0,0,.28);
+    }
+    .panelHead{
+      padding:16px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+    .panelHead h2{
+      margin:0 0 8px;
+      font-size:18px;
+      letter-spacing:-.02em;
+    }
+    .panelHead p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+    .controls{
+      padding:14px;
+      border-bottom:1px solid var(--line);
+      display:grid;
+      gap:10px;
+    }
+    input,select{
+      width:100%;
+      border:1px solid var(--line);
+      border-radius:13px;
+      background:rgba(0,0,0,.25);
+      color:var(--text);
+      padding:12px;
+      outline:none;
+      font-size:14px;
+    }
+    .selected{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      min-height:36px;
+    }
+    .selected button,.clearBtn{
+      border:1px solid rgba(105,240,174,.35);
+      background:rgba(105,240,174,.10);
+      color:#dffff0;
+      border-radius:999px;
+      padding:8px 10px;
+      font-weight:900;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .clearBtn{
+      border-color:rgba(255,255,255,.14);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+    }
+    .tagList{
+      max-height:calc(100vh - 315px);
+      overflow:auto;
+      padding:10px;
+    }
+    .tagBtn{
+      width:100%;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.045);
+      color:#fff;
+      border-radius:13px;
+      padding:10px 11px;
+      margin-bottom:8px;
+      cursor:pointer;
+      text-align:left;
+    }
+    .tagBtn.active{
+      border-color:rgba(105,240,174,.65);
+      background:rgba(105,240,174,.13);
+    }
+    .tagName{
+      font-size:12px;
+      font-weight:1000;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+    }
+    .tagMeta{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      flex-shrink:0;
+    }
+    .count{
+      color:#06110c;
+      background:var(--accent);
+      font-weight:1000;
+      border-radius:999px;
+      padding:4px 7px;
+      font-size:11px;
+    }
+    .cat{
+      color:var(--muted);
+      font-size:10px;
+      text-transform:uppercase;
+      font-weight:900;
+    }
+    .resultsHead{
+      padding:16px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .resultsHead h2{margin:0;font-size:18px}
+    .resultsHead span{color:var(--muted);font-size:13px;font-weight:800}
+    .players{
+      padding:14px;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+    .player{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.025));
+      border-radius:17px;
+      padding:13px;
+      cursor:pointer;
+      min-height:132px;
+    }
+    .player:hover{border-color:rgba(105,240,174,.5)}
+    .player h3{
+      margin:0 0 5px;
+      font-size:17px;
+      letter-spacing:-.02em;
+    }
+    .player .sub{
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+      margin-bottom:10px;
+    }
+    .chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .chip{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      border-radius:999px;
+      padding:5px 7px;
+      font-size:10px;
+      font-weight:1000;
+      text-transform:uppercase;
+      color:#dce5f7;
+    }
+    .empty{
+      padding:36px;
+      color:var(--muted);
+      text-align:center;
+      grid-column:1/-1;
+    }
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.72);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:50;
+    }
+    .modal.show{display:flex}
+    .card{
+      width:min(760px,100%);
+      max-height:90vh;
+      overflow:auto;
+      border:1px solid var(--line);
+      background:#0d1321;
+      border-radius:22px;
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
+    .cardHead{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .cardHead h2{margin:0;font-size:25px}
+    .close{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:#fff;
+      border-radius:12px;
+      padding:8px 10px;
+      cursor:pointer;
+      font-weight:1000;
+    }
+    .cardBody{
+      padding:16px;
+      display:grid;
+      gap:12px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+    .box{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.045);
+      border-radius:14px;
+      padding:12px;
+    }
+    .box b{display:block;font-size:18px}
+    .box span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase;font-weight:900}
+    .note{
+      color:#dce5f7;
+      background:rgba(255,255,255,.045);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:13px;
+      line-height:1.45;
+      font-size:14px;
+    }
+    @media(max-width:980px){
+      .layout{grid-template-columns:1fr}
+      .summary{grid-template-columns:repeat(2,1fr)}
+      .players{grid-template-columns:repeat(2,1fr)}
+      .tagList{max-height:420px}
+    }
+    @media(max-width:620px){
+      .topbar{align-items:flex-start;flex-direction:column}
+      .summary{grid-template-columns:1fr}
+      .players{grid-template-columns:1fr}
+      .grid{grid-template-columns:repeat(2,1fr)}
+      .brand h1{font-size:28px}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <h1>The Slip Lab Tags</h1>
+        <p>Dynamic MLB signal registry powered by the canonical tag engine.</p>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/ai-says.html">AI Says</a>
+        <a href="/full-board.html">Full Board</a>
+        <a href="/pitcher-vulnerability.html">Pitcher Vulnerability</a>
+      </nav>
+    </div>
+
+    <section class="summary">
+      <div class="metric"><b id="mTags">0</b><span>Total Tags</span></div>
+      <div class="metric"><b id="mPlayers">0</b><span>Tagged Players</span></div>
+      <div class="metric"><b id="mSelected">0</b><span>Selected Tags</span></div>
+      <div class="metric"><b id="mResults">0</b><span>Matched Players</span></div>
+    </section>
+
+    <main class="layout">
+      <aside class="panel">
+        <div class="panelHead">
+          <h2>Signal Tags</h2>
+          <p>Select multiple tags to filter players. Multiple selections use AND logic.</p>
+        </div>
+        <div class="controls">
+          <input id="tagSearch" placeholder="Search tags..." />
+          <select id="categoryFilter">
+            <option value="">All categories</option>
+          </select>
+          <div class="selected" id="selectedTags"></div>
+          <button class="clearBtn" id="clearTags">Clear Filters</button>
+        </div>
+        <div class="tagList" id="tagList"></div>
+      </aside>
+
+      <section class="panel">
+        <div class="resultsHead">
+          <h2>Players</h2>
+          <span id="resultLabel">Loading...</span>
+        </div>
+        <div class="players" id="players"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="card">
+      <div class="cardHead">
+        <div>
+          <h2 id="modalName">Player</h2>
+          <div class="sub" id="modalSub"></div>
+        </div>
+        <button class="close" id="closeModal">Close</button>
+      </div>
+      <div class="cardBody" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      registry: null,
+      cards: [],
+      tags: [],
+      selected: new Set(),
+      playerMap: new Map()
+    };
+
+    const els = {
+      tagList: document.getElementById("tagList"),
+      players: document.getElementById("players"),
+      tagSearch: document.getElementById("tagSearch"),
+      categoryFilter: document.getElementById("categoryFilter"),
+      selectedTags: document.getElementById("selectedTags"),
+      clearTags: document.getElementById("clearTags"),
+      resultLabel: document.getElementById("resultLabel"),
+      mTags: document.getElementById("mTags"),
+      mPlayers: document.getElementById("mPlayers"),
+      mSelected: document.getElementById("mSelected"),
+      mResults: document.getElementById("mResults"),
+      modal: document.getElementById("modal"),
+      closeModal: document.getElementById("closeModal"),
+      modalName: document.getElementById("modalName"),
+      modalSub: document.getElementById("modalSub"),
+      modalBody: document.getElementById("modalBody")
+    };
+
+    function esc(v){
+      return String(v ?? "").replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+
+    function norm(v){
+      return String(v || "").trim().toUpperCase();
+    }
+
+    function getRows(data){
+      if (Array.isArray(data)) return data;
+      if (!data || typeof data !== "object") return [];
+
+      const rows = [];
+      for (const key of ["players","rows","data","board","items","hitters","batters","profiles","rankings","picks"]) {
+        if (Array.isArray(data[key])) rows.push(...data[key]);
+      }
+
+      for (const value of Object.values(data)) {
+        if (Array.isArray(value)) rows.push(...value.filter(v => v && typeof v === "object"));
+        else if (value && typeof value === "object") rows.push(value);
+      }
+
+      return rows;
+    }
+
+    function playerName(row){
+      return row?.playerName || row?.name || row?.player || row?.batterName || row?.hitterName || row?.fullName || row?.Player || "Unknown Player";
+    }
+
+    function playerId(row){
+      return row?.playerId || row?.mlbId || row?.id || row?.batterId || row?.hitterId || row?.mlb_id || "";
+    }
+    function keyFor(player){
+      return String(player.playerId || "") + "|" + norm(player.name || "");
+    }
+
+    function buildPlayerMap(){
+      state.playerMap.clear();
+
+      for (const tag of state.tags) {
+        for (const p of tag.players || []) {
+          const key = keyFor(p);
+          if (!state.playerMap.has(key)) {
+            state.playerMap.set(key, {
+              playerId: p.playerId || "",
+              name: p.name || "Unknown Player",
+              tags: new Set(),
+              sources: new Set()
+            });
+          }
+
+          const item = state.playerMap.get(key);
+          item.tags.add(tag.tag);
+          for (const src of tag.source || []) item.sources.add(src);
+        }
+      }
+    }
+
+    function cardFor(player){
+      const pid = String(player.playerId || "");
+      const pname = norm(player.name);
+
+      return state.cards.find(row => {
+        const id = String(playerId(row) || "");
+        const name = norm(playerName(row));
+        return (pid && id && pid === id) || (pname && name && pname === name);
+      }) || null;
+    }
+
+    function renderSummary(count){
+      els.mTags.textContent = state.tags.length.toLocaleString();
+      els.mPlayers.textContent = state.registry.totalTaggedPlayers?.toLocaleString?.() || state.playerMap.size.toLocaleString();
+      els.mSelected.textContent = state.selected.size.toLocaleString();
+      els.mResults.textContent = count.toLocaleString();
+    }
+
+    function renderCategories(){
+      const cats = [...new Set(state.tags.map(t => t.category).filter(Boolean))].sort();
+      els.categoryFilter.innerHTML = `<option value="">All categories</option>` + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+    }
+
+    function renderSelected(){
+      const selected = [...state.selected];
+      els.selectedTags.innerHTML = selected.length
+        ? selected.map(t => `<button data-remove="${esc(t)}">${esc(t)} ✕</button>`).join("")
+        : `<span style="color:var(--muted);font-size:13px;padding:8px 0;">No tags selected</span>`;
+
+      els.selectedTags.querySelectorAll("[data-remove]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.selected.delete(btn.dataset.remove);
+          renderAll();
+        });
+      });
+    }
+
+    function renderTags(){
+      const q = norm(els.tagSearch.value);
+      const cat = els.categoryFilter.value;
+
+      const tags = state.tags.filter(t => {
+        const searchHit = !q || norm(t.tag).includes(q) || norm(t.category).includes(q);
+        const catHit = !cat || t.category === cat;
+        return searchHit && catHit;
+      });
+
+      els.tagList.innerHTML = tags.map(t => `
+        <button class="tagBtn ${state.selected.has(t.tag) ? "active" : ""}" data-tag="${esc(t.tag)}">
+          <span>
+            <span class="tagName">${esc(t.tag)}</span><br>
+            <span class="cat">${esc(t.category)}</span>
+          </span>
+          <span class="tagMeta">
+            <span class="count">${Number(t.count || 0).toLocaleString()}</span>
+          </span>
+        </button>
+      `).join("");
+
+      els.tagList.querySelectorAll("[data-tag]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const tag = btn.dataset.tag;
+          if (state.selected.has(tag)) state.selected.delete(tag);
+          else state.selected.add(tag);
+          renderAll();
+        });
+      });
+    }
+
+    function filteredPlayers(){
+      const selected = [...state.selected];
+
+      return [...state.playerMap.values()]
+        .filter(p => selected.every(t => p.tags.has(t)))
+        .sort((a,b) => {
+          const diff = b.tags.size - a.tags.size;
+          if (diff) return diff;
+          return a.name.localeCompare(b.name);
+        });
+    }
+
+    function renderPlayers(){
+      const players = filteredPlayers();
+      const selected = [...state.selected];
+
+      els.resultLabel.textContent = selected.length
+        ? `${players.length.toLocaleString()} players match all selected tags`
+        : `${players.length.toLocaleString()} tagged players`;
+
+      if (!players.length) {
+        els.players.innerHTML = `<div class="empty">No players match the selected tag combination.</div>`;
+        renderSummary(0);
+        return;
+      }
+
+      els.players.innerHTML = players.map(p => {
+        const tags = [...p.tags].filter(t => !selected.length || selected.includes(t)).slice(0, 8);
+        const extra = selected.length ? [...p.tags].filter(t => !selected.includes(t)).slice(0, 4) : [...p.tags].slice(0, 8);
+
+        return `
+          <article class="player" data-player="${esc(keyFor(p))}">
+            <h3>${esc(p.name)}</h3>
+            <div class="sub">${p.playerId ? `MLB ID ${esc(p.playerId)}` : "Matched by name"} · ${p.tags.size} tags</div>
+            <div class="chips">
+              ${[...tags, ...extra].slice(0, 10).map(t => `<span class="chip">${esc(t)}</span>`).join("")}
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      els.players.querySelectorAll("[data-player]").forEach(card => {
+        card.addEventListener("click", () => {
+          const player = [...state.playerMap.values()].find(p => keyFor(p) === card.dataset.player);
+          if (player) openPlayer(player);
+        });
+      });
+
+      renderSummary(players.length);
+    }
+
+    function value(row, keys){
+      for (const k of keys) {
+        if (row && row[k] !== undefined && row[k] !== null && row[k] !== "") return row[k];
+      }
+      return "";
+    }
+
+    function openPlayer(player){
+      const card = cardFor(player);
+      const tags = [...player.tags].sort();
+
+      els.modalName.textContent = player.name;
+      els.modalSub.textContent = player.playerId ? `MLB ID ${player.playerId}` : "Player Card";
+
+      const boxes = card ? [
+        ["HR Score", value(card, ["hrScore","score","modelScore","aiScore"])],
+        ["Power", value(card, ["powerScore","power","powerRating"])],
+        ["Recent", value(card, ["recentScore","recentForm","formScore"])],
+        ["Confidence", value(card, ["confidence","aiConfidence","modelConfidence"])]
+      ] : [];
+
+      els.modalBody.innerHTML = `
+        ${card ? `
+          <div class="grid">
+            ${boxes.map(([label,val]) => `
+              <div class="box">
+                <b>${esc(val || "—")}</b>
+                <span>${esc(label)}</span>
+              </div>
+            `).join("")}
+          </div>
+          <div class="note">${esc(value(card, ["summary","analystTake","cardTake","aiTake","explanation"]) || "Player card loaded from canonical player_card_data.json.")}</div>
+        ` : `
+          <div class="note">No detailed player card row was found in player_card_data.json, but this player is present in the canonical Tag Registry.</div>
+        `}
+        <div class="note">
+          <b>Active Tags</b><br><br>
+          <div class="chips">${tags.map(t => `<span class="chip">${esc(t)}</span>`).join("")}</div>
+        </div>
+      `;
+
+      els.modal.classList.add("show");
+    }
+
+    function renderAll(){
+      renderSelected();
+      renderTags();
+      renderPlayers();
+    }
+
+    async function load(){
+      const [registryRes, cardsRes] = await Promise.all([
+        fetch("/data/public_tags.json", {cache:"no-store"}),
+        fetch("/data/player_card_data.json", {cache:"no-store"})
+      ]);
+
+      if (!registryRes.ok) throw new Error("Could not load tag_registry.json");
+
+      state.registry = await registryRes.json();
+      if (cardsRes.ok) {
+        state.cards = getRows(await cardsRes.json());
+      }
+
+      state.tags = Array.isArray(state.registry.tags) ? state.registry.tags : [];
+
+      buildPlayerMap();
+      renderCategories();
+      renderAll();
+    }
+
+    els.tagSearch.addEventListener("input", renderTags);
+    els.categoryFilter.addEventListener("change", renderTags);
+    els.clearTags.addEventListener("click", () => {
+      state.selected.clear();
+      renderAll();
+    });
+    els.closeModal.addEventListener("click", () => els.modal.classList.remove("show"));
+    els.modal.addEventListener("click", e => {
+      if (e.target === els.modal) els.modal.classList.remove("show");
+    });
+
+    load().catch(err => {
+      els.resultLabel.textContent = "Error";
+      els.players.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
+      console.error(err);
+    });
+  </script>
+</body>
+</html>
