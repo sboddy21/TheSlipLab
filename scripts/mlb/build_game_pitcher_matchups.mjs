@@ -84,7 +84,36 @@ function gameKey(g) {
 }
 
 function scoreOf(h) {
-  return num(h.hrVolatilityScore ?? h.hrConfidence ?? h.score ?? h.powerScore ?? 0);
+  const direct = num(
+    h.hrVolatilityScore ??
+    h.hrConfidence ??
+    h.score ??
+    h.modelScore ??
+    h.aiScore ??
+    h.hrScore ??
+    h.powerScore ??
+    0
+  );
+
+  if (direct > 0) return direct;
+
+  const season = h.season || {};
+  const model = h.model || {};
+
+  const hr = num(season.hr);
+  const slg = num(season.slg);
+  const ops = num(season.ops);
+  const modelScore = num(model.score);
+  const pitcherRisk = num(h.pitcherRisk || model.pitcherRisk);
+
+  const derived =
+    hr * 1.4 +
+    slg * 28 +
+    ops * 16 +
+    modelScore * 0.35 +
+    pitcherRisk * 0.20;
+
+  return Math.max(1, Math.min(100, Math.round(derived)));
 }
 
 function buildLineupMap(lineup) {
