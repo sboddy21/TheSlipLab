@@ -47,6 +47,10 @@ function key(id, name) {
   return String(id || "") + "|" + norm(name || "");
 }
 
+function nested(row, path, fallback = "") {
+  return path.split(".").reduce((obj, key) => obj && obj[key] !== undefined ? obj[key] : undefined, row) ?? fallback;
+}
+
 function scoreOf(row) {
   const vals = [
     row.hrScore,
@@ -56,11 +60,37 @@ function scoreOf(row) {
     row.powerScore,
     row.confidence,
     row.aiConfidence,
-    row.modelConfidence
+    row.modelConfidence,
+    nested(row, "model.score"),
+    nested(row, "model.powerScore")
   ].map(Number).filter(Number.isFinite);
 
   if (!vals.length) return 0;
   return Math.max(...vals);
+}
+
+function hrDisplay(card) {
+  return nested(card, "season.hr", "");
+}
+
+function powerDisplay(card) {
+  const modelPower = Number(nested(card, "model.powerScore", 0));
+  if (modelPower > 0) return Math.round(modelPower);
+
+  const slg = Number(nested(card, "season.slg", 0));
+  const ops = Number(nested(card, "season.ops", 0));
+  const iso7 = Number(nested(card, "last7.iso", 0));
+  const iso15 = Number(nested(card, "last15.iso", 0));
+  const modelScore = Number(nested(card, "model.score", 0));
+
+  const power =
+    (slg * 40) +
+    (ops * 22) +
+    (iso7 * 60) +
+    (iso15 * 45) +
+    (modelScore * 0.18);
+
+  return Math.max(1, Math.min(100, Math.round(power)));
 }
 
 function firstValue(row, keys, fallback = "") {
@@ -82,9 +112,9 @@ function takeFor(tag, player, card) {
   const team = firstValue(card, ["team", "Team"], "");
   const opponent = firstValue(card, ["opponent", "Opp", "opp"], "");
   const pitcher = firstValue(card, ["pitcher", "opposingPitcher", "probablePitcher"], "");
-  const power = cleanNumber(firstValue(card, ["powerScore", "power", "powerRating"], ""));
-  const hr = cleanNumber(firstValue(card, ["hrScore", "score", "modelScore", "aiScore"], ""));
-  const recent = cleanNumber(firstValue(card, ["recentForm", "formScore", "recentScore"], ""));
+  const power = powerDisplay(card);
+  const hr = hrDisplay(card);
+  const recent = cleanNumber(firstValue(card, ["recentForm", "formScore", "recentScore"], "")) || cleanNumber(card?.last7?.ops || "");
   const odds = firstValue(card, ["odds", "hrOdds", "bestOdds"], "");
 
   const matchupLine = [
@@ -167,8 +197,8 @@ const sections = publicTags.tags.map(tag => {
         team: card.team || card.Team || "",
         opponent: card.opponent || card.Opp || "",
         pitcher: card.pitcher || card.opposingPitcher || card.probablePitcher || "",
-        hrScore: card.hrScore || card.score || card.modelScore || "",
-        powerScore: card.powerScore || card.power || "",
+        hrScore: hrDisplay(card),
+        powerScore: powerDisplay(card),
         recentForm: card.recentForm || card.formScore || card.recentScore || "",
         odds: card.odds || card.hrOdds || card.bestOdds || ""
       } : null
