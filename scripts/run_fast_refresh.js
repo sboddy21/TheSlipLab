@@ -26,6 +26,11 @@ const steps = [
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],
   ["Game Pitcher Matchups", "node scripts/mlb/build_game_pitcher_matchups.mjs"],
 
+  ["Hits Board", "node scripts/mlb/build_hits_board.js"],
+  ["Total Bases Board", "node scripts/mlb/build_total_bases_board.js"],
+  ["RBI Board", "node scripts/mlb/build_rbi_board.js"],
+  ["Pitcher Strikeouts Board", "node scripts/mlb/build_pitcher_strikeouts_board.js"],
+
   ["Pitch Type Damage", "node scripts/mlb/build_pitch_type_damage.js"],
   ["Weather Board", "node scripts/mlb/build_weather_board.js"],
   ["Bullpen Relievers", "node scripts/mlb/build_bullpen_relievers.js"],
