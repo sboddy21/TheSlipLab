@@ -3,6 +3,7 @@
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
+    ["Pitcher Vulnerability","./pitcher-vulnerability.html",["/pitcher-vulnerability.html"]],
     ["Power Zones","./power-zones.html",["/power-zones.html"]],
     ["Quick Target","./quick-target.html",["/quick-target.html"]],
     ["Heat Check","./heat-check.html",["/heat-check.html"]],
@@ -42,7 +43,7 @@
     const brand = document.createElement("a");
     brand.className = "tsl-brand";
     brand.href = "./index.html";
-    brand.textContent = "The Slip Lab";
+    brand.innerHTML = "The Slip <span>Lab</span>";
 
     const nav = document.createElement("nav");
     nav.className = "tsl-nav";

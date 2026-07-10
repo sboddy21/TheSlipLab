@@ -40,7 +40,7 @@
   .sl-health-card small{display:block;color:rgba(255,255,255,.58);font-size:10px;font-weight:900;text-transform:uppercase}
   .sl-health-card strong{display:block;margin-top:4px;font-size:20px}
   .sl-health-close{margin-top:14px;width:100%;border:0;border-radius:14px;padding:11px;background:#93ff2d;color:#07110a;font-weight:1000;cursor:pointer}
-  @media(max-width:700px){.sl-health-widget{top:10px;right:10px}.sl-health-pill{min-width:108px;padding:8px 10px}.sl-health-grid{grid-template-columns:1fr}}
+  @media(max-width:700px){.sl-health-widget{top:auto;right:10px;bottom:12px}.sl-health-tip{top:auto;bottom:58px}.sl-health-pill{min-width:108px;padding:8px 10px}.sl-health-grid{grid-template-columns:1fr}}
   `;
   const style = document.createElement("style");
   style.textContent = CSS;

@@ -551,7 +551,7 @@
   <script defer src="./assets/site-header.js"></script>
 </head>
 
-<body>
+<body class="tsl-editorial tsl-tool-page tsl-weather-page">
 
 <div class="topbar">
   <div class="topbar-inner">
@@ -572,6 +572,8 @@
 </div>
 
 <main class="wrap">
+  <div class="report-line"><span>Ballpark weather desk</span><span>Live carry conditions</span></div>
+  <div class="eyebrow">The game environment</div>
   <h1 class="title">Weather</h1>
   <p class="sub">Ballpark layout, live wind direction, temperature, and HR carry conditions.</p>
   <section class="grid" id="grid"></section>
@@ -1225,7 +1227,7 @@ async function load(){
     const boostLabel = carry >= 22 ? "HR BOOST" : "NEUTRAL PLUS";
 
     return `
-      <article class="weather-card" onclick="openParkModal('${venue.replace(/'/g, "\\'")}')">
+      <article class="weather-card" data-venue="${venue.replace(/&/g, "&amp;").replace(/\"/g, "&quot;").replace(/</g, "&lt;")}">
         <div class="weather-card-head">
           <div>
             <h2>${venue}</h2>
@@ -1273,7 +1275,7 @@ async function load(){
 
   }).join("");
 
-  document.querySelectorAll(".card[data-venue]").forEach(card => {
+  document.querySelectorAll(".weather-card[data-venue]").forEach(card => {
     card.addEventListener("click", () => {
       const row = sorted.find(item => clean(item.venue) === card.dataset.venue);
       if(row) openPark(row);
@@ -1292,7 +1294,7 @@ document.getElementById("parkModal").addEventListener("click", event => {
 load();
 </script>
 
-  <script src="./health-widget.js"></script>
+  <script src="./health-widget.js?v=2"></script>
 </body>
 </html>
 <style id="weather-card-structure-final">
