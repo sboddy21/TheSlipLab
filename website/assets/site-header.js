@@ -28,7 +28,8 @@
     ["Results","./results.html",["/results.html"]],
     ["Decision Center","./hr-decision-center.html",["/hr-decision-center.html","/decision-center.html"]],
     ["AI Says","./ai-says.html",["/ai-says.html"]],
-    ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
+    ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]],
+    ["How to Use","./how-to-use.html",["/how-to-use.html"]]
   ];
 
   function oldHeaderLooksLikeSiteNav(el){
