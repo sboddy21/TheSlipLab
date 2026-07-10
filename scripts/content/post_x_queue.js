@@ -16,6 +16,7 @@ const HISTORY_FILE = path.join(ROOT, "website/data/content/x_post_history.json")
 
 const DRY_RUN = String(process.env.X_DRY_RUN || "true").toLowerCase() === "true";
 const MAX_POST_LENGTH = 25_000;
+const MAX_QUEUE_AGE_MS = 15 * 60 * 1000;
 
 function readJson(filePath, fallback) {
   try {
@@ -53,6 +54,35 @@ function sleep(ms) {
 
 function scheduledTime(post) {
   return new Date(post.scheduled_for_eastern).getTime();
+}
+
+function todayKey() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(new Date());
+}
+
+function validateQueueFreshness(queue) {
+  if (!queue || Array.isArray(queue) || typeof queue !== "object") {
+    throw new Error("X queue freshness validation failed: queue metadata is missing");
+  }
+
+  if (queue.date !== todayKey()) {
+    throw new Error(`X queue freshness validation failed: queue date is ${queue.date || "missing"}; expected ${todayKey()}`);
+  }
+
+  const updatedAtMs = Date.parse(queue.updatedAt);
+  const ageMs = Date.now() - updatedAtMs;
+  if (!Number.isFinite(updatedAtMs) || ageMs < 0 || ageMs > MAX_QUEUE_AGE_MS) {
+    throw new Error("X queue freshness validation failed: queue is outside the 15-minute production window");
+  }
+
+  if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== 4) {
+    throw new Error("X queue freshness validation failed: required live-input validation is missing");
+  }
 }
 
 function validateQueue(posts) {
@@ -143,6 +173,7 @@ function recordSuccessfulPost(history, post) {
 
 async function main() {
   const queue = readJson(QUEUE_FILE, []);
+  validateQueueFreshness(queue);
   const posts = Array.isArray(queue)
     ? queue
     : Array.isArray(queue.posts)
