@@ -4,20 +4,22 @@ import path from "path";
 const ROOT = process.cwd();
 
 const POOL_FILE = path.join(ROOT, "website", "data", "mlb_player_pool.json");
+const HR_FILE = path.join(ROOT, "website", "data", "mlb_home_runs.json");
+const MATCHUPS_FILE = path.join(ROOT, "website", "data", "game_pitcher_matchups.json");
 const OUT_FILE = path.join(ROOT, "website", "data", "mlb_hits.json");
 
-function readJson(file) {
-  return JSON.parse(fs.readFileSync(file, "utf8"));
+function readJson(file, fallback = null) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
 }
 
-async function getJson(url) {
-  const res = await fetch(url);
-
-  if (!res.ok) {
-    throw new Error(`Request failed ${res.status}: ${url}`);
-  }
-
-  return res.json();
+function rows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return [];
+  return payload.players || payload.games || payload.rows || payload.data || payload.matchups || [];
 }
 
 function num(value, fallback = 0) {
@@ -25,180 +27,322 @@ function num(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-function scale(value, min, max) {
-  const n = num(value);
-
-  return Math.max(
-    0,
-    Math.min(
-      100,
-      ((n - min) / (max - min)) * 100
-    )
-  );
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
 }
 
-async function getHitterStats(playerId) {
-  const url =
-    `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
+function inningsToNumber(value) {
+  if (typeof value === "number") return value;
+  if (value === undefined || value === null || value === "") return 0;
 
-  const data = await getJson(url);
+  const str = String(value);
+  if (!str.includes(".")) return num(str);
 
-  const stat =
-    data?.stats?.[0]?.splits?.[0]?.stat || {};
+  const [whole, frac] = str.split(".");
+  return num(whole) + num(frac) / 3;
+}
+
+function lineupPlateAppearances(spot) {
+  const map = {
+    1: 4.65,
+    2: 4.55,
+    3: 4.45,
+    4: 4.35,
+    5: 4.25,
+    6: 4.15,
+    7: 4.05,
+    8: 3.95,
+    9: 3.85
+  };
+
+  return map[num(spot)] || 4.05;
+}
+
+function buildMatchupIndex(games) {
+  const index = new Map();
+
+  for (const game of games) {
+    for (const hitter of [
+      ...(game.hitters?.away || []),
+      ...(game.hitters?.home || [])
+    ]) {
+      if (!hitter?.playerId) continue;
+
+      index.set(String(hitter.playerId), {
+        hitter,
+        game
+      });
+    }
+  }
+
+  return index;
+}
+
+function hitterProfile(row, poolRow, matchupRow) {
+  const stats =
+    matchupRow?.hitter?.stats?.hitter ||
+    row?.stats?.hitter ||
+    {};
+
+  const atBats = num(stats.atBats);
+  const plateAppearances = num(stats.plateAppearances);
+  const hits = num(stats.hits);
+  const strikeOuts = num(stats.strikeOuts);
 
   return {
-    hits: num(stat.hits),
-    avg: num(stat.avg),
-    obp: num(stat.obp),
-    ops: num(stat.ops),
-    atBats: num(stat.atBats),
-    strikeOuts: num(stat.strikeOuts),
-    plateAppearances: num(stat.plateAppearances),
-    doubles: num(stat.doubles),
-    triples: num(stat.triples)
+    hits,
+    avg: num(stats.avg),
+    obp: num(stats.obp),
+    slg: num(stats.slg),
+    ops: num(stats.ops),
+    doubles: num(stats.doubles),
+    triples: num(stats.triples),
+    homeRuns: num(stats.hr ?? stats.homeRuns),
+    atBats,
+    plateAppearances,
+    strikeOuts,
+    hitRate: atBats > 0 ? hits / atBats : 0,
+    kRate: plateAppearances > 0 ? strikeOuts / plateAppearances : 0,
+    sampleReliability: clamp(plateAppearances / 250, 0.18, 1),
+    lineupSpot: num(
+      matchupRow?.hitter?.lineupSpot ??
+      poolRow?.lineupSpot,
+      0
+    ),
+    confirmedLineup: Boolean(
+      matchupRow?.hitter?.confirmedLineup ??
+      poolRow?.confirmedLineup
+    ),
+    lineupStatus:
+      matchupRow?.hitter?.lineupStatus ||
+      poolRow?.lineupStatus ||
+      "PROJECTED"
   };
 }
 
-async function getPitcherStats(playerId) {
-  if (!playerId) return null;
+function pitcherProfile(row, matchupRow) {
+  const stats =
+    matchupRow?.hitter?.stats?.pitcher ||
+    row?.stats?.pitcher ||
+    {};
 
-  const url =
-    `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching`;
-
-  const data = await getJson(url);
-
-  const stat =
-    data?.stats?.[0]?.splits?.[0]?.stat || {};
+  const innings = inningsToNumber(stats.inningsPitched);
+  const hits = num(stats.hits);
+  const walks = num(stats.baseOnBalls ?? stats.walks);
+  const homeRuns = num(stats.homeRuns);
 
   return {
-    era: num(stat.era),
-    whip: num(stat.whip),
-    hits: num(stat.hits),
-    inningsPitched: num(stat.inningsPitched)
+    era: num(stats.era),
+    whip: num(stats.whip),
+    hits,
+    inningsPitched: Number(innings.toFixed(1)),
+    strikeOuts: num(stats.strikeOuts),
+    walks,
+    homeRuns,
+    hPer9: innings > 0 ? Number(((hits / innings) * 9).toFixed(2)) : 0,
+    bbPer9: innings > 0 ? Number(((walks / innings) * 9).toFixed(2)) : 0
   };
 }
 
-function buildScore(hitter, pitcher) {
-  const contact =
-    scale(hitter.avg, 0.190, 0.340) * 0.40 +
-    scale(hitter.obp, 0.250, 0.450) * 0.25 +
-    scale(hitter.hits, 15, 170) * 0.20 +
-    scale(hitter.ops, 0.550, 1.050) * 0.15;
+function projectionEngine(hitter, pitcher) {
+  const expectedPA = lineupPlateAppearances(hitter.lineupSpot);
 
-  const pitcherAttack = pitcher
-    ? scale(pitcher.whip, 0.90, 1.70) * 0.60 +
-      scale(pitcher.era, 2.50, 6.80) * 0.40
-    : 50;
-
-  const strikeoutPenalty =
-    scale(hitter.strikeOuts, 10, 90) * 0.15;
-
-  const samplePenalty =
-    hitter.plateAppearances < 40
-      ? 10
-      : hitter.plateAppearances < 80
-      ? 5
-      : 0;
-
-  return Math.round(
-    contact * 0.72 +
-    pitcherAttack * 0.28 -
-    strikeoutPenalty -
-    samplePenalty
+  const pitcherHitAdjustment = clamp(
+    (pitcher.hPer9 - 8.7) * 0.018,
+    -0.08,
+    0.12
   );
+
+  const whipAdjustment = clamp(
+    (pitcher.whip - 1.28) * 0.10,
+    -0.05,
+    0.07
+  );
+
+  const strikeoutAdjustment = clamp(
+    (0.225 - hitter.kRate) * 0.18,
+    -0.04,
+    0.05
+  );
+
+  const sampleAdjustedHitRate =
+    hitter.hitRate * hitter.sampleReliability +
+    0.238 * (1 - hitter.sampleReliability);
+
+  const adjustedHitRate = clamp(
+    sampleAdjustedHitRate +
+    pitcherHitAdjustment +
+    whipAdjustment +
+    strikeoutAdjustment,
+    0.14,
+    0.39
+  );
+
+  const projectedHits = clamp(
+    expectedPA * adjustedHitRate,
+    0.45,
+    2.25
+  );
+
+  return {
+    expectedPlateAppearances: Number(expectedPA.toFixed(2)),
+    rawHitRate: Number(hitter.hitRate.toFixed(3)),
+    sampleAdjustedHitRate: Number(sampleAdjustedHitRate.toFixed(3)),
+    pitcherHitAdjustment: Number(pitcherHitAdjustment.toFixed(3)),
+    whipAdjustment: Number(whipAdjustment.toFixed(3)),
+    strikeoutAdjustment: Number(strikeoutAdjustment.toFixed(3)),
+    adjustedHitRate: Number(adjustedHitRate.toFixed(3)),
+    projectedHits: Number(projectedHits.toFixed(1))
+  };
 }
 
-function edge(score) {
-  if (score >= 84) return "Elite";
-  if (score >= 76) return "Strong";
-  if (score >= 68) return "Safe";
-  if (score >= 60) return "Watch";
+function confidenceEngine(hitter, pitcher, projection) {
+  let confidence = 36;
 
+  confidence += clamp(
+    (projection.projectedHits - 1.0) * 17,
+    -8,
+    16
+  );
+
+  confidence += clamp(
+    (hitter.hitRate - 0.238) * 70,
+    -7,
+    8
+  );
+
+  confidence += clamp(
+    (0.225 - hitter.kRate) * 42,
+    -6,
+    6
+  );
+
+  confidence += clamp(
+    (pitcher.hPer9 - 8.7) * 1.7,
+    -5,
+    6
+  );
+
+  confidence += clamp(
+    (pitcher.whip - 1.28) * 8,
+    -4,
+    4
+  );
+
+  confidence += clamp(
+    (hitter.sampleReliability - 0.65) * 13,
+    -7,
+    5
+  );
+
+  if (hitter.confirmedLineup) confidence += 4;
+  else confidence -= 5;
+
+  if (hitter.lineupSpot >= 1 && hitter.lineupSpot <= 3) confidence += 3;
+  else if (hitter.lineupSpot >= 4 && hitter.lineupSpot <= 6) confidence += 1;
+  else if (hitter.lineupSpot >= 7) confidence -= 3;
+
+  if (hitter.plateAppearances < 50) confidence -= 14;
+  else if (hitter.plateAppearances < 100) confidence -= 9;
+  else if (hitter.plateAppearances < 175) confidence -= 5;
+  else if (hitter.plateAppearances < 250) confidence -= 2;
+
+  if (hitter.kRate >= 0.30) confidence -= 6;
+  else if (hitter.kRate >= 0.26) confidence -= 3;
+
+  return Math.round(clamp(confidence, 20, 88));
+}
+
+function edge(score, projection) {
+  if (score >= 82 && projection >= 1.7) return "Elite";
+  if (score >= 70 && projection >= 1.45) return "Strong";
+  if (score >= 61 && projection >= 1.25) return "Value";
+  if (score >= 50 && projection >= 1.05) return "Watch";
   return "Thin";
 }
 
-function projectedHits(hitter, pitcher) {
-  const atBats = hitter.atBats > 0 ? hitter.atBats : 1;
-  const hitRate = hitter.hits / atBats;
-  const baseAtBats = 4.1;
-  const pitcherBoost = pitcher
-    ? Math.max(-0.25, Math.min(0.35, (pitcher.whip - 1.25) * 0.45))
-    : 0;
-
-  const projection = baseAtBats * Math.max(0.120, hitRate + pitcherBoost);
-  return Number(Math.max(0.3, Math.min(2.7, projection)).toFixed(1));
+function buildNote(hitter, pitcher, projection) {
+  return [
+    `Projected Hits ${projection.projectedHits}`,
+    `AVG ${hitter.avg || "--"}`,
+    `K% ${hitter.kRate ? `${(hitter.kRate * 100).toFixed(1)}%` : "--"}`,
+    `Pitcher H/9 ${pitcher.hPer9 || "--"}`,
+    hitter.confirmedLineup
+      ? `Confirmed #${hitter.lineupSpot || "?"}`
+      : "Projected lineup"
+  ].join(" • ");
 }
 
-async function main() {
-  if (!fs.existsSync(POOL_FILE)) {
-    throw new Error("Missing player pool");
-  }
+function main() {
+  const pool = rows(readJson(POOL_FILE, []));
+  const hrRows = rows(readJson(HR_FILE, []));
+  const games = rows(readJson(MATCHUPS_FILE, []));
 
-  const poolData = readJson(POOL_FILE);
+  const poolById = new Map(
+    pool.map(player => [String(player.playerId), player])
+  );
 
-  const players = poolData.players || [];
+  const matchupById = buildMatchupIndex(games);
+  const output = [];
 
-  const pitcherCache = new Map();
+  for (const row of hrRows) {
+    if (!row?.playerId || !row?.stats?.hitter) continue;
 
-  const rows = [];
+    const id = String(row.playerId);
+    const poolRow = poolById.get(id) || {};
+    const matchupRow = matchupById.get(id) || {};
 
-  for (const player of players) {
-    if (!player.playerId) continue;
+    const hitter = hitterProfile(row, poolRow, matchupRow);
+    const pitcher = pitcherProfile(row, matchupRow);
 
-    console.log(`Scoring ${player.player}`);
+    if (!hitter.atBats || !hitter.plateAppearances) continue;
 
-    const hitter =
-      await getHitterStats(player.playerId);
+    const projection = projectionEngine(hitter, pitcher);
+    const score = confidenceEngine(hitter, pitcher, projection);
 
-    let pitcher = null;
-
-    if (player.opposingProbablePitcherId) {
-      if (!pitcherCache.has(player.opposingProbablePitcherId)) {
-        pitcherCache.set(
-          player.opposingProbablePitcherId,
-          await getPitcherStats(player.opposingProbablePitcherId)
-        );
-      }
-
-      pitcher =
-        pitcherCache.get(player.opposingProbablePitcherId);
-    }
-
-    const score = buildScore(hitter, pitcher);
-
-    const projection = projectedHits(hitter, pitcher);
-
-    rows.push({
+    output.push({
       rank: 0,
-      player: player.player,
-      playerId: player.playerId,
-      team: player.team,
-      opponent: player.opponent,
-      game: player.game,
+      player: row.player,
+      playerId: row.playerId,
+      team: row.team || poolRow.team,
+      opponent: row.opponent || poolRow.opponent,
+      game: row.game || poolRow.game,
+      gamePk: poolRow.gamePk,
+      venue: row.venue || poolRow.venue,
+      lineupSpot: hitter.lineupSpot || null,
+      lineupStatus: hitter.lineupStatus,
+      confirmedLineup: hitter.confirmedLineup,
+      opposingPitcher:
+        row.opposingPitcher ||
+        poolRow.opposingProbablePitcher ||
+        "",
       score,
-      projection,
-      projectedHits: projection,
+      projection: projection.projectedHits,
+      projectedHits: projection.projectedHits,
       seasonTotal: hitter.hits,
       marketStatLabel: "Projected Hits",
-      marketStatValue: projection,
+      marketStatValue: projection.projectedHits,
       odds: "N/A",
-      edge: edge(score),
-      note:
-        `Projected Hits ${projection} • Season Hits ${hitter.hits} • AVG ${hitter.avg || "--"} • OBP ${hitter.obp || "--"}`,
+      edge: edge(score, projection.projectedHits),
+      note: buildNote(hitter, pitcher, projection),
       stats: {
         hitter,
-        pitcher
+        pitcher,
+        projection
       }
     });
   }
 
-  rows.sort((a, b) => b.score - a.score);
+  output.sort((a, b) =>
+    b.score - a.score ||
+    b.projectedHits - a.projectedHits ||
+    b.stats.hitter.hitRate - a.stats.hitter.hitRate
+  );
 
-  const finalRows =
-    rows.slice(0, 40).map((row, index) => ({
-      ...row,
-      rank: index + 1
-    }));
+  const finalRows = output.slice(0, 40).map((row, index) => ({
+    ...row,
+    rank: index + 1
+  }));
 
   fs.writeFileSync(
     OUT_FILE,
@@ -207,9 +351,15 @@ async function main() {
 
   console.log("Hits board saved");
   console.log("Players:", finalRows.length);
+  console.log(
+    "Top:",
+    finalRows
+      .slice(0, 8)
+      .map(row =>
+        `${row.rank}. ${row.player} ${row.projectedHits} hits ${row.score} ${row.edge}`
+      )
+      .join(" | ")
+  );
 }
 
-main().catch(err => {
-  console.error(err.message);
-  process.exit(1);
-});
+main();
