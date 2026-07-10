@@ -758,16 +758,22 @@ function enrichLaunchProfile(row) {
 }
 
 function bullpenRows() {
-  return arr(read("bullpen_collapse_engine.json", []));
+  return arr(read("bullpen_relievers.json", []));
 }
 
 function findBullpen(row, rows) {
   const opp = key(row.opponent);
-  return rows.find(r =>
+  const matches = rows.filter(r =>
     key(r.team) === opp ||
     key(r.Team) === opp ||
     key(r.opponent) === opp
-  ) || {};
+  );
+
+  return matches.reduce((highestRisk, current) =>
+    num(current.hrRiskScore) > num(highestRisk.hrRiskScore)
+      ? current
+      : highestRisk,
+  {});
 }
 
 function bullpenScore(row, bullpen) {
@@ -966,24 +972,6 @@ function runMasterModel(rows) {
   return rankRows(modeled);
 }
 
-function updatePlayerCardData() {
-  const cardData = read("player_card_data.json", null);
-  if (!cardData) return { updated: false, count: 0 };
-
-  const rows = arr(cardData);
-  if (!rows.length) return { updated: false, count: 0 };
-
-  const modeled = runMasterModel(rows);
-
-  if (Array.isArray(cardData)) {
-    write("player_card_data.json", modeled);
-  } else if (cardData.players) {
-    write("player_card_data.json", { ...cardData, players: modeled });
-  }
-
-  return { updated: true, count: modeled.length };
-}
-
 async function main() {
   const baseRows = await buildBaseRows();
 
@@ -994,14 +982,9 @@ async function main() {
   const modeled = runMasterModel(baseRows);
   write("mlb_home_runs.json", modeled);
 
-  const cardUpdate = updatePlayerCardData();
-
   console.log("MASTER HR MODEL COMPLETE");
   console.log("Base rows:", baseRows.length);
   console.log("Updated mlb_home_runs.json:", modeled.length);
-  if (cardUpdate.updated) {
-    console.log("Updated player_card_data.json:", cardUpdate.count);
-  }
 }
 
 main().catch(err => {

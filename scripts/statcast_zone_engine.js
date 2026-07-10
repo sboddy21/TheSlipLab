@@ -2,18 +2,31 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const DATA_DIR = path.join(ROOT, "data");
 const WEBSITE_DATA_DIR = path.join(ROOT, "website", "data");
 
-const OUT_DATA = path.join(DATA_DIR, "statcast_zones.json");
 const OUT_WEB = path.join(WEBSITE_DATA_DIR, "statcast_zones.json");
+const SOURCE = "baseball_savant_statcast_pitch_detail_csv";
+const FETCH_CONCURRENCY = 4;
 
-const SEASON = new Date().getFullYear();
+function easternDate(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+const SLATE_DATE = easternDate();
+const SEASON = Number(SLATE_DATE.slice(0, 4));
 const START_DATE = `${SEASON}-03-01`;
-const END_DATE = `${SEASON}-11-30`;
+const END_DATE = SLATE_DATE;
 
 const PLAYER_POOL_FILE = path.join(WEBSITE_DATA_DIR, "mlb_player_pool.json");
-const HR_FILE = path.join(WEBSITE_DATA_DIR, "mlb_home_runs.json");
+const MATCHUPS_FILE = path.join(WEBSITE_DATA_DIR, "game_pitcher_matchups.json");
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -42,25 +55,70 @@ function cleanName(value = "") {
 
 function collectPlayers() {
   const seen = new Map();
-  const sources = [getArray(readJson(PLAYER_POOL_FILE)), getArray(readJson(HR_FILE))];
+  const pool = readJson(PLAYER_POOL_FILE);
 
-  for (const rows of sources) {
-    for (const row of rows) {
-      const name = cleanName(row.player || row.name || row.fullName || row.batter || "");
-      const id = row.playerId || row.id || row.personId || row.mlbId || row.mlb_id;
+  if (pool?.date !== SLATE_DATE) {
+    throw new Error(`mlb_player_pool.json date is ${pool?.date || "missing"}; expected ${SLATE_DATE}`);
+  }
 
-      if (!name || !id) continue;
+  for (const row of getArray(pool)) {
+    const name = cleanName(row.player || row.name || row.fullName || row.batter || "");
+    const id = row.playerId || row.id || row.personId || row.mlbId || row.mlb_id;
 
-      seen.set(String(id), {
-        player: name,
-        playerId: Number(id),
-        team: row.team || row.teamName || row.currentTeam || "",
-        batSide: row.batSide || row.bats || ""
+    if (!name || !id) {
+      throw new Error(`${name || "unknown player"} is missing a player name or MLB ID`);
+    }
+
+    if (seen.has(String(id))) {
+      throw new Error(`Duplicate MLB player ID ${id} in mlb_player_pool.json`);
+    }
+
+    seen.set(String(id), {
+      player: name,
+      playerId: Number(id),
+      team: row.team || row.teamName || row.currentTeam || "",
+      batSide: row.batSide || row.bats || ""
+    });
+  }
+
+  const players = [...seen.values()].sort((a, b) => a.player.localeCompare(b.player));
+  if (!players.length) throw new Error("mlb_player_pool.json contains no current players");
+  return players;
+}
+
+function collectPitchers() {
+  const matchups = readJson(MATCHUPS_FILE);
+  if (matchups?.date !== SLATE_DATE) {
+    throw new Error(`game_pitcher_matchups.json date is ${matchups?.date || "missing"}; expected ${SLATE_DATE}`);
+  }
+
+  const games = Array.isArray(matchups?.games) ? matchups.games : [];
+  if (!games.length) throw new Error("game_pitcher_matchups.json contains no current games");
+
+  const seen = new Map();
+
+  for (const game of games) {
+    for (const side of ["away", "home"]) {
+      const profile = game[`${side}Pitcher`] || {};
+      const pitcherId = profile.id || profile.playerId || game[`${side}ProbablePitcherId`];
+      const pitcher = cleanName(
+        profile.name || profile.pitcher || game[`${side}ProbablePitcher`] || ""
+      );
+
+      if (!pitcherId || !pitcher || pitcher === "TBD") {
+        throw new Error(`${game.matchup || game.game || "current game"} is missing a confirmed ${side} pitcher`);
+      }
+
+      seen.set(String(pitcherId), {
+        pitcher,
+        pitcherId: Number(pitcherId),
+        team: side === "away" ? game.awayTeam : game.homeTeam,
+        opponent: side === "away" ? game.homeTeam : game.awayTeam
       });
     }
   }
 
-  return [...seen.values()].sort((a, b) => a.player.localeCompare(b.player));
+  return [...seen.values()].sort((a, b) => a.pitcher.localeCompare(b.pitcher));
 }
 
 function csvSplit(line) {
@@ -113,7 +171,7 @@ function parseCsv(text) {
   });
 }
 
-async function fetchBatterStatcast(playerId) {
+async function fetchStatcast(playerId, playerType) {
   const params = new URLSearchParams();
 
   params.set("all", "true");
@@ -129,7 +187,7 @@ async function fetchBatterStatcast(playerId) {
   params.set("hfC", "");
   params.set("hfSea", `${SEASON}|`);
   params.set("hfSit", "");
-  params.set("player_type", "batter");
+  params.set("player_type", playerType);
   params.set("hfOuts", "");
   params.set("opponent", "");
   params.set("pitcher_throws", "");
@@ -142,7 +200,7 @@ async function fetchBatterStatcast(playerId) {
   params.set("position", "");
   params.set("hfOutfield", "");
   params.set("hfRO", "");
-  params.append("batters_lookup[]", String(playerId));
+  params.append(playerType === "pitcher" ? "pitchers_lookup[]" : "batters_lookup[]", String(playerId));
   params.set("hfFlag", "");
   params.set("metric_1", "");
   params.set("hfInn", "");
@@ -157,26 +215,42 @@ async function fetchBatterStatcast(playerId) {
 
   const url = `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`;
 
-  try {
-    const res = await fetch(url, {
-      headers: {
-        accept: "text/csv,*/*",
-        "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
-      }
-    });
+  const res = await fetch(url, {
+    headers: {
+      accept: "text/csv,*/*",
+      "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
+    }
+  });
 
-    if (!res.ok) return [];
-
-    const text = await res.text();
-    if (!text || !text.includes("pitch_type")) return [];
-
-    return parseCsv(text).filter(row => row.plate_x !== undefined || row.zone !== undefined);
-  } catch {
-    return [];
+  if (!res.ok) {
+    throw new Error(`Baseball Savant failed ${res.status}`);
   }
+
+  const text = await res.text();
+  if (!text || !text.includes("pitch_type")) {
+    throw new Error("Baseball Savant returned an invalid Statcast CSV response");
+  }
+
+  return parseCsv(text).filter(row => row.plate_x !== undefined || row.zone !== undefined);
+}
+
+async function fetchWithRetries(playerId, playerType, attempts = 3) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fetchStatcast(playerId, playerType);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) await sleep(attempt * 750);
+    }
+  }
+
+  throw lastError;
 }
 
 function number(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 }
@@ -228,11 +302,11 @@ function totalBases(event = "") {
 function isAtBat(event = "") {
   return Boolean(event) && ![
     "walk",
+    "intent_walk",
     "hit_by_pitch",
     "sac_fly",
     "sac_bunt",
-    "catcher_interf",
-    "field_error"
+    "catcher_interf"
   ].includes(event);
 }
 
@@ -277,12 +351,12 @@ function buildMetricZones(rows) {
     }
 
     const ev = number(row.launch_speed);
-    const la = number(row.launch_angle);
+    const barrelClass = number(row.launch_speed_angle);
 
-    if (ev !== null && la !== null) {
+    if (ev !== null) {
       cell.bbe++;
       if (ev >= 95) cell.hardHit++;
-      if (ev >= 98 && la >= 8 && la <= 32) cell.barrels++;
+      if (barrelClass === 6) cell.barrels++;
     }
   }
 
@@ -298,66 +372,180 @@ function buildMetricZones(rows) {
   return { avg, iso, slg, xwoba, hr, k, hardHit, barrel, raw: cells };
 }
 
+function validZoneCard(card, playerId) {
+  if (!card || String(card.playerId || card.mlbId || "") !== String(playerId)) return false;
+  if (easternDate(card.cached_at) !== SLATE_DATE) return false;
+
+  const zones = card.zones;
+  if (!zones || typeof zones !== "object") return false;
+
+  for (const metric of ["avg", "iso", "slg", "xwoba", "hr", "k", "hardHit", "barrel", "raw"]) {
+    if (!Array.isArray(zones[metric]) || zones[metric].length !== 25) return false;
+  }
+
+  return true;
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function main() {
-  ensureDir(DATA_DIR);
   ensureDir(WEBSITE_DATA_DIR);
 
   const players = collectPlayers();
+  const pitchers = collectPitchers();
+  const previous = readJson(OUT_WEB);
+  const canReusePrevious = previous?.source === SOURCE && previous?.date === SLATE_DATE;
 
   const output = {
-    generatedAt: new Date().toISOString(),
+    date: SLATE_DATE,
     season: SEASON,
     playerCount: players.length,
-    source: "Baseball Savant Statcast pitch detail CSV",
-    players: {}
+    source: SOURCE,
+    note: "Real Baseball Savant Statcast pitch-detail events grouped into a 5x5 plate-location grid.",
+    pitcherCount: pitchers.length,
+    players: {},
+    pitchers: {}
   };
 
   console.log("STATCAST ZONE ENGINE");
   console.log("Players queued:", players.length);
+  console.log("Pitchers queued:", pitchers.length);
+  console.log("Fetch workers:", FETCH_CONCURRENCY);
 
   let done = 0;
-  let withRows = 0;
-  let withZones = 0;
+  const totalProfiles = players.length + pitchers.length;
+  const uncached = [];
 
   for (const player of players) {
-    done++;
+    const cached = canReusePrevious ? previous.players?.[player.player] : null;
+    if (validZoneCard(cached, player.playerId)) {
+      output.players[player.player] = cached;
+      done++;
+      console.log(`[${done}/${totalProfiles}] CACHE BATTER: ${player.player} ${player.playerId}`);
+      continue;
+    }
 
-    console.log(`[${done}/${players.length}] Fetching: ${player.player} ${player.playerId}`);
-
-    const statcastRows = await fetchBatterStatcast(player.playerId);
-    const zones = buildMetricZones(statcastRows);
-    const zonePitchCount = zones.raw.reduce((sum, cell) => sum + cell.pitches, 0);
-
-    if (statcastRows.length) withRows++;
-    if (zonePitchCount) withZones++;
-
-    const card = {
-      player: player.player,
-      mlbId: player.playerId,
-      playerId: player.playerId,
-      team: player.team,
-      batSide: player.batSide,
-      rows: statcastRows.length,
-      zonePitchCount,
-      zones
-    };
-
-    output.players[player.player] = card;
-    output.players[String(player.playerId)] = card;
-
-    await new Promise(resolve => setTimeout(resolve, 250));
+    uncached.push({ kind: "batter", id: player.playerId, name: player.player, profile: player });
   }
 
+  for (const pitcher of pitchers) {
+    const cached = canReusePrevious ? previous.pitchers?.[String(pitcher.pitcherId)] : null;
+    if (validZoneCard(cached, pitcher.pitcherId)) {
+      output.pitchers[String(pitcher.pitcherId)] = cached;
+      done++;
+      console.log(`[${done}/${totalProfiles}] CACHE PITCHER: ${pitcher.pitcher} ${pitcher.pitcherId}`);
+      continue;
+    }
+
+    uncached.push({ kind: "pitcher", id: pitcher.pitcherId, name: pitcher.pitcher, profile: pitcher });
+  }
+
+  let nextIndex = 0;
+  let failure = null;
+
+  async function worker() {
+    while (!failure) {
+      const index = nextIndex;
+      nextIndex++;
+      if (index >= uncached.length) return;
+
+      const item = uncached[index];
+      console.log(`Fetching ${item.kind}: ${item.name} ${item.id}`);
+
+      let statcastRows;
+      try {
+        statcastRows = await fetchWithRetries(item.id, item.kind);
+      } catch (error) {
+        failure = new Error(
+          `Statcast zone refresh failed for ${item.name}; existing output was not replaced: ${error.message}`
+        );
+        return;
+      }
+
+      const zones = buildMetricZones(statcastRows);
+      const zonePitchCount = zones.raw.reduce((sum, cell) => sum + cell.pitches, 0);
+
+      if (item.kind === "pitcher" && (!statcastRows.length || !zonePitchCount)) {
+        failure = new Error(
+          `Statcast returned no real pitcher-zone sample for ${item.name}; existing output was not replaced`
+        );
+        return;
+      }
+
+      const common = {
+        mlbId: item.id,
+        playerId: item.id,
+        rows: statcastRows.length,
+        zonePitchCount,
+        source: statcastRows.length ? SOURCE : "no_real_statcast_sample",
+        cached_at: new Date().toISOString(),
+        zones
+      };
+
+      if (item.kind === "pitcher") {
+        output.pitchers[String(item.id)] = {
+          ...common,
+          pitcher: item.profile.pitcher,
+          pitcherId: item.id,
+          team: item.profile.team,
+          opponent: item.profile.opponent
+        };
+      } else {
+        output.players[item.profile.player] = {
+          ...common,
+          player: item.profile.player,
+          team: item.profile.team,
+          batSide: item.profile.batSide
+        };
+      }
+
+      done++;
+      console.log(`[${done}/${totalProfiles}] OK ${item.kind}: ${item.name} rows ${statcastRows.length} zones ${zonePitchCount}`);
+      await sleep(250);
+    }
+  }
+
+  const workerCount = Math.min(FETCH_CONCURRENCY, uncached.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  if (failure) throw failure;
+  if (Object.keys(output.players).length !== players.length) {
+    throw new Error(
+      `Statcast zone engine produced ${Object.keys(output.players).length} players for a ${players.length}-player pool`
+    );
+  }
+  if (Object.keys(output.pitchers).length !== pitchers.length) {
+    throw new Error(
+      `Statcast zone engine produced ${Object.keys(output.pitchers).length} pitchers for ${pitchers.length} current pitchers`
+    );
+  }
+
+  const outputRows = Object.values(output.players);
+  const outputPitchers = Object.values(output.pitchers);
+  const withRows = outputRows.filter(row => Number(row.rows) > 0).length;
+  const withZones = outputRows.filter(row => Number(row.zonePitchCount) > 0).length;
+  const pitchersWithRows = outputPitchers.filter(row => Number(row.rows) > 0).length;
+  const pitchersWithZones = outputPitchers.filter(row => Number(row.zonePitchCount) > 0).length;
+  const completedAt = new Date().toISOString();
+
+  output.updated_at = completedAt;
+  output.generatedAt = completedAt;
   output.playersWithRows = withRows;
   output.playersWithZones = withZones;
+  output.pitchersWithRows = pitchersWithRows;
+  output.pitchersWithZones = pitchersWithZones;
 
-  fs.writeFileSync(OUT_DATA, JSON.stringify(output, null, 2));
   fs.writeFileSync(OUT_WEB, JSON.stringify(output, null, 2));
 
   console.log("STATCAST ZONE ENGINE COMPLETE");
   console.log("Players:", players.length);
   console.log("Players with Statcast rows:", withRows);
   console.log("Players with zone pitches:", withZones);
+  console.log("Pitchers:", pitchers.length);
+  console.log("Pitchers with Statcast rows:", pitchersWithRows);
+  console.log("Pitchers with zone pitches:", pitchersWithZones);
   console.log("Saved:", OUT_WEB);
 }
 

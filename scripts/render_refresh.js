@@ -79,11 +79,6 @@ for (const script of nbaScripts) {
 console.log("THE SLIP LAB NBA REFRESH COMPLETE");
 
 
-run("node", [
-  "-e",
-  "const fs=require('fs');fs.mkdirSync('website/data',{recursive:true});fs.writeFileSync('website/data/site_last_updated.json',JSON.stringify({updatedAt:new Date().toISOString(),updated_at:new Date().toISOString(),source:'render_fast_refresh_5_min'},null,2));"
-]);
-
 run("git", ["config", "user.name", "render-refresh-bot"]);
 run("git", ["config", "user.email", "render-refresh-bot@users.noreply.github.com"]);
 

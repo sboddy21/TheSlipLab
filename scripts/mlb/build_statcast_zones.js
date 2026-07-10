@@ -4,7 +4,6 @@ import path from "path";
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 const HR_FILE = path.join(DATA_DIR, "mlb_home_runs.json");
-const OUT_FILE = path.join(DATA_DIR, "statcast_zones.json");
 
 function readJson(file, fallback) {
   try {
@@ -112,34 +111,9 @@ function buildPowerZones(player) {
 }
 
 function main() {
-  const board = readJson(HR_FILE, []);
-  const players = Array.isArray(board) ? board : [];
-
-  const output = {
-    updated_at: new Date().toISOString(),
-    source: "slip_lab_power_zone_model",
-    note: "Modeled power zones from current HR board, hitter production, bat side, and HR score. Real Baseball Savant raw rows can be layered later.",
-    players: {}
-  };
-
-  for (const player of players) {
-    if (!player.player) continue;
-
-    output.players[player.player] = {
-      playerId: player.playerId || null,
-      team: player.team || null,
-      batSide: player.batSide || null,
-      rows: 25,
-      source: "slip_lab_power_zone_model",
-      zones: buildPowerZones(player)
-    };
-  }
-
-  writeJson(OUT_FILE, output);
-
-  console.log("STATCAST POWER ZONES COMPLETE");
-  console.log(`Players: ${Object.keys(output.players).length}`);
-  console.log(`Saved: ${OUT_FILE}`);
+  throw new Error(
+    "Retired modeled Statcast builder cannot write production data. Use scripts/statcast_zone_engine.js."
+  );
 }
 
 main();

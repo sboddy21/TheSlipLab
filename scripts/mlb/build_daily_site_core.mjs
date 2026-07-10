@@ -179,7 +179,6 @@ const payload = {
   matchups
 };
 
-writeJson("game_pitcher_matchups.json", payload);
 writeJson("mlb_games_live.json", {
   date: today,
   source: payload.source,
@@ -187,14 +186,7 @@ writeJson("mlb_games_live.json", {
   gameCount: matchups.length,
   games: matchups
 });
-writeJson("site_last_updated.json", {
-  updatedAt: payload.updatedAt,
-  updated_at: payload.updatedAt,
-  source: "build_daily_site_core"
-});
-
 console.log("DAILY SITE CORE COMPLETE");
 console.log("Date:", today);
 console.log("Games:", matchups.length);
 console.log("Hitters attached:", matchups.reduce((sum, game) => sum + game.hitters.away.length + game.hitters.home.length, 0));
-console.log("Saved: website/data/game_pitcher_matchups.json");

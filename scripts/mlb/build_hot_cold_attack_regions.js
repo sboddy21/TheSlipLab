@@ -78,7 +78,9 @@ function buildRegions(row, statcast, attack) {
       99
     );
 
-    const pitcherDanger = n(attackZones[index]?.danger, 40);
+    const pitcherDanger = attackZones[index]?.danger === null || attackZones[index]?.danger === undefined
+      ? 0
+      : n(attackZones[index].danger);
     const combined = Math.round(clamp(hitterHeat * 0.52 + pitcherDanger * 0.48, 0, 99));
 
     regions.push({

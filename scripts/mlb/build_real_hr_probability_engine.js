@@ -4,25 +4,58 @@ import path from "path";
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 
-function read(file, fallback = []) {
+function readRequired(file) {
+  const fullPath = path.join(DATA_DIR, file);
+
+  if (!fs.existsSync(fullPath)) {
+    throw new Error(`Required input does not exist: ${fullPath}`);
+  }
+
   try {
-    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, file), "utf8"));
-  } catch {
-    return fallback;
+    return JSON.parse(fs.readFileSync(fullPath, "utf8"));
+  } catch (error) {
+    throw new Error(`Unable to read ${fullPath}: ${error.message}`);
   }
 }
 
 function write(file, data) {
-  fs.writeFileSync(path.join(DATA_DIR, file), JSON.stringify(data, null, 2));
+  const fullPath = path.join(DATA_DIR, file);
+  const tempPath = `${fullPath}.tmp`;
+
+  fs.writeFileSync(tempPath, JSON.stringify(data, null, 2));
+  fs.renameSync(tempPath, fullPath);
 }
 
-function num(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
+function rowsOf(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.players)) return data.players;
+  throw new Error("mlb_home_runs.json must be an array or contain a players array");
 }
 
-function round(v, d = 1) {
-  return Number(num(v).toFixed(d));
+function requiredText(row, field, rowIndex) {
+  const value = String(row?.[field] ?? "").trim();
+  if (!value) {
+    throw new Error(`Row ${rowIndex + 1} is missing required field ${field}`);
+  }
+  return value;
+}
+
+function requiredNumber(row, field, player) {
+  const value = row?.[field];
+  if (value === undefined || value === null || value === "") {
+    throw new Error(`${player} is missing required signal ${field}`);
+  }
+
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    throw new Error(`${player} has invalid signal ${field}: ${value}`);
+  }
+
+  return number;
+}
+
+function round(value, digits = 1) {
+  return Number(value.toFixed(digits));
 }
 
 function clamp(v, min, max) {
@@ -44,55 +77,69 @@ function probabilityTier(prob) {
   return "LOW";
 }
 
-function archetypeModifier(row) {
-  const barrel = num(row.barrelRate || row.barrel_pct);
-  const iso = num(row.iso || row.ISO);
-  const pullAir = num(row.pullAirRate || row.pull_air_rate);
-  const flyball = num(row.flyBallRate || row.fly_ball_rate);
+function calculateEventScore(row, player) {
+  const modelScore = requiredNumber(row, "finalHrScore", player);
+  const ceiling = requiredNumber(row, "multiHrCeilingScore", player);
+  const pitch = requiredNumber(row, "pitchTypeDestructionScore", player);
+  const launch = requiredNumber(row, "launchHrProfileScore", player);
+  const pullWind = requiredNumber(row, "pullWindHrScore", player);
 
-  let mod = 1;
-
-  if (barrel >= 18) mod += 0.08;
-  else if (barrel >= 14) mod += 0.05;
-  else if (barrel >= 10) mod += 0.03;
-
-  if (iso >= 0.3) mod += 0.07;
-  else if (iso >= 0.25) mod += 0.05;
-  else if (iso >= 0.2) mod += 0.03;
-
-  if (pullAir >= 18) mod += 0.05;
-  else if (pullAir >= 14) mod += 0.03;
-
-  if (flyball >= 45) mod += 0.03;
-
-  return mod;
+  return round(
+    modelScore +
+      ceiling * 0.12 +
+      pitch * 0.08 +
+      launch * 0.06 +
+      pullWind * 0.05,
+    2
+  );
 }
 
-function calculateEventScore(row) {
-  const modelScore =
-    row.score !== undefined && row.score !== null ? num(row.score) :
-    row.hr_score !== undefined && row.hr_score !== null ? num(row.hr_score) :
-    row.modelScore !== undefined && row.modelScore !== null ? num(row.modelScore) :
-    row.final_score !== undefined && row.final_score !== null ? num(row.final_score) :
-    50;
+const homeRuns = readRequired("mlb_home_runs.json");
+const rows = rowsOf(homeRuns);
 
-  const ceiling = num(row.multiHrCeiling) || num(row.ceilingScore);
-  const pitch = num(row.pitchTypeDestructionScore);
-  const launch = num(row.launchHrScore);
-  const pullWind = num(row.pullWindScore);
-  const hr7 = num(row.last7Hr) || num(row.hrLast7);
-
-  let score = modelScore;
-
-  score += ceiling * 0.12;
-  score += pitch * 0.08;
-  score += launch * 0.06;
-  score += pullWind * 0.05;
-  score += hr7 * 1.4;
-
-  score *= archetypeModifier(row);
-
-  return round(score, 2);
+if (!rows.length) {
+  throw new Error("mlb_home_runs.json contains no players");
 }
 
-const homeRuns = read("mlb_home_runs.json", []);
+const calibrated = rows
+  .map((row, rowIndex) => {
+    const player = requiredText(row, "player", rowIndex);
+    const team = requiredText(row, "team", rowIndex);
+    const opponent = requiredText(row, "opponent", rowIndex);
+    const rawHrEventScore = calculateEventScore(row, player);
+    const probability = clamp(logisticProbability(rawHrEventScore) * 100, 1.5, 24);
+
+    return {
+      player,
+      team,
+      opponent,
+      probabilityRank: 0,
+      rawHrEventScore,
+      realHrProbability: round(probability, 1),
+      probabilityTier: probabilityTier(probability),
+      actualHr: typeof row.actualHr === "boolean" ? row.actualHr : null
+    };
+  })
+  .sort(
+    (a, b) =>
+      b.realHrProbability - a.realHrProbability ||
+      b.rawHrEventScore - a.rawHrEventScore ||
+      a.player.localeCompare(b.player)
+  )
+  .map((row, index) => ({
+    ...row,
+    probabilityRank: index + 1
+  }));
+
+write("hr_probability_tracking.json", {
+  generatedAt: new Date().toISOString(),
+  scoringMode: "Calibrated Logistic HR Probability",
+  players: calibrated
+});
+
+console.log("");
+console.log("REAL HR PROBABILITY ENGINE CALIBRATED");
+console.log("Players:", calibrated.length);
+console.log("Top Probability:", calibrated[0].realHrProbability);
+console.log("Tracking Export Created");
+console.log("");

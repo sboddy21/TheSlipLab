@@ -96,24 +96,26 @@ function mergeRows(files) {
 }
 
 const SOURCE_FILES = [
-  "advanced_player_intelligence.json",
   "ai_trust_engine.json",
   "hr_power_profiles.json",
   "hr_probability_tracking.json",
-  "player_card_profiles.json",
-  "unified_player_tags.json",
   "mlb_hits.json",
   "mlb_total_bases.json",
-  "mlb_rbis.json",
-  "mlb_team_stacks.json",
-  "mlb_context_factors.json"
+  "mlb_rbis.json"
 ];
 
 const { rows: allPlayers, debug } = mergeRows(SOURCE_FILES);
 
 function pickScore(row, keys, fallback = 70) {
   for (const k of keys) {
-    if (row[k] !== undefined && row[k] !== null && row[k] !== "") return pct(row[k]);
+    if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
+      if (k === "realHrProbability") {
+        const probability = num(row[k]);
+        const normalized = probability > 0 && probability <= 1 ? probability * 100 : probability;
+        return Math.round(clamp(normalized) * 10) / 10;
+      }
+      return pct(row[k]);
+    }
   }
   return fallback;
 }
@@ -126,7 +128,7 @@ function buildWhy(row) {
   const recent = pickScore(row, ["recentScore", "formScore", "trendScore", "last7Score"], 70);
   const pitch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);
   const value = pickScore(row, ["valueScore", "marketScore", "edgeScore"], 70);
-  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
+  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
 
   if (probability >= 20) reasons.push("The AI sees a strong home run probability profile for today's slate.");
   if (trust >= 85) reasons.push("The AI Trust Engine shows strong agreement across multiple signals.");
@@ -154,7 +156,7 @@ function buildRisks(row) {
   const risks = [];
 
   const kRisk = pickScore(row, ["kRisk", "strikeoutRisk"], 0);
-  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb"], 0);
+  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb"], 0);
   const trust = pickScore(row, ["aiTrust", "trustScore", "confidence", "aiConfidence"], 70);
 
   if (kRisk >= 70) risks.push("Strikeout risk could limit quality contact chances.");
@@ -175,7 +177,7 @@ function verdict(confidence, probability) {
 }
 
 function buildReport(row) {
-  const probability = pickScore(row, ["hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
+  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
 
   const modelAgreement = pickScore(row, ["aiTrust", "trustScore", "consensusScore", "confidence", "aiConfidence"], 70);
   const pitchMatch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);

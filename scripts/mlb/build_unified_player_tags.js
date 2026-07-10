@@ -128,7 +128,6 @@ function main() {
     }))
   };
 
-  writeJson(HR_FILE, enriched);
   writeJson(TAG_FILE, tagOutput);
 
   console.log("");

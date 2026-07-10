@@ -7,7 +7,6 @@ const CONTENT_DIR = path.join(DATA, "content");
 const EXPORT_DIR = path.join(ROOT, "exports/content");
 
 const OUT_JSON = path.join(CONTENT_DIR, "x_posts.json");
-const OUT_QUEUE = path.join(CONTENT_DIR, "x_daily_queue.json");
 const OUT_TXT = path.join(EXPORT_DIR, "x_posts.txt");
 const HISTORY_FILE = path.join(CONTENT_DIR, "x_post_history.json");
 
@@ -122,10 +121,12 @@ function similarity(a, b) {
 
 function recentHistory(history, days = 14) {
   const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return arr(history.posts).filter(p => {
-    const t = Date.parse(p.createdAt || p.date || "");
-    return Number.isFinite(t) ? t >= cutoff : true;
-  });
+  return arr(history.posts)
+    .filter(p => p.status === "posted" && p.x_post_id)
+    .filter(p => {
+      const t = Date.parse(p.posted_at || p.createdAt || p.date || "");
+      return Number.isFinite(t) && t >= cutoff;
+    });
 }
 
 function tooSimilar(text, recent) {
@@ -232,7 +233,9 @@ function weatherSignature(edges) {
 
 function weatherChanged(sig) {
   if (!sig) return false;
-  const recentWeather = arr(history.weather).slice(0, 14);
+  const recentWeather = arr(history.weather)
+    .filter(w => w.status === "posted" && w.x_post_id)
+    .slice(0, 14);
   return !recentWeather.some(w => w.signature === sig);
 }
 
@@ -621,49 +624,17 @@ const queue = {
 };
 
 writeJson(OUT_JSON, queue);
-writeJson(OUT_QUEUE, queue);
 
 fs.writeFileSync(
   OUT_TXT,
   finalPosts.map((p, i) => `POST ${i + 1} | ${p.slot.toUpperCase()} | ${p.type}\n${p.text}`).join("\n\n---\n\n")
 );
 
-const nextHistoryPosts = [
-  ...finalPosts.map(p => ({
-    date: TODAY,
-    createdAt: NOW,
-    type: p.type,
-    slot: p.slot,
-    text: p.text,
-    fingerprint: p.fingerprint,
-    entities: p.entities || []
-  })),
-  ...arr(history.posts)
-].slice(0, 400);
-
-const nextWeather = [
-  ...finalPosts
-    .filter(p => p.weatherSignature)
-    .map(p => ({
-      date: TODAY,
-      createdAt: NOW,
-      signature: p.weatherSignature,
-      text: p.text
-    })),
-  ...arr(history.weather)
-].slice(0, 60);
-
-writeJson(HISTORY_FILE, {
-  updatedAt: NOW,
-  posts: nextHistoryPosts,
-  weather: nextWeather
-});
-
 console.log("CONTENT ENGINE 2.0 COMPLETE");
 console.log("Posts:", finalPosts.length);
 console.log("Morning:", queue.morning.length);
 console.log("Afternoon:", queue.afternoon.length);
 console.log("Evening:", queue.evening.length);
-console.log("Weather posted:", finalPosts.some(p => p.type === "weather_edge") ? "YES" : "NO");
+console.log("Weather included:", finalPosts.some(p => p.type === "weather_edge") ? "YES" : "NO");
 console.log("Saved:", OUT_JSON);
 console.log("Export:", OUT_TXT);

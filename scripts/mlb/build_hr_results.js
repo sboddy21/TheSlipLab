@@ -61,8 +61,9 @@ function readJSON(file, fallback) {
   }
 }
 
-function buildContextMap() {
+function buildContextMap(date) {
   const ctx = readJSON(CONTEXT_FILE, {});
+  if (ctx?.date !== date) return new Map();
   const contexts = Array.isArray(ctx?.contexts) ? ctx.contexts : [];
   return new Map(contexts.map(c => [String(c.gamePk), c]));
 }
@@ -177,7 +178,7 @@ async function buildResults(date) {
   const schedule = await getJSON(SCHEDULE_URL);
   const games = schedule?.dates?.flatMap(d => d.games || []) || [];
 
-  const contextMap = buildContextMap();
+  const contextMap = buildContextMap(date);
 
   const homeRuns = [];
   let checkedGames = 0;

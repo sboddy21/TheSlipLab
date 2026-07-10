@@ -4,6 +4,8 @@ const jobs = [
   "node scripts/mlb/fetch_mlb_today.js",
   "node scripts/mlb/build_mlb_player_pool.js",
   "node scripts/mlb/build_master_hr_model.js",
+  "node scripts/mlb/build_game_pitcher_matchups.mjs",
+  "node scripts/statcast_zone_engine.js",
   "node scripts/mlb/build_hits_board.js",
   "node scripts/mlb/build_team_stacks.js",
   "node scripts/mlb/build_weather_board.js",
@@ -13,9 +15,8 @@ const jobs = [
   "node scripts/mlb/build_hot_cold_attack_regions.js",
   "node scripts/mlb/build_handedness_overlays.js",
   "node scripts/mlb/build_park_carry_visuals.js",
-  "node scripts/statcast_zone_engine.js",
   "node scripts/build_team_stack_intelligence_2.js",
-  "node scripts/content/build_x_content.js"
+  "node scripts/build_x_content.js"
 ];
 
 console.log("");
