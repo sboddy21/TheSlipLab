@@ -9,6 +9,7 @@ const SITE_DIR = path.join(ROOT, "website", "data", "content");
 const TXT_OUT = path.join(OUT_DIR, "x_daily_queue.txt");
 const JSON_OUT = path.join(OUT_DIR, "x_daily_queue.json");
 const SITE_JSON_OUT = path.join(SITE_DIR, "x_daily_queue.json");
+const MAX_INPUT_AGE_MS = 15 * 60 * 1000;
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 fs.mkdirSync(SITE_DIR, { recursive: true });
@@ -29,6 +30,35 @@ function todayKey() {
     month: "2-digit",
     day: "2-digit"
   }).format(new Date());
+}
+
+function requireFreshInput(label, data, timestampField, dateField = null) {
+  if (!data || typeof data !== "object") {
+    throw new Error(`X queue freshness validation failed: ${label} is missing or invalid`);
+  }
+
+  const timestamp = data[timestampField];
+  const timestampMs = Date.parse(timestamp);
+  if (!timestamp || !Number.isFinite(timestampMs)) {
+    throw new Error(`X queue freshness validation failed: ${label} is missing ${timestampField}`);
+  }
+
+  const ageMs = Date.now() - timestampMs;
+  if (ageMs < 0 || ageMs > MAX_INPUT_AGE_MS) {
+    throw new Error(`X queue freshness validation failed: ${label} ${timestampField} is outside the 15-minute production window`);
+  }
+
+  if (dateField && data[dateField] !== todayKey()) {
+    throw new Error(`X queue freshness validation failed: ${label} ${dateField} is ${data[dateField] || "missing"}; expected ${todayKey()}`);
+  }
+
+  return {
+    file: label,
+    timestampField,
+    timestamp,
+    ageSeconds: Math.floor(ageMs / 1000),
+    ...(dateField ? { dateField, date: data[dateField] } : {})
+  };
 }
 
 function easternPostTime(minutesAfter930 = 0) {
@@ -318,7 +348,19 @@ function carryPostedState(newPosts, oldQueue) {
 const decision = readJson(path.join(ROOT, "website", "data", "hr_decision_center.json"), {});
 const results = readJson(path.join(ROOT, "website", "data", "mlb_results.json"), {});
 const weather = readJson(path.join(ROOT, "website", "data", "mlb_weather.json"), {});
+const health = readJson(path.join(ROOT, "website", "data", "health_status.json"), {});
 const previousQueue = readJson(SITE_JSON_OUT, { posts: [] });
+
+if (health.status !== "healthy" || health.source !== "mlb_fast_refresh") {
+  throw new Error(`X queue freshness validation failed: health_status.json is not a healthy mlb_fast_refresh output`);
+}
+
+const validatedInputs = [
+  requireFreshInput("hr_decision_center.json", decision, "updatedAt", "pitcherDate"),
+  requireFreshInput("mlb_weather.json", weather, "updatedAt", "date"),
+  requireFreshInput("mlb_results.json", results, "updatedAt", "date"),
+  requireFreshInput("health_status.json", health, "generatedAt")
+];
 
 const sections = decision.sections || {};
 
@@ -393,6 +435,12 @@ const queuePayload = {
   cadence: "one post per minute",
   source: "real Decision Center sections only",
   fakeData: false,
+  inputValidation: {
+    status: "passed",
+    checkedAt: new Date().toISOString(),
+    maxAgeMinutes: 15,
+    inputs: validatedInputs
+  },
   count: finalPosts.length,
   posts: finalPosts
 };
