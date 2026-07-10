@@ -1374,9 +1374,9 @@
       body.innerHTML = `
         <div class="pczone-header-compact">
           <div class="pczone-header-copy">
-            <h3>ZONE POWER MAP</h3>
-            <div class="pczone-matchup-tag">🔥 Elite 5/5 Hot Zone Match</div>
-            <p>Hitter damage zones strongly overlap pitcher leak areas</p>
+            <h3>Zone matchup map</h3>
+            <div class="pczone-matchup-tag">Live hitter–pitcher overlap</div>
+            <p>See where the hitter creates damage and where the opposing pitcher allows it.</p>
             <div class="pczone-legend-explained">
               <div class="leg-row cold"><span class="leg-chip">Cold</span><small>Low Damage</small></div>
               <div class="leg-row neutral"><span class="leg-chip">Neutral</span><small>Average</small></div>
@@ -1388,7 +1388,7 @@
 
           <div class="pczone-score-card">
             <strong>${one(Math.max(num(row.zoneOverlap), num(row.hotZoneCount), num(row.hitterZonePower) / 12))}</strong>
-            <span>ELITE</span>
+            <span>Overlap index</span>
           </div>
         </div>
 
@@ -7873,8 +7873,34 @@
     body.tsl-editorial .pcai-reasons span{border-color:rgba(7,29,54,.18)!important;border-radius:0!important;background:#f3f0e6!important;color:#071d36!important}
     body.tsl-editorial .pczone-header-compact{border:1px solid #071d36!important;border-radius:0!important;background:#fffdf7!important;box-shadow:none!important}
     body.tsl-editorial .pczone-header-copy h3,body.tsl-editorial .pczone-score-card strong{color:#1268f3!important}
-    body.tsl-editorial .pczone-header-copy p{color:#506071!important}
+    body.tsl-editorial .pczone-header-copy p{color:#31465a!important}
     body.tsl-editorial .pczone-score-card{border:1px solid #1268f3!important;border-radius:0!important;background:rgba(18,104,243,.06)!important;box-shadow:none!important}
+    body.tsl-editorial .pczone-matchup-tag{border:1px solid #1268f3!important;border-radius:0!important;background:#e8f1ff!important;color:#084aab!important}
+    body.tsl-editorial .pczone-score-card span{color:#41566b!important}
+    body.tsl-editorial .pczone-score-card span::after{content:""!important}
+    body.tsl-editorial .pczone-legend-explained{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:6px!important}
+    body.tsl-editorial .pczone-legend-explained .leg-row{min-width:0!important;border:1px solid rgba(7,29,54,.16)!important;border-radius:0!important;background:#f3f0e6!important}
+    body.tsl-editorial .pczone-legend-explained small{color:#41566b!important;white-space:normal!important}
+    body.tsl-editorial .pczone-grid-premium{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:16px!important;align-items:stretch!important}
+    body.tsl-editorial .pcz-clean{min-width:0!important;height:100%!important;padding:17px!important;border:1px solid rgba(7,29,54,.22)!important;border-top:4px solid #1268f3!important;border-radius:0!important;background:#fffdf7!important;box-shadow:0 12px 28px rgba(7,29,54,.08)!important;backdrop-filter:none!important}
+    body.tsl-editorial .pcz-clean.pcz-primary{border-color:rgba(7,29,54,.22)!important;border-top-color:#075d4c!important;box-shadow:0 12px 28px rgba(7,29,54,.08)!important}
+    body.tsl-editorial .pcz-clean.pcz-pitcher{border-color:rgba(7,29,54,.22)!important;border-top-color:#9b3219!important;box-shadow:0 12px 28px rgba(7,29,54,.08)!important}
+    body.tsl-editorial .pcz-clean-head{min-height:54px!important;margin-bottom:14px!important;padding:0 0 12px!important;border:0!important;border-bottom:1px solid rgba(7,29,54,.16)!important;border-radius:0!important;background:transparent!important}
+    body.tsl-editorial .pcz-clean-icon{border:1px solid rgba(18,104,243,.28)!important;border-radius:0!important;background:#e8f1ff!important;color:#084aab!important}
+    body.tsl-editorial .pcz-clean-copy b,body.tsl-editorial .pcz-primary .pcz-clean-copy b{color:#071d36!important;font-family:Georgia,"Times New Roman",serif!important;font-size:16px!important;text-transform:none!important}
+    body.tsl-editorial .pcz-clean-copy small{color:#41566b!important;font-size:11px!important}
+    body.tsl-editorial .pcz-clean-board{padding:11px!important;border:1px solid rgba(7,29,54,.2)!important;border-radius:0!important;background:#e9e4d7!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)!important}
+    body.tsl-editorial .pcz-clean-board span{border-radius:3px!important;color:#fff!important;text-shadow:0 1px 1px rgba(0,0,0,.45)!important}
+    body.tsl-editorial .pcz-clean-board .z1{background:#17345a!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-board .z2{background:#12605d!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-board .z3{background:#657d18!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-board .z4{background:#a86b05!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-board .z5{background:#c9482f!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-board .zdanger{background:#b5152f!important;color:#fff!important}
+    body.tsl-editorial .pcz-clean-axis{width:190px!important;margin-top:9px!important;color:#41566b!important}
+    body.tsl-editorial .pcz-clean-axis span{border:0!important;border-radius:0!important;background:transparent!important;color:#41566b!important;font-weight:900!important}
+    body.tsl-editorial .pcz-primary .pcz-clean-head::after{border-color:#075d4c!important;border-radius:0!important;background:#e1f5ed!important;color:#075d4c!important}
+    @media(max-width:900px){body.tsl-editorial .pczone-legend-explained{grid-template-columns:repeat(2,minmax(0,1fr))!important}body.tsl-editorial .pczone-grid-premium{grid-template-columns:1fr!important}}
     body.tsl-editorial .pcsection-head span{border:1px solid #ff5425!important;border-radius:0!important;background:rgba(255,84,37,.06)!important;color:#9b3219!important}
   `;
   document.head.appendChild(s);
