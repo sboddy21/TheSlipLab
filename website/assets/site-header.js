@@ -1,4 +1,20 @@
 (function(){
+  function initAnalytics(){
+    if (document.querySelector('script[data-tsl-vercel-analytics]')) return;
+
+    window.va = window.va || function(){
+      (window.vaq = window.vaq || []).push(arguments);
+    };
+
+    const script = document.createElement("script");
+    script.defer = true;
+    script.src = "/_vercel/insights/script.js";
+    script.dataset.tslVercelAnalytics = "true";
+    document.head.appendChild(script);
+  }
+
+  initAnalytics();
+
   const items = [
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
