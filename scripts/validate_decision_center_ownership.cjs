@@ -7,6 +7,30 @@ const allowedWriters = new Set([
   "scripts/mlb/build_hr_decision_center.js"
 ]);
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function writesTarget(text, target) {
+  const escapedTarget = escapeRegex(target);
+  const writeCall = "(?:write|writeJson|writeJSON|(?:fs\\.)?writeFileSync)";
+  const directWrite = new RegExp(`${writeCall}\\s*\\([^;\\n]*[\"']${escapedTarget}[\"']`);
+
+  if (directWrite.test(text)) return true;
+
+  const declaration = new RegExp(
+    `(?:const|let|var)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*[^;]*[\"']${escapedTarget}[\"'][^;]*;`,
+    "g"
+  );
+
+  for (const match of text.matchAll(declaration)) {
+    const variable = escapeRegex(match[1]);
+    if (new RegExp(`${writeCall}\\s*\\(\\s*${variable}\\b`).test(text)) return true;
+  }
+
+  return false;
+}
+
 function walk(dir, out = []) {
   for (const item of fs.readdirSync(dir)) {
     if (item === "node_modules" || item === ".git") continue;
@@ -28,9 +52,7 @@ for (const file of files) {
   const rel = path.relative(ROOT, file);
   const text = fs.readFileSync(file, "utf8");
 
-  const writesDecision =
-    /write\s*\(\s*["']hr_decision_center\.json["']/.test(text) ||
-    /writeFileSync\s*\([^)]*hr_decision_center\.json/.test(text);
+  const writesDecision = writesTarget(text, "hr_decision_center.json");
 
   if (writesDecision && !allowedWriters.has(rel)) {
     offenders.push(rel);

@@ -5,6 +5,7 @@ const ROOT = process.cwd();
 const DC_FILE = path.join(ROOT, "website/data/hr_decision_center.json");
 const POOL_FILE = path.join(ROOT, "website/data/mlb_player_pool.json");
 const HR_FILE = path.join(ROOT, "website/data/mlb_home_runs.json");
+const PROBABILITY_FILE = path.join(ROOT, "website/data/hr_probability_tracking.json");
 const OUT_FILE = path.join(ROOT, "website/data/hr_ai_breakdowns.json");
 
 function readJson(file, fallback){
@@ -20,6 +21,11 @@ function arr(x){
 function num(v){
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
+}
+
+function probabilityPercent(v){
+  const value = num(v);
+  return value > 0 && value <= 1 ? value * 100 : value;
 }
 
 function clean(v){
@@ -39,8 +45,8 @@ function getScore(r){
     num(r.aiDailyScore),
     num(r.dailyContextScore),
     num(r.hrConfidence) > 1 ? num(r.hrConfidence) * 4 : num(r.hrConfidence) * 100,
-    num(r.realHrProbability) * 100,
-    num(r.hrProbability) * 100,
+    probabilityPercent(r.realHrProbability),
+    probabilityPercent(r.hrProbability),
     num(r.score),
     num(r.powerScore) * .8,
     num(r.pitcherRisk) * .75,
@@ -49,10 +55,12 @@ function getScore(r){
 }
 
 function getConfidence(score, r){
+  const canonicalProbability = probabilityPercent(r.realHrProbability);
+  if (canonicalProbability > 0) return canonicalProbability;
+
   const direct = Math.max(
     num(r.hrConfidence),
-    num(r.realHrProbability) * 100,
-    num(r.hrProbability) * 100
+    probabilityPercent(r.hrProbability)
   );
 
   if (direct > 0) return direct > 1 ? direct : direct * 100;
@@ -151,6 +159,7 @@ function buildAnalystTake(info){
 const dc = readJson(DC_FILE,{});
 const pool = readJson(POOL_FILE,[]);
 const hrRows = arr(readJson(HR_FILE, []));
+const probabilityRows = arr(readJson(PROBABILITY_FILE, []));
 const poolRows = arr(pool);
 
 const poolByName = new Map();
@@ -163,6 +172,12 @@ const hrByName = new Map();
 for (const h of hrRows) {
   const n = key(playerName(h));
   if (n) hrByName.set(n, h);
+}
+
+const probabilityByName = new Map();
+for (const probability of probabilityRows) {
+  const n = key(playerName(probability));
+  if (n) probabilityByName.set(n, probability);
 }
 
 const dcByName = new Map();
@@ -252,8 +267,13 @@ for (const r of rows) {
   const player = playerName(r);
   if (!player) continue;
 
-  const score = getScore(r);
-  const conf = getConfidence(score, r);
+  const probability = probabilityByName.get(key(player)) || {};
+  const current = {
+    ...r,
+    realHrProbability: probability.realHrProbability
+  };
+  const score = getScore(current);
+  const conf = getConfidence(score, current);
 
   const info = {
     player,
@@ -265,7 +285,7 @@ for (const r of rows) {
     grade: "B",
     confidence: Number(conf.toFixed(1)),
     title: "Slip Lab AI Breakdown",
-    reasons: reasonPack(r, conf)
+    reasons: reasonPack(current, conf)
   };
 
   info.summary = `The AI model gives ${info.player} a strong HR profile against ${info.pitcher}. ${info.reasons.slice(1,4).join(". ")}.`;
@@ -364,7 +384,7 @@ sorted.forEach((info, i) => {
 
 const out = {
   updatedAt: new Date().toISOString(),
-  source: "hr_decision_center.json + mlb_player_pool.json",
+  source: "hr_decision_center.json + mlb_player_pool.json + hr_probability_tracking.json",
   count: sorted.length,
   players: Object.fromEntries(sorted.map(p => [p.player, p]))
 };

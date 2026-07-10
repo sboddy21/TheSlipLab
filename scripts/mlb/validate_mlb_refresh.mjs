@@ -6,6 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DATA = path.join(__dirname, "../../website/data");
+const MAX_REFRESH_AGE_MS = 15 * 60 * 1000;
+const CLOCK_TOLERANCE_MS = 1000;
 
 function read(file) {
   return JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -20,15 +22,479 @@ function todayET() {
   }).format(new Date());
 }
 
+function easternDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
 function fail(msg) {
   console.error("MLB VALIDATION FAILED:", msg);
   process.exit(1);
+}
+
+function filePath(file) {
+  return path.join(DATA, file);
+}
+
+function validateSlateDate(file, field, expected) {
+  const payload = read(file);
+  const actual = payload?.[field];
+  if (actual !== expected) {
+    fail(`${file} ${field} is ${actual || "missing"}, expected ${expected}`);
+  }
+}
+
+function validateCurrentOutput(file, anchor, timestampFields = []) {
+  const fullPath = filePath(file);
+
+  if (!fs.existsSync(fullPath)) fail(`${file} does not exist`);
+
+  const stat = fs.statSync(fullPath);
+  if (stat.mtimeMs < anchor - CLOCK_TOLERANCE_MS) {
+    fail(`${file} was not rebuilt after the current slate refresh began`);
+  }
+
+  if (!timestampFields.length) return stat.mtimeMs;
+
+  const payload = read(file);
+  const field = timestampFields.find(name => payload?.[name]);
+  if (!field) fail(`${file} is missing ${timestampFields.join(" or ")}`);
+
+  const timestamp = Date.parse(payload[field]);
+  if (!Number.isFinite(timestamp)) fail(`${file} has invalid ${field}`);
+  if (timestamp < anchor - CLOCK_TOLERANCE_MS) {
+    fail(`${file} contains stale ${field}: ${payload[field]}`);
+  }
+
+  return stat.mtimeMs;
+}
+
+function validateDependencyOrder(times, before, after) {
+  if (times.get(before) > times.get(after)) {
+    fail(`${before} was written after dependent output ${after}`);
+  }
+}
+
+function validatePitchDamageCache(expectedDate) {
+  const pool = read("mlb_player_pool.json");
+  const cache = read("pitch_type_damage_cache.json");
+  const damage = read("pitch_type_damage.json");
+  const players = Array.isArray(pool.players) ? pool.players : [];
+
+  if (!cache.players || typeof cache.players !== "object" || Array.isArray(cache.players)) {
+    fail("pitch_type_damage_cache.json has an invalid players object");
+  }
+
+  if (!damage.players || typeof damage.players !== "object" || Array.isArray(damage.players)) {
+    fail("pitch_type_damage.json has an invalid players object");
+  }
+
+  for (const player of players) {
+    const playerId = String(player.playerId || player.mlbId || player.id || "").trim();
+    const playerName = String(player.player || "").trim();
+    if (!playerId || !playerName) fail("Current player pool contains a player without a name or MLB ID");
+
+    const cached = cache.players[`${playerId}|${expectedDate.slice(0, 4)}`];
+    if (!cached || easternDate(cached.cached_at) !== expectedDate) {
+      fail(`Pitch damage cache is not current for ${playerName}`);
+    }
+
+    if (!Object.prototype.hasOwnProperty.call(damage.players, playerName)) {
+      fail(`pitch_type_damage.json is missing ${playerName}`);
+    }
+  }
+
+  if (Object.keys(damage.players).length !== players.length) {
+    fail(`pitch_type_damage.json has ${Object.keys(damage.players).length} players; expected ${players.length}`);
+  }
+}
+
+function validateHealthStatus(expectedDate, anchor) {
+  const health = read("health_status.json");
+  const updatedAt = Date.parse(health.updatedAt);
+
+  if (health.status !== "healthy" || health.label !== "LIVE") {
+    fail(`health_status.json is not healthy: ${(health.errors || []).join(" | ") || "unknown error"}`);
+  }
+
+  if (health.source !== "mlb_fast_refresh") {
+    fail(`health_status.json has unexpected source ${health.source || "missing"}`);
+  }
+
+  if (!Number.isFinite(updatedAt) || updatedAt < anchor - CLOCK_TOLERANCE_MS) {
+    fail("health_status.json updatedAt does not belong to the current refresh");
+  }
+
+  const games = read("mlb_games_today.json");
+  if (games.date !== expectedDate) fail(`Health status is not tied to the ${expectedDate} slate`);
+}
+
+function validateRealStatcastZones(expectedDate) {
+  const pool = read("mlb_player_pool.json");
+  const matchups = read("game_pitcher_matchups.json");
+  const statcast = read("statcast_zones.json");
+  const players = Array.isArray(pool.players) ? pool.players : [];
+  const pitcherIds = new Set();
+
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const profile = game[`${side}Pitcher`] || {};
+      const pitcherId = profile.id || profile.playerId || game[`${side}ProbablePitcherId`];
+      if (!pitcherId) fail(`${game.matchup || game.game || "Current game"} is missing a ${side} pitcher ID`);
+      pitcherIds.add(String(pitcherId));
+    }
+  }
+
+  if (statcast.source !== "baseball_savant_statcast_pitch_detail_csv") {
+    fail(`statcast_zones.json has non-Statcast source ${statcast.source || "missing"}`);
+  }
+
+  if (statcast.date !== expectedDate) {
+    fail(`statcast_zones.json date is ${statcast.date || "missing"}; expected ${expectedDate}`);
+  }
+
+  if (!statcast.players || Object.keys(statcast.players).length !== players.length) {
+    fail(`statcast_zones.json does not contain exactly ${players.length} current players`);
+  }
+
+  let playersWithRows = 0;
+  let playersWithZones = 0;
+
+  for (const player of players) {
+    const row = statcast.players[player.player];
+    if (!row || String(row.playerId || row.mlbId || "") !== String(player.playerId || player.mlbId || player.id)) {
+      fail(`statcast_zones.json is missing the current row for ${player.player}`);
+    }
+    if (easternDate(row.cached_at) !== expectedDate) {
+      fail(`Statcast zones are not current for ${player.player}`);
+    }
+
+    for (const metric of ["avg", "iso", "slg", "xwoba", "hr", "k", "hardHit", "barrel", "raw"]) {
+      if (!Array.isArray(row.zones?.[metric]) || row.zones[metric].length !== 25) {
+        fail(`Statcast ${metric} zones are invalid for ${player.player}`);
+      }
+    }
+
+    const rawPitchCount = row.zones.raw.reduce((sum, cell) => sum + Number(cell?.pitches || 0), 0);
+    if (rawPitchCount !== Number(row.zonePitchCount || 0)) {
+      fail(`Statcast raw pitch count does not match zonePitchCount for ${player.player}`);
+    }
+    if (Number(row.rows) > 0) playersWithRows++;
+    if (Number(row.zonePitchCount) > 0) playersWithZones++;
+  }
+
+  if (Number(statcast.playerCount) !== players.length) fail("Statcast playerCount does not match current pool");
+  if (Number(statcast.playersWithRows) !== playersWithRows) fail("Statcast playersWithRows is incorrect");
+  if (Number(statcast.playersWithZones) !== playersWithZones) fail("Statcast playersWithZones is incorrect");
+
+  if (!statcast.pitchers || Object.keys(statcast.pitchers).length !== pitcherIds.size) {
+    fail(`statcast_zones.json does not contain exactly ${pitcherIds.size} current pitchers`);
+  }
+
+  let pitchersWithRows = 0;
+  let pitchersWithZones = 0;
+
+  for (const pitcherId of pitcherIds) {
+    const row = statcast.pitchers[pitcherId];
+    if (!row || String(row.pitcherId || row.playerId || row.mlbId || "") !== pitcherId) {
+      fail(`statcast_zones.json is missing current pitcher ${pitcherId}`);
+    }
+    if (easternDate(row.cached_at) !== expectedDate) {
+      fail(`Statcast pitcher zones are not current for ${row.pitcher || pitcherId}`);
+    }
+
+    for (const metric of ["avg", "iso", "slg", "xwoba", "hr", "k", "hardHit", "barrel", "raw"]) {
+      if (!Array.isArray(row.zones?.[metric]) || row.zones[metric].length !== 25) {
+        fail(`Statcast pitcher ${metric} zones are invalid for ${row.pitcher || pitcherId}`);
+      }
+    }
+
+    const rawPitchCount = row.zones.raw.reduce((sum, cell) => sum + Number(cell?.pitches || 0), 0);
+    if (rawPitchCount !== Number(row.zonePitchCount || 0)) {
+      fail(`Statcast pitcher raw pitch count does not match for ${row.pitcher || pitcherId}`);
+    }
+    if (Number(row.rows) <= 0 || Number(row.zonePitchCount) <= 0) {
+      fail(`Statcast pitcher zones have no real sample for ${row.pitcher || pitcherId}`);
+    }
+    pitchersWithRows++;
+    pitchersWithZones++;
+  }
+
+  if (Number(statcast.pitcherCount) !== pitcherIds.size) fail("Statcast pitcherCount is incorrect");
+  if (Number(statcast.pitchersWithRows) !== pitchersWithRows) fail("Statcast pitchersWithRows is incorrect");
+  if (Number(statcast.pitchersWithZones) !== pitchersWithZones) fail("Statcast pitchersWithZones is incorrect");
+}
+
+function validateRealPitcherAttackZones(expectedDate) {
+  const hr = read("mlb_home_runs.json");
+  const matchups = read("game_pitcher_matchups.json");
+  const statcast = read("statcast_zones.json");
+  const attack = read("pitcher_attack_zones.json");
+  const decision = read("hr_decision_center.json");
+  const matchupByPlayerId = new Map();
+
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const pitcher = side === "away" ? game.homePitcher : game.awayPitcher;
+      for (const hitter of game.hitters?.[side] || []) {
+        if (hitter.playerId) matchupByPlayerId.set(String(hitter.playerId), String(pitcher?.id || pitcher?.playerId || ""));
+      }
+    }
+  }
+
+  if (attack.source !== "baseball_savant_hitter_pitcher_zone_overlap") {
+    fail(`pitcher_attack_zones.json has non-Statcast source ${attack.source || "missing"}`);
+  }
+  if (attack.date !== expectedDate || attack.statcastSource !== statcast.source) {
+    fail("pitcher_attack_zones.json has stale date or source provenance");
+  }
+  if (!attack.players || Object.keys(attack.players).length !== hr.length) {
+    fail(`pitcher_attack_zones.json does not contain exactly ${hr.length} players`);
+  }
+
+  const decisionByPlayer = new Map((decision.allPlayers || []).map(row => [row.player, row]));
+  const roundTo = (value, places = 2) => {
+    const mult = 10 ** places;
+    return Math.round(Number(value) * mult) / mult;
+  };
+  const overallXwoba = raw => {
+    const total = raw.reduce((sum, cell) => sum + Number(cell?.xwobaTotal || 0), 0);
+    const count = raw.reduce((sum, cell) => sum + Number(cell?.xwobaCount || 0), 0);
+    if (!count) fail("Real attack-zone validation found a profile without xwOBA samples");
+    return total / count;
+  };
+
+  for (const player of hr) {
+    const row = attack.players[player.player];
+    const pitcherId = matchupByPlayerId.get(String(player.playerId));
+    const hitterCard = statcast.players?.[player.player];
+    const pitcherCard = statcast.pitchers?.[pitcherId];
+    if (!row || !pitcherId || !hitterCard || !pitcherCard) {
+      fail(`Real attack-zone dependency is missing for ${player.player}`);
+    }
+    if (String(row.opposingPitcherId) !== pitcherId) {
+      fail(`Attack-zone pitcher mapping is incorrect for ${player.player}`);
+    }
+
+    const hitterOverall = Math.min(100, overallXwoba(hitterCard.zones.raw) * 100);
+    const pitcherOverall = Math.min(100, overallXwoba(pitcherCard.zones.raw) * 100);
+    if (Math.abs(Number(row.zones?.hitterPower) - roundTo(hitterOverall)) > 0.01) {
+      fail(`Attack-zone hitter power is incorrect for ${player.player}`);
+    }
+    if (Math.abs(Number(row.zones?.pitcherLeak) - roundTo(pitcherOverall)) > 0.01) {
+      fail(`Attack-zone pitcher leak is incorrect for ${player.player}`);
+    }
+
+    const cells = row.zones?.zones;
+    if (!Array.isArray(cells) || cells.length !== 25) fail(`Attack-zone grid is invalid for ${player.player}`);
+
+    let overlapTotal = 0;
+    let qualifiedCount = 0;
+    let hotCount = 0;
+
+    for (let index = 0; index < 25; index++) {
+      const hitterSamples = Number(hitterCard.zones.raw[index]?.xwobaCount || 0);
+      const pitcherSamples = Number(pitcherCard.zones.raw[index]?.xwobaCount || 0);
+      const qualified = hitterSamples > 0 && pitcherSamples > 0;
+      const expectedDanger = qualified
+        ? roundTo(Math.max(0, Math.min(100,
+          Math.min(Number(hitterCard.zones.xwoba[index]), Number(pitcherCard.zones.xwoba[index])) * 100
+        )))
+        : null;
+      const cell = cells[index];
+
+      if (cell.qualified !== qualified || Number(cell.hitterSamples) !== hitterSamples || Number(cell.pitcherSamples) !== pitcherSamples) {
+        fail(`Attack-zone samples are incorrect for ${player.player} zone ${index + 1}`);
+      }
+      if (expectedDanger === null ? cell.danger !== null : Math.abs(Number(cell.danger) - expectedDanger) > 0.01) {
+        fail(`Attack-zone overlap is incorrect for ${player.player} zone ${index + 1}`);
+      }
+      if (qualified) {
+        overlapTotal += expectedDanger;
+        qualifiedCount++;
+        if (expectedDanger >= 65) hotCount++;
+      }
+    }
+
+    const avgOverlap = qualifiedCount ? overlapTotal / qualifiedCount : 0;
+    const expectedScore = roundTo(Math.max(0, Math.min(100,
+      roundTo(hitterOverall) * 0.34 +
+      roundTo(pitcherOverall) * 0.34 +
+      avgOverlap * 0.22 +
+      hotCount * 1.8
+    )));
+    const decisionRow = decisionByPlayer.get(player.player);
+    if (!decisionRow || Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01) {
+      fail(`Decision Center zone overlap is incorrect for ${player.player}`);
+    }
+    if (Number(decisionRow.hotZoneCount) !== hotCount) {
+      fail(`Decision Center hot-zone count is incorrect for ${player.player}`);
+    }
+  }
 }
 
 const today = todayET();
 
 const games = read("mlb_games_today.json");
 const slateDate = games.date || today;
+const refreshAnchor = Date.parse(games.updatedAt);
+
+if (!Number.isFinite(refreshAnchor)) fail("mlb_games_today.json has invalid or missing updatedAt");
+if (Date.now() - refreshAnchor > MAX_REFRESH_AGE_MS) {
+  fail(`mlb_games_today.json is older than ${MAX_REFRESH_AGE_MS / 60000} minutes`);
+}
+
+const currentOutputs = [
+  ["mlb_games_today.json", ["updatedAt"]],
+  ["mlb_player_pool.json", ["updatedAt"]],
+  ["hr_power_profiles.json", ["generatedAt"]],
+  ["game_pitcher_matchups.json", ["updatedAt"]],
+  ["lineup_impact_engine.json", ["updatedAt"]],
+  ["pitcher_attack_zones.json", ["updated_at"]],
+  ["statcast_zones.json", ["updated_at"]],
+  ["pitcher_vulnerability.json", ["updatedAt"]],
+  ["mlb_hits.json", []],
+  ["mlb_total_bases.json", []],
+  ["mlb_rbis.json", []],
+  ["mlb_pitcher_strikeouts.json", []],
+  ["pitch_type_damage.json", ["updated_at"]],
+  ["pitch_type_damage_cache.json", []],
+  ["mlb_weather.json", ["updatedAt"]],
+  ["bullpen_relievers.json", ["updatedAt"]],
+  ["mlb_home_runs.json", []],
+  ["hr_probability_tracking.json", ["generatedAt"]],
+  ["hr_decision_center.json", ["updatedAt"]],
+  ["player_card_data.json", ["updatedAt"]],
+  ["hr_ai_breakdowns.json", ["updatedAt"]],
+  ["hr_ai_history.json", ["updatedAt"]],
+  ["hr_ai_movement.json", ["updatedAt"]],
+  ["ai_trust_engine.json", ["updatedAt"]],
+  ["ai_reasoning_engine.json", ["updatedAt"]],
+  ["tag_registry.json", ["generatedAt"]],
+  ["public_tags.json", ["generatedAt"]],
+  ["ai_2.json", ["generatedAt"]],
+  ["hr_ai_hof.json", ["updatedAt"]],
+  ["hr_ai_stacks.json", ["updatedAt"]],
+  ["health_status.json", ["generatedAt"]],
+  ["site_last_updated.json", ["updatedAt", "updated_at"]],
+  ["content/x_posts.json", ["updatedAt"]]
+];
+
+const outputTimes = new Map();
+for (const [file, timestampFields] of currentOutputs) {
+  outputTimes.set(file, validateCurrentOutput(file, refreshAnchor, timestampFields));
+}
+
+validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_player_pool.json");
+validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");
+validateDependencyOrder(outputTimes, "mlb_player_pool.json", "pitch_type_damage.json");
+validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_weather.json");
+validateDependencyOrder(outputTimes, "hr_power_profiles.json", "mlb_home_runs.json");
+validateDependencyOrder(outputTimes, "pitch_type_damage.json", "mlb_home_runs.json");
+validateDependencyOrder(outputTimes, "mlb_weather.json", "mlb_home_runs.json");
+validateDependencyOrder(outputTimes, "bullpen_relievers.json", "mlb_home_runs.json");
+validateDependencyOrder(outputTimes, "mlb_home_runs.json", "game_pitcher_matchups.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "lineup_impact_engine.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "statcast_zones.json");
+validateDependencyOrder(outputTimes, "statcast_zones.json", "pitcher_attack_zones.json");
+validateDependencyOrder(outputTimes, "mlb_home_runs.json", "pitcher_attack_zones.json");
+validateDependencyOrder(outputTimes, "mlb_home_runs.json", "statcast_zones.json");
+validateDependencyOrder(outputTimes, "mlb_home_runs.json", "hr_probability_tracking.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_hits.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_total_bases.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_pitcher_strikeouts.json");
+validateDependencyOrder(outputTimes, "lineup_impact_engine.json", "hr_decision_center.json");
+validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
+validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
+validateDependencyOrder(outputTimes, "hr_ai_breakdowns.json", "hr_ai_history.json");
+validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_ai_movement.json");
+validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.json");
+validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
+validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "ai_reasoning_engine.json");
+validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "tag_registry.json");
+validateDependencyOrder(outputTimes, "tag_registry.json", "public_tags.json");
+validateDependencyOrder(outputTimes, "public_tags.json", "ai_2.json");
+validateDependencyOrder(outputTimes, "health_status.json", "site_last_updated.json");
+validateDependencyOrder(outputTimes, "content/x_posts.json", "site_last_updated.json");
+
+validateSlateDate("mlb_games_today.json", "date", today);
+validateSlateDate("mlb_player_pool.json", "date", today);
+validateSlateDate("game_pitcher_matchups.json", "date", today);
+validateSlateDate("pitcher_vulnerability.json", "date", today);
+validateSlateDate("mlb_weather.json", "date", today);
+validateSlateDate("hr_decision_center.json", "pitcherDate", today);
+validatePitchDamageCache(today);
+validateRealStatcastZones(today);
+validateRealPitcherAttackZones(today);
+validateHealthStatus(today, refreshAnchor);
+
+const siteUpdated = read("site_last_updated.json");
+if (siteUpdated.source !== "mlb_fast_refresh") {
+  fail(`site_last_updated.json has unexpected source ${siteUpdated.source || "missing"}`);
+}
+if (siteUpdated.updatedAt !== siteUpdated.updated_at) {
+  fail("site_last_updated.json timestamp fields do not match");
+}
+
+const obsoleteProductionSources = new Set([
+  "advanced_player_intelligence.json",
+  "player_card_profiles.json",
+  "unified_player_tags.json",
+  "mlb_team_stacks.json",
+  "mlb_context_factors.json",
+  "hr_chain_reaction.json"
+]);
+
+const reasoning = read("ai_reasoning_engine.json");
+for (const source of Object.keys(reasoning.sourceDebug || {})) {
+  if (obsoleteProductionSources.has(source)) {
+    fail(`ai_reasoning_engine.json reused obsolete source ${source}`);
+  }
+}
+
+const registry = read("tag_registry.json");
+for (const tag of registry.tags || []) {
+  for (const source of tag.source || []) {
+    if (obsoleteProductionSources.has(source)) {
+      fail(`tag_registry.json reused obsolete source ${source}`);
+    }
+  }
+}
+
+function playerKey(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+const tracking = read("hr_probability_tracking.json");
+const trackingByPlayer = new Map(
+  (tracking.players || []).map(row => [playerKey(row.player), Number(row.realHrProbability)])
+);
+const reasoningByPlayer = new Map(
+  (reasoning.reports || []).map(row => [playerKey(row.player), Number(row.probability)])
+);
+const breakdowns = read("hr_ai_breakdowns.json");
+const breakdownByPlayer = new Map(
+  Object.values(breakdowns.players || {}).map(row => [playerKey(row.player), Number(row.confidence)])
+);
+
+for (const [player, probability] of trackingByPlayer) {
+  if (!reasoningByPlayer.has(player)) fail(`AI Reasoning is missing probability row for ${player}`);
+  if (Math.abs(reasoningByPlayer.get(player) - probability) > 0.05) {
+    fail(`AI Reasoning probability does not match tracking for ${player}`);
+  }
+
+  if (!breakdownByPlayer.has(player)) fail(`AI Breakdowns is missing probability row for ${player}`);
+  if (Math.abs(breakdownByPlayer.get(player) - probability) > 0.05) {
+    fail(`AI Breakdowns confidence does not match tracking for ${player}`);
+  }
+}
 
 const pool = read("mlb_player_pool.json");
 if (pool.date !== slateDate) fail(`mlb_player_pool date is ${pool.date}, expected slate date ${slateDate}`);

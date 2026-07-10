@@ -1,14 +1,21 @@
 import fs from "fs";
 import path from "path";
-import dotenv from "dotenv";
-import { TwitterApi } from "twitter-api-v2";
 
-dotenv.config();
+if (process.env.X_DRY_RUN === undefined) {
+  try {
+    const dotenv = await import("dotenv");
+    dotenv.default.config();
+  } catch (error) {
+    if (error.code !== "ERR_MODULE_NOT_FOUND") throw error;
+  }
+}
 
 const ROOT = process.cwd();
 const QUEUE_FILE = path.join(ROOT, "website/data/content/x_daily_queue.json");
+const HISTORY_FILE = path.join(ROOT, "website/data/content/x_post_history.json");
 
 const DRY_RUN = String(process.env.X_DRY_RUN || "true").toLowerCase() === "true";
+const MAX_POST_LENGTH = 25_000;
 
 function readJson(filePath, fallback) {
   try {
@@ -30,7 +37,8 @@ function requireEnv(name) {
   return value;
 }
 
-function client() {
+async function client() {
+  const { TwitterApi } = await import("twitter-api-v2");
   return new TwitterApi({
     appKey: requireEnv("X_API_KEY"),
     appSecret: requireEnv("X_API_SECRET"),
@@ -47,8 +55,47 @@ function scheduledTime(post) {
   return new Date(post.scheduled_for_eastern).getTime();
 }
 
+function validateQueue(posts) {
+  const errors = [];
+  const ids = new Set();
+
+  for (const [index, post] of posts.entries()) {
+    const label = post?.id || `post ${index + 1}`;
+
+    if (!post || typeof post !== "object") {
+      errors.push(`post ${index + 1} is not an object`);
+      continue;
+    }
+
+    if (typeof post.id !== "string" || !post.id.trim()) {
+      errors.push(`post ${index + 1} is missing an ID`);
+    } else if (ids.has(post.id)) {
+      errors.push(`${label} has a duplicate ID`);
+    } else {
+      ids.add(post.id);
+    }
+
+    if (typeof post.text !== "string" || !post.text.trim()) {
+      errors.push(`${label} has no text`);
+    } else if (post.text.length > MAX_POST_LENGTH) {
+      errors.push(`${label} has ${post.text.length} characters; maximum is ${MAX_POST_LENGTH}`);
+    }
+
+    if (!Number.isFinite(scheduledTime(post))) {
+      errors.push(`${label} has an invalid scheduled_for_eastern value`);
+    }
+  }
+
+  if (errors.length) {
+    throw new Error(`X queue preflight failed:\n - ${errors.join("\n - ")}`);
+  }
+}
+
 async function waitForPostTime(post) {
   const target = scheduledTime(post);
+  if (!Number.isFinite(target)) {
+    throw new Error(`Invalid scheduled_for_eastern for ${post.id}`);
+  }
   const now = Date.now();
   const waitMs = target - now;
 
@@ -62,11 +109,36 @@ async function publish(api, post) {
   if (DRY_RUN) {
     console.log(`DRY RUN OK: ${post.id}`);
     console.log(post.text);
-    return `dry_run_${post.id}`;
+    return null;
   }
 
   const tweet = await api.v2.tweet({ text: post.text });
   return tweet?.data?.id || null;
+}
+
+function recordSuccessfulPost(history, post) {
+  const entry = {
+    id: post.id,
+    date: post.date,
+    createdAt: post.created_at || post.createdAt || post.posted_at,
+    posted_at: post.posted_at,
+    status: "posted",
+    x_post_id: post.x_post_id,
+    type: post.type,
+    slot: post.slot || null,
+    text: post.text,
+    entities: post.players || post.entities || []
+  };
+
+  const previous = Array.isArray(history.posts) ? history.posts : [];
+  history.updatedAt = new Date().toISOString();
+  history.posts = [
+    entry,
+    ...previous.filter(item => item.x_post_id !== entry.x_post_id && item.id !== entry.id)
+  ].slice(0, 400);
+  if (!Array.isArray(history.weather)) history.weather = [];
+
+  writeJson(HISTORY_FILE, history);
 }
 
 async function main() {
@@ -82,16 +154,20 @@ async function main() {
     return;
   }
 
-  const api = client();
+  validateQueue(posts);
 
-  let posted = 0;
+  const api = DRY_RUN ? null : await client();
+  const history = readJson(HISTORY_FILE, { updatedAt: null, posts: [], weather: [] });
+
+  let published = 0;
+  let dryRuns = 0;
   let skipped = 0;
   let failed = 0;
 
   const ordered = [...posts].sort((a, b) => scheduledTime(a) - scheduledTime(b));
 
   for (const post of ordered) {
-    if (post.posted || post.x_post_id) {
+    if (post.posted === true && post.status === "posted" && post.x_post_id) {
       console.log(`SKIP ALREADY POSTED: ${post.id}`);
       skipped++;
       continue;
@@ -102,15 +178,28 @@ async function main() {
 
       const tweetId = await publish(api, post);
 
-      post.posted = !DRY_RUN;
-      post.status = DRY_RUN ? "dry_run" : "posted";
-      post.posted_at = new Date().toISOString();
-      post.x_post_id = tweetId;
-
-      posted++;
-      console.log(`${DRY_RUN ? "DRY RUN" : "POSTED"}: ${post.id}`);
+      if (DRY_RUN) {
+        post.posted = false;
+        post.status = "dry_run";
+        post.tested_at = new Date().toISOString();
+        post.posted_at = null;
+        post.x_post_id = null;
+        dryRuns++;
+        console.log(`DRY RUN: ${post.id}`);
+      } else {
+        if (!tweetId) throw new Error(`X did not return a tweet ID for ${post.id}`);
+        post.posted = true;
+        post.status = "posted";
+        post.posted_at = new Date().toISOString();
+        post.x_post_id = tweetId;
+        post.error = null;
+        published++;
+        recordSuccessfulPost(history, post);
+        console.log(`POSTED: ${post.id}`);
+      }
     } catch (error) {
       failed++;
+      post.posted = false;
       post.status = "failed";
       post.error = error.message;
       console.error(`FAILED: ${post.id}`);
@@ -122,9 +211,12 @@ async function main() {
 
   console.log("THE SLIP LAB X POST QUEUE COMPLETE");
   console.log(`Mode: ${DRY_RUN ? "DRY RUN" : "LIVE"}`);
-  console.log(`Posted: ${posted}`);
+  console.log(`Published: ${published}`);
+  console.log(`Dry runs: ${dryRuns}`);
   console.log(`Skipped: ${skipped}`);
   console.log(`Failed: ${failed}`);
+
+  if (failed > 0) process.exitCode = 1;
 }
 
 main().catch(error => {

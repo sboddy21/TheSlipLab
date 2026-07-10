@@ -4,13 +4,26 @@ import path from "path";
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
 
-const HR_FILE = path.join(DATA_DIR, "mlb_home_runs.json");
+const PLAYER_POOL_FILE = path.join(DATA_DIR, "mlb_player_pool.json");
 const OUT_FILE = path.join(DATA_DIR, "pitch_type_damage.json");
 const CACHE_FILE = path.join(DATA_DIR, "pitch_type_damage_cache.json");
 
-const SEASON = new Date().getFullYear();
+function easternDate(value = new Date()) {
+  const date = value instanceof Date ? value : new Date(value);
+  if (!Number.isFinite(date.getTime())) return null;
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+const SLATE_DATE = easternDate();
+const SEASON = Number(SLATE_DATE.slice(0, 4));
 const START_DATE = `${SEASON}-03-01`;
-const END_DATE = new Date().toISOString().slice(0, 10);
+const END_DATE = SLATE_DATE;
 
 const PITCH_LABELS = {
   FF: "4 Seam",
@@ -247,8 +260,6 @@ function buildPitchDamage(rows) {
     }
   }
 
-  const cache = readJson(CACHE_FILE, { players: {} });
-
   const output = {};
 
   for (const [pitchType, g] of groups.entries()) {
@@ -309,8 +320,21 @@ function sleep(ms) {
 }
 
 async function main() {
-  const players = rowsFrom(readJson(HR_FILE, [])).slice(0, Number(process.env.PITCH_DAMAGE_LIMIT || 60));
+  const playerPool = readJson(PLAYER_POOL_FILE, null);
+  const players = rowsFrom(playerPool);
+
+  if (!players.length) {
+    throw new Error("mlb_player_pool.json contains no current players");
+  }
+
+  if (playerPool?.date !== SLATE_DATE) {
+    throw new Error(`mlb_player_pool.json date is ${playerPool?.date || "missing"}; expected ${SLATE_DATE}`);
+  }
+
   const cache = readJson(CACHE_FILE, { players: {} });
+  if (!cache.players || typeof cache.players !== "object" || Array.isArray(cache.players)) {
+    throw new Error("pitch_type_damage_cache.json has an invalid players object");
+  }
 
   const output = {
     updated_at: new Date().toISOString(),
@@ -325,13 +349,17 @@ async function main() {
     const player = clean(row.player);
     const playerId = clean(row.playerId || row.mlbId || row.id);
 
-    if (!player || !playerId) continue;
+    if (!player || !playerId) {
+      throw new Error(`${player || "unknown player"}: missing MLB player ID; existing outputs were not replaced`);
+    }
 
     try {
       const cacheKey = `${playerId}|${SEASON}`;
       const cached = cache.players?.[cacheKey];
 
-      if (cached?.pitchDamage && cached?.cached_at) {
+      const cacheDate = easternDate(cached?.cached_at);
+
+      if (cached?.pitchDamage && cacheDate === SLATE_DATE) {
         output.players[player] = {
           playerId,
           team: row.team || null,
@@ -368,18 +396,17 @@ async function main() {
       console.log("OK", player, Object.keys(pitchDamage).join(", ") || "no sample");
       await sleep(150);
     } catch (err) {
-      output.players[player] = {
-        playerId,
-        team: row.team || null,
-        batSide: row.batSide || null,
-        pitchDamage: {},
-        pitchDamageSource: "statcast_fetch_failed",
-        error: err.message
-      };
-
       console.log("FAIL", player, err.message);
-      await sleep(500);
+      throw new Error(
+        `Pitch type damage refresh failed for ${player}; existing outputs were not replaced: ${err.message}`
+      );
     }
+  }
+
+  if (Object.keys(output.players).length !== players.length) {
+    throw new Error(
+      `Pitch type damage produced ${Object.keys(output.players).length} players for a ${players.length}-player pool`
+    );
   }
 
   writeJson(CACHE_FILE, cache);

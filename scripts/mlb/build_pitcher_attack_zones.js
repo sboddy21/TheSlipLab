@@ -4,14 +4,14 @@ import path from "path";
 const ROOT = process.cwd();
 
 const HR_FILE = path.join(ROOT, "website", "data", "mlb_home_runs.json");
+const STATCAST_FILE = path.join(ROOT, "website", "data", "statcast_zones.json");
+const MATCHUPS_FILE = path.join(ROOT, "website", "data", "game_pitcher_matchups.json");
 const OUT_FILE = path.join(ROOT, "website", "data", "pitcher_attack_zones.json");
+const SOURCE = "baseball_savant_hitter_pitcher_zone_overlap";
 
-function readJson(file, fallback) {
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
-    return fallback;
-  }
+function readJson(file) {
+  if (!fs.existsSync(file)) throw new Error(`Missing required input ${file}`);
+  return JSON.parse(fs.readFileSync(file, "utf8"));
 }
 
 function writeJson(file, data) {
@@ -24,112 +24,164 @@ function n(value, fallback = 0) {
   return Number.isFinite(num) ? num : fallback;
 }
 
+function round(value, places = 3) {
+  const mult = 10 ** places;
+  return Math.round(n(value) * mult) / mult;
+}
+
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function buildZoneGrid(row) {
-  const hitter = row.stats?.hitter || {};
-  const pitcher = row.stats?.pitcher || {};
+function norm(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
 
-  const hr = n(hitter.hr);
-  const slg = n(hitter.slg);
-  const ops = n(hitter.ops);
-  const score = n(row.score);
+function buildMatchupMap(matchups) {
+  const map = new Map();
 
-  const era = n(pitcher.era);
-  const whip = n(pitcher.whip);
-  const hrAllowed = n(pitcher.homeRuns);
-  const hitsAllowed = n(pitcher.hits);
-  const ip = n(pitcher.inningsPitched);
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const hitters = game.hitters?.[side] || [];
+      const opposingPitcher = side === "away" ? game.homePitcher : game.awayPitcher;
+      const pitcherId = opposingPitcher?.id || opposingPitcher?.playerId;
+      const pitcher = opposingPitcher?.name || opposingPitcher?.pitcher || "";
 
-  const side = String(row.batSide || "B").toUpperCase();
+      if (!pitcherId || !pitcher) {
+        throw new Error(`${game.matchup || game.game || "Current game"} is missing an opposing pitcher`);
+      }
 
-  const hitterPower = clamp(
-    hr * 1.15 +
-    slg * 22 +
-    ops * 12 +
-    score * 0.35,
-    8,
-    99
-  );
-
-  const pitcherLeak = clamp(
-    era * 5.8 +
-    whip * 12 +
-    hrAllowed * 3.8 +
-    (ip > 0 ? hitsAllowed / ip * 10 : 0),
-    8,
-    99
-  );
-
-  const baseDanger = clamp((hitterPower * 0.48) + (pitcherLeak * 0.42), 10, 88);
-
-  const zones = [];
-
-  for (let index = 0; index < 25; index += 1) {
-    const rowIndex = Math.floor(index / 5);
-    const colIndex = index % 5;
-
-    const heart = rowIndex >= 1 && rowIndex <= 3 && colIndex >= 1 && colIndex <= 3;
-    const upper = rowIndex <= 1;
-    const lower = rowIndex >= 3;
-    const edge = rowIndex === 0 || rowIndex === 4 || colIndex === 0 || colIndex === 4;
-    const pull = side === "L" ? colIndex >= 3 : side === "R" ? colIndex <= 1 : colIndex === 2;
-    const middle = colIndex === 2;
-
-    let danger = baseDanger;
-
-    if (heart) danger += 8;
-    if (upper) danger += 5;
-    if (pull) danger += 7;
-    if (middle) danger += 3;
-    if (lower) danger -= 4;
-    if (edge) danger -= 10;
-
-    const variation = ((index * 7) % 11) - 5;
-    danger = Math.round(clamp(danger + variation, 12, 92));
-
-    zones.push({
-      zone: index + 1,
-      danger,
-      attack:
-        danger >= 78
-          ? "Red"
-          : danger >= 62
-            ? "Orange"
-            : danger >= 44
-              ? "Yellow"
-              : "Blue"
-    });
+      for (const hitter of hitters) {
+        if (hitter.playerId) map.set(`id:${hitter.playerId}`, { pitcherId: String(pitcherId), pitcher });
+        if (hitter.player) map.set(`name:${norm(hitter.player)}`, { pitcherId: String(pitcherId), pitcher });
+      }
+    }
   }
 
+  return map;
+}
+
+function xwobaProfile(zones) {
+  const raw = zones?.raw;
+  const values = zones?.xwoba;
+  if (!Array.isArray(raw) || raw.length !== 25 || !Array.isArray(values) || values.length !== 25) {
+    throw new Error("Invalid Statcast xwOBA zone profile");
+  }
+
+  let total = 0;
+  let samples = 0;
+
+  for (const cell of raw) {
+    total += n(cell?.xwobaTotal);
+    samples += n(cell?.xwobaCount);
+  }
+
+  if (!samples) throw new Error("Statcast profile has no real xwOBA samples");
+
   return {
-    side,
-    hitterPower: Math.round(hitterPower),
-    pitcherLeak: Math.round(pitcherLeak),
+    xwoba: total / samples,
+    samples,
+    raw,
+    values
+  };
+}
+
+function attackLabel(danger) {
+  if (danger === null) return "No Sample";
+  if (danger >= 78) return "Red";
+  if (danger >= 62) return "Orange";
+  if (danger >= 44) return "Yellow";
+  return "Blue";
+}
+
+function buildZoneGrid(row, hitterCard, pitcherCard) {
+  const hitter = xwobaProfile(hitterCard.zones);
+  const pitcher = xwobaProfile(pitcherCard.zones);
+
+  const zones = Array.from({ length: 25 }, (_, index) => {
+    const hitterSamples = n(hitter.raw[index]?.xwobaCount);
+    const pitcherSamples = n(pitcher.raw[index]?.xwobaCount);
+    const qualified = hitterSamples > 0 && pitcherSamples > 0;
+    const hitterXwoba = qualified ? n(hitter.values[index]) : null;
+    const pitcherXwobaAllowed = qualified ? n(pitcher.values[index]) : null;
+    const overlapXwoba = qualified ? Math.min(hitterXwoba, pitcherXwobaAllowed) : null;
+    const danger = overlapXwoba === null
+      ? null
+      : round(clamp(overlapXwoba * 100, 0, 100), 2);
+
+    return {
+      zone: index + 1,
+      danger,
+      attack: attackLabel(danger),
+      qualified,
+      hitterXwoba: hitterXwoba === null ? null : round(hitterXwoba),
+      pitcherXwobaAllowed: pitcherXwobaAllowed === null ? null : round(pitcherXwobaAllowed),
+      overlapXwoba: overlapXwoba === null ? null : round(overlapXwoba),
+      hitterSamples,
+      pitcherSamples
+    };
+  });
+
+  return {
+    side: String(row.batSide || hitterCard.batSide || "B").toUpperCase(),
+    hitterPower: round(clamp(hitter.xwoba * 100, 0, 100), 2),
+    pitcherLeak: round(clamp(pitcher.xwoba * 100, 0, 100), 2),
+    hitterXwoba: round(hitter.xwoba),
+    pitcherXwobaAllowed: round(pitcher.xwoba),
+    hitterSamples: hitter.samples,
+    pitcherSamples: pitcher.samples,
+    qualifiedZones: zones.filter(zone => zone.qualified).length,
     zones
   };
 }
 
 function main() {
-  const board = readJson(HR_FILE, []);
+  const board = readJson(HR_FILE);
+  const statcast = readJson(STATCAST_FILE);
+  const matchups = readJson(MATCHUPS_FILE);
   const rows = Array.isArray(board) ? board : [];
+
+  if (!rows.length) throw new Error("mlb_home_runs.json contains no current players");
+  if (statcast.source !== "baseball_savant_statcast_pitch_detail_csv") {
+    throw new Error(`statcast_zones.json has invalid source ${statcast.source || "missing"}`);
+  }
+  if (!statcast.date || statcast.date !== matchups.date) {
+    throw new Error("Statcast and matchup slate dates do not match");
+  }
+
+  const matchupMap = buildMatchupMap(matchups);
 
   const output = {
     updated_at: new Date().toISOString(),
-    source: "slip_lab_pitcher_attack_zones",
+    date: statcast.date,
+    source: SOURCE,
+    statcastSource: statcast.source,
+    note: "Direct hitter-versus-pitcher xwOBA overlap from real Baseball Savant plate-location samples.",
     players: {}
   };
 
   for (const row of rows) {
-    if (!row.player) continue;
+    if (!row.player || !row.playerId) throw new Error("HR board contains a player without a name or MLB ID");
+
+    const matchup = matchupMap.get(`id:${row.playerId}`) || matchupMap.get(`name:${norm(row.player)}`);
+    if (!matchup) throw new Error(`No current opposing pitcher mapping for ${row.player}`);
+
+    const hitterCard = statcast.players?.[row.player];
+    const pitcherCard = statcast.pitchers?.[matchup.pitcherId];
+    if (!hitterCard) throw new Error(`No current Statcast hitter zones for ${row.player}`);
+    if (!pitcherCard) throw new Error(`No current Statcast pitcher zones for ${matchup.pitcher}`);
 
     output.players[row.player] = {
-      playerId: row.playerId || null,
+      playerId: row.playerId,
       team: row.team || null,
-      zones: buildZoneGrid(row)
+      opposingPitcher: matchup.pitcher,
+      opposingPitcherId: Number(matchup.pitcherId),
+      zones: buildZoneGrid(row, hitterCard, pitcherCard)
     };
+  }
+
+  if (Object.keys(output.players).length !== rows.length) {
+    throw new Error(`Pitcher attack zones produced ${Object.keys(output.players).length} rows for ${rows.length} players`);
   }
 
   writeJson(OUT_FILE, output);

@@ -35,7 +35,13 @@ function easternPostTime(minutesAfter930 = 0) {
   const baseMinute = 30 + minutesAfter930;
   const hour = 9 + Math.floor(baseMinute / 60);
   const minute = baseMinute % 60;
-  return `${todayKey()}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00-04:00`;
+  const offsetPart = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    timeZoneName: "longOffset"
+  }).formatToParts(new Date(`${todayKey()}T12:00:00Z`))
+    .find(part => part.type === "timeZoneName")?.value || "GMT-05:00";
+  const offset = offsetPart.replace("GMT", "");
+  return `${todayKey()}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00${offset}`;
 }
 
 function clean(v) {
@@ -296,14 +302,15 @@ function carryPostedState(newPosts, oldQueue) {
 
   return newPosts.map(post => {
     const previous = old.get(post.id);
-    if (!previous) return post;
+    const confirmedPosted = previous?.posted === true && previous?.status === "posted" && previous?.x_post_id;
+    if (!confirmedPosted) return post;
 
     return {
       ...post,
-      status: previous.status || post.status,
-      posted: Boolean(previous.posted),
+      status: "posted",
+      posted: true,
       posted_at: previous.posted_at || null,
-      x_post_id: previous.x_post_id || null
+      x_post_id: previous.x_post_id
     };
   });
 }
@@ -380,6 +387,7 @@ const posts = [
 const finalPosts = carryPostedState(posts, previousQueue);
 
 const queuePayload = {
+  updatedAt: new Date().toISOString(),
   date: todayKey(),
   window: "9:30 AM Eastern",
   cadence: "one post per minute",

@@ -153,7 +153,7 @@ function main() {
   const posts = Array.isArray(queue.posts) ? queue.posts : [];
 
   if (!posts.length) {
-    console.log("No queued posts found. Run build_daily_x_queue.js first.");
+    console.log("No queued posts found. Run build_x_daily_queue_v2.js first.");
     process.exit(0);
   }
 

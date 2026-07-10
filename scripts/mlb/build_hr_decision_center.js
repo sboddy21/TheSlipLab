@@ -115,6 +115,10 @@ function round(value) {
   return Math.round(num(value) * 100) / 100;
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 function todayEastern() {
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
@@ -219,6 +223,25 @@ function makeTeamMap(rows) {
   return map;
 }
 
+function makeBullpenRiskMap(rows) {
+  const map = new Map();
+
+  for (const row of rows) {
+    const team = text(pick(row, ["team", "Team", "opponent"]));
+    if (!team) continue;
+
+    const teamKey = norm(team);
+    const risk = num(pick(row, ["hrRiskScore", "collapseScore", "dangerScore"]));
+    const current = map.get(teamKey);
+
+    if (!current || risk > num(pick(current, ["hrRiskScore", "collapseScore", "dangerScore"]))) {
+      map.set(teamKey, row);
+    }
+  }
+
+  return map;
+}
+
 function uniqueRows(rows) {
   const map = new Map();
 
@@ -238,12 +261,12 @@ const weatherRows = readRows("mlb_weather.json");
 const pitchRows = readRows("pitch_type_damage.json");
 const attackRows = readRows("pitcher_attack_zones.json");
 const statcastRows = readRows("statcast_zones.json");
-const bullpenRows = readRows("bullpen_collapse_engine.json");
+const bullpenRows = readRows("bullpen_relievers.json");
 
 const pitchMap = makePlayerMap(pitchRows);
 const attackMap = makePlayerMap(attackRows);
 const statcastMap = makePlayerMap(statcastRows);
-const bullpenMap = makeTeamMap(bullpenRows);
+const bullpenMap = makeBullpenRiskMap(bullpenRows);
 
 function bestPitchProfile(row) {
   const pitchDamage = row?.pitchDamage;
@@ -310,21 +333,26 @@ function zoneProfile(player) {
 
   let hotZoneCount = 0;
   let overlapTotal = 0;
+  let qualifiedZoneCount = 0;
 
   const zoneCells = zoneRows.slice(0, 25).map((zone, index) => {
-    const danger = num(zone.danger);
-    const hitter = danger || hitterPower;
-    const pitcher = danger || pitcherLeak;
-    const overlap = danger || Math.min(hitter, pitcher);
+    const qualified = zone.qualified === true && zone.danger !== null && zone.danger !== undefined;
+    const hitter = qualified ? num(zone.hitterXwoba) * 100 : 0;
+    const pitcher = qualified ? num(zone.pitcherXwobaAllowed) * 100 : 0;
+    const overlap = qualified ? num(zone.danger) : 0;
 
-    if (overlap >= 65) hotZoneCount += 1;
-    overlapTotal += overlap;
+    if (qualified) {
+      if (overlap >= 65) hotZoneCount += 1;
+      overlapTotal += overlap;
+      qualifiedZoneCount += 1;
+    }
 
     return {
       index,
       hitter: round(hitter),
       pitcher: round(pitcher),
-      overlap: round(overlap)
+      overlap: round(overlap),
+      qualified
     };
   });
 
@@ -333,24 +361,28 @@ function zoneProfile(player) {
       index: zoneCells.length,
       hitter: 0,
       pitcher: 0,
-      overlap: 0
+      overlap: 0,
+      qualified: false
     });
   }
 
-  const avgOverlap = zoneRows.length ? overlapTotal / zoneRows.length : 0;
+  const avgOverlap = qualifiedZoneCount ? overlapTotal / qualifiedZoneCount : 0;
 
-  const zoneOverlap = round(
+  const zoneOverlap = round(clamp(
     hitterPower * 0.34 +
     pitcherLeak * 0.34 +
     avgOverlap * 0.22 +
-    hotZoneCount * 1.8
-  );
+    hotZoneCount * 1.8,
+    0,
+    100
+  ));
 
   return {
     zoneOverlap,
     hitterZonePower: round(hitterPower),
     pitcherLeak: round(pitcherLeak),
     hotZoneCount,
+    qualifiedZoneCount,
     zoneCells
   };
 }

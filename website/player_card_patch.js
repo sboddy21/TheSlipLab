@@ -658,21 +658,20 @@
     const z = attack.zones || {};
     const raw = Array.isArray(z.zones) ? z.zones : [];
 
-    const hitterPower = num(z.hitterPower || row.hitterZonePower || row.truePowerScore || row.powerScore);
-    const pitcherLeak = num(z.pitcherLeak || row.pitcherRisk || row.hrLeakFactor);
-
     return Array.from({ length: 25 }, (_, i) => {
       const cell = raw[i] || {};
-      const danger = num(cell.danger);
-
-      const pitcher = danger || pitcherLeak;
-      const overlap = danger;
-      const value = Math.max(danger, hitterPower, pitcherLeak);
+      const qualified = cell.qualified === true && cell.danger !== null && cell.danger !== undefined;
+      const hitter = qualified ? num(cell.hitterXwoba) * 100 : 0;
+      const pitcher = qualified ? num(cell.pitcherXwobaAllowed) * 100 : 0;
+      const overlap = qualified ? num(cell.danger) : 0;
+      const value = Math.max(hitter, pitcher, overlap);
 
       return {
+        hitter,
         pitcher,
         overlap,
-        value
+        value,
+        qualified
       };
     });
   }

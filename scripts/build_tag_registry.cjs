@@ -6,16 +6,13 @@ const DATA = path.join(ROOT, "website", "data");
 const OUT = path.join(DATA, "tag_registry.json");
 
 const SOURCES = [
-  "unified_player_tags.json",
   "player_card_data.json",
-  "advanced_player_intelligence.json",
   "hr_decision_center.json",
   "lineup_impact_engine.json",
   "hr_probability_tracking.json",
   "hr_power_profiles.json",
   "mlb_home_runs.json",
   "bullpen_relievers.json",
-  "hr_chain_reaction.json",
   "ai_trust_engine.json"
 ];
 
