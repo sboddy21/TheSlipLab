@@ -136,6 +136,52 @@ function validateHealthStatus(expectedDate, anchor) {
   if (games.date !== expectedDate) fail(`Health status is not tied to the ${expectedDate} slate`);
 }
 
+function validatePitcherVulnerability(expectedDate) {
+  const matchups = read("game_pitcher_matchups.json");
+  const payload = read("pitcher_vulnerability.json");
+  const rows = Array.isArray(payload.pitchers) ? payload.pitchers : [];
+  const expectedCount = (matchups.games || []).length * 2;
+  const baseline = Number(payload.liveSlateMedian);
+
+  if (payload.date !== expectedDate || payload.source !== "MLB Stats API live season pitching") {
+    fail("pitcher_vulnerability.json has stale date or non-live source provenance");
+  }
+  if (payload.scale !== "0-100 risk index; not a probability") {
+    fail("pitcher_vulnerability.json does not declare the canonical risk-index scale");
+  }
+  if (rows.length !== expectedCount || Number(payload.count) !== expectedCount) {
+    fail(`pitcher_vulnerability.json has ${rows.length} pitchers; expected ${expectedCount}`);
+  }
+  if (!Number.isFinite(baseline)) fail("pitcher_vulnerability.json is missing its live-slate median");
+
+  const byId = new Map();
+  for (const row of rows) {
+    const id = String(row.id || "");
+    const score = Number(row.vulnerability);
+    const raw = Number(row.vulnerabilityRaw);
+    const weight = Number(row.vulnerabilitySampleWeight);
+    const innings = Number(row.vulnerabilityTrueInnings);
+    if (!id || byId.has(id)) fail(`pitcher_vulnerability.json has a missing or duplicate pitcher ID ${id || "unknown"}`);
+    if (!Number.isFinite(score) || score < 12 || score > 98) fail(`Invalid risk index for ${row.pitcher || id}`);
+    if (!Number.isFinite(raw) || raw < 0 || raw > 100) fail(`Invalid raw risk index for ${row.pitcher || id}`);
+    if (!Number.isFinite(weight) || weight <= 0 || weight > 1) fail(`Invalid sample weight for ${row.pitcher || id}`);
+    if (!Number.isFinite(innings) || innings <= 0) fail(`Invalid true innings for ${row.pitcher || id}`);
+    if (Math.abs(weight - Math.min(1, innings / 60)) > 0.001) fail(`Sample weight does not match live innings for ${row.pitcher || id}`);
+    if (Math.abs(score - baseline) > Math.abs(raw - baseline) + 1) fail(`Short-sample stabilization moved ${row.pitcher || id} away from the live baseline`);
+    byId.set(id, score);
+  }
+
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const pitcher = game[`${side}Pitcher`] || {};
+      const id = String(pitcher.id || "");
+      if (!byId.has(id) || Number(pitcher.vulnerability) !== byId.get(id)) {
+        fail(`${game.matchup || game.game} has a non-canonical ${side} pitcher risk index`);
+      }
+    }
+  }
+}
+
 function validateRealStatcastZones(expectedDate) {
   const pool = read("mlb_player_pool.json");
   const matchups = read("game_pitcher_matchups.json");
@@ -431,6 +477,7 @@ validateSlateDate("pitcher_vulnerability.json", "date", today);
 validateSlateDate("mlb_weather.json", "date", today);
 validateSlateDate("hr_decision_center.json", "pitcherDate", today);
 validatePitchDamageCache(today);
+validatePitcherVulnerability(today);
 validateRealStatcastZones(today);
 validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);

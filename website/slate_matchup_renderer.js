@@ -22,16 +22,17 @@
   const code = team => teamCodes[team] || String(team || "").split(" ").map(x => x[0]).join("").slice(0, 3).toUpperCase();
   const num = value => Number.isFinite(Number(value)) ? Number(value) : 0;
   const show = value => value === undefined || value === null || value === "" ? "N/A" : value;
-  const whole = value => Number.isFinite(Number(value)) ? Math.round(Number(value)) : "N/A";
+  const whole = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Math.round(Number(value)) : "N/A";
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
 
   function vulnerabilityTier(score) {
+    if (score === null || score === undefined || score === "") return { label: "N/A", className: "vuln-unavailable" };
     const v = num(score);
 
-    if (v >= 45) return { label: "HIGH", className: "vuln-high" };
-    if (v >= 35) return { label: "MED HIGH", className: "vuln-medhigh" };
-    if (v >= 25) return { label: "MEDIUM", className: "vuln-medium" };
+    if (v >= 60) return { label: "HIGH", className: "vuln-high" };
+    if (v >= 45) return { label: "ELEVATED", className: "vuln-medhigh" };
+    if (v >= 30) return { label: "WATCH", className: "vuln-medium" };
 
     return { label: "LOW", className: "vuln-low" };
   }
@@ -65,6 +66,22 @@
           background: linear-gradient(135deg, rgba(80, 255, 100, .18), rgba(5, 26, 12, .98)) !important;
           border-color: rgba(80, 255, 100, .35) !important;
         }
+
+        body.tsl-editorial .side.vuln-high,
+        body.tsl-editorial .side.vuln-high .side-top,
+        body.tsl-editorial .side.vuln-medhigh,
+        body.tsl-editorial .side.vuln-medhigh .side-top,
+        body.tsl-editorial .side.vuln-medium,
+        body.tsl-editorial .side.vuln-medium .side-top,
+        body.tsl-editorial .side.vuln-low,
+        body.tsl-editorial .side.vuln-low .side-top {
+          background: #fffdf7 !important;
+        }
+
+        body.tsl-editorial .side.vuln-high { border-left: 6px solid #ff5425 !important; }
+        body.tsl-editorial .side.vuln-medhigh { border-left: 6px solid #f39a1d !important; }
+        body.tsl-editorial .side.vuln-medium { border-left: 6px solid #1268f3 !important; }
+        body.tsl-editorial .side.vuln-low { border-left: 6px solid #667789 !important; }
 
         #avgVuln {
           display: inline-flex;
@@ -788,12 +805,8 @@
 
   function pitcherVulnerability(game, side) {
     const pitcher = pitcherObj(game, side);
-    if (pitcher && pitcher.vulnerability !== undefined) return num(pitcher.vulnerability);
-
-    const hitters = side === "away" ? game.hitters?.home || [] : game.hitters?.away || [];
-    const top = hitters.slice(0, 5);
-
-    return top.length ? top.reduce((sum, row) => sum + num(scoreOf(row)), 0) / top.length : 0;
+    if (pitcher && pitcher.vulnerability !== undefined && pitcher.vulnerability !== null) return num(pitcher.vulnerability);
+    return null;
   }
 
   function topPitcherRows() {
@@ -816,7 +829,7 @@
     const sub = wrap.querySelector(".sub");
     sub.insertAdjacentHTML("afterend", `
       <section class="panel" id="topVulnPanel">
-        <div class="panel-head"><div class="panel-title">Top Vulnerabilities <span id="avgVuln">Loading</span></div><div class="panel-note">click to jump</div></div>
+        <div class="panel-head"><div class="panel-title">Top Pitcher Risk <span id="avgVuln">Loading</span></div><div class="panel-note">0–100 index · click to jump</div></div>
         <div class="vulns" id="vulns"></div>
       </section>
       <div class="market-tabs" id="marketTabs">
@@ -1055,8 +1068,8 @@
         <div class="side-top"><div>
           <div class="pitcher">${esc(pitcherLabel)}</div>
           <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
-          <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${esc(lineupText)}</b></div><div><label>Vuln</label><b>${whole(vuln)}</b></div></div>
-        </div><div class="vbox"><b>${whole(vuln)}</b><span>VULN</span></div></div>
+          <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${esc(lineupText)}</b></div><div><label>Risk</label><b>${whole(vuln)}</b></div></div>
+        </div><div class="vbox"><b>${whole(vuln)}</b><span>RISK INDEX</span></div></div>
         <div class="danger"><div class="danger-head"><span>Danger Batters</span><span>${hitters.length} bats</span></div><div class="bats">${hitters.slice(0, 8).map(renderBat).join("") || `<div class="empty">No hitter data yet for ${esc(hitterTeam)}</div>`}</div></div>
       </article>
     `;
@@ -1486,7 +1499,41 @@
 .matchup-chip.tag-breakout{background:rgba(255,210,80,.18);border-color:#ffd250;color:#ffe7a0}
 .matchup-chip.tag-glow{box-shadow:0 0 10px currentColor,0 0 22px rgba(255,255,255,.18)}
 .matchup-chip.tag-glow-soft{box-shadow:0 0 8px currentColor,0 0 16px rgba(255,255,255,.12)}
-.sweet-lineup{display:inline-flex;width:max-content;margin:5px 0 2px;padding:3px 7px;border-radius:999px;background:rgba(140,255,50,.10);border:1px solid rgba(140,255,50,.25);color:#8cff32;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.05em}.sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}`;
+.sweet-lineup{display:inline-flex;width:max-content;margin:5px 0 2px;padding:3px 7px;border-radius:999px;background:rgba(140,255,50,.10);border:1px solid rgba(140,255,50,.25);color:#8cff32;font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.05em}.sweet-note{color:#c8c8c8;font-size:12px;font-style:italic;margin-top:4px}.sweet-why{color:#ff6b2d;font-size:11px;font-weight:800;margin-top:4px}.sweet-l7{color:#00e0a4;font-size:11px;font-weight:850;margin-top:4px}.sweet-score{color:#fff}.player-stat{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:7px;padding:5px;text-align:center}.player-stat label{display:block;font-size:8px;color:#8fa09a;font-weight:950}.player-stat b{font-size:11px;color:#8cff32}.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:5000;justify-content:flex-end}.modal-bg.open{display:flex}.modal{width:min(620px,96vw);height:100vh;overflow:auto;background:#061010;border-left:1px solid rgba(140,255,50,.3);padding:18px}.modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}.modal-player{display:flex;gap:12px;align-items:center}.modal-face{width:54px;height:54px;border-radius:50%;background:#17272b;border:1px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-weight:950}.modal h2{font-size:24px}.modal-sub{color:#9aaba4;font-size:13px;margin-top:4px}.close{background:#11191b;border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:10px;padding:9px 11px;font-weight:950;cursor:pointer}.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;margin-bottom:12px}.metric{padding:11px;text-align:center;border-right:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.metric label{display:block;color:#8fa09a;font-size:9px;font-weight:950;margin-bottom:5px}.metric b{color:#8cff32}.section-title{font-size:12px;letter-spacing:.14em;color:#8cff32;text-transform:uppercase;font-weight:950;margin:16px 0 10px}.spray svg{width:100%;height:310px;background:#071111;border:1px solid rgba(255,255,255,.07);border-radius:14px}
+
+/* Editorial contrast ownership for dynamically rendered slate cards. */
+body.tsl-editorial .panel{background:#fffdf7;border-color:#071d36;border-radius:0;color:#071d36}
+body.tsl-editorial .panel-head{border-color:rgba(7,29,54,.22)}
+body.tsl-editorial .panel-title,body.tsl-editorial .panel-note{color:#41566b}
+body.tsl-editorial .panel-title span{color:#9b3219}
+body.tsl-editorial .vuln{border-color:rgba(7,29,54,.18)}
+body.tsl-editorial .vuln small{color:#075d4c}
+body.tsl-editorial .vuln b,body.tsl-editorial .vuln:nth-child(n+2) b{color:#9b3219;filter:none}
+body.tsl-editorial .vuln b::before{display:none}
+body.tsl-editorial .vuln span,body.tsl-editorial .vuln:nth-child(n+2) span{border-color:#9b3219;color:#7a2d12}
+body.tsl-editorial .vuln:nth-child(n+2) small{color:#704000}
+body.tsl-editorial .vuln strong{color:#071d36}
+body.tsl-editorial .vuln em{color:#41566b}
+body.tsl-editorial .sweet-lineup{background:#e8f1ff;border-color:#1268f3;color:#084aab}
+body.tsl-editorial .sweet-note{color:#31465a}
+body.tsl-editorial .sweet-why{color:#8c2c16}
+body.tsl-editorial .sweet-l7{color:#075d4c}
+body.tsl-editorial .sweet-score{color:#071d36}
+body.tsl-editorial .player-stat{background:#fffdf7;border-color:rgba(7,29,54,.2)}
+body.tsl-editorial .player-stat label{color:#41566b}
+body.tsl-editorial .player-stat b{color:#084aab}
+body.tsl-editorial .matchup-chip{background:#f3f0e6;border-color:#506071;color:#071d36;box-shadow:none}
+body.tsl-editorial .matchup-chip.level-elite,body.tsl-editorial .matchup-chip.level-high{background:#9b3219;border-color:#7b2512;color:#fff}
+body.tsl-editorial .matchup-chip.level-mid{background:#f4d36a;border-color:#7a5700;color:#3f2b00}
+body.tsl-editorial .matchup-chip.crusher,body.tsl-editorial .matchup-chip.tag-split{background:#efe5ff;border-color:#6b3fa0;color:#4a1f78}
+body.tsl-editorial .matchup-chip.barrel,body.tsl-editorial .matchup-chip.tag-iso,body.tsl-editorial .matchup-chip.tag-barrel-king,body.tsl-editorial .matchup-chip.tag-cleanup,body.tsl-editorial .matchup-chip.tag-park,body.tsl-editorial .matchup-chip.tag-warm,body.tsl-editorial .matchup-chip.tag-carry,body.tsl-editorial .matchup-chip.tag-breakout{background:#fff0d4;border-color:#a65b00;color:#704000}
+body.tsl-editorial .matchup-chip.hardhit,body.tsl-editorial .matchup-chip.tag-power,body.tsl-editorial .matchup-chip.tag-rbi,body.tsl-editorial .matchup-chip.tag-hot,body.tsl-editorial .matchup-chip.tag-hot-zone,body.tsl-editorial .matchup-chip.tag-leak,body.tsl-editorial .matchup-chip.tag-bullpen,body.tsl-editorial .matchup-chip.tag-due{background:#ffe7eb;border-color:#9d2941;color:#75182c}
+body.tsl-editorial .matchup-chip.vs,body.tsl-editorial .matchup-chip.tag-top-order,body.tsl-editorial .matchup-chip.tag-wind,body.tsl-editorial .matchup-chip.tag-dome{background:#e8f1ff;border-color:#2866a8;color:#164776}
+body.tsl-editorial .matchup-chip.recent,body.tsl-editorial .matchup-chip.tag-pitch-edge,body.tsl-editorial .matchup-chip.tag-pitcher-vuln{background:#ffeadf;border-color:#a23c17;color:#7a2d12}
+body.tsl-editorial .matchup-chip.tag-speed,body.tsl-editorial .matchup-chip.tag-contact{background:#e1f5ed;border-color:#16745e;color:#075d4c}
+body.tsl-editorial .matchup-chip.tag-glow,body.tsl-editorial .matchup-chip.tag-glow-soft{box-shadow:none}
+@media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){body.tsl-editorial .panel-head{align-items:flex-start;flex-direction:column;gap:8px}body.tsl-editorial .panel-note{line-height:1.4}.vulns{grid-template-columns:repeat(2,minmax(0,1fr))}.vuln{padding:15px 13px}}`;
     document.head.appendChild(style);
   }
 

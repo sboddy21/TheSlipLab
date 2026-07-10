@@ -39,6 +39,20 @@ function scale(value, min, max) {
   return Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100));
 }
 
+function inningsToOuts(value) {
+  const text = clean(value).trim();
+  const match = text.match(/^(\d+)(?:\.([012]))?$/);
+  if (!match) return null;
+  return Number(match[1]) * 3 + Number(match[2] || 0);
+}
+
+function median(values) {
+  const sorted = values.filter(Number.isFinite).slice().sort((a, b) => a - b);
+  if (!sorted.length) throw new Error("Cannot calibrate pitcher vulnerability without live pitcher stats");
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
+}
+
 async function getPitcherStats(playerId) {
   if (!playerId) return null;
 
@@ -48,7 +62,8 @@ async function getPitcherStats(playerId) {
   if (!res.ok) return null;
 
   const data = await res.json();
-  const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
+  const stat = data?.stats?.[0]?.splits?.[0]?.stat;
+  if (!stat) return null;
 
   return {
     era: num(stat.era),
@@ -61,10 +76,11 @@ async function getPitcherStats(playerId) {
   };
 }
 
-function pitcherVulnerability(stats) {
-  if (!stats) return 50;
-
-  const ip = stats.inningsPitched || 1;
+function rawPitcherVulnerability(stats) {
+  if (!stats) throw new Error("Pitcher vulnerability requires live MLB season stats");
+  const outs = inningsToOuts(stats.inningsPitched);
+  if (!outs) throw new Error("Pitcher vulnerability requires a positive MLB innings sample");
+  const ip = outs / 3;
   const hitsPer9 = (stats.hits / ip) * 9;
   const hrPer9 = (stats.homeRuns / ip) * 9;
   const walkPressure = stats.walks / ip;
@@ -76,7 +92,22 @@ function pitcherVulnerability(stats) {
     scale(hrPer9, 0.4, 2.3) * 0.18 +
     scale(walkPressure, 0.15, 0.65) * 0.08;
 
-  return Math.max(12, Math.min(98, Math.round(score)));
+  return Math.max(0, Math.min(100, score));
+}
+
+function pitcherVulnerability(stats, liveSlateMedian) {
+  const rawScore = rawPitcherVulnerability(stats);
+  const outs = inningsToOuts(stats.inningsPitched);
+  const trueInnings = outs / 3;
+  const sampleWeight = Math.min(1, trueInnings / 60);
+  const stabilized = liveSlateMedian + (rawScore - liveSlateMedian) * sampleWeight;
+
+  return {
+    score: Math.max(12, Math.min(98, Math.round(stabilized))),
+    rawScore: Number(rawScore.toFixed(2)),
+    sampleWeight: Number(sampleWeight.toFixed(4)),
+    trueInnings: Number(trueInnings.toFixed(3))
+  };
 }
 
 function gameKey(g) {
@@ -226,14 +257,31 @@ for (const hitter of hitters) {
   groupedHitters.get(key).push(hitter);
 }
 
-const pitcherCache = new Map();
+const probablePitcherIds = [...new Set(slateGames.flatMap(game => [
+  game.awayProbablePitcherId,
+  game.homeProbablePitcherId
+]).filter(Boolean).map(String))];
+
+if (probablePitcherIds.length !== slateGames.length * 2) {
+  throw new Error(`Current slate has ${probablePitcherIds.length} probable pitcher IDs for ${slateGames.length} games`);
+}
+
+const pitcherStatsById = new Map();
+for (const id of probablePitcherIds) {
+  const stats = await getPitcherStats(id);
+  if (!stats) throw new Error(`Missing live MLB season stats for probable pitcher ${id}`);
+  pitcherStatsById.set(id, stats);
+}
+
+const liveSlateMedian = median([...pitcherStatsById.values()].map(rawPitcherVulnerability));
+const pitcherCache = new Map([...pitcherStatsById.entries()].map(([id, stats]) => {
+  return [id, { ...pitcherVulnerability(stats, liveSlateMedian), stats }];
+}));
 
 async function getVulnerability(id) {
   const key = String(id || "");
-  if (!key) return { score: 50, stats: null };
-  if (!pitcherCache.has(key)) {
-    const stats = await getPitcherStats(key);
-    pitcherCache.set(key, { score: pitcherVulnerability(stats), stats });
+  if (!key || !pitcherCache.has(key)) {
+    throw new Error(`Missing live vulnerability inputs for probable pitcher ${key || "TBD"}`);
   }
   return pitcherCache.get(key);
 }
@@ -289,6 +337,9 @@ for (const slateGame of slateGames) {
     team: awayTeam,
     opponent: homeTeam,
     vulnerability: awayVuln.score,
+    vulnerabilityRaw: awayVuln.rawScore,
+    vulnerabilitySampleWeight: awayVuln.sampleWeight,
+    vulnerabilityTrueInnings: awayVuln.trueInnings,
     stats: awayVuln.stats
   };
 
@@ -300,6 +351,9 @@ for (const slateGame of slateGames) {
     team: homeTeam,
     opponent: awayTeam,
     vulnerability: homeVuln.score,
+    vulnerabilityRaw: homeVuln.rawScore,
+    vulnerabilitySampleWeight: homeVuln.sampleWeight,
+    vulnerabilityTrueInnings: homeVuln.trueInnings,
     stats: homeVuln.stats
   };
 
@@ -336,6 +390,12 @@ for (const slateGame of slateGames) {
 writeJSON("game_pitcher_matchups.json", {
   updatedAt: new Date().toISOString(),
   date: slatePayload.date || "",
+  vulnerabilityModel: {
+    source: "MLB Stats API live season pitching",
+    scale: "0-100 risk index; not a probability",
+    liveSlateMedian: Number(liveSlateMedian.toFixed(2)),
+    fullSampleInnings: 60
+  },
   count: finalGames.length,
   games: finalGames
 });
@@ -343,6 +403,10 @@ writeJSON("game_pitcher_matchups.json", {
 writeJSON("pitcher_vulnerability.json", {
   updatedAt: new Date().toISOString(),
   date: slatePayload.date || "",
+  source: "MLB Stats API live season pitching",
+  scale: "0-100 risk index; not a probability",
+  liveSlateMedian: Number(liveSlateMedian.toFixed(2)),
+  fullSampleInnings: 60,
   count: pitcherRows.length,
   pitchers: pitcherRows
 });

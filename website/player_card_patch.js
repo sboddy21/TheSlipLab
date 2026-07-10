@@ -7823,6 +7823,63 @@
   boot();
 })();
 
+/* Editorial MLB player-card shell. Scoped so deferred sport pages keep their current cards. */
+(function(){
+  if (!document.body.classList.contains("tsl-editorial") || document.getElementById("pcEditorialCss")) return;
+  const s = document.createElement("style");
+  s.id = "pcEditorialCss";
+  s.textContent = `
+    body.tsl-editorial #pcFull{background:rgba(7,29,54,.78)!important}
+    body.tsl-editorial #pcBox{max-width:1040px!important;border:1px solid #071d36!important;border-radius:0!important;background:#f3f0e6!important;color:#071d36!important;box-shadow:0 30px 90px rgba(7,29,54,.32)!important}
+    body.tsl-editorial #pcBox h2{color:#071d36!important;font-family:Georgia,"Times New Roman",serif!important;font-size:34px!important}
+    body.tsl-editorial #pcBox h3{color:#071d36!important;font-family:Georgia,"Times New Roman",serif!important;text-transform:none!important;letter-spacing:-.02em!important}
+    body.tsl-editorial #pcBox p{color:#506071!important}
+    body.tsl-editorial #pcClose{border:1px solid #071d36!important;border-radius:0!important;background:transparent!important;color:#071d36!important}
+    body.tsl-editorial .pcheader{border:1px solid #071d36!important;border-radius:0!important;background:#fffdf7!important;color:#071d36!important}
+    body.tsl-editorial .pcheader::before{display:none!important}
+    body.tsl-editorial .pcheader.pctheme-fire{border-left:6px solid #ff5425!important}
+    body.tsl-editorial .pcheader.pctheme-ice{border-left:6px solid #1268f3!important}
+    body.tsl-editorial .pcprob{border:1px solid #1268f3!important;border-radius:0!important;background:rgba(18,104,243,.06)!important}
+    body.tsl-editorial .pcprob b{color:#1268f3!important}
+    body.tsl-editorial .pcprob span{color:#506071!important}
+    body.tsl-editorial .pcchip{border-radius:0!important;box-shadow:none!important}
+    body.tsl-editorial .pcchip-base{border-color:rgba(7,29,54,.2)!important;background:#fffdf7!important;color:#071d36!important}
+    body.tsl-editorial .pctabs{border-color:#071d36!important;background:transparent!important}
+    body.tsl-editorial .pctab{border:1px solid #071d36!important;border-radius:0!important;background:transparent!important;color:#071d36!important}
+    body.tsl-editorial .pctab.on,body.tsl-editorial .pctab.active{border-color:#1268f3!important;background:#1268f3!important;color:#fff!important}
+    body.tsl-editorial .pcm,body.tsl-editorial .pcbar,body.tsl-editorial .pcpitch-card,body.tsl-editorial .pcpark-main,body.tsl-editorial .pcpark-card,body.tsl-editorial .pcpark-note,body.tsl-editorial .pcdecision,body.tsl-editorial .pcreason,body.tsl-editorial .pcwhy-row,body.tsl-editorial .pcvuln-card,body.tsl-editorial .pcbp-risk-card,body.tsl-editorial .pcbp-risk-note{border:1px solid rgba(7,29,54,.18)!important;border-radius:0!important;background:#fffdf7!important;color:#071d36!important;box-shadow:none!important}
+    body.tsl-editorial .pcm label,body.tsl-editorial .pcbar-top,body.tsl-editorial .pcpark-main span,body.tsl-editorial .pcpark-card span,body.tsl-editorial .pcsection-head p{color:#506071!important}
+    body.tsl-editorial .pcm b,body.tsl-editorial .pcpark-main strong,body.tsl-editorial .pcsection-head h3{color:#1268f3!important}
+    body.tsl-editorial .pcpark-card strong,body.tsl-editorial .pcpitch-card strong,body.tsl-editorial .pcwhy-row strong{color:#071d36!important}
+    body.tsl-editorial .pcpitch-summary{align-items:stretch!important;grid-auto-rows:1fr!important}
+    body.tsl-editorial .pcpitch-card{display:flex!important;min-height:78px!important;height:100%!important;flex-direction:column!important;justify-content:space-between!important}
+    body.tsl-editorial .pcpitch-card span{color:#41566b!important}
+    body.tsl-editorial .pcpitch-card.hot{border-color:#a23c17!important;background:#ffeadf!important}
+    body.tsl-editorial .pcpitch-card.hot strong{color:#7a2d12!important}
+    body.tsl-editorial .pcpitchtable,body.tsl-editorial .pcspottable{border:1px solid #071d36!important;border-radius:0!important;background:#fffdf7!important}
+    body.tsl-editorial .pcpitchtable{overflow-x:auto!important}
+    body.tsl-editorial .pcpitchrow,body.tsl-editorial .pcspotrow{border-color:rgba(7,29,54,.16)!important;color:#071d36!important}
+    body.tsl-editorial .pcpitchrow{grid-template-columns:minmax(140px,1.5fr) repeat(4,minmax(70px,1fr))!important;min-width:680px!important}
+    body.tsl-editorial .pcpitchrow>*{min-width:0!important}
+    body.tsl-editorial .pcpitchrow.head{background:#071d36!important;color:#fff!important}
+    body.tsl-editorial .pcpitchrow strong,body.tsl-editorial .pcspotleft b{color:#9b3219!important}
+    body.tsl-editorial .pcpitchrow .good{color:#075d4c!important}
+    body.tsl-editorial .pcpitchrow .hot{color:#7a2d12!important}
+    body.tsl-editorial .pcspotleft span,body.tsl-editorial .pcspotright span,body.tsl-editorial .pcspotbars label{color:#41566b!important}
+    body.tsl-editorial .pcai-card{border:1px solid #071d36!important;border-radius:0!important;background:#fffdf7!important;box-shadow:none!important}
+    body.tsl-editorial .pcai-card::before{display:none!important}
+    body.tsl-editorial .pcai-head h3,body.tsl-editorial .pcai-summary{color:#071d36!important;text-shadow:none!important}
+    body.tsl-editorial .pcai-grade{border-color:#1268f3!important;background:#1268f3!important;color:#fff!important;box-shadow:none!important}
+    body.tsl-editorial .pcai-reasons span{border-color:rgba(7,29,54,.18)!important;border-radius:0!important;background:#f3f0e6!important;color:#071d36!important}
+    body.tsl-editorial .pczone-header-compact{border:1px solid #071d36!important;border-radius:0!important;background:#fffdf7!important;box-shadow:none!important}
+    body.tsl-editorial .pczone-header-copy h3,body.tsl-editorial .pczone-score-card strong{color:#1268f3!important}
+    body.tsl-editorial .pczone-header-copy p{color:#506071!important}
+    body.tsl-editorial .pczone-score-card{border:1px solid #1268f3!important;border-radius:0!important;background:rgba(18,104,243,.06)!important;box-shadow:none!important}
+    body.tsl-editorial .pcsection-head span{border:1px solid #ff5425!important;border-radius:0!important;background:rgba(255,84,37,.06)!important;color:#9b3219!important}
+  `;
+  document.head.appendChild(s);
+})();
+
 (() => {
   const css = `
     .pcsection-head {
@@ -8460,4 +8517,10 @@
     }
   `;
   document.head.appendChild(s);
+})();
+
+/* Keep the scoped editorial shell last in the cascade after legacy card polish. */
+(function(){
+  const editorial = document.getElementById("pcEditorialCss");
+  if (editorial) document.head.appendChild(editorial);
 })();
