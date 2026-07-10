@@ -183,6 +183,7 @@
     if (title === "SLG") return "◒";
     if (title === "HR") return "⬡";
     if (title === "Pitcher Leak") return "♨";
+    if (title === "Pitcher Attack Zones") return "⌾";
     if (title === "Zone Overlap") return "◎";
     return "◆";
   }
@@ -193,6 +194,7 @@
     if (title === "SLG") return "Slugging damage";
     if (title === "HR") return "Home run zones";
     if (title === "Pitcher Leak") return "Where pitcher gives up damage";
+    if (title === "Pitcher Attack Zones") return "Where pitcher attacks the zone";
     if (title === "Zone Overlap") return "Hitter vs pitcher matchup";
     return "Zone profile";
   }
@@ -920,19 +922,7 @@
 
   function miniZone(title, values, mode = "score") {
     const cells = Array.isArray(values) ? values.slice(0, 25) : Array.from({ length: 25 }, () => 0);
-    const max = Math.max(...cells.map(v => num(v)), 1);
-    return `<div class="pcz"><h4>${esc(title)}</h4><div>${cells.map(v => {
-      const raw = num(v);
-      const score = mode === "dec" ? raw / max * 100 : raw;
-      const cls =
-        mode === "dec"
-          ? score >= 60 ? "zdanger" : score >= 50 ? "z5" : score >= 40 ? "z4" : score >= 30 ? "z3" : score >= 20 ? "z2" : "z1"
-          : mode === "cnt"
-            ? score >= 50 ? "zdanger" : score >= 35 ? "z5" : score >= 25 ? "z4" : score >= 15 ? "z3" : score >= 5 ? "z2" : "z1"
-            : score >= 70 ? "zdanger" : score >= 55 ? "z5" : score >= 40 ? "z4" : score >= 25 ? "z3" : score >= 15 ? "z2" : "z1";
-      const txt = mode === "dec" ? dec(raw) : Math.round(raw);
-      return `<span class="${cls}">${txt}</span>`;
-    }).join("")}</div></div>`;
+    return zones(title, cells, null, mode);
   }
 
   function renderPitchSummary(row) {
@@ -7878,6 +7868,18 @@
     body.tsl-editorial .pczone-matchup-tag{border:1px solid #1268f3!important;border-radius:0!important;background:#e8f1ff!important;color:#084aab!important}
     body.tsl-editorial .pczone-score-card span{color:#41566b!important}
     body.tsl-editorial .pczone-score-card span::after{content:""!important}
+    body.tsl-editorial .pcwhy{border:1px solid rgba(7,29,54,.22)!important;border-radius:0!important;background:#f3f0e6!important;color:#071d36!important}
+    body.tsl-editorial .pcwhy-hero{border:1px solid rgba(7,93,76,.28)!important;border-radius:0!important;background:#eef5e5!important}
+    body.tsl-editorial .pcwhy-hero h3{color:#071d36!important}
+    body.tsl-editorial .pcwhy-hero p{color:#31465a!important}
+    body.tsl-editorial .pcwhy-row span{color:#071d36!important}
+    body.tsl-editorial .pcwhy-row b{color:#9b3219!important}
+    body.tsl-editorial .pcintel{border:1px solid rgba(7,29,54,.22)!important;border-radius:0!important;background:#fffdf7!important;color:#071d36!important}
+    body.tsl-editorial .pcintel h3{color:#071d36!important}
+    body.tsl-editorial .pcintel p{color:#41566b!important}
+    body.tsl-editorial .pcwhy-score{border-color:#075d4c!important;border-radius:0!important;background:#071d36!important}
+    body.tsl-editorial .pcwhy-score strong{color:#adff2f!important}
+    body.tsl-editorial .pcwhy-score span{color:#d6e0e8!important}
     body.tsl-editorial .pczone-legend-explained{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:6px!important}
     body.tsl-editorial .pczone-legend-explained .leg-row{min-width:0!important;border:1px solid rgba(7,29,54,.16)!important;border-radius:0!important;background:#f3f0e6!important}
     body.tsl-editorial .pczone-legend-explained small{color:#41566b!important;white-space:normal!important}
