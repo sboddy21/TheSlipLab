@@ -16,6 +16,7 @@
   initAnalytics();
 
   const items = [
+    ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
@@ -28,8 +29,7 @@
     ["Results","./results.html",["/results.html"]],
     ["Decision Center","./hr-decision-center.html",["/hr-decision-center.html","/decision-center.html"]],
     ["AI Says","./ai-says.html",["/ai-says.html"]],
-    ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]],
-    ["How to Use","./how-to-use.html",["/how-to-use.html"]]
+    ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
   function oldHeaderLooksLikeSiteNav(el){
