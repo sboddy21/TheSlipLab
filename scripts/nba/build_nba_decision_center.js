@@ -21,14 +21,6 @@ function readJSON(file, fallback) {
   }
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -597,6 +589,7 @@ async function main() {
     market: "Points",
     playerCount: players.length,
     sectionCount: Object.keys(sections).length,
+    availability: Number(points.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "NBA Decision Center 2.0 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
       "Sections include top overall plays, I Can Only Pick One, position rankings, consensus plays, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
@@ -605,30 +598,7 @@ async function main() {
     sections
   };
 
-  const existing = readExisting();
-
-const sectionCount =
-  Object.values(sections || {})
-    .filter(v => Array.isArray(v))
-    .reduce((a,b)=>a+b.length,0);
-
-const existingCount =
-  Object.values(existing?.sections || {})
-    .filter(v => Array.isArray(v))
-    .reduce((a,b)=>a+b.length,0);
-
-if (sectionCount === 0 && existingCount > 0) {
-  fs.writeFileSync(OUT, JSON.stringify({
-    ...existing,
-    preservedAt: new Date().toISOString(),
-    preserveReason: "Decision Center generated 0 section entries"
-  }, null, 2));
-
-  console.log("DECISION CENTER PRESERVED PREVIOUS DATA");
-  return;
-}
-
-fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA DECISION CENTER COMPLETE");
   console.log("Players:", players.length);

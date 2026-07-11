@@ -6,7 +6,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
+const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const OUT = path.join(ROOT, "website/data/nba_defender_engine.json");
+
+function readJSON(file, fallback) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
 
 function seasonYear() {
   const now = new Date();
@@ -93,6 +102,34 @@ function parseRows(data) {
 
 async function main() {
   const season = seasonYear();
+  const gamesData = readJSON(GAMES_FILE, { games: [] });
+  const games = Array.isArray(gamesData.games) ? gamesData.games : [];
+
+  if (!games.length) {
+    const out = {
+      sport: "NBA",
+      version: "1.0",
+      source: "NBA stats leaguedashptdefend overall",
+      fetchedAt: new Date().toISOString(),
+      date: gamesData.date || "",
+      season,
+      defenderCount: 0,
+      minimumDefendedFGA: 6,
+      teamCount: 0,
+      availability: "no_games_scheduled",
+      modelNotes: [
+        "No defender rows are required when the live NBA scoreboard has no scheduled games.",
+        "No previous or synthetic defender data is reused."
+      ],
+      defenders: [],
+      byTeam: {}
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+    console.log("NBA DEFENDER ENGINE COMPLETE: NO GAMES SCHEDULED");
+    console.log("Saved:", OUT);
+    return;
+  }
 
   const params = new URLSearchParams({
     DefenseCategory: "Overall",
@@ -134,10 +171,12 @@ async function main() {
     version: "1.0",
     source: "NBA stats leaguedashptdefend overall",
     fetchedAt: new Date().toISOString(),
+    date: gamesData.date || "",
     season,
     defenderCount: defenders.length,
     minimumDefendedFGA: 6,
     teamCount: Object.keys(byTeam).length,
+    availability: "games_scheduled",
     modelNotes: [
       "Defender Engine 1.0 uses NBA tracking defended field goal data.",
       "Leaderboard requires at least 6 defended field goal attempts per game to reduce low-volume noise.",

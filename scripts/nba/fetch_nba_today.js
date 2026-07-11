@@ -76,52 +76,16 @@ function normalizeGame(g) {
   };
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 async function main() {
   const date = todayET();
   const nbaDate = compactDate(date);
   const url = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
 
-  let raw;
-  let error = "";
-
-  try {
-    raw = await fetchJson(url);
-  } catch (err) {
-    error = err.message;
-    raw = { scoreboard: { games: [] } };
-  }
+  const raw = await fetchJson(url);
 
   const games = Array.isArray(raw?.scoreboard?.games)
     ? raw.scoreboard.games.map(normalizeGame)
     : [];
-
-  const existing = readExisting();
-  const existingGames = Array.isArray(existing?.games) ? existing.games : [];
-
-  if (games.length === 0 && existingGames.length > 0) {
-    const preserved = {
-      ...existing,
-      preservedAt: new Date().toISOString(),
-      preserveReason: "NBA scoreboard returned 0 games, keeping previous non-empty slate"
-    };
-
-    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
-
-    console.log("NBA TODAY FETCH PRESERVED PREVIOUS NON-EMPTY SLATE");
-    console.log("Date:", date);
-    console.log("Fetched Games:", games.length);
-    console.log("Preserved Games:", existingGames.length);
-    console.log("Saved:", OUT);
-    return;
-  }
 
   const out = {
     sport: "NBA",
@@ -130,7 +94,8 @@ async function main() {
     nbaDate,
     fetchedAt: new Date().toISOString(),
     count: games.length,
-    error,
+    availability: games.length ? "games_scheduled" : "no_games_scheduled",
+    error: "",
     games
   };
 
@@ -139,7 +104,7 @@ async function main() {
   console.log("NBA TODAY FETCH COMPLETE");
   console.log("Date:", date);
   console.log("Games:", games.length);
-  if (error) console.log("Error:", error);
+  console.log("Availability:", out.availability);
   console.log("Saved:", OUT);
 }
 

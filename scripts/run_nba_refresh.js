@@ -30,9 +30,9 @@ const expectedOutputs = [
   ["NBA Minutes Engine", "website/data/nba_minutes_engine.json", true],
   ["NBA Usage Engine", "website/data/nba_usage_engine.json", true],
   ["NBA Core", "website/data/nba_core.json", true],
-  ["NBA Team Defense", "website/data/nba_team_defense.json", false],
-  ["NBA Pace Engine", "website/data/nba_pace_engine.json", false],
-  ["NBA Defender Engine", "website/data/nba_defender_engine.json", false],
+  ["NBA Team Defense", "website/data/nba_team_defense.json", true],
+  ["NBA Pace Engine", "website/data/nba_pace_engine.json", true],
+  ["NBA Defender Engine", "website/data/nba_defender_engine.json", true],
   ["NBA Points Board", "website/data/nba_points.json", true],
   ["NBA Rebounds Board", "website/data/nba_rebounds.json", true],
   ["NBA Assists Board", "website/data/nba_assists.json", true],
@@ -121,7 +121,7 @@ console.log("THE SLIP LAB NBA REFRESH");
 console.log("Time:", new Date().toISOString());
 console.log("");
 
-for (const [label, file] of steps) {
+function runBuilder([label, file]) {
   if (!fs.existsSync(file)) {
     console.error("");
     console.error(`FAILED: ${label}`);
@@ -145,6 +145,41 @@ for (const [label, file] of steps) {
     process.exit(result.status || 1);
   }
 }
+
+const [todayStep, ...remainingSteps] = steps;
+runBuilder(todayStep);
+
+const todayData = readOutput("NBA Today", "website/data/nba_games_today.json");
+const hasGames = Array.isArray(todayData.games) && todayData.games.length > 0;
+
+const noGameOrder = [
+  "NBA Player Pool",
+  "NBA History",
+  "NBA Core",
+  "NBA Minutes Engine",
+  "NBA Usage Engine",
+  "NBA Team Defense",
+  "NBA Pace Engine",
+  "NBA Defender Engine",
+  "NBA Points Board",
+  "NBA Rebounds Board",
+  "NBA Assists Board",
+  "NBA Threes Board",
+  "NBA Matchup Engine",
+  "NBA Player Cards",
+  "NBA Decision Center"
+];
+
+const selectedSteps = hasGames
+  ? remainingSteps
+  : noGameOrder.map(label => {
+      const step = remainingSteps.find(([stepLabel]) => stepLabel === label);
+      if (!step) throw new Error(`No-game refresh order references unknown builder: ${label}`);
+      return step;
+    });
+
+console.log("NBA slate mode:", hasGames ? "games scheduled" : "no games scheduled");
+selectedSteps.forEach(runBuilder);
 
 validateRefresh();
 

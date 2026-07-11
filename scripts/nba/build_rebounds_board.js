@@ -18,14 +18,6 @@ function readJSON(file, fallback) {
   }
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -177,6 +169,7 @@ async function main() {
     season: core.season || "",
     gameCount: core.gameCount || 0,
     playerCount: rows.length,
+    availability: Number(core.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "Rebounds Board 1.0 uses season rebounds, last 5 rebounds, last 10 rebounds, expected minutes, minutes confidence, position role, and recent rebound trend.",
       "No odds or betting lines are used."
@@ -184,21 +177,7 @@ async function main() {
     players: rows
   };
 
-  const existing = readExisting();
-const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
-
-if (rows.length === 0 && existingPlayers.length > 0) {
-  fs.writeFileSync(OUT, JSON.stringify({
-    ...existing,
-    preservedAt: new Date().toISOString(),
-    preserveReason: "Board generated 0 players"
-  }, null, 2));
-
-  console.log("BOARD PRESERVED PREVIOUS DATA");
-  return;
-}
-
-fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA REBOUNDS BOARD COMPLETE");
   console.log("Players:", rows.length);
