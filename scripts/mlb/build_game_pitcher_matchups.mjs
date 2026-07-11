@@ -218,9 +218,35 @@ const slatePayload = readJSON("mlb_games_today.json", { games: [] });
 const poolPayload = readJSON("mlb_player_pool.json", { players: [] });
 const hrPayload = readJSON("mlb_home_runs.json", []);
 
-const slateGames = arr(slatePayload);
+const allSlateGames = arr(slatePayload);
 const poolHitters = arr(poolPayload);
 const scoredHitters = arr(hrPayload);
+const analysisGamePks = new Set(
+  poolHitters
+    .map(hitter => clean(hitter.gamePk))
+    .filter(Boolean)
+);
+
+if (!analysisGamePks.size) {
+  throw new Error("Current player pool contains no canonical analysis game IDs");
+}
+
+const slateGames = allSlateGames.filter(game => analysisGamePks.has(clean(game.gamePk)));
+
+if (slateGames.length !== analysisGamePks.size) {
+  throw new Error(
+    `Current player pool references ${analysisGamePks.size} analysis games, but only ${slateGames.length} exist in mlb_games_today.json`
+  );
+}
+
+for (const game of allSlateGames) {
+  if (!analysisGamePks.has(clean(game.gamePk))) {
+    console.log(
+      `Skipping non-canonical doubleheader analysis game: ${game.matchup || game.gamePk} ` +
+      `gamePk ${game.gamePk}`
+    );
+  }
+}
 
 const scoredById = new Map();
 const scoredByName = new Map();
@@ -263,7 +289,9 @@ const probablePitcherIds = [...new Set(slateGames.flatMap(game => [
 ]).filter(Boolean).map(String))];
 
 if (probablePitcherIds.length !== slateGames.length * 2) {
-  throw new Error(`Current slate has ${probablePitcherIds.length} probable pitcher IDs for ${slateGames.length} games`);
+  throw new Error(
+    `Current analysis slate has ${probablePitcherIds.length} probable pitcher IDs for ${slateGames.length} games`
+  );
 }
 
 const pitcherStatsById = new Map();

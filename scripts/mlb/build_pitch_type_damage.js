@@ -7,6 +7,9 @@ const DATA_DIR = path.join(ROOT, "website", "data");
 const PLAYER_POOL_FILE = path.join(DATA_DIR, "mlb_player_pool.json");
 const OUT_FILE = path.join(DATA_DIR, "pitch_type_damage.json");
 const CACHE_FILE = path.join(DATA_DIR, "pitch_type_damage_cache.json");
+const FETCH_CONCURRENCY = 4;
+const MAX_FETCH_ATTEMPTS = 3;
+const RETRY_DELAY_MS = 1000;
 
 function easternDate(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
@@ -135,19 +138,42 @@ function statcastUrl(playerId) {
 
 async function fetchStatcastRows(playerId) {
   const url = statcastUrl(playerId);
+  let lastError = null;
 
-  const res = await fetch(url, {
-    headers: {
-      "user-agent": "Mozilla/5.0"
+  for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          "user-agent": "Mozilla/5.0"
+        }
+      });
+
+      if (res.ok) {
+        const text = await res.text();
+        return parseCsv(text);
+      }
+
+      const error = new Error(`Statcast failed ${res.status}`);
+      error.retryable = res.status === 429 || res.status >= 500;
+      lastError = error;
+    } catch (error) {
+      error.retryable = true;
+      lastError = error;
     }
-  });
 
-  if (!res.ok) {
-    throw new Error(`Statcast failed ${res.status}`);
+    if (!lastError.retryable || attempt === MAX_FETCH_ATTEMPTS) {
+      throw lastError;
+    }
+
+    const delay = RETRY_DELAY_MS * attempt;
+    console.warn(
+      `RETRY Statcast player ${playerId} after attempt ${attempt}/${MAX_FETCH_ATTEMPTS}: ` +
+      `${lastError.message}; waiting ${delay}ms`
+    );
+    await sleep(delay);
   }
 
-  const text = await res.text();
-  return parseCsv(text);
+  throw lastError || new Error("Statcast request failed without an error response");
 }
 
 function isBattedBall(row) {
@@ -345,7 +371,7 @@ async function main() {
     players: {}
   };
 
-  for (const row of players) {
+  const preparedPlayers = players.map((row, index) => {
     const player = clean(row.player);
     const playerId = clean(row.playerId || row.mlbId || row.id);
 
@@ -353,56 +379,110 @@ async function main() {
       throw new Error(`${player || "unknown player"}: missing MLB player ID; existing outputs were not replaced`);
     }
 
-    try {
-      const cacheKey = `${playerId}|${SEASON}`;
-      const cached = cache.players?.[cacheKey];
+    return { index, row, player, playerId };
+  });
 
-      const cacheDate = easternDate(cached?.cached_at);
+  const results = new Array(preparedPlayers.length);
+  const uncached = [];
 
-      if (cached?.pitchDamage && cacheDate === SLATE_DATE) {
-        output.players[player] = {
+  for (const item of preparedPlayers) {
+    const { index, row, player, playerId } = item;
+    const cacheKey = `${playerId}|${SEASON}`;
+    const cached = cache.players?.[cacheKey];
+    const cacheDate = easternDate(cached?.cached_at);
+
+    if (cached?.pitchDamage && cacheDate === SLATE_DATE) {
+      results[index] = {
+        player,
+        value: {
           playerId,
           team: row.team || null,
           batSide: row.batSide || null,
           pitchDamage: cached.pitchDamage,
           pitchDamageSource: "real_statcast_pitch_events_cache",
           cached_at: cached.cached_at
-        };
-
-        console.log("CACHE", player, Object.keys(cached.pitchDamage).join(", ") || "no sample");
-        continue;
-      }
-
-      const statcastRows = await fetchStatcastRows(playerId);
-      const pitchDamage = buildPitchDamage(statcastRows);
-
-      output.players[player] = {
-        playerId,
-        team: row.team || null,
-        batSide: row.batSide || null,
-        pitchDamage,
-        pitchDamageSource: Object.keys(pitchDamage).length
-          ? "real_statcast_pitch_events"
-          : "no_real_pitch_sample"
+        }
       };
 
-      cache.players[cacheKey] = {
-        player,
-        playerId,
-        pitchDamage,
-        cached_at: new Date().toISOString()
-      };
-
-      console.log("OK", player, Object.keys(pitchDamage).join(", ") || "no sample");
-      await sleep(150);
-    } catch (err) {
-      console.log("FAIL", player, err.message);
-      throw new Error(
-        `Pitch type damage refresh failed for ${player}; existing outputs were not replaced: ${err.message}`
-      );
+      console.log("CACHE", player, Object.keys(cached.pitchDamage).join(", ") || "no sample");
+    } else {
+      uncached.push({ ...item, cacheKey });
     }
   }
 
+  let cursor = 0;
+  let firstFailure = null;
+
+  async function worker() {
+    while (!firstFailure) {
+      const taskIndex = cursor++;
+      if (taskIndex >= uncached.length) return;
+
+      const { index, row, player, playerId, cacheKey } = uncached[taskIndex];
+
+      try {
+        const statcastRows = await fetchStatcastRows(playerId);
+        const pitchDamage = buildPitchDamage(statcastRows);
+        const cachedAt = new Date().toISOString();
+
+        results[index] = {
+          player,
+          value: {
+            playerId,
+            team: row.team || null,
+            batSide: row.batSide || null,
+            pitchDamage,
+            pitchDamageSource: Object.keys(pitchDamage).length
+              ? "real_statcast_pitch_events"
+              : "no_real_pitch_sample"
+          },
+          cacheKey,
+          cacheValue: {
+            player,
+            playerId,
+            pitchDamage,
+            cached_at: cachedAt
+          }
+        };
+
+        console.log("OK", player, Object.keys(pitchDamage).join(", ") || "no sample");
+        await sleep(150);
+      } catch (err) {
+        console.log("FAIL", player, err.message);
+        firstFailure = new Error(
+          `Pitch type damage refresh failed for ${player}; existing outputs were not replaced: ${err.message}`
+        );
+      }
+    }
+  }
+
+  const workerCount = Math.min(FETCH_CONCURRENCY, uncached.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+
+  if (firstFailure) {
+    throw firstFailure;
+  }
+
+  for (const result of results) {
+    if (!result) {
+      throw new Error("Pitch type damage did not complete every current player; existing outputs were not replaced");
+    }
+
+    output.players[result.player] = result.value;
+
+    if (result.cacheKey) {
+      cache.players[result.cacheKey] = result.cacheValue;
+    }
+  }
+
+  console.log(
+    `Pitch damage sources: ${players.length - uncached.length} current cache, ${uncached.length} live fetches, concurrency ${workerCount}`
+  );
+
+  /*
+   * Cache and output writes intentionally remain below the complete-player check.
+   * A failed live request therefore cannot replace production data with a partial file.
+   */
   if (Object.keys(output.players).length !== players.length) {
     throw new Error(
       `Pitch type damage produced ${Object.keys(output.players).length} players for a ${players.length}-player pool`

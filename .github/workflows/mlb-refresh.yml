@@ -16,7 +16,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 22
 
     steps:
       - name: Checkout repo
@@ -34,7 +34,7 @@ jobs:
         run: npm install
 
       - name: Run MLB refresh only
-        timeout-minutes: 12
+        timeout-minutes: 18
         run: node scripts/run_fast_refresh.js
 
       - name: Validate MLB data

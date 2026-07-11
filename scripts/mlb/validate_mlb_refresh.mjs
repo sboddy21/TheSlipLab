@@ -554,9 +554,25 @@ const pool = read("mlb_player_pool.json");
 if (pool.date !== slateDate) fail(`mlb_player_pool date is ${pool.date}, expected slate date ${slateDate}`);
 if (!Array.isArray(pool.players) || pool.players.length < 50) fail("player pool is too small");
 
+const analysisGamePks = new Set(
+  pool.players
+    .map(player => String(player.gamePk || "").trim())
+    .filter(Boolean)
+);
+
+if (!analysisGamePks.size) fail("player pool contains no canonical analysis game IDs");
+
 const matchups = read("game_pitcher_matchups.json");
-if (!Array.isArray(matchups.games) || matchups.games.length !== games.games.length) {
-  fail("matchup game count does not match mlb_games_today");
+if (!Array.isArray(matchups.games) || matchups.games.length !== analysisGamePks.size) {
+  fail("matchup game count does not match the canonical player-pool games");
+}
+
+const matchupGamePks = new Set(matchups.games.map(game => String(game.gamePk || "").trim()).filter(Boolean));
+if (
+  matchupGamePks.size !== analysisGamePks.size ||
+  [...analysisGamePks].some(gamePk => !matchupGamePks.has(gamePk))
+) {
+  fail("matchup game IDs do not match the canonical player-pool game IDs");
 }
 
 for (const g of matchups.games) {
