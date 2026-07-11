@@ -51,6 +51,34 @@ function requireFresh(label, data, timestampField, dateField = null, expectedDat
   return { file: label, timestampField, timestamp, ageSeconds: Math.floor(age / 1000) };
 }
 
+function requireFinalizedResults(label, data, expectedDate) {
+  const result = requireFresh(label, data, "updatedAt", "date", expectedDate);
+  const scheduled = Number(data?.totalScheduledGames || 0);
+  const finalGames = Number(data?.finalGames || 0);
+  const liveGames = Number(data?.liveGames || 0);
+  const skippedGames = Number(data?.skippedGames || 0);
+
+  if (!scheduled || finalGames !== scheduled || liveGames !== 0 || skippedGames !== 0) {
+    throw new Error(`X queue overnight validation failed: ${label} is not a fully finalized slate`);
+  }
+
+  return { ...result, scheduledGames: scheduled, finalGames };
+}
+
+function requirePregameHistory(label, data) {
+  const timestamp = data?.updatedAt;
+  const parsed = Date.parse(timestamp);
+  const players = data?.history && typeof data.history === "object"
+    ? Object.keys(data.history).length
+    : 0;
+
+  if (!timestamp || !Number.isFinite(parsed) || parsed > Date.now() || !players) {
+    throw new Error(`X queue overnight validation failed: ${label} is missing a valid pregame archive`);
+  }
+
+  return { file: label, timestampField: "updatedAt", timestamp, players, mode: "historical pregame archive" };
+}
+
 const content = readJson(path.join(SITE_CONTENT, "x_posts.json"));
 const decision = readJson(path.join(DATA, "hr_decision_center.json"));
 const weather = readJson(path.join(DATA, "mlb_weather.json"));
@@ -60,9 +88,14 @@ const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"));
 const health = readJson(path.join(DATA, "health_status.json"));
 const history = readJson(HISTORY_FILE, { posts: [] });
 const now = easternParts();
-const slot = currentSlot(now);
+const allowedSlotOverrides = new Set(["morning", "midday", "afternoon", "pregame", "evening", "overnight", "closed"]);
+const requestedSlot = String(process.env.X_SLOT_OVERRIDE || "").trim().toLowerCase();
+if (requestedSlot && !allowedSlotOverrides.has(requestedSlot)) {
+  throw new Error(`X queue validation failed: unknown slot override ${requestedSlot}`);
+}
+const slot = allowedSlotOverrides.has(requestedSlot) ? requestedSlot : currentSlot(now);
 
-if (health?.status !== "healthy" || health?.source !== "mlb_fast_refresh") {
+if (!["overnight", "closed"].includes(slot) && (health?.status !== "healthy" || health?.source !== "mlb_fast_refresh")) {
   throw new Error("X queue freshness validation failed: health_status.json is not a healthy mlb_fast_refresh output");
 }
 
@@ -70,14 +103,15 @@ const yesterday = new Intl.DateTimeFormat("en-CA", {
   timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit"
 }).format(new Date(Date.now() - 24 * 60 * 60 * 1000));
 
-const validatedInputs = slot === "overnight"
-  ? [
+const validatedInputs = slot === "closed"
+  ? [requireFresh("content/x_posts.json", content, "updatedAt", "date")]
+  : slot === "overnight"
+    ? [
       requireFresh("content/x_posts.json", content, "updatedAt", "date"),
-      requireFresh("mlb_results_previous.json", previousResults, "updatedAt", "date", yesterday),
-      requireFresh("hr_ai_history.json", aiHistory, "updatedAt"),
-      requireFresh("health_status.json", health, "generatedAt")
+      requireFinalizedResults("mlb_results_previous.json", previousResults, yesterday),
+      requirePregameHistory("hr_ai_history.json", aiHistory)
     ]
-  : [
+    : [
       requireFresh("content/x_posts.json", content, "updatedAt", "date"),
       requireFresh("hr_decision_center.json", decision, "updatedAt", "pitcherDate"),
       requireFresh("mlb_weather.json", weather, "updatedAt", "date"),
@@ -93,6 +127,7 @@ const slotAlreadyPosted = (Array.isArray(history?.posts) ? history.posts : [])
 
 const due = slotAlreadyPosted ? [] : (Array.isArray(content.posts) ? content.posts : [])
   .filter(post => post.date === now.date && post.slot === slot && !alreadyPosted.has(post.id))
+  .filter(post => slot !== "overnight" || post.verifiedPregame === true)
   .sort((a, b) => Number(b.weight || 0) - Number(a.weight || 0))
   .slice(0, 1)
   .map(post => ({
