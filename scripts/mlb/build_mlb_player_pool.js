@@ -60,6 +60,111 @@ function lineupInfo(player, map, confirmed, battingOrder) {
   };
 }
 
+function gameState(game) {
+  const status = `${game?.abstractStatus || ""} ${game?.status || ""}`.toLowerCase();
+
+  if (
+    status.includes("live") ||
+    status.includes("in progress") ||
+    status.includes("warmup") ||
+    status.includes("delayed") ||
+    status.includes("suspended")
+  ) {
+    return "live";
+  }
+
+  if (
+    status.includes("preview") ||
+    status.includes("scheduled") ||
+    status.includes("pre-game") ||
+    status.includes("pregame")
+  ) {
+    return "upcoming";
+  }
+
+  if (
+    status.includes("final") ||
+    status.includes("completed") ||
+    status.includes("game over")
+  ) {
+    return "final";
+  }
+
+  return "unavailable";
+}
+
+function matchupKey(game) {
+  return [String(game.awayTeamId), String(game.homeTeamId)].sort().join("|");
+}
+
+function isAnalysisReady(game) {
+  return Boolean(game?.awayProbablePitcherId && game?.homeProbablePitcherId);
+}
+
+function selectRelevantGame(games) {
+  const ordered = games
+    .filter(isAnalysisReady)
+    .sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate));
+
+  if (!ordered.length) return null;
+
+  const live = ordered.filter(game => gameState(game) === "live");
+  const upcoming = ordered.filter(game => gameState(game) === "upcoming");
+  const finals = ordered.filter(game => gameState(game) === "final");
+
+  if (live.length) return live[0];
+  if (upcoming.length) return upcoming[0];
+  if (finals.length) return finals[finals.length - 1];
+
+  return ordered[0];
+}
+
+function selectAnalysisGames(games) {
+  const repeatedMatchups = new Map();
+
+  for (const game of games) {
+    const key = matchupKey(game);
+    if (!repeatedMatchups.has(key)) repeatedMatchups.set(key, []);
+    repeatedMatchups.get(key).push(game);
+  }
+
+  const selectedGamePks = new Set();
+
+  for (const matchupGames of repeatedMatchups.values()) {
+    const selected = selectRelevantGame(matchupGames);
+
+    if (!selected) {
+      for (const game of matchupGames) {
+        console.log(
+          `Skipping analysis until both probable pitchers are announced: ${game.matchup} ` +
+          `gamePk ${game.gamePk}`
+        );
+      }
+      continue;
+    }
+
+    selectedGamePks.add(String(selected.gamePk));
+
+    if (matchupGames.length > 1) {
+      console.log(
+        `Doubleheader analysis game selected: ${selected.matchup} gamePk ${selected.gamePk} ` +
+        `(${gameState(selected)}, ${selected.gameDate}) from ${matchupGames.length} scheduled games`
+      );
+    }
+
+    for (const game of matchupGames) {
+      if (!isAnalysisReady(game)) {
+        console.log(
+          `Skipping analysis until both probable pitchers are announced: ${game.matchup} ` +
+          `gamePk ${game.gamePk}`
+        );
+      }
+    }
+  }
+
+  return games.filter(game => selectedGamePks.has(String(game.gamePk)));
+}
+
 
 async function getRoster(teamId) {
   const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster/Active`;
@@ -86,10 +191,15 @@ async function main() {
 
   const gamesData = readJson(GAMES_FILE);
   const games = gamesData.games || [];
+  const analysisGames = selectAnalysisGames(games);
+
+  if (!analysisGames.length) {
+    throw new Error("No MLB games currently have both probable pitchers announced");
+  }
 
   const pool = [];
 
-  for (const game of games) {
+  for (const game of analysisGames) {
     console.log(`Building pool for ${game.matchup}`);
 
     const awayRoster = await getRoster(game.awayTeamId);
