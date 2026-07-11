@@ -2,639 +2,289 @@ import fs from "fs";
 import path from "path";
 
 const ROOT = process.cwd();
-const DATA = path.join(ROOT, "website/data");
-const CONTENT_DIR = path.join(DATA, "content");
-const EXPORT_DIR = path.join(ROOT, "exports/content");
+const DATA = path.join(ROOT, "website", "data");
+const CONTENT = path.join(DATA, "content");
+const EXPORTS = path.join(ROOT, "exports", "content");
+const OUT_JSON = path.join(CONTENT, "x_posts.json");
+const OUT_TXT = path.join(EXPORTS, "x_posts.txt");
+const HISTORY_FILE = path.join(CONTENT, "x_post_history.json");
+const SITE_URL = "https://thesliplab.com";
 
-const OUT_JSON = path.join(CONTENT_DIR, "x_posts.json");
-const OUT_TXT = path.join(EXPORT_DIR, "x_posts.txt");
-const HISTORY_FILE = path.join(CONTENT_DIR, "x_post_history.json");
-
-fs.mkdirSync(CONTENT_DIR, { recursive: true });
-fs.mkdirSync(EXPORT_DIR, { recursive: true });
-
-const TODAY = new Date().toISOString().slice(0, 10);
-const NOW = new Date().toISOString();
+fs.mkdirSync(CONTENT, { recursive: true });
+fs.mkdirSync(EXPORTS, { recursive: true });
 
 function readJson(file, fallback = {}) {
-  try {
-    if (!fs.existsSync(file)) return fallback;
-    return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
-    return fallback;
-  }
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return fallback; }
 }
 
-function writeJson(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
+function clean(value) { return String(value ?? "").replace(/\s+/g, " ").trim(); }
+function num(value, fallback = 0) { const n = Number(value); return Number.isFinite(n) ? n : fallback; }
+function one(value) { return num(value).toFixed(1); }
+function arr(value) { return Array.isArray(value) ? value : []; }
+function norm(value) { return clean(value).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
+function easternDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit"
+  }).format(new Date());
 }
 
-function clean(v) {
-  return String(v ?? "").replace(/\s+/g, " ").trim();
+function fingerprint(text) {
+  return clean(text).toLowerCase().replace(/[0-9]+(?:\.[0-9]+)?/g, "#")
+    .replace(/[^a-z# ]/g, "").split(/\s+/).filter(Boolean).slice(0, 60).join(" ");
 }
 
-function num(v, d = 0) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : d;
+function similarity(a, b) {
+  const A = new Set(fingerprint(a).split(" ").filter(Boolean));
+  const B = new Set(fingerprint(b).split(" ").filter(Boolean));
+  if (!A.size || !B.size) return 0;
+  let shared = 0;
+  for (const word of A) if (B.has(word)) shared++;
+  return shared / Math.max(A.size, B.size);
 }
 
-function arr(v) {
-  return Array.isArray(v) ? v : [];
-}
-
-function uniqBy(list, keyFn) {
-  const seen = new Set();
-  return list.filter(item => {
-    const key = keyFn(item);
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
+function uniquePlayers(rows) {
+  const used = new Set();
+  return arr(rows).filter(row => {
+    const key = norm(row?.player || row?.name);
+    if (!key || used.has(key)) return false;
+    used.add(key);
     return true;
   });
 }
 
-function name(r) {
-  return clean(r.name || r.player || r.playerName || r.batter || r.hitter || r.fullName || "Unknown");
+function reasonList(row, limit = 3) {
+  return arr(row?.reasons).map(clean)
+    .filter(reason => reason && !/projected unknown|unknown lineup/i.test(reason))
+    .slice(0, limit);
 }
 
-function team(r) {
-  return clean(r.team || r.teamAbbr || r.batterTeam || r.playerTeam || r.club || "");
+function reasonSentence(row) {
+  const reasons = reasonList(row, 3);
+  if (!reasons.length) return "The profile is being driven by the current model signal rather than name value.";
+  const sentence = reasons.length === 1
+    ? reasons[0]
+    : `${reasons.slice(0, -1).join(", ")} and ${reasons.at(-1)}`;
+  return `${sentence[0].toUpperCase()}${sentence.slice(1)}.`;
 }
 
-function score(r) {
-  return num(
-    r.hrConfidence ??
-    r.currentScore ??
-    r.bestScore ??
-    r.stackScore ??
-    r.consensusScore ??
-    r.score ??
-    r.hrScore ??
-    r.modelScore ??
-    r.finalScore ??
-    r.aiScore ??
-    r.valueScore ??
-    r.hrProbabilityScore ??
-    0
-  );
+function playerLine(row) {
+  const pitchEdge = num(row.pitchEdge);
+  const parts = [
+    `${clean(row.player)} — ${one(row.hrConfidence)} HR confidence`,
+    row.bestPitch ? `${clean(row.bestPitch)} matchup${pitchEdge > 0 && pitchEdge <= 100 ? ` ${one(pitchEdge)}` : ""}` : "",
+    row.confirmedLineup && row.lineupSpot ? `confirmed batting ${row.lineupSpot}` : ""
+  ].filter(Boolean);
+  return parts.join(" | ");
 }
 
-function odds(r) {
-  return clean(r.odds || r.bestOdds || r.hrOdds || r.price || "");
-}
+const decision = readJson(path.join(DATA, "hr_decision_center.json"));
+const vulnerability = readJson(path.join(DATA, "pitcher_vulnerability.json"));
+const weather = readJson(path.join(DATA, "mlb_weather.json"));
+const games = readJson(path.join(DATA, "mlb_games_today.json"));
+const results = readJson(path.join(DATA, "mlb_results.json"));
+const history = readJson(HISTORY_FILE, { posts: [] });
 
-function shortPlayer(r) {
-  const t = team(r);
-  const o = odds(r);
-  const s = score(r);
-  let out = t ? `${name(r)} (${t})` : name(r);
-  if (s) out += ` | ${s.toFixed(1)}`;
-  if (o) out += ` | ${o}`;
-  return out;
-}
+const allPlayers = uniquePlayers(decision.allPlayers)
+  .sort((a, b) => num(b.hrConfidence) - num(a.hrConfidence));
+const best = uniquePlayers(decision.sections?.bestPicks).slice(0, 8);
+const value = uniquePlayers(decision.sections?.bestValue).slice(0, 8);
+const confirmed = allPlayers.filter(row => row.confirmedLineup && num(row.lineupSpot) > 0)
+  .sort((a, b) => num(b.hrConfidence) - num(a.hrConfidence));
+const pitchers = arr(vulnerability.pitchers).slice().sort((a, b) => num(b.vulnerability) - num(a.vulnerability));
+const gameRows = arr(games.games);
+const weatherRows = arr(weather.weather);
+const homeRuns = arr(results.homeRuns);
 
-function oneLinePlayer(r) {
-  const t = team(r);
-  return t ? `${name(r)} (${t})` : name(r);
-}
+const recentPosts = arr(history.posts).filter(post => {
+  const time = Date.parse(post.posted_at || post.createdAt || "");
+  return post.status === "posted" && Number.isFinite(time) && time >= Date.now() - 14 * 86400000;
+});
 
-function normalizeText(text) {
-  return clean(text)
-    .toLowerCase()
-    .replace(/[0-9]+(\.[0-9]+)?/g, "#")
-    .replace(/[^a-z# ]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+const candidates = [];
+const TODAY = easternDate();
+const NOW = new Date().toISOString();
 
-function fingerprint(text) {
-  return normalizeText(text).split(" ").filter(Boolean).slice(0, 42).join(" ");
-}
-
-function similarity(a, b) {
-  const A = new Set(normalizeText(a).split(" ").filter(Boolean));
-  const B = new Set(normalizeText(b).split(" ").filter(Boolean));
-  if (!A.size || !B.size) return 0;
-  let hits = 0;
-  for (const x of A) if (B.has(x)) hits++;
-  return hits / Math.max(A.size, B.size);
-}
-
-function recentHistory(history, days = 14) {
-  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-  return arr(history.posts)
-    .filter(p => p.status === "posted" && p.x_post_id)
-    .filter(p => {
-      const t = Date.parse(p.posted_at || p.createdAt || p.date || "");
-      return Number.isFinite(t) && t >= cutoff;
-    });
-}
-
-function tooSimilar(text, recent) {
-  return recent.some(p => similarity(text, p.text || "") >= 0.56);
-}
-
-function trimPost(text) {
-  const t = clean(text);
-  if (t.length <= 278) return t;
-  return t.slice(0, 275).replace(/\s+\S*$/, "") + "...";
-}
-
-function sectionRows(decision, key) {
-  const s = decision.sections?.[key];
-  if (Array.isArray(s)) return s;
-  if (Array.isArray(s?.picks)) return s.picks;
-  if (Array.isArray(s?.picks)) return s.picks;
-  if (Array.isArray(s?.players)) return s.players;
-  if (Array.isArray(s?.rows)) return s.rows;
-  return [];
-}
-
-function topRows(...groups) {
-  return uniqBy(groups.flat().filter(Boolean), r => name(r).toLowerCase())
-    .sort((a, b) => score(b) - score(a));
-}
-
-const decision = readJson(path.join(DATA, "hr_decision_center.json"), {});
-const hrBoard = readJson(path.join(DATA, "mlb_home_runs.json"), {});
-const weather = readJson(path.join(DATA, "mlb_weather.json"), {});
-const ai = readJson(path.join(DATA, "hr_ai_breakdowns.json"), {});
-const stacks = readJson(path.join(DATA, "hr_ai_stacks.json"), {});
-const movement = readJson(path.join(DATA, "hr_ai_movement.json"), {});
-const hof = readJson(path.join(DATA, "hr_ai_hof.json"), {});
-const history = readJson(HISTORY_FILE, { posts: [], weather: [] });
-const recent = recentHistory(history, 14);
-
-const allPlayers = topRows(
-  arr(decision.allPlayers),
-  arr(hrBoard),
-  arr(hrBoard.players),
-  arr(hrBoard.rows),
-  arr(hrBoard.allPlayers)
-);
-
-const best = topRows(sectionRows(decision, "bestPicks"), sectionRows(decision, "ifOnlyOne"), allPlayers).slice(0, 20);
-const onePick = topRows(sectionRows(decision, "ifOnlyOne"), best).slice(0, 8);
-const value = topRows(sectionRows(decision, "bestValue"), sectionRows(decision, "lottoBombs")).slice(0, 12);
-const safe = topRows(sectionRows(decision, "safestPlays"), best).slice(0, 12);
-const bullpen = topRows(sectionRows(decision, "bullpenBoosts")).slice(0, 12);
-const pitch = topRows(sectionRows(decision, "pitchTypeEdges"), sectionRows(decision, "pitchTypeDestruction")).slice(0, 12);
-const lotto = topRows(sectionRows(decision, "lottoBombs"), value).slice(0, 12);
-const aiRows = topRows(arr(ai.players), arr(ai.rows), arr(ai.breakdowns)).slice(0, 20);
-const risers = topRows(arr(movement.risers), arr(movement.biggestRisers)).slice(0, 10);
-const hofRows = topRows(arr(hof.goatBoard), arr(hof.leaderboard), arr(hof.players), arr(hof.rows)).slice(0, 10);
-const stackRows = arr(stacks.stacks || stacks.rows).slice(0, 8);
-
-function add(candidates, type, slot, weight, text, entities = [], meta = {}) {
-  const finalText = trimPost(text);
-  if (!finalText || finalText.length < 40) return;
+function add(slot, type, weight, text, players = [], meta = {}) {
+  const body = text.trim();
+  if (body.length < 60) return;
   candidates.push({
-    id: `${TODAY}-${type}-${candidates.length + 1}`,
+    id: `${TODAY}_${slot.toUpperCase()}_${type.toUpperCase()}`,
     date: TODAY,
     createdAt: NOW,
-    type,
     slot,
+    type,
     weight,
-    text: finalText,
-    post: finalText,
-    entities: entities.map(clean).filter(Boolean),
-    fingerprint: fingerprint(finalText),
+    text: body,
+    post: body,
+    players: players.map(clean).filter(Boolean),
+    fingerprint: fingerprint(body),
     ...meta
   });
 }
 
-function buildWeatherEdges() {
-  const rows = arr(weather.games || weather.rows || weather.venues || weather.parks || weather.weather);
-  return rows.map(g => {
-    const park = clean(g.park || g.stadium || g.venue || g.ballpark || g.name);
-    const game = clean(g.game || g.matchup || g.awayHome || "");
-    const temp = num(g.temp ?? g.temperature ?? g.gameTemp);
-    const wind = num(g.windSpeed ?? g.wind_mph ?? g.windMph ?? g.wind ?? g.windSpeedMph);
-    const dir = clean(g.windDirection || g.wind_dir || g.windText || g.windDescription || "");
-    const carry = num(g.carryScore ?? g.weatherScore ?? g.hrWeatherScore ?? g.score);
-    const dome = Boolean(g.dome || g.isDome || /dome|roof/i.test(clean(g.roof || g.condition)));
-    const edge = carry + Math.max(0, wind - 9) * 3.2 + Math.max(0, temp - 78) * 1.3 - (dome ? 20 : 0);
-
-    return { park, game, temp, wind, dir, carry, dome, edge };
-  })
-    .filter(g => g.park && !g.dome)
-    .filter(g => g.wind >= 12 || g.temp >= 84 || g.carry >= 72 || g.edge >= 82)
-    .sort((a, b) => b.edge - a.edge)
-    .slice(0, 5);
-}
-
-function weatherSignature(edges) {
-  return edges.map(g => {
-    const tempBucket = Math.round(g.temp / 5) * 5;
-    const windBucket = Math.round(g.wind / 3) * 3;
-    const dirKey = g.dir.toLowerCase().replace(/[^a-z]/g, "").slice(0, 10);
-    return `${g.park}:${tempBucket}:${windBucket}:${dirKey}`;
-  }).join("|");
-}
-
-function weatherChanged(sig) {
-  if (!sig) return false;
-  const recentWeather = arr(history.weather)
-    .filter(w => w.status === "posted" && w.x_post_id)
-    .slice(0, 14);
-  return !recentWeather.some(w => w.signature === sig);
-}
-
-const candidates = [];
-
 if (best.length >= 3) {
-  add(candidates, "model_top_3", "morning", 98,
-`🧪 THE SLIP LAB READ
+  const lead = best[0];
+  add("morning", "slate_read", 100,
+`I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:
 
-Top HR profiles today:
+1. ${playerLine(best[0])}
+2. ${playerLine(best[1])}
+3. ${playerLine(best[2])}
 
-1. ${shortPlayer(best[0])}
-2. ${shortPlayer(best[1])}
-3. ${shortPlayer(best[2])}
+The important part: ${reasonSentence(lead)}
 
-Not locks. Just the cleanest power profiles on the slate.`,
-  best.slice(0, 3).map(name));
-
-  add(candidates, "board_separation", "morning", 93,
-`Today's HR board has separation.
-
-The model is not treating these bats the same:
-
-• ${oneLinePlayer(best[0])}
-• ${oneLinePlayer(best[1])}
-• ${oneLinePlayer(best[2])}
-
-When the gap is real, I want to know it early.`,
-  best.slice(0, 3).map(name));
-
-  add(candidates, "no_force_board", "evening", 72,
-`Reminder before first pitch:
-
-The board is a filter, not a permission slip.
-
-Best profiles:
-1. ${oneLinePlayer(best[0])}
-2. ${oneLinePlayer(best[1])}
-3. ${oneLinePlayer(best[2])}
-
-Use the edge. Do not force the bet.`,
-  best.slice(0, 3).map(name));
+Who is your favorite HR look today?`, best.slice(0, 3).map(row => row.player));
 }
 
-if (onePick.length >= 1) {
-  add(candidates, "if_only_one", "morning", 100,
-`🚀 IF I HAD TO PICK ONE
+if (confirmed.length) {
+  const row = confirmed[0];
+  add("midday", "lineup_spotlight", 96,
+`The confirmed lineups gave me one profile worth revisiting: ${clean(row.player)}.
 
-${shortPlayer(onePick[0])}
+Batting ${row.lineupSpot} for ${clean(row.team)} against ${clean(row.opposingPitcher || row.pitcher || "the listed starter")}.
 
-The profile checks the most boxes today:
-• Power path
-• Model score
-• Slate separation
+${reasonSentence(row)} Projected plate appearances: ${one(row.projectedPlateAppearances)}.
 
-One lean. Not twenty guesses.`,
-  [name(onePick[0])]);
-
-  add(candidates, "single_bullet", "afternoon", 88,
-`One hitter the model keeps pulling me back to:
-
-${shortPlayer(onePick[0])}
-
-Sometimes the best answer is not adding more names.
-
-It is knowing which name belongs at the top.`,
-  [name(onePick[0])]);
+That is the kind of lineup context that can turn an interesting profile into a playable one.`, [row.player]);
 }
 
-if (value.length >= 3) {
-  add(candidates, "value_watch", "morning", 86,
-`💰 VALUE WATCH
+if (pitchers.length) {
+  const pitcher = pitchers[0];
+  const bats = allPlayers.filter(row => norm(row.opposingPitcher || row.pitcher) === norm(pitcher.pitcher || pitcher.name)).slice(0, 2);
+  const batText = bats.length
+    ? `The two bats I would inspect first are ${bats.map(row => clean(row.player)).join(" and ")}.`
+    : `This is a game environment I would inspect before narrowing the hitter board.`;
+  add("afternoon", "pitcher_problem", 94,
+`One pitching matchup stands out today: ${clean(pitcher.pitcher || pitcher.name)} vs ${clean(pitcher.opponent)}.
 
-The model likes the number more than the market may realize:
+Vulnerability index: ${one(pitcher.vulnerability)}
+ERA: ${one(pitcher.stats?.era)}
+HR allowed: ${num(pitcher.stats?.homeRuns)} in ${one(pitcher.stats?.inningsPitched)} innings
 
-1. ${shortPlayer(value[0])}
-2. ${shortPlayer(value[1])}
-3. ${shortPlayer(value[2])}
+${batText}
 
-Price matters. Always.`,
-  value.slice(0, 3).map(name));
-
-  add(candidates, "market_misprice", "afternoon", 79,
-`The most interesting part of today's board might be value.
-
-Not just who can homer.
-
-Who is priced like they cannot.
-
-• ${oneLinePlayer(value[0])}
-• ${oneLinePlayer(value[1])}
-• ${oneLinePlayer(value[2])}`,
-  value.slice(0, 3).map(name));
+Is this the game you are targeting, or are you fading the obvious spot?`, bats.map(row => row.player));
 }
 
-if (safe.length >= 3) {
-  add(candidates, "safe_profiles", "morning", 76,
-`🛡️ CLEANER HR PROFILES
+if (value.length) {
+  const row = value[0];
+  add("afternoon", "value_thought", 86,
+`A less obvious name on my board today: ${clean(row.player)}.
 
-Nothing is safe in HR betting.
+The model is not calling this a safe play. It is saying the matchup may be better than the market perception: ${reasonSentence(row)}
 
-But these are the steadier profiles today:
+HR confidence ${one(row.hrConfidence)} | Pitch edge ${one(row.pitchEdge)} | Opponent ${clean(row.opposingPitcher || row.pitcher)}
 
-1. ${shortPlayer(safe[0])}
-2. ${shortPlayer(safe[1])}
-3. ${shortPlayer(safe[2])}
-
-Cleaner path. Less noise.`,
-  safe.slice(0, 3).map(name));
+Would you rather play the stronger name or the better price?`, [row.player]);
 }
 
-if (bullpen.length >= 3) {
-  add(candidates, "bullpen_boost", "afternoon", 80,
-`🔥 BULLPEN WATCH
+if (best.length) {
+  const row = confirmed[0] || best[0];
+  const finalMetrics = [
+    `HR confidence ${one(row.hrConfidence)}`,
+    `Power ${one(row.powerScore)}`,
+    num(row.pitchEdge) > 0 && num(row.pitchEdge) <= 100 ? `Pitch edge ${one(row.pitchEdge)}` : "",
+    `Bullpen context ${one(row.bullpen)}`
+  ].filter(Boolean).join("\n");
+  add("pregame", "final_read", 98,
+`Final HR board check: if I had to narrow the entire slate to one profile, I keep coming back to ${clean(row.player)}.
 
-The matchup does not end when the starter leaves.
+${reasonSentence(row)}
 
-Late-game boost names:
+${finalMetrics}
 
-1. ${shortPlayer(bullpen[0])}
-2. ${shortPlayer(bullpen[1])}
-3. ${shortPlayer(bullpen[2])}
+Full player breakdown: ${SITE_URL}/mlb.html
 
-Nine innings matter.`,
-  bullpen.slice(0, 3).map(name));
-
-  add(candidates, "late_game_angle", "evening", 74,
-`Late-game HR angle:
-
-If these starters exit early, the model likes the damage path for:
-
-• ${oneLinePlayer(bullpen[0])}
-• ${oneLinePlayer(bullpen[1])}
-• ${oneLinePlayer(bullpen[2])}
-
-Bullpens turn good spots into great ones.`,
-  bullpen.slice(0, 3).map(name));
+One lean—not a guarantee.`, [row.player]);
 }
 
-if (pitch.length >= 3) {
-  add(candidates, "pitch_type_edge", "afternoon", 84,
-`🎯 PITCH TYPE EDGE
+const weatherGames = weatherRows.map(row => {
+  const game = gameRows.find(item => norm(item.venue) === norm(row.venue));
+  const carry = num(row.carryScore ?? row.hrWeatherBoost ?? row.weatherScore);
+  return { ...row, matchup: game?.matchup || "", carry };
+}).filter(row => row.matchup && (num(row.windSpeed) >= 10 || num(row.temp) >= 82 || row.carry > 0))
+  .sort((a, b) => b.carry - a.carry || num(b.windSpeed) - num(a.windSpeed));
 
-Today's best pitch-mix fits:
+if (weatherGames.length) {
+  const row = weatherGames[0];
+  add("midday", "weather_note", 78,
+`Weather note—not a pick by itself:
 
-1. ${shortPlayer(pitch[0])}
-2. ${shortPlayer(pitch[1])}
-3. ${shortPlayer(pitch[2])}
+${row.matchup} at ${clean(row.venue)} is the environment I am watching most closely.
 
-This is why the matchup matters more than the name.`,
-  pitch.slice(0, 3).map(name));
+${Math.round(num(row.temp))}° | ${one(row.windSpeed)} mph ${clean(row.windCompass)}
 
-  add(candidates, "arsenal_problem", "evening", 77,
-`A pitcher can look fine overall and still have the wrong arsenal today.
-
-Pitch-type problem bats:
-
-• ${oneLinePlayer(pitch[0])}
-• ${oneLinePlayer(pitch[1])}
-• ${oneLinePlayer(pitch[2])}`,
-  pitch.slice(0, 3).map(name));
+Weather can amplify a good power matchup. It cannot rescue a bad one. Which park conditions are you watching today?`, []);
 }
 
-if (lotto.length >= 3) {
-  add(candidates, "lotto_bombs", "afternoon", 70,
-`💣 LOTTO BOMBS
+if (homeRuns.length) {
+  const documentedHits = homeRuns.map(result => ({
+    result,
+    pregame: allPlayers.find(player => norm(player.player) === norm(result.player || result.batter))
+  })).filter(item => item.pregame && (num(item.pregame.hrConfidence) >= 55 || /elite|strong/i.test(clean(item.pregame.tier))))
+    .sort((a, b) => num(b.pregame.hrConfidence) - num(a.pregame.hrConfidence));
 
-Not the safest board.
+  if (documentedHits.length) {
+    const { result: row, pregame } = documentedHits[0];
+    const evidence = [
+      `${clean(pregame.tier)} pregame tier`,
+      `${one(pregame.hrConfidence)} pregame HR confidence`,
+      `${one(pregame.powerScore)} power score`,
+      pregame.confirmedLineup && pregame.lineupSpot ? `confirmed batting ${pregame.lineupSpot}` : "",
+      row.distance ? `${Math.round(num(row.distance))} feet` : "",
+      row.exitVelocity ? `${one(row.exitVelocity)} mph EV` : ""
+    ].filter(Boolean);
+    add("evening", "model_receipt", 100,
+`Model receipt from tonight: ${clean(row.player || row.batter)} went deep.
 
-The ceiling board:
+${evidence.map(item => `• ${item}`).join("\n")}
 
-1. ${shortPlayer(lotto[0])}
-2. ${shortPlayer(lotto[1])}
-3. ${shortPlayer(lotto[2])}
+The model had ${clean(row.player || row.batter)} graded ${clean(pregame.tier)} before first pitch.
 
-These are the fun ones, not the comfortable ones.`,
-  lotto.slice(0, 3).map(name));
+I would rather show the receipts honestly than pretend every homer was predicted.`, [row.player || row.batter]);
+  }
 }
 
-if (aiRows.length >= 3) {
-  add(candidates, "ai_says", "afternoon", 87,
-`🤖 AI SAYS
+add("evening", "process_question", 55,
+`Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?
 
-Three bats the model is not ignoring today:
-
-1. ${shortPlayer(aiRows[0])}
-2. ${shortPlayer(aiRows[1])}
-3. ${shortPlayer(aiRows[2])}
-
-The goal is not more picks.
-
-The goal is smarter picks.`,
-  aiRows.slice(0, 3).map(name));
-
-  add(candidates, "model_flag", "morning", 75,
-`Model flag for today's slate:
-
-${oneLinePlayer(aiRows[0])} keeps showing up across the data.
-
-That does not mean automatic bet.
-
-It means do not scroll past the profile.`,
-  [name(aiRows[0])]);
-}
-
-if (risers.length >= 3) {
-  add(candidates, "risers", "morning", 82,
-`📈 RISERS
-
-Biggest upward movers in the HR model:
-
-1. ${shortPlayer(risers[0])}
-2. ${shortPlayer(risers[1])}
-3. ${shortPlayer(risers[2])}
-
-Movement matters when the slate changes.`,
-  risers.slice(0, 3).map(name));
-}
-
-if (hofRows.length >= 3) {
-  add(candidates, "goat_board", "evening", 66,
-`🐐 SLIP LAB GOAT BOARD
-
-Long-term model respect list:
-
-1. ${shortPlayer(hofRows[0])}
-2. ${shortPlayer(hofRows[1])}
-3. ${shortPlayer(hofRows[2])}
-
-Daily edges matter.
-
-Track record matters too.`,
-  hofRows.slice(0, 3).map(name));
-}
-
-if (stackRows.length >= 2) {
-  const s1 = clean(stackRows[0].team || stackRows[0].name || stackRows[0].game || "Stack 1");
-  const s2 = clean(stackRows[1].team || stackRows[1].name || stackRows[1].game || "Stack 2");
-
-  add(candidates, "stack_watch", "afternoon", 68,
-`🧬 STACK WATCH
-
-Best HR environments from the stack engine:
-
-1. ${s1}
-2. ${s2}
-
-Sometimes the edge is not one hitter.
-
-Sometimes it is the whole environment.`,
-  [s1, s2]);
-}
-
-const weatherEdges = buildWeatherEdges();
-const wSig = weatherSignature(weatherEdges);
-
-if (weatherEdges.length >= 2 && weatherChanged(wSig)) {
-  add(candidates, "weather_edge", "morning", 73,
-`🌤️ WEATHER EDGE WATCH
-
-Only posting this because today's conditions actually stand out.
-
-${weatherEdges.slice(0, 3).map((g, i) => `${i + 1}. ${g.park} | ${g.temp || "?"}° | ${g.wind || "?"} mph ${g.dir}`.trim()).join("\n")}
-
-Weather amplifies power. It does not create it.`,
-  weatherEdges.map(g => g.park),
-  { weatherSignature: wSig });
-}
-
-const extraStyles = [
-  ["slate_note", "morning", 71, `Slate note:\n\nThe top of the HR board is tighter than usual today.\n\nThat usually means I care more about price, lineup spot, and weather before locking anything in.`],
-  ["discipline", "evening", 64, `Do not confuse a long list with an edge.\n\nThe model can rank 390 bats.\n\nThe job is finding the few that actually separate.`],
-  ["process", "afternoon", 63, `The Slip Lab process today:\n\n1. Build the slate\n2. Score every bat\n3. Check weather\n4. Check pitcher path\n5. Check price\n6. Cut the noise\n\nThat last step is the hardest.`],
-  ["anti_chalk", "afternoon", 61, `A popular name is not automatically a good bet.\n\nA quiet name is not automatically a bad one.\n\nThe model only cares about the profile.`],
-  ["market_note", "morning", 60, `Early board rule:\n\nIf the number moves but the profile does not improve, I do not chase it.\n\nBetter to miss a play than force a bad price.`],
-  ["final_check", "evening", 67, `Final check before betting HRs:\n\nConfirmed lineup matters.\nBatting spot matters.\nWeather matters.\nPrice matters.\n\nThe name alone is not enough.`]
-];
-
-for (const [type, slot, weight, text] of extraStyles) {
-  add(candidates, type, slot, weight, text, []);
-}
-
-const STYLE_COUNT = 40;
-
-const filtered = candidates
-  .map(p => ({
-    ...p,
-    text: trimPost(p.text),
-    post: trimPost(p.text),
-    fingerprint: fingerprint(trimPost(p.text))
-  }))
-  .filter(p => p.text.length >= 40)
-  .filter(p => !tooSimilar(p.text, recent))
-  .sort((a, b) => b.weight - a.weight);
+I built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.`, []);
 
 const selected = [];
-const usedTypes = new Set();
-const usedEntities = new Map();
-
-function entityAllowed(p) {
-  for (const e of p.entities || []) {
-    const key = e.toLowerCase();
-    if ((usedEntities.get(key) || 0) >= 2) return false;
-  }
-  return true;
+for (const slot of ["morning", "midday", "afternoon", "pregame", "evening"]) {
+  const choices = candidates.filter(candidate => candidate.slot === slot).sort((a, b) => b.weight - a.weight);
+  const fresh = choices.find(candidate => !recentPosts.some(post => similarity(candidate.text, post.text || "") >= 0.64));
+  if (fresh) selected.push(fresh);
 }
 
-function takeForSlot(slot, count) {
-  for (const p of filtered) {
-    if (selected.length >= 12) break;
-    if (selected.filter(x => x.slot === slot).length >= count) break;
-    if (selected.some(x => x.text === p.text)) continue;
-    if (usedTypes.has(p.type)) continue;
-    if (!entityAllowed(p)) continue;
-
-    selected.push(p);
-    usedTypes.add(p.type);
-    for (const e of p.entities || []) {
-      const key = e.toLowerCase();
-      usedEntities.set(key, (usedEntities.get(key) || 0) + 1);
-    }
-  }
-}
-
-takeForSlot("morning", 4);
-takeForSlot("afternoon", 4);
-takeForSlot("evening", 4);
-
-for (const p of filtered) {
-  if (selected.length >= 12) break;
-  if (selected.some(x => x.text === p.text)) continue;
-  selected.push(p);
-}
-
-if (selected.length === 0) {
-  const fallbackRows = best.length ? best : allPlayers.slice(0, 12);
-
-  for (const r of fallbackRows.slice(0, 8)) {
-    selected.push({
-      id: `${TODAY}-fallback-${selected.length + 1}`,
-      date: TODAY,
-      createdAt: NOW,
-      slot: selected.length < 3 ? "morning" : selected.length < 6 ? "afternoon" : "evening",
-      type: "fallback_model_note",
-      weight: 50,
-      text: trimPost(`🧪 SLIP LAB MODEL NOTE\n\n${shortPlayer(r)} is one of the stronger HR profiles on today's board.\n\nNot a lock. Just a profile worth checking before first pitch.`),
-      post: "",
-      entities: [name(r)],
-      fingerprint: ""
-    });
-  }
-}
-
-const finalPosts = selected.slice(0, 12).map((p, i) => ({
-  id: `${TODAY}-${String(i + 1).padStart(2, "0")}`,
-  date: TODAY,
-  createdAt: NOW,
-  slot: p.slot,
-  type: p.type,
-  text: p.text,
-  post: p.text,
-  weight: p.weight,
-  entities: p.entities || [],
-  fingerprint: p.fingerprint,
-  weatherSignature: p.weatherSignature || ""
-}));
-
-const queue = {
+const output = {
   updatedAt: NOW,
   date: TODAY,
-  version: "Content Engine 2.0",
-  count: finalPosts.length,
-  styleLibrarySize: STYLE_COUNT,
+  version: "Content Engine 3.0",
+  source: "live Slip Lab MLB production outputs",
+  fakeData: false,
+  count: selected.length,
   rules: [
-    "ES Module compatible",
-    "Tracks recent post history",
-    "Blocks highly similar posts from last 14 days",
-    "Weather posts require a real edge and a changed weather signature",
-    "Rotates morning, afternoon, and evening queue slots",
-    "Chooses strongest stories instead of fixed template order"
+    "One strongest story per daypart",
+    "Every metric comes from a current production JSON input",
+    "Results are not described as predictions without pregame evidence",
+    "Recent post history blocks highly similar language",
+    "Website links appear selectively rather than in every post"
   ],
-  morning: finalPosts.filter(p => p.slot === "morning"),
-  afternoon: finalPosts.filter(p => p.slot === "afternoon"),
-  evening: finalPosts.filter(p => p.slot === "evening"),
-  posts: finalPosts
+  posts: selected,
+  morning: selected.filter(post => post.slot === "morning"),
+  midday: selected.filter(post => post.slot === "midday"),
+  afternoon: selected.filter(post => post.slot === "afternoon"),
+  pregame: selected.filter(post => post.slot === "pregame"),
+  evening: selected.filter(post => post.slot === "evening")
 };
 
-writeJson(OUT_JSON, queue);
+fs.writeFileSync(OUT_JSON, JSON.stringify(output, null, 2));
+fs.writeFileSync(OUT_TXT, selected.map(post => `${post.slot.toUpperCase()} | ${post.type}\n${post.text}`).join("\n\n---\n\n"));
 
-fs.writeFileSync(
-  OUT_TXT,
-  finalPosts.map((p, i) => `POST ${i + 1} | ${p.slot.toUpperCase()} | ${p.type}\n${p.text}`).join("\n\n---\n\n")
-);
-
-console.log("CONTENT ENGINE 2.0 COMPLETE");
-console.log("Posts:", finalPosts.length);
-console.log("Morning:", queue.morning.length);
-console.log("Afternoon:", queue.afternoon.length);
-console.log("Evening:", queue.evening.length);
-console.log("Weather included:", finalPosts.some(p => p.type === "weather_edge") ? "YES" : "NO");
+console.log("CONTENT ENGINE 3.0 COMPLETE");
+console.log("Date:", output.date);
+console.log("Posts:", output.count);
+console.log("Slots:", selected.map(post => post.slot).join(", "));
 console.log("Saved:", OUT_JSON);
-console.log("Export:", OUT_TXT);
