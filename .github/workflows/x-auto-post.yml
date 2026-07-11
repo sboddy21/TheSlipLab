@@ -2,7 +2,11 @@ name: The Slip Lab X Auto Posts
 
 on:
   schedule:
-    - cron: "30 13 * * *"
+    - cron: "35 13 * * *"
+    - cron: "5 16 * * *"
+    - cron: "5 19 * * *"
+    - cron: "5 22 * * *"
+    - cron: "30 2 * * *"
   workflow_dispatch:
 
 permissions:
@@ -39,7 +43,10 @@ jobs:
           echo "X_ACCESS_SECRET=${{ secrets.X_ACCESS_SECRET }}" >> .env
           echo "X_DRY_RUN=${{ secrets.X_DRY_RUN }}" >> .env
 
-      - name: Build daily X queue
+      - name: Build current X stories
+        run: node scripts/build_x_content.js
+
+      - name: Build current X queue
         run: node scripts/content/build_x_daily_queue_v2.js
 
       - name: Post X queue

@@ -48,10 +48,6 @@ async function client() {
   });
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 function scheduledTime(post) {
   return new Date(post.scheduled_for_eastern).getTime();
 }
@@ -80,7 +76,7 @@ function validateQueueFreshness(queue) {
     throw new Error("X queue freshness validation failed: queue is outside the 15-minute production window");
   }
 
-  if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== 4) {
+  if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== 5) {
     throw new Error("X queue freshness validation failed: required live-input validation is missing");
   }
 }
@@ -118,20 +114,6 @@ function validateQueue(posts) {
 
   if (errors.length) {
     throw new Error(`X queue preflight failed:\n - ${errors.join("\n - ")}`);
-  }
-}
-
-async function waitForPostTime(post) {
-  const target = scheduledTime(post);
-  if (!Number.isFinite(target)) {
-    throw new Error(`Invalid scheduled_for_eastern for ${post.id}`);
-  }
-  const now = Date.now();
-  const waitMs = target - now;
-
-  if (waitMs > 0) {
-    console.log(`Waiting ${Math.ceil(waitMs / 1000)} seconds for ${post.id}`);
-    await sleep(waitMs);
   }
 }
 
@@ -189,6 +171,9 @@ async function main() {
 
   const api = DRY_RUN ? null : await client();
   const history = readJson(HISTORY_FILE, { updatedAt: null, posts: [], weather: [] });
+  const postedIds = new Set((Array.isArray(history.posts) ? history.posts : [])
+    .filter(item => item.status === "posted" && item.x_post_id)
+    .map(item => item.id));
 
   let published = 0;
   let dryRuns = 0;
@@ -198,6 +183,11 @@ async function main() {
   const ordered = [...posts].sort((a, b) => scheduledTime(a) - scheduledTime(b));
 
   for (const post of ordered) {
+    if (postedIds.has(post.id)) {
+      console.log(`SKIP HISTORY MATCH: ${post.id}`);
+      skipped++;
+      continue;
+    }
     if (post.posted === true && post.status === "posted" && post.x_post_id) {
       console.log(`SKIP ALREADY POSTED: ${post.id}`);
       skipped++;
@@ -205,8 +195,6 @@ async function main() {
     }
 
     try {
-      await waitForPostTime(post);
-
       const tweetId = await publish(api, post);
 
       if (DRY_RUN) {
