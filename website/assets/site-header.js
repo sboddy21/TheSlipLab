@@ -17,6 +17,7 @@
 
   const items = [
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
+    ["Lab Notes","./blog.html",["/blog.html","/blog-hr-shortlist.html","/blog-pitcher-vulnerability.html","/blog-signal-stack.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
