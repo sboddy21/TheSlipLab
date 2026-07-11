@@ -76,6 +76,18 @@ jobs:
           echo "X_SLOT_OVERRIDE=$SLOT" >> "$GITHUB_ENV"
           echo "Resolved posting slot: ${SLOT:-automatic}"
 
+      - name: Refresh current MLB inputs
+        if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
+        run: node scripts/run_fast_refresh.js
+
+      - name: Build current game context
+        if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
+        run: node scripts/mlb/build_context_factors.js
+
+      - name: Build current HR results
+        if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
+        run: node scripts/mlb/build_hr_results.js
+
       - name: Build current X stories
         run: node scripts/build_x_content.js
 
