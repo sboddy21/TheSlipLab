@@ -61,7 +61,7 @@ function buildMatchupMap(matchups) {
   return map;
 }
 
-function xwobaProfile(zones) {
+function xwobaProfile(zones, { requireSamples = true } = {}) {
   const raw = zones?.raw;
   const values = zones?.xwoba;
   if (!Array.isArray(raw) || raw.length !== 25 || !Array.isArray(values) || values.length !== 25) {
@@ -76,10 +76,10 @@ function xwobaProfile(zones) {
     samples += n(cell?.xwobaCount);
   }
 
-  if (!samples) throw new Error("Statcast profile has no real xwOBA samples");
+  if (!samples && requireSamples) throw new Error("Statcast pitcher profile has no real xwOBA samples");
 
   return {
-    xwoba: total / samples,
+    xwoba: samples ? total / samples : null,
     samples,
     raw,
     values
@@ -95,7 +95,7 @@ function attackLabel(danger) {
 }
 
 function buildZoneGrid(row, hitterCard, pitcherCard) {
-  const hitter = xwobaProfile(hitterCard.zones);
+  const hitter = xwobaProfile(hitterCard.zones, { requireSamples: false });
   const pitcher = xwobaProfile(pitcherCard.zones);
 
   const zones = Array.from({ length: 25 }, (_, index) => {
@@ -124,12 +124,13 @@ function buildZoneGrid(row, hitterCard, pitcherCard) {
 
   return {
     side: String(row.batSide || hitterCard.batSide || "B").toUpperCase(),
-    hitterPower: round(clamp(hitter.xwoba * 100, 0, 100), 2),
+    hitterPower: hitter.xwoba === null ? null : round(clamp(hitter.xwoba * 100, 0, 100), 2),
     pitcherLeak: round(clamp(pitcher.xwoba * 100, 0, 100), 2),
-    hitterXwoba: round(hitter.xwoba),
+    hitterXwoba: hitter.xwoba === null ? null : round(hitter.xwoba),
     pitcherXwobaAllowed: round(pitcher.xwoba),
     hitterSamples: hitter.samples,
     pitcherSamples: pitcher.samples,
+    qualified: hitter.samples > 0,
     qualifiedZones: zones.filter(zone => zone.qualified).length,
     zones
   };

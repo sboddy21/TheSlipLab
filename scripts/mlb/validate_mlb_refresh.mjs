@@ -310,11 +310,11 @@ function validateRealPitcherAttackZones(expectedDate) {
     const mult = 10 ** places;
     return Math.round(Number(value) * mult) / mult;
   };
-  const overallXwoba = raw => {
+  const overallXwoba = (raw, requireSamples = true) => {
     const total = raw.reduce((sum, cell) => sum + Number(cell?.xwobaTotal || 0), 0);
     const count = raw.reduce((sum, cell) => sum + Number(cell?.xwobaCount || 0), 0);
-    if (!count) fail("Real attack-zone validation found a profile without xwOBA samples");
-    return total / count;
+    if (!count && requireSamples) fail("Real attack-zone validation found a pitcher without xwOBA samples");
+    return count ? total / count : null;
   };
 
   for (const player of hr) {
@@ -329,10 +329,14 @@ function validateRealPitcherAttackZones(expectedDate) {
       fail(`Attack-zone pitcher mapping is incorrect for ${player.player}`);
     }
 
-    const hitterOverall = Math.min(100, overallXwoba(hitterCard.zones.raw) * 100);
+    const hitterXwoba = overallXwoba(hitterCard.zones.raw, false);
+    const hitterOverall = hitterXwoba === null ? null : Math.min(100, hitterXwoba * 100);
     const pitcherOverall = Math.min(100, overallXwoba(pitcherCard.zones.raw) * 100);
-    if (Math.abs(Number(row.zones?.hitterPower) - roundTo(hitterOverall)) > 0.01) {
+    if (hitterOverall === null ? row.zones?.hitterPower !== null : Math.abs(Number(row.zones?.hitterPower) - roundTo(hitterOverall)) > 0.01) {
       fail(`Attack-zone hitter power is incorrect for ${player.player}`);
+    }
+    if (row.zones?.qualified !== (hitterOverall !== null)) {
+      fail(`Attack-zone qualification is incorrect for ${player.player}`);
     }
     if (Math.abs(Number(row.zones?.pitcherLeak) - roundTo(pitcherOverall)) > 0.01) {
       fail(`Attack-zone pitcher leak is incorrect for ${player.player}`);
@@ -369,16 +373,19 @@ function validateRealPitcherAttackZones(expectedDate) {
       }
     }
 
-    const avgOverlap = qualifiedCount ? overlapTotal / qualifiedCount : 0;
-    const expectedScore = roundTo(Math.max(0, Math.min(100,
-      roundTo(hitterOverall) * 0.34 +
-      roundTo(pitcherOverall) * 0.34 +
-      avgOverlap * 0.22 +
-      hotCount * 1.8
-    )));
+    const expectedScore = qualifiedCount ? roundTo(Math.max(0, Math.min(100,
+      roundTo(hitterOverall) * 0.34 + roundTo(pitcherOverall) * 0.34 +
+      (overlapTotal / qualifiedCount) * 0.22 + hotCount * 1.8
+    ))) : null;
     const decisionRow = decisionByPlayer.get(player.player);
-    if (!decisionRow || Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01) {
+    if (!decisionRow || (expectedScore === null
+      ? decisionRow.zoneOverlap !== null || decisionRow.zoneSignalAvailable !== false
+      : Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01)) {
       fail(`Decision Center zone overlap is incorrect for ${player.player}`);
+    }
+    const expectedPitcherRisk = expectedScore === null ? roundTo(pitcherOverall) : expectedScore;
+    if (Math.abs(Number(decisionRow.pitcherRisk) - expectedPitcherRisk) > 0.01) {
+      fail(`Decision Center pitcher risk is incorrect for ${player.player}`);
     }
     if (Number(decisionRow.hotZoneCount) !== hotCount) {
       fail(`Decision Center hot-zone count is incorrect for ${player.player}`);
