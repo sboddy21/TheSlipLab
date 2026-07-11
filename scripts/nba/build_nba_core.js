@@ -71,7 +71,7 @@ function minutesSignal(expectedMinutes, confidence) {
 }
 
 function volumeSignal(history) {
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
 
   let score = 0;
@@ -90,7 +90,7 @@ function volumeSignal(history) {
 }
 
 function scoringProfile(history) {
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
   const last10 = history?.last10 || {};
 
@@ -256,7 +256,7 @@ function buildCorePlayer(player, minutesMap, historyMap, usageMap) {
 
     history: {
       gamesPlayed: num(history.gamesPlayed),
-      season: history.season || {},
+      season: history.seasonSummary || {},
       last5: history.last5 || {},
       last10: history.last10 || {},
       recentGames: Array.isArray(history.recentGames) ? history.recentGames : []

@@ -152,34 +152,8 @@ runBuilder(todayStep);
 const todayData = readOutput("NBA Today", "website/data/nba_games_today.json");
 const hasGames = Array.isArray(todayData.games) && todayData.games.length > 0;
 
-const noGameOrder = [
-  "NBA Player Pool",
-  "NBA History",
-  "NBA Core",
-  "NBA Minutes Engine",
-  "NBA Usage Engine",
-  "NBA Team Defense",
-  "NBA Pace Engine",
-  "NBA Defender Engine",
-  "NBA Points Board",
-  "NBA Rebounds Board",
-  "NBA Assists Board",
-  "NBA Threes Board",
-  "NBA Matchup Engine",
-  "NBA Player Cards",
-  "NBA Decision Center"
-];
-
-const selectedSteps = hasGames
-  ? remainingSteps
-  : noGameOrder.map(label => {
-      const step = remainingSteps.find(([stepLabel]) => stepLabel === label);
-      if (!step) throw new Error(`No-game refresh order references unknown builder: ${label}`);
-      return step;
-    });
-
 console.log("NBA slate mode:", hasGames ? "games scheduled" : "no games scheduled");
-selectedSteps.forEach(runBuilder);
+remainingSteps.forEach(runBuilder);
 
 validateRefresh();
 
