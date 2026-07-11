@@ -39,7 +39,20 @@ players.forEach((player, index) => {
     timestamp: now.toISOString(),
     score: Number(player.score || 0),
     rank: Number(player.rank || index + 1),
-    grade: player.grade || "Watch"
+    grade: player.grade || "Watch",
+    confidence: Number(player.confidence || 0),
+    team: player.team || "",
+    opponent: player.opponent || "",
+    pitcher: player.pitcher || "",
+    reasons: Array.isArray(player.reasons) ? player.reasons.slice(0, 5) : [],
+    consensus: Array.isArray(player.consensus) ? player.consensus : [],
+    agreementCount: Number(player.agreementCount || 0),
+    bestPitch: player.bestPitch || "",
+    calloutTier: ["A+", "A"].includes(player.grade)
+      ? "core"
+      : player.grade === "B+" && Number(player.agreementCount || 0) > 0
+        ? "secondary"
+        : "watch"
   });
 
   history.history[key] =

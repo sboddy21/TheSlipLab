@@ -45,6 +45,7 @@ function cleanHrRows(rows) {
       pitcher: r.pitcher || "",
       inning: r.inning || "",
       game: r.game || "",
+      gameStartTime: r.gameStartTime || "",
       score: r.score || "",
       hr: Number(r.hr || r.HR || 1),
       rbi: Number(r.rbi || 0),
