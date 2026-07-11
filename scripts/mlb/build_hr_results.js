@@ -35,6 +35,12 @@ const VALID_STATUSES = new Set([
   "Completed Early"
 ]);
 
+const FINAL_STATUSES = new Set([
+  "Final",
+  "Game Over",
+  "Completed Early"
+]);
+
 async function getJSON(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Request failed ${res.status}: ${url}`);
@@ -183,6 +189,8 @@ async function buildResults(date) {
   const homeRuns = [];
   let checkedGames = 0;
   let skippedGames = 0;
+  let finalGames = 0;
+  let liveGames = 0;
 
   for (const game of games) {
     const gamePk = game?.gamePk;
@@ -194,6 +202,8 @@ async function buildResults(date) {
     }
 
     checkedGames += 1;
+    if (FINAL_STATUSES.has(status)) finalGames += 1;
+    else liveGames += 1;
 
     const feed = await getJSON(`${LIVE_FEED_BASE}/${gamePk}/feed/live`);
     const plays = uniquePlays(feed);
@@ -216,6 +226,7 @@ async function buildResults(date) {
         date,
         gamePk,
         game: gameLabel,
+        gameStartTime: safe(game?.gameDate || feed?.gameData?.datetime?.dateTime),
         status,
         inning: getInning(play),
         batter,
@@ -261,6 +272,8 @@ async function buildResults(date) {
     totalScheduledGames: games.length,
     checkedGames,
     skippedGames,
+    finalGames,
+    liveGames,
     count: homeRuns.length,
     homeRuns
   };

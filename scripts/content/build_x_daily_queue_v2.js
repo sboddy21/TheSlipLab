@@ -28,14 +28,16 @@ function easternParts() {
 }
 
 function currentSlot({ hour }) {
-  if (hour < 4 || hour >= 20) return "evening";
+  if (hour === 1) return "overnight";
+  if (hour < 4) return "closed";
+  if (hour >= 20) return "evening";
   if (hour < 11) return "morning";
   if (hour < 14) return "midday";
   if (hour < 17) return "afternoon";
   return "pregame";
 }
 
-function requireFresh(label, data, timestampField, dateField = null) {
+function requireFresh(label, data, timestampField, dateField = null, expectedDate = easternParts().date) {
   if (!data || typeof data !== "object") throw new Error(`X queue freshness validation failed: ${label} is missing`);
   const timestamp = data[timestampField];
   const parsed = Date.parse(timestamp);
@@ -43,9 +45,8 @@ function requireFresh(label, data, timestampField, dateField = null) {
   if (!timestamp || !Number.isFinite(parsed) || age < 0 || age > MAX_INPUT_AGE_MS) {
     throw new Error(`X queue freshness validation failed: ${label} is outside the 15-minute production window`);
   }
-  const today = easternParts().date;
-  if (dateField && data[dateField] !== today) {
-    throw new Error(`X queue freshness validation failed: ${label} ${dateField} is ${data[dateField] || "missing"}; expected ${today}`);
+  if (dateField && data[dateField] !== expectedDate) {
+    throw new Error(`X queue freshness validation failed: ${label} ${dateField} is ${data[dateField] || "missing"}; expected ${expectedDate}`);
   }
   return { file: label, timestampField, timestamp, ageSeconds: Math.floor(age / 1000) };
 }
@@ -54,6 +55,8 @@ const content = readJson(path.join(SITE_CONTENT, "x_posts.json"));
 const decision = readJson(path.join(DATA, "hr_decision_center.json"));
 const weather = readJson(path.join(DATA, "mlb_weather.json"));
 const results = readJson(path.join(DATA, "mlb_results.json"));
+const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
+const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"));
 const health = readJson(path.join(DATA, "health_status.json"));
 const history = readJson(HISTORY_FILE, { posts: [] });
 const now = easternParts();
@@ -63,13 +66,24 @@ if (health?.status !== "healthy" || health?.source !== "mlb_fast_refresh") {
   throw new Error("X queue freshness validation failed: health_status.json is not a healthy mlb_fast_refresh output");
 }
 
-const validatedInputs = [
-  requireFresh("content/x_posts.json", content, "updatedAt", "date"),
-  requireFresh("hr_decision_center.json", decision, "updatedAt", "pitcherDate"),
-  requireFresh("mlb_weather.json", weather, "updatedAt", "date"),
-  requireFresh("mlb_results.json", results, "updatedAt", "date"),
-  requireFresh("health_status.json", health, "generatedAt")
-];
+const yesterday = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit"
+}).format(new Date(Date.now() - 24 * 60 * 60 * 1000));
+
+const validatedInputs = slot === "overnight"
+  ? [
+      requireFresh("content/x_posts.json", content, "updatedAt", "date"),
+      requireFresh("mlb_results_previous.json", previousResults, "updatedAt", "date", yesterday),
+      requireFresh("hr_ai_history.json", aiHistory, "updatedAt"),
+      requireFresh("health_status.json", health, "generatedAt")
+    ]
+  : [
+      requireFresh("content/x_posts.json", content, "updatedAt", "date"),
+      requireFresh("hr_decision_center.json", decision, "updatedAt", "pitcherDate"),
+      requireFresh("mlb_weather.json", weather, "updatedAt", "date"),
+      requireFresh("mlb_results.json", results, "updatedAt", "date"),
+      requireFresh("health_status.json", health, "generatedAt")
+    ];
 
 const alreadyPosted = new Set((Array.isArray(history?.posts) ? history.posts : [])
   .filter(post => post.status === "posted" && post.x_post_id)

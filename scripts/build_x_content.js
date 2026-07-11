@@ -83,6 +83,8 @@ const vulnerability = readJson(path.join(DATA, "pitcher_vulnerability.json"));
 const weather = readJson(path.join(DATA, "mlb_weather.json"));
 const games = readJson(path.join(DATA, "mlb_games_today.json"));
 const results = readJson(path.join(DATA, "mlb_results.json"));
+const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
+const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"), { history: {} });
 const history = readJson(HISTORY_FILE, { posts: [] });
 
 const allPlayers = uniquePlayers(decision.allPlayers)
@@ -95,6 +97,47 @@ const pitchers = arr(vulnerability.pitchers).slice().sort((a, b) => num(b.vulner
 const gameRows = arr(games.games);
 const weatherRows = arr(weather.weather);
 const homeRuns = arr(results.homeRuns);
+
+function latestPregameSnapshot(result) {
+  const gameStart = Date.parse(result?.gameStartTime || "");
+  if (!Number.isFinite(gameStart)) return null;
+
+  const playerKey = norm(result?.player || result?.batter);
+  const historyEntry = Object.entries(aiHistory.history || {})
+    .find(([name]) => norm(name) === playerKey)?.[1];
+
+  return arr(historyEntry)
+    .filter(snapshot => {
+      const timestamp = Date.parse(snapshot?.timestamp || "");
+      return Number.isFinite(timestamp)
+        && timestamp < gameStart
+        && timestamp >= gameStart - 24 * 60 * 60 * 1000;
+    })
+    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))[0] || null;
+}
+
+function verifiedHit(result) {
+  const snapshot = latestPregameSnapshot(result);
+  if (!snapshot) return null;
+
+  const grade = clean(snapshot.grade);
+  const rank = num(snapshot.rank, 9999);
+  const tier = ["A+", "A"].includes(grade) && rank <= 30
+    ? "core"
+    : grade === "B+" && rank >= 31 && rank <= 56 && num(snapshot.agreementCount) > 0
+      ? "secondary"
+      : null;
+
+  return tier ? { result, snapshot, tier } : null;
+}
+
+function allGamesFinal(payload) {
+  const scheduled = num(payload?.totalScheduledGames);
+  return scheduled > 0
+    && num(payload?.finalGames) === scheduled
+    && num(payload?.liveGames) === 0
+    && num(payload?.skippedGames) === 0;
+}
 
 const recentPosts = arr(history.posts).filter(post => {
   const time = Date.parse(post.posted_at || post.createdAt || "");
@@ -219,19 +262,15 @@ Weather can amplify a good power matchup. It cannot rescue a bad one. Which park
 }
 
 if (homeRuns.length) {
-  const documentedHits = homeRuns.map(result => ({
-    result,
-    pregame: allPlayers.find(player => norm(player.player) === norm(result.player || result.batter))
-  })).filter(item => item.pregame && (num(item.pregame.hrConfidence) >= 55 || /elite|strong/i.test(clean(item.pregame.tier))))
-    .sort((a, b) => num(b.pregame.hrConfidence) - num(a.pregame.hrConfidence));
+  const documentedHits = homeRuns.map(verifiedHit).filter(Boolean)
+    .sort((a, b) => num(a.snapshot.rank, 9999) - num(b.snapshot.rank, 9999));
 
   if (documentedHits.length) {
-    const { result: row, pregame } = documentedHits[0];
+    const { result: row, snapshot } = documentedHits[0];
     const evidence = [
-      `${clean(pregame.tier)} pregame tier`,
-      `${one(pregame.hrConfidence)} pregame HR confidence`,
-      `${one(pregame.powerScore)} power score`,
-      pregame.confirmedLineup && pregame.lineupSpot ? `confirmed batting ${pregame.lineupSpot}` : "",
+      `${clean(snapshot.grade)} pregame grade / rank #${num(snapshot.rank)}`,
+      num(snapshot.confidence) > 0 ? `${one(snapshot.confidence)} pregame HR confidence` : "",
+      snapshot.bestPitch ? `${clean(snapshot.bestPitch)} matchup` : "",
       row.distance ? `${Math.round(num(row.distance))} feet` : "",
       row.exitVelocity ? `${one(row.exitVelocity)} mph EV` : ""
     ].filter(Boolean);
@@ -240,9 +279,46 @@ if (homeRuns.length) {
 
 ${evidence.map(item => `• ${item}`).join("\n")}
 
-The model had ${clean(row.player || row.batter)} graded ${clean(pregame.tier)} before first pitch.
+The archived model snapshot had ${clean(row.player || row.batter)} graded ${clean(snapshot.grade)} before first pitch.
 
 I would rather show the receipts honestly than pretend every homer was predicted.`, [row.player || row.batter]);
+  }
+}
+
+if (allGamesFinal(previousResults)) {
+  const verified = arr(previousResults.homeRuns).map(verifiedHit).filter(Boolean);
+  const core = verified.filter(item => item.tier === "core")
+    .sort((a, b) => num(a.snapshot.rank, 9999) - num(b.snapshot.rank, 9999))[0];
+  const secondary = verified.filter(item => item.tier === "secondary")
+    .sort((a, b) => num(b.result.distance) - num(a.result.distance))[0];
+  const hardest = verified.slice().sort((a, b) => num(b.result.exitVelocity) - num(a.result.exitVelocity))[0];
+  const featured = [core, secondary, hardest].filter(Boolean)
+    .filter((item, index, rows) => rows.findIndex(other => norm(other.result.player || other.result.batter) === norm(item.result.player || item.result.batter)) === index)
+    .slice(0, 3);
+
+  if (featured.length) {
+    const lines = featured.map(item => {
+      const player = clean(item.result.player || item.result.batter);
+      const label = item.tier === "core" ? "core pregame call" : "B+ secondary model hit";
+      const resultDetails = [
+        item.result.distance ? `${Math.round(num(item.result.distance))} ft` : "",
+        item.result.exitVelocity ? `${one(item.result.exitVelocity)} mph EV` : "",
+        item.snapshot.bestPitch ? `${clean(item.snapshot.bestPitch)} edge` : ""
+      ].filter(Boolean).join(" | ");
+      return `• ${player}: ${label}, rank #${num(item.snapshot.rank)}${resultDetails ? ` — ${resultDetails}` : ""}`;
+    });
+
+    add("overnight", "verified_daily_recap", 110,
+`The final MLB receipt for ${clean(previousResults.date)} is in.
+
+${lines.join("\n")}
+
+Every model label above comes from the latest archived snapshot before that player's first pitch—not a ranking rebuilt after the result.
+
+That distinction matters. Results are volatile; the audit trail should not be.`, featured.map(item => item.result.player || item.result.batter), {
+      resultsDate: previousResults.date,
+      verifiedPregame: true
+    });
   }
 }
 
@@ -252,7 +328,7 @@ add("evening", "process_question", 55,
 I built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.`, []);
 
 const selected = [];
-for (const slot of ["morning", "midday", "afternoon", "pregame", "evening"]) {
+for (const slot of ["morning", "midday", "afternoon", "pregame", "evening", "overnight"]) {
   const choices = candidates.filter(candidate => candidate.slot === slot).sort((a, b) => b.weight - a.weight);
   const fresh = choices.find(candidate => !recentPosts.some(post => similarity(candidate.text, post.text || "") >= 0.64));
   if (fresh) selected.push(fresh);
@@ -277,7 +353,8 @@ const output = {
   midday: selected.filter(post => post.slot === "midday"),
   afternoon: selected.filter(post => post.slot === "afternoon"),
   pregame: selected.filter(post => post.slot === "pregame"),
-  evening: selected.filter(post => post.slot === "evening")
+  evening: selected.filter(post => post.slot === "evening"),
+  overnight: selected.filter(post => post.slot === "overnight")
 };
 
 fs.writeFileSync(OUT_JSON, JSON.stringify(output, null, 2));

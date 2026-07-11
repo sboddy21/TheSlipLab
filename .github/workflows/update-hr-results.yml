@@ -35,7 +35,7 @@ jobs:
 
       - name: Build previous day HR results
         run: |
-          PREV_DATE=$(node -e "const d=new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));d.setDate(d.getDate()-1);console.log(d.toISOString().slice(0,10));")
+          PREV_DATE=$(node -e "const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const d=new Date(today+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);console.log(d.toISOString().slice(0,10));")
           node scripts/mlb/build_hr_results.js --date=$PREV_DATE --out=website/data/mlb_results_previous.json
 
       - name: Build HR results history
