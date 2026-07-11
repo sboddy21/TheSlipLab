@@ -87,6 +87,13 @@ function num(value, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function weightedScore(terms) {
+  const available = terms.filter(([value]) => value !== null && value !== undefined && Number.isFinite(Number(value)));
+  const weight = available.reduce((sum, [, termWeight]) => sum + termWeight, 0);
+  if (!weight) return null;
+  return available.reduce((sum, [value, termWeight]) => sum + Number(value) * termWeight, 0) / weight;
+}
+
 function pick(row, keys, fallback = "") {
   for (const key of keys) {
     if (row[key] !== undefined && row[key] !== null && String(row[key]).trim() !== "") {
@@ -328,7 +335,7 @@ function zoneProfile(player) {
   const zones = row?.zones || {};
   const zoneRows = Array.isArray(zones.zones) ? zones.zones : [];
 
-  const hitterPower = num(zones.hitterPower);
+  const hitterPower = zones.hitterPower === null || zones.hitterPower === undefined ? null : num(zones.hitterPower);
   const pitcherLeak = num(zones.pitcherLeak);
 
   let hotZoneCount = 0;
@@ -366,21 +373,16 @@ function zoneProfile(player) {
     });
   }
 
-  const avgOverlap = qualifiedZoneCount ? overlapTotal / qualifiedZoneCount : 0;
-
-  const zoneOverlap = round(clamp(
-    hitterPower * 0.34 +
-    pitcherLeak * 0.34 +
-    avgOverlap * 0.22 +
-    hotZoneCount * 1.8,
-    0,
-    100
-  ));
+  const avgOverlap = qualifiedZoneCount ? overlapTotal / qualifiedZoneCount : null;
+  const zoneOverlap = qualifiedZoneCount
+    ? round(clamp(hitterPower * 0.34 + pitcherLeak * 0.34 + avgOverlap * 0.22 + hotZoneCount * 1.8, 0, 100))
+    : null;
 
   return {
     zoneOverlap,
-    hitterZonePower: round(hitterPower),
+    hitterZonePower: hitterPower === null ? null : round(hitterPower),
     pitcherLeak: round(pitcherLeak),
+    zoneSignalAvailable: qualifiedZoneCount > 0,
     hotZoneCount,
     qualifiedZoneCount,
     zoneCells
@@ -410,32 +412,32 @@ function pickOneScore(row, type) {
   const pitcher = num(row.pitcherRisk);
   const weather = num(row.weather);
   const bullpen = num(row.bullpen);
-  const zones = num(row.zoneOverlap);
+  const zones = row.zoneSignalAvailable === false ? null : num(row.zoneOverlap);
   const due = num(row.due);
   const ceiling = num(row.multiHrCeilingScore || row.ceiling || row.powerScore);
 
   if (type === "overall") {
-    return hr * 0.34 + power * 0.22 + pitch * 0.16 + zones * 0.14 + pitcher * 0.08 + weather * 0.04 + bullpen * 0.02;
+    return weightedScore([[hr, 0.34], [power, 0.22], [pitch, 0.16], [zones, 0.14], [pitcher, 0.08], [weather, 0.04], [bullpen, 0.02]]);
   }
 
   if (type === "safe") {
-    return hr * 0.45 + zones * 0.24 + power * 0.14 + pitch * 0.10 + pitcher * 0.07;
+    return weightedScore([[hr, 0.45], [zones, 0.24], [power, 0.14], [pitch, 0.10], [pitcher, 0.07]]);
   }
 
   if (type === "ceiling") {
-    return ceiling * 0.28 + power * 0.25 + pitcher * 0.18 + pitch * 0.14 + zones * 0.10 + bullpen * 0.05;
+    return weightedScore([[ceiling, 0.28], [power, 0.25], [pitcher, 0.18], [pitch, 0.14], [zones, 0.10], [bullpen, 0.05]]);
   }
 
   if (type === "weather") {
-    return weather * 0.50 + power * 0.18 + hr * 0.14 + zones * 0.10 + pitch * 0.08;
+    return weightedScore([[weather, 0.50], [power, 0.18], [hr, 0.14], [zones, 0.10], [pitch, 0.08]]);
   }
 
   if (type === "pitch") {
-    return pitch * 0.46 + pitcher * 0.22 + zones * 0.16 + power * 0.10 + hr * 0.06;
+    return weightedScore([[pitch, 0.46], [pitcher, 0.22], [zones, 0.16], [power, 0.10], [hr, 0.06]]);
   }
 
   if (type === "longshot") {
-    return power * 0.25 + pitch * 0.23 + zones * 0.20 + pitcher * 0.16 + weather * 0.10 + due * 0.06;
+    return weightedScore([[power, 0.25], [pitch, 0.23], [zones, 0.20], [pitcher, 0.16], [weather, 0.10], [due, 0.06]]);
   }
 
   return hr;
@@ -463,8 +465,9 @@ function shortPlayerCard(row, type, label, description) {
     weather: round(row.weather),
     bullpen: round(row.bullpen),
     due: round(row.due),
-    zoneOverlap: round(row.zoneOverlap),
-    hitterZonePower: round(row.hitterZonePower),
+    zoneOverlap: row.zoneOverlap === null ? null : round(row.zoneOverlap),
+    hitterZonePower: row.hitterZonePower === null ? null : round(row.hitterZonePower),
+    zoneSignalAvailable: row.zoneSignalAvailable,
     pitcherLeak: round(row.pitcherLeak),
     hotZoneCount: row.hotZoneCount,
     seasonHr: row.seasonHr,
@@ -614,7 +617,7 @@ function buildCard(row) {
   const iso = round(num(pick(row, ["iso", "ISO"])));
 
   const pitchEdge = round(pitchProfile.score);
-  const pitcherRisk = round(zone.zoneOverlap);
+  const pitcherRisk = round(zone.zoneSignalAvailable ? zone.zoneOverlap : zone.pitcherLeak);
   const weather = round(weatherScore());
   const bullpen = round(bullpenScore(opponent));
 
@@ -650,14 +653,14 @@ function buildCard(row) {
   const projectedPlateAppearances = round(num(lineupImpact.projectedPlateAppearances));
   const protectionScore = round(num(lineupImpact.protectionScore));
 
-  const baseHrConfidence = round(
-    powerScore * 0.30 +
-    pitchEdge * 0.22 +
-    pitcherRisk * 0.18 +
-    due * 0.12 +
-    weather * 0.08 +
-    bullpen * 0.10
-  );
+  const baseHrConfidence = round(weightedScore([
+    [powerScore, 0.30],
+    [pitchEdge, 0.22],
+    [pitcherRisk, 0.18],
+    [due, 0.12],
+    [weather, 0.08],
+    [bullpen, 0.10]
+  ]));
 
   const hrConfidence = round(
     baseHrConfidence +
@@ -693,15 +696,15 @@ function buildCard(row) {
     due,
     seasonHr,
 
-    ceilingScore: round(
-      powerScore * 0.26 +
-      pitchEdge * 0.22 +
-      pitcherRisk * 0.18 +
-      zone.zoneOverlap * 0.14 +
-      bullpen * 0.10 +
-      weather * 0.06 +
-      due * 0.04
-    ),
+    ceilingScore: round(weightedScore([
+      [powerScore, 0.26],
+      [pitchEdge, 0.22],
+      [pitcherRisk, 0.18],
+      [zone.zoneOverlap, 0.14],
+      [bullpen, 0.10],
+      [weather, 0.06],
+      [due, 0.04]
+    ])),
     volatilityScore: round(
       Math.max(0, due - hrConfidence) * 0.30 +
       Math.max(0, powerScore - hrConfidence) * 0.20 +
@@ -723,6 +726,7 @@ function buildCard(row) {
     zoneOverlap: zone.zoneOverlap,
     hitterZonePower: zone.hitterZonePower,
     pitcherLeak: zone.pitcherLeak,
+    zoneSignalAvailable: zone.zoneSignalAvailable,
     hotZoneCount: zone.hotZoneCount,
     zoneCells: zone.zoneCells,
 
@@ -782,15 +786,11 @@ async function main() {
       bestPicks: topUnique(
         cards.map(card => ({
           ...card,
-          decisionScore:
-            num(card.hrConfidence) * 0.30 +
-            num(card.powerScore) * 0.18 +
-            num(card.pitchEdge) * 0.16 +
-            num(card.pitcherRisk) * 0.14 +
-            num(card.zoneOverlap) * 0.12 +
-            num(card.bullpen) * 0.05 +
-            num(card.weather) * 0.03 +
-            num(card.due) * 0.02
+          decisionScore: weightedScore([
+            [card.hrConfidence, 0.30], [card.powerScore, 0.18], [card.pitchEdge, 0.16],
+            [card.pitcherRisk, 0.14], [card.zoneOverlap, 0.12], [card.bullpen, 0.05],
+            [card.weather, 0.03], [card.due, 0.02]
+          ])
         })),
         "decisionScore"
       ),
@@ -798,13 +798,10 @@ async function main() {
       safestPlays: topUnique(
         cards.map(card => ({
           ...card,
-          safetyScore:
-            num(card.hrConfidence) * 0.36 +
-            num(card.powerScore) * 0.22 +
-            num(card.zoneOverlap) * 0.18 +
-            num(card.pitchEdge) * 0.14 +
-            num(card.pitcherRisk) * 0.10 -
-            num(card.volatilityScore) * 0.10
+          safetyScore: weightedScore([
+            [card.hrConfidence, 0.36], [card.powerScore, 0.22], [card.zoneOverlap, 0.18],
+            [card.pitchEdge, 0.14], [card.pitcherRisk, 0.10]
+          ]) - num(card.volatilityScore) * 0.10
         })),
         "safetyScore"
       ),
@@ -812,14 +809,10 @@ async function main() {
       bestValue: topUnique(
         cards.map(card => ({
           ...card,
-          valueScore:
-            num(card.pitchEdge) * 0.28 +
-            num(card.pitcherRisk) * 0.22 +
-            num(card.zoneOverlap) * 0.18 +
-            num(card.bullpen) * 0.10 +
-            num(card.weather) * 0.08 +
-            num(card.due) * 0.08 +
-            num(card.ceilingScore) * 0.06 -
+          valueScore: weightedScore([
+            [card.pitchEdge, 0.28], [card.pitcherRisk, 0.22], [card.zoneOverlap, 0.18],
+            [card.bullpen, 0.10], [card.weather, 0.08], [card.due, 0.08], [card.ceilingScore, 0.06]
+          ]) -
             num(card.seasonHr) * 2.0 -
             Math.max(0, num(card.hrConfidence) - 54) * 1.4 -
             Math.max(0, num(card.powerScore) - 62) * 1.1
@@ -851,12 +844,10 @@ async function main() {
       pitchTypeEdges: topUnique(
         cards.map(card => ({
           ...card,
-          pitchTypeScore:
-            num(card.pitchEdge) * 0.38 +
-            num(card.pitcherRisk) * 0.24 +
-            num(card.zoneOverlap) * 0.18 +
-            num(card.powerScore) * 0.12 +
-            num(card.hrConfidence) * 0.08
+          pitchTypeScore: weightedScore([
+            [card.pitchEdge, 0.38], [card.pitcherRisk, 0.24], [card.zoneOverlap, 0.18],
+            [card.powerScore, 0.12], [card.hrConfidence, 0.08]
+          ])
         })),
         "pitchTypeScore"
       ),
@@ -864,13 +855,10 @@ async function main() {
       weatherCarry: topUnique(
         cards.map(card => ({
           ...card,
-          weatherCarryScore:
-            num(card.weather) * 0.40 +
-            num(card.powerScore) * 0.20 +
-            num(card.zoneOverlap) * 0.14 +
-            num(card.pitchEdge) * 0.10 +
-            num(card.pitcherRisk) * 0.08 +
-            num(card.hrConfidence) * 0.08
+          weatherCarryScore: weightedScore([
+            [card.weather, 0.40], [card.powerScore, 0.20], [card.zoneOverlap, 0.14],
+            [card.pitchEdge, 0.10], [card.pitcherRisk, 0.08], [card.hrConfidence, 0.08]
+          ])
         })),
         "weatherCarryScore"
       ),
@@ -878,13 +866,10 @@ async function main() {
       bullpenBoosts: topUnique(
         cards.map(card => ({
           ...card,
-          bullpenBoostScore:
-            num(card.bullpen) * 0.40 +
-            num(card.powerScore) * 0.18 +
-            num(card.pitchEdge) * 0.16 +
-            num(card.zoneOverlap) * 0.12 +
-            num(card.pitcherRisk) * 0.08 +
-            num(card.hrConfidence) * 0.06
+          bullpenBoostScore: weightedScore([
+            [card.bullpen, 0.40], [card.powerScore, 0.18], [card.pitchEdge, 0.16],
+            [card.zoneOverlap, 0.12], [card.pitcherRisk, 0.08], [card.hrConfidence, 0.06]
+          ])
         })),
         "bullpenBoostScore"
       )
@@ -900,13 +885,10 @@ async function main() {
     output.sections.bestValue = topUnique(
       cards.map(card => ({
         ...card,
-        valueScore:
-          num(card.pitchEdge) * 0.30 +
-          num(card.pitcherRisk) * 0.24 +
-          num(card.zoneOverlap) * 0.18 +
-          num(card.powerScore) * 0.12 +
-          num(card.weather) * 0.08 +
-          num(card.bullpen) * 0.08
+        valueScore: weightedScore([
+          [card.pitchEdge, 0.30], [card.pitcherRisk, 0.24], [card.zoneOverlap, 0.18],
+          [card.powerScore, 0.12], [card.weather, 0.08], [card.bullpen, 0.08]
+        ])
       })),
       "valueScore"
     );

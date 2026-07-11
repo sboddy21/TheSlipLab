@@ -31,6 +31,7 @@ function clamp(value, min, max) {
 }
 
 function classify(value) {
+  if (value === null) return "no-sample";
   if (value >= 78) return "hot";
   if (value >= 58) return "warm";
   if (value <= 32) return "cold";
@@ -69,6 +70,7 @@ function buildRegions(row, statcast, attack) {
   const regions = [];
 
   for (let index = 0; index < 25; index += 1) {
+    const qualified = attackZones[index]?.qualified === true;
     const hitterHeat = clamp(
       n(iso[index]) * 45 +
       n(hr[index]) * 16 +
@@ -78,10 +80,10 @@ function buildRegions(row, statcast, attack) {
       99
     );
 
-    const pitcherDanger = attackZones[index]?.danger === null || attackZones[index]?.danger === undefined
-      ? 0
-      : n(attackZones[index].danger);
-    const combined = Math.round(clamp(hitterHeat * 0.52 + pitcherDanger * 0.48, 0, 99));
+    const pitcherDanger = qualified ? n(attackZones[index].danger) : null;
+    const combined = qualified
+      ? Math.round(clamp(hitterHeat * 0.52 + pitcherDanger * 0.48, 0, 99))
+      : null;
 
     regions.push({
       zone: index + 1,
@@ -95,7 +97,7 @@ function buildRegions(row, statcast, attack) {
 
   const hotRegions = regions.filter(region => region.region === "hot").length;
   const coldRegions = regions.filter(region => region.region === "cold").length;
-  const best = [...regions].sort((a, b) => b.combined - a.combined)[0];
+  const best = regions.filter(region => region.combined !== null).sort((a, b) => b.combined - a.combined)[0];
 
   const bestLane = best?.lane || "Middle";
 
@@ -105,9 +107,11 @@ function buildRegions(row, statcast, attack) {
     coldRegions,
     bestLane,
     bestZone: best?.zone || null,
-    bestScore: best?.combined || 0,
+    bestScore: best?.combined ?? null,
     read:
-      hotRegions >= 6
+      !best
+        ? "No qualified hitter-versus-pitcher Statcast zone sample."
+        : hotRegions >= 6
         ? `Multiple hot attack regions. Best lane: ${bestLane}.`
         : hotRegions >= 3
           ? `Playable hot region cluster. Best lane: ${bestLane}.`
