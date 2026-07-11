@@ -3,914 +3,472 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Slip Lab</title>
+  <meta name="description" content="The Slip Lab turns live sports data into clear, matchup-driven intelligence." />
+  <title>The Slip Lab | Choose Your Field</title>
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <script defer src="/_vercel/insights/script.js" data-tsl-vercel-analytics="true"></script>
   <style>
     :root{
-      --bg:#050b14;
-      --panel:#081421;
-      --panel2:#0b1828;
-      --line:#1f3348;
-      --text:#f5f7fb;
-      --muted:#9aa8b8;
-      --green:#63e22f;
-      --blue:#2f80ff;
-      --orange:#ff8a1d;
-      --purple:#8f50ff;
+      --paper:#f4f0e4;
+      --paper-deep:#e9e3d4;
+      --ink:#071d36;
+      --ink-soft:#536375;
+      --rule:#183149;
+      --blue:#0867f2;
+      --orange:#d84320;
+      --live:#adff2f;
+      --white:#fffdf7;
     }
 
     *{box-sizing:border-box}
 
+    html{background:var(--paper)}
+
     body{
+      min-height:100vh;
       margin:0;
-      font-family:Arial,Helvetica,sans-serif;
       background:
-        radial-gradient(circle at top left, rgba(99,226,47,.14), transparent 30%),
-        radial-gradient(circle at top right, rgba(47,128,255,.13), transparent 34%),
-        var(--bg);
-      color:var(--text);
+        linear-gradient(rgba(7,29,54,.035) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(7,29,54,.035) 1px,transparent 1px),
+        var(--paper);
+      background-size:48px 48px;
+      color:var(--ink);
+      font-family:Arial,Helvetica,sans-serif;
     }
 
-    header{
-      height:74px;
+    a{color:inherit}
+
+    .topline{
+      min-height:38px;
+      padding:0 max(22px,calc((100% - 1460px)/2));
       display:flex;
       align-items:center;
       justify-content:space-between;
-      padding:0 42px;
-      border-bottom:1px solid var(--line);
-      background:rgba(3,8,15,.82);
+      gap:20px;
+      background:var(--ink);
+      color:#fff;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.17em;
+      text-transform:uppercase;
+    }
+
+    .pipeline{display:flex;align-items:center;gap:10px}
+
+    .pipeline-dot{
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:var(--live);
+      box-shadow:0 0 0 4px rgba(173,255,47,.13);
+    }
+
+    .site-header{
+      border-bottom:1px solid var(--rule);
+      background:rgba(244,240,228,.96);
       backdrop-filter:blur(12px);
-      position:sticky;
-      top:0;
-      z-index:10;
+    }
+
+    .header-inner{
+      width:min(1460px,calc(100% - 44px));
+      min-height:94px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:24px;
     }
 
     .brand{
-      font-size:28px;
-      font-weight:900;
-      letter-spacing:.5px;
-      text-transform:uppercase;
-    }
-
-    .brand span{color:var(--green)}
-
-    nav{
-      display:flex;
-      gap:30px;
-      align-items:center;
-      font-size:14px;
-      font-weight:800;
-      text-transform:uppercase;
-    }
-
-    nav a{
-      color:var(--text);
       text-decoration:none;
-      opacity:.82;
-    }
-
-    nav a.active{
-      color:var(--green);
-      opacity:1;
-    }
-
-    .updated{
-      text-align:right;
-      font-size:12px;
-      color:var(--muted);
-      font-weight:800;
+      color:var(--ink);
+      font-size:25px;
+      font-weight:950;
+      letter-spacing:-.06em;
       text-transform:uppercase;
     }
 
-    .updated strong{
-      display:block;
-      color:var(--green);
-      font-size:13px;
-      margin-top:4px;
+    .brand span{color:var(--orange)}
+
+    .header-note{
+      color:var(--ink-soft);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.16em;
+      text-align:right;
+      text-transform:uppercase;
     }
 
     main{
-      max-width:1500px;
+      width:min(1460px,calc(100% - 44px));
       margin:0 auto;
-      padding:46px 42px 38px;
+      padding:34px 0 60px;
+    }
+
+    .report-line{
+      position:relative;
+      margin-bottom:52px;
+      padding:15px 0 14px 40px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      border-bottom:5px solid var(--ink);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+
+    .report-line::before{
+      content:"";
+      position:absolute;
+      left:0;
+      top:18px;
+      width:30px;
+      height:5px;
+      background:linear-gradient(90deg,var(--orange) 72%,var(--blue) 72%);
     }
 
     .hero{
-      margin-bottom:28px;
-    }
-
-    .hero h1{
-      margin:0;
-      font-size:54px;
-      line-height:.95;
-      letter-spacing:1px;
-      text-transform:uppercase;
-    }
-
-    .hero h2{
-      margin:8px 0 10px;
-      font-size:34px;
-      color:var(--green);
-      text-transform:uppercase;
-    }
-
-    .hero p{
-      margin:0;
-      max-width:650px;
-      color:#d6dde8;
-      font-size:19px;
-      line-height:1.45;
-    }
-
-    .grid{
       display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:22px;
-      margin-top:24px;
+      grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);
+      gap:70px;
+      align-items:end;
+      margin-bottom:54px;
     }
 
-    .card{
-      min-height:490px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(14,30,49,.96), rgba(4,10,18,.98));
-      border-radius:12px;
-      overflow:hidden;
-      box-shadow:0 18px 50px rgba(0,0,0,.32);
+    .eyebrow{
+      margin-bottom:12px;
+      color:var(--ink-soft);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.18em;
+      text-transform:uppercase;
     }
 
-    .card.mlb{border-color:rgba(99,226,47,.58)}
-    .card.nba{border-color:rgba(47,128,255,.58)}
-    .card.nfl{border-color:rgba(255,138,29,.58)}
-    .card.nhl{border-color:rgba(143,80,255,.58)}
+    h1{
+      max-width:920px;
+      margin:0;
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:clamp(64px,8.2vw,126px);
+      line-height:.78;
+      letter-spacing:-.075em;
+    }
 
-    .top{
-      min-height:164px;
-      padding:24px 20px;
+    h1 em{
+      display:block;
+      color:var(--blue);
+      font-weight:400;
+    }
+
+    .hero-copy{
+      margin:0 0 4px;
+      padding:4px 0 4px 24px;
+      border-left:1px solid var(--rule);
+      color:#30475d;
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:19px;
+      line-height:1.55;
+    }
+
+    .league-heading{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:24px;
+      margin-bottom:12px;
+    }
+
+    .league-heading h2{
+      margin:0;
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:clamp(34px,4vw,54px);
+      letter-spacing:-.045em;
+    }
+
+    .league-heading span{
+      padding-bottom:8px;
+      color:var(--blue);
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+    }
+
+    .leagues{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      border-top:2px solid var(--rule);
+      border-left:1px solid var(--rule);
+    }
+
+    .league-card{
+      min-height:310px;
+      padding:22px;
       display:flex;
       flex-direction:column;
-      justify-content:space-between;
-      background:
-        linear-gradient(90deg, rgba(0,0,0,.58), rgba(0,0,0,.08)),
-        radial-gradient(circle at 80% 70%, rgba(255,255,255,.14), transparent 25%);
-      border-bottom:1px solid var(--line);
+      border-right:1px solid var(--rule);
+      border-bottom:1px solid var(--rule);
+      background:rgba(255,253,247,.42);
     }
 
-    .sport{
+    .league-card.active{
+      position:relative;
+      overflow:hidden;
+      background:var(--blue);
+      color:#fff;
+    }
+
+    .league-card.active::after{
+      content:"";
+      position:absolute;
+      width:190px;
+      height:190px;
+      right:-70px;
+      bottom:-80px;
+      border:1px solid rgba(255,255,255,.42);
+      border-radius:50%;
+      box-shadow:0 0 0 28px rgba(255,255,255,.04),0 0 0 56px rgba(255,255,255,.035);
+    }
+
+    .card-top{
+      position:relative;
+      z-index:1;
       display:flex;
-      align-items:center;
-      gap:16px;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:15px;
     }
 
-    .logo{
-      width:56px;
-      height:56px;
-      border-radius:12px;
-      display:grid;
-      place-items:center;
-      font-size:30px;
+    .league-number{
+      font-size:10px;
       font-weight:900;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-    }
-
-    .sport h3{
-      margin:0;
-      font-size:34px;
-      line-height:1;
-    }
-
-    .sport p{
-      margin:4px 0 0;
-      color:#e3e8ef;
-      font-size:13px;
-      font-weight:800;
+      letter-spacing:.16em;
       text-transform:uppercase;
     }
 
     .status{
       display:inline-flex;
-      width:max-content;
       align-items:center;
-      gap:8px;
-      border-radius:999px;
-      padding:7px 12px;
-      font-size:12px;
+      gap:7px;
+      padding:6px 8px;
+      border:1px solid currentColor;
+      color:var(--ink-soft);
+      font-size:9px;
       font-weight:900;
+      letter-spacing:.12em;
       text-transform:uppercase;
-      background:rgba(99,226,47,.12);
-      color:var(--green);
-      border:1px solid rgba(99,226,47,.42);
     }
 
-    .status.orange{
-      color:var(--orange);
-      border-color:rgba(255,138,29,.48);
-      background:rgba(255,138,29,.12);
-    }
+    .active .status{color:#fff}
 
-    .dot{
-      width:9px;
-      height:9px;
+    .status i{
+      width:6px;
+      height:6px;
       border-radius:50%;
       background:currentColor;
     }
 
-    .body{
-      padding:20px;
-    }
+    .active .status i{background:var(--live)}
 
-    .stats{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      border-bottom:1px solid var(--line);
-      margin:0 -20px 18px;
-    }
-
-    .stat{
-      padding:0 20px 18px;
-      border-right:1px solid var(--line);
-    }
-
-    .stat:last-child{border-right:0}
-
-    .label{
-      color:#dbe2ea;
-      font-size:12px;
-      font-weight:900;
-      text-transform:uppercase;
-      margin-bottom:10px;
-    }
-
-    .big{
-      font-size:34px;
-      font-weight:900;
-      color:var(--green);
+    .league-name{
+      position:relative;
+      z-index:1;
+      margin:44px 0 8px;
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:54px;
       line-height:1;
+      letter-spacing:-.055em;
     }
 
-    .nba .big,.nhl .big{color:var(--blue)}
-    .nfl .big{color:var(--orange)}
+    .league-description{
+      position:relative;
+      z-index:1;
+      max-width:240px;
+      margin:0;
+      color:var(--ink-soft);
+      font-size:13px;
+      line-height:1.5;
+    }
 
-    .small{
-      margin-top:6px;
-      color:#d9e1eb;
-      font-size:12px;
-      font-weight:800;
+    .active .league-description{color:rgba(255,255,255,.8)}
+
+    .card-action{
+      position:relative;
+      z-index:1;
+      margin-top:auto;
+      padding-top:28px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      border-top:1px solid currentColor;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:.14em;
       text-transform:uppercase;
     }
 
-    .toplist{
-      margin-top:8px;
-    }
-
-    .row{
-      display:grid;
-      grid-template-columns:24px minmax(0,1fr) minmax(125px,auto);
-      gap:8px;
-      align-items:center;
-      padding:6px 0;
-      font-size:14px;
-    }
-
-    .score{
-      font-weight:900;
-      color:var(--green);
-      text-align:right;
-      white-space:nowrap;
-      text-shadow:0 0 10px rgba(99,226,47,.45),0 0 20px rgba(99,226,47,.22);
-    }
-
-    .nba .score,.nhl .score{color:var(--blue)}
-    .nfl .score{color:var(--orange)}
-
-    .btn{
-      display:block;
-      margin-top:18px;
-      text-align:center;
-      padding:14px 14px;
-      border-radius:7px;
+    .league-link{
       text-decoration:none;
-      color:white;
-      font-weight:900;
-      text-transform:uppercase;
-      background:linear-gradient(135deg, #50c51f, #72ed31);
+      transition:transform .18s ease,box-shadow .18s ease;
     }
 
-    .nba .btn,.nhl .btn{background:linear-gradient(135deg, #136cff, #3387ff)}
-    .nfl .btn{background:linear-gradient(135deg, #ff7a00, #ff9d25)}
+    .league-link:hover{transform:translateY(-4px);box-shadow:0 18px 35px rgba(7,29,54,.2)}
 
-    .soon{
-      opacity:.72;
-      pointer-events:none;
-    }
+    .league-link:focus-visible{outline:4px solid var(--live);outline-offset:4px}
 
-    .features{
-      margin-top:56px;
+    .arrow{
+      width:38px;
+      height:38px;
       display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:20px;
-      padding:26px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:rgba(8,20,33,.72);
+      place-items:center;
+      border:1px solid currentColor;
+      border-radius:50%;
+      font-size:18px;
     }
 
-    .feature{
-      display:grid;
-      grid-template-columns:54px 1fr;
-      gap:14px;
-      align-items:center;
-    }
+    .disabled{cursor:not-allowed}
+    .disabled .card-action{color:#758290}
 
-    .ico{
-      font-size:38px;
-    }
-
-    .feature strong{
-      display:block;
-      color:var(--green);
-      font-size:17px;
-      text-transform:uppercase;
-    }
-
-    .feature p{
-      margin:5px 0 0;
-      color:#d3dbe6;
-      line-height:1.35;
-    }
-
-    @media(max-width:1200px){
-      .grid{grid-template-columns:repeat(2,1fr)}
-      .features{grid-template-columns:repeat(2,1fr)}
-    }
-
-    @media(max-width:720px){
-      header{padding:0 18px}
-      nav{display:none}
-      main{padding:32px 18px}
-      .hero h1{font-size:42px}
-      .hero h2{font-size:28px}
-      .grid{grid-template-columns:1fr}
-      .features{grid-template-columns:1fr}
-      .updated{display:none}
-    }
-  
-    
-    @keyframes liveGlowGreen{
-      0%,100%{
-        box-shadow:
-          0 18px 50px rgba(0,0,0,.32),
-          0 0 25px rgba(99,226,47,.30),
-          0 0 50px rgba(99,226,47,.15);
-      }
-      50%{
-        box-shadow:
-          0 18px 50px rgba(0,0,0,.32),
-          0 0 45px rgba(99,226,47,.60),
-          0 0 90px rgba(99,226,47,.30);
-      }
-    }
-
-    @keyframes liveGlowBlue{
-      0%,100%{
-        box-shadow:
-          0 18px 50px rgba(0,0,0,.32),
-          0 0 25px rgba(47,128,255,.30),
-          0 0 50px rgba(47,128,255,.15);
-      }
-      50%{
-        box-shadow:
-          0 18px 50px rgba(0,0,0,.32),
-          0 0 45px rgba(47,128,255,.60),
-          0 0 90px rgba(47,128,255,.30);
-      }
-    }
-
-    .card.mlb{
-      animation:liveGlowGreen 2.5s ease-in-out infinite;
-    }
-
-    .card.nba{
-      animation:liveGlowBlue 2.5s ease-in-out infinite;
-    }
-
-    .card.mlb:hover,
-    .card.nba:hover{
-      transform:translateY(-4px);
-      filter:brightness(1.03);
-    }
-
-.card{
-      transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
-    }
-
-  
-    .leader-strip{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      margin:26px 0 8px;
-    }
-
-    .leader-item{
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(8,20,33,.78);
-      border-radius:12px;
-      padding:14px 16px;
-      box-shadow:0 0 24px rgba(47,128,255,.12);
-    }
-
-    .leader-item span{
-      display:block;
-      color:var(--muted);
-      font-size:11px;
-      font-weight:900;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      margin-bottom:6px;
-    }
-
-    .leader-item strong{
-      display:block;
-      font-size:19px;
-      color:var(--text);
-      font-weight:950;
-    }
-
-    .leader-item.mlb strong{color:var(--green)}
-    .leader-item.nba strong{color:var(--blue)}
-
-    @media(max-width:720px){
-      .leader-strip{grid-template-columns:1fr}
-    }
-
-  
-    .progress-wrap{
-      margin-top:12px;
-    }
-
-    .progress-row{
-      margin-top:10px;
-    }
-
-    .progress-head{
+    .footnote{
+      margin-top:34px;
+      padding-top:18px;
       display:flex;
       justify-content:space-between;
+      gap:30px;
+      border-top:1px solid rgba(7,29,54,.28);
+      color:var(--ink-soft);
       font-size:11px;
-      font-weight:900;
-      color:var(--muted);
-      text-transform:uppercase;
-      margin-bottom:6px;
+      line-height:1.5;
     }
 
-    .progress-track{
-      height:8px;
-      border-radius:999px;
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.10);
-      overflow:hidden;
+    .footnote strong{color:var(--ink)}
+
+    @media(max-width:1050px){
+      .hero{grid-template-columns:1fr;gap:28px}
+      .hero-copy{max-width:680px}
+      .leagues{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
 
-    .progress-fill{
-      height:100%;
-      border-radius:999px;
-      background:linear-gradient(90deg,var(--orange),#ffbc70);
-      box-shadow:0 0 14px rgba(255,138,29,.45);
+    @media(max-width:650px){
+      .topline{padding:10px 18px;align-items:flex-start;flex-direction:column;gap:5px}
+      .header-inner,main{width:min(100% - 28px,1460px)}
+      .header-inner{min-height:76px}
+      .header-note{max-width:150px;font-size:8px}
+      main{padding-top:22px}
+      .report-line{margin-bottom:38px;align-items:flex-start;flex-direction:column;gap:5px}
+      h1{font-size:clamp(58px,19vw,90px)}
+      .hero-copy{padding-left:16px;font-size:17px}
+      .league-heading{align-items:flex-start;flex-direction:column;gap:5px}
+      .leagues{grid-template-columns:1fr}
+      .league-card{min-height:270px}
+      .footnote{flex-direction:column;gap:12px}
     }
-
-    .nhl .progress-fill{
-      background:linear-gradient(90deg,var(--purple),#5fcbff);
-      box-shadow:0 0 14px rgba(143,80,255,.45);
-    }
-
-  
-    .activity-feed{
-      margin-top:26px;
-      border:1px solid var(--line);
-      border-radius:12px;
-      background:rgba(8,20,33,.72);
-      padding:20px;
-      box-shadow:0 0 30px rgba(47,128,255,.10);
-    }
-
-    .activity-feed h3{
-      margin:0 0 14px;
-      font-size:17px;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:var(--green);
-    }
-
-    .activity-list{
-      display:grid;
-      grid-template-columns:repeat(4,1fr);
-      gap:12px;
-    }
-
-    .activity-item{
-      border:1px solid rgba(255,255,255,.10);
-      border-radius:10px;
-      padding:12px;
-      background:rgba(255,255,255,.04);
-    }
-
-    .activity-time{
-      color:var(--muted);
-      font-size:11px;
-      font-weight:900;
-      text-transform:uppercase;
-      margin-bottom:6px;
-    }
-
-    .activity-text{
-      font-size:13px;
-      font-weight:900;
-      color:var(--text);
-    }
-
-</style>
-  <link rel="stylesheet" href="./assets/site-header.css">
-  <script defer src="./assets/site-header.js"></script>
+  </style>
 </head>
-<body class="tsl-editorial tsl-home-page">
-  <header>
-    <div class="brand">THE <span>SLIP</span> LAB 🧪</div>
-    <nav>
-      <a class="active" href="index.html">Dashboard</a>
-      <a href="mlb.html">MLB</a>
-      <a href="nba.html">NBA</a>
-      <a href="#">NFL</a>
-      <a href="#">NHL</a>
-    </nav>
-    <div class="updated">
-      Last Updated
-      <strong id="lastUpdated">Loading</strong>
+<body>
+  <div class="topline">
+    <div class="pipeline"><span class="pipeline-dot"></span> Sports intelligence • Live data pipeline</div>
+    <div id="todayLabel">The Slip Lab</div>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./index.html" aria-label="The Slip Lab home">The Slip <span>Lab</span></a>
+      <div class="header-note">One lab.<br />Every field.</div>
     </div>
   </header>
 
   <main>
-    <div class="report-line"><span>Daily edge report</span><span>Updated continuously from live models</span></div>
-    <section class="hero">
-      <div class="eyebrow">MLB intelligence, distilled</div>
-      <h1>Your edge.</h1>
-      <h2>Every day.</h2>
-      <p>Live signals, matchup context, and model-ranked decisions—built to turn today’s MLB slate into one clear read.</p>
+    <div class="report-line"><span>League access board</span><span>Choose an active field to enter</span></div>
+
+    <section class="hero" aria-labelledby="pageTitle">
+      <div>
+        <div class="eyebrow">The sports intelligence desk</div>
+        <h1 id="pageTitle">Choose your field.<em>Find your edge.</em></h1>
+      </div>
+      <p class="hero-copy">Live signals, matchup context, and model-ranked decisions—organized by sport and available when the games are live.</p>
     </section>
 
-    <section class="leader-strip">
-      <div class="leader-item mlb">
-        <span>MLB Leader Today</span>
-        <strong id="leaderMlb">Loading</strong>
+    <section aria-labelledby="leagueTitle">
+      <div class="league-heading">
+        <h2 id="leagueTitle">Enter the lab.</h2>
+        <span>01 active league</span>
       </div>
-      <div class="leader-item nba">
-        <span>NBA Leader Today</span>
-        <strong id="leaderNba">Loading</strong>
-      </div>
-      <div class="leader-item">
-        <span>Live Slate</span>
-        <strong id="leaderSlate">Loading</strong>
-      </div>
-    </section>
 
-
-    <section class="grid">
-      <article class="card mlb">
-        <div class="top">
-          <div class="sport">
-            <div class="logo">⚾</div>
-            <div>
-              <h3>MLB</h3>
-              <p>Home Runs and more</p>
-            </div>
+      <div class="leagues">
+        <a class="league-card league-link active" href="./mlb.html" aria-label="Enter the MLB intelligence lab">
+          <div class="card-top">
+            <span class="league-number">01 / Diamond</span>
+            <span class="status"><i></i> Live</span>
           </div>
-          <div class="status"><span class="dot"></span> In Season</div>
-        </div>
+          <h3 class="league-name">MLB</h3>
+          <p class="league-description">Home-run intelligence, player markets, pitcher vulnerability, weather, and live results.</p>
+          <div class="card-action"><span id="mlbSlate">Enter MLB Lab</span><span class="arrow" aria-hidden="true">→</span></div>
+        </a>
 
-        <div class="body">
-          <div class="stats">
-            <div class="stat">
-              <div class="label">Today’s Slate</div>
-              <div class="big" id="mlbGames">Loading</div>
-              <div class="small">Games</div>
-            </div>
-            <div class="stat">
-              <div class="label">Top Tool</div>
-              <div class="small">HR Decision Center</div>
-              <div class="big" style="font-size:24px">Live</div>
-            </div>
+        <article class="league-card disabled" aria-disabled="true">
+          <div class="card-top">
+            <span class="league-number">02 / Court</span>
+            <span class="status"><i></i> Offseason</span>
           </div>
+          <h3 class="league-name">NBA</h3>
+          <p class="league-description">Player props, usage, pace, defense, matchup context, and decision-center analysis.</p>
+          <div class="card-action"><span>Returns October 2026</span><span class="arrow" aria-hidden="true">×</span></div>
+        </article>
 
-          <div class="label">Live Top Plays</div>
-          <div class="toplist">
-            <div class="row"><span>🔥</span><span>Top HR Play</span><span class="score" id="homeMlbTopHr">Loading</span></div>
-            <div class="row"><span>🌤</span><span>Best Weather Boost</span><span class="score" id="homeMlbWeather">Loading</span></div>
-            <div class="row"><span>🎯</span><span>Top Matchup Edge</span><span class="score" id="homeMlbMatchup">Loading</span></div>
+        <article class="league-card disabled" aria-disabled="true">
+          <div class="card-top">
+            <span class="league-number">03 / Gridiron</span>
+            <span class="status"><i></i> Offseason</span>
           </div>
+          <h3 class="league-name">NFL</h3>
+          <p class="league-description">Game environments, player markets, coverage matchups, weather, and trenches.</p>
+          <div class="card-action"><span>Returns Fall 2026</span><span class="arrow" aria-hidden="true">×</span></div>
+        </article>
 
-          <a class="btn" href="mlb.html">View MLB Dashboard</a>
-          <div class="small" style="text-align:center;margin-top:10px;">MLB Updated: <span id="homeMlbUpdated">Loading</span></div>
-        </div>
-      </article>
-
-      <article class="card nba">
-        <div class="top">
-          <div class="sport">
-            <div class="logo">🏀</div>
-            <div>
-              <h3>NBA</h3>
-              <p>Player props and matchups</p>
-            </div>
+        <article class="league-card disabled" aria-disabled="true">
+          <div class="card-top">
+            <span class="league-number">04 / Ice</span>
+            <span class="status"><i></i> Offseason</span>
           </div>
-          <div class="status"><span class="dot"></span> Live</div>
-        </div>
-
-        <div class="body">
-          <div class="stats">
-            <div class="stat">
-              <div class="label">Markets</div>
-              <div class="big">4</div>
-              <div class="small">Live Boards</div>
-            </div>
-            <div class="stat">
-              <div class="label">Top Tool</div>
-              <div class="small">NBA Decision Center</div>
-              <div class="big" style="font-size:24px">Live</div>
-            </div>
-          </div>
-
-          <div class="label">Live Top Plays</div>
-          <div class="toplist">
-            <div class="row"><span>🏀</span><span>Top Points Play</span><span class="score" id="homeNbaPoints">Loading</span></div>
-            <div class="row"><span>🧲</span><span>Top Rebounds Play</span><span class="score" id="homeNbaRebounds">Loading</span></div>
-            <div class="row"><span>🤝</span><span>Top Assists Play</span><span class="score" id="homeNbaAssists">Loading</span></div>
-          </div>
-
-          <a class="btn" href="nba.html">View NBA Dashboard</a>
-          <div class="small" style="text-align:center;margin-top:10px;">NBA Updated: <span id="homeNbaUpdated">Loading</span></div>
-        </div>
-      </article>
-
-      <article class="card nfl">
-        <div class="top">
-          <div class="sport">
-            <div class="logo">🏈</div>
-            <div>
-              <h3>NFL</h3>
-              <p>Player props and matchups</p>
-            </div>
-          </div>
-          <div class="status orange"><span class="dot"></span> Future Build</div>
-        </div>
-
-        <div class="body">
-          <div class="stats">
-            <div class="stat">
-              <div class="label">Focus</div>
-              <div class="big">2026</div>
-              <div class="small">Season</div>
-            </div>
-            <div class="stat">
-              <div class="label">Top Tool</div>
-              <div class="small">NFL Decision Center</div>
-              <div class="big" style="font-size:24px">Soon</div>
-            </div>
-          </div>
-
-          <div class="label">Status</div>
-          <p class="inactive-note">Not active. MLB is the current production focus.</p>
-
-          <a class="btn soon" href="#">NFL Coming Soon</a>
-        </div>
-      </article>
-
-      <article class="card nhl">
-        <div class="top">
-          <div class="sport">
-            <div class="logo">🏒</div>
-            <div>
-              <h3>NHL</h3>
-              <p>Player props and matchups</p>
-            </div>
-          </div>
-          <div class="status"><span class="dot"></span> Future Build</div>
-        </div>
-
-        <div class="body">
-          <div class="stats">
-            <div class="stat">
-              <div class="label">First Props</div>
-              <div class="big">4</div>
-              <div class="small">Goals Shots Assists Saves</div>
-            </div>
-            <div class="stat">
-              <div class="label">Top Tool</div>
-              <div class="small">NHL Decision Center</div>
-              <div class="big" style="font-size:24px">Soon</div>
-            </div>
-          </div>
-
-          <div class="label">Status</div>
-          <p class="inactive-note">Not active. MLB is the current production focus.</p>
-
-          <a class="btn soon" href="#">NHL Coming Soon</a>
-        </div>
-      </article>
-    </section>
-
-    
-    <section class="activity-feed">
-      <h3>Latest Lab Updates</h3>
-      <div class="activity-list">
-        <div class="activity-item">
-          <div class="activity-time" id="activityMlbTime">Loading</div>
-          <div class="activity-text">MLB refresh completed</div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-time" id="activityNbaTime">Loading</div>
-          <div class="activity-text">NBA refresh completed</div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-time">Live</div>
-          <div class="activity-text">Decision Centers updated</div>
-        </div>
-        <div class="activity-item">
-          <div class="activity-time">Live</div>
-          <div class="activity-text">Model boards refreshed</div>
-        </div>
+          <h3 class="league-name">NHL</h3>
+          <p class="league-description">Goalie form, shot quality, special teams, player markets, and matchup leverage.</p>
+          <div class="card-action"><span>Returns October 2026</span><span class="arrow" aria-hidden="true">×</span></div>
+        </article>
       </div>
     </section>
 
-
-<section class="features">
-      <div class="feature">
-        <div class="ico">📊</div>
-        <div><strong>Data Driven</strong><p>Advanced analytics and custom scoring models.</p></div>
-      </div>
-      <div class="feature">
-        <div class="ico">🎯</div>
-        <div><strong>Matchup Focused</strong><p>Built to find the best player edges.</p></div>
-      </div>
-      <div class="feature">
-        <div class="ico">⚡</div>
-        <div><strong>Live Updates</strong><p>Data refreshes throughout the day.</p></div>
-      </div>
-      <div class="feature">
-        <div class="ico">🛡️</div>
-        <div><strong>Built Clean</strong><p>Each sport gets its own dashboard.</p></div>
-      </div>
-    </section>
+    <footer class="footnote">
+      <span><strong>The Slip Lab</strong> turns live sports data into a clearer daily read.</span>
+      <span>Model outputs are informational—not guarantees or sportsbook odds.</span>
+    </footer>
   </main>
 
   <script>
-    const now = new Date();
-    document.getElementById("lastUpdated").textContent =
-      now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + " ET";
+    const dateLabel = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      weekday: "long",
+      month: "long",
+      day: "numeric"
+    }).format(new Date());
+    document.getElementById("todayLabel").textContent = dateLabel;
+
+    fetch("./data/mlb_games_today.json?v=" + Date.now())
+      .then(response => {
+        if (!response.ok) throw new Error("MLB slate unavailable");
+        return response.json();
+      })
+      .then(data => {
+        const count = Number(data.gameCount || (Array.isArray(data.games) ? data.games.length : 0));
+        document.getElementById("mlbSlate").textContent = count > 0
+          ? `${count} game${count === 1 ? "" : "s"} today • Enter lab`
+          : "Enter MLB Lab";
+      })
+      .catch(() => {
+        document.getElementById("mlbSlate").textContent = "Enter MLB Lab";
+      });
   </script>
-
-<script>
-(async function(){
-  try {
-    const res = await fetch("data/mlb_games_today.json?v=" + Date.now());
-    const data = await res.json();
-    const count = data.gameCount || (Array.isArray(data.games) ? data.games.length : 0);
-    const el = document.getElementById("mlbGames");
-    if (el) el.textContent = count;
-  } catch (err) {
-    const el = document.getElementById("mlbGames");
-    if (el) el.textContent = "--";
-  }
-})();
-</script>
-
-
-  <script>
-    async function loadJSON(file){
-      const res = await fetch(file + "?v=" + Date.now());
-      if(!res.ok) throw new Error(file + " failed");
-      return await res.json();
-    }
-
-    function setText(id, value){
-      const el = document.getElementById(id);
-      if(el) el.textContent = value || "--";
-    }
-
-    function formatTime(value){
-      const d = new Date(value);
-      if(Number.isNaN(d.getTime())) return "Live";
-      return d.toLocaleTimeString([], {hour:"numeric", minute:"2-digit"});
-    }
-
-    function shortName(name){
-      const s = String(name || "").trim();
-      if(!s) return "--";
-      const parts = s.split(/\s+/);
-      if(parts.length < 2) return s;
-      return `${parts[0][0]}. ${parts.slice(1).join(" ")}`;
-    }
-
-    function fullName(name){
-      return String(name || "").trim() || "--";
-    }
-
-    function mlbMetric(row){
-      if(!row) return "";
-      const pct = row.hrProbability || row.realHrProbability || row.probability || row.hrProb;
-      const boost = row.weatherBoost || row.windBoost || row.carryBoost || row.pullWindBoost;
-      const score = row.finalScore || row.score || row.modelScore || row.hrScore;
-      const tier = row.tier || row.grade || row.label || row.matchupTier;
-
-      if(pct !== undefined && pct !== null && pct !== "") return ` (${Number(pct).toFixed(1)}%)`;
-      if(boost !== undefined && boost !== null && boost !== "") return ` (+${Number(boost).toFixed(1)})`;
-      if(tier) return ` (${tier})`;
-      if(score !== undefined && score !== null && score !== "") return ` (${Number(score).toFixed(1)})`;
-      return "";
-    }
-
-    function mlbHomeText(row){
-      const name = fullName(row?.player || row?.batter || row?.name);
-      if(name === "--") return "--";
-      return name + mlbMetric(row);
-    }
-
-    async function loadHomepageLivePlays(){
-      try{
-        const games = await loadJSON("./data/mlb_games_today.json");
-        const count = Array.isArray(games.games) ? games.games.length : Array.isArray(games) ? games.length : 0;
-        setText("mlbGames", count || "--");
-        setText("leaderSlate", `${count || "--"} MLB • 4 NBA Markets`);
-      }catch(e){
-        setText("mlbGames", "--");
-      }
-
-      try{
-        const dc = await loadJSON("./data/hr_decision_center.json");
-        const sections = dc.sections || dc || {};
-        const topHr =
-          sections.bestPicks?.[0] ||
-          sections.ifOnlyOne?.[0] ||
-          sections.safestPlays?.[0];
-
-        const weather =
-          sections.weatherCarry?.[0] ||
-          topHr;
-
-        const matchup =
-          sections.pitchTypeEdges?.[0] ||
-          sections.bestPicks?.[0] ||
-          topHr;
-
-        setText("homeMlbTopHr", mlbHomeText(topHr));
-        setText("leaderMlb", fullName(topHr?.player || topHr?.batter || topHr?.name));
-        setText("homeMlbWeather", mlbHomeText(weather));
-        setText("homeMlbMatchup", mlbHomeText(matchup));
-      }catch(e){
-        setText("homeMlbTopHr", "--");
-        setText("homeMlbWeather", "--");
-        setText("homeMlbMatchup", "--");
-      }
-
-      try{
-        const nba = await loadJSON("./data/nba_decision_center.json");
-        const sections = nba.sections || {};
-        const offseason = nba.availability === "no_games_scheduled";
-        setText("homeNbaPoints", offseason ? "Offseason" : shortName(sections.bestPointsPlays?.[0]?.player));
-        setText("leaderNba", offseason ? "Offseason" : shortName(sections.topOverallPlays?.[0]?.player || sections.bestPointsPlays?.[0]?.player));
-        setText("homeNbaRebounds", offseason ? "No games" : shortName(sections.topRebounds?.[0]?.player));
-        setText("homeNbaAssists", offseason ? "No games" : shortName(sections.topAssists?.[0]?.player));
-      }catch(e){
-        setText("homeNbaPoints", "--");
-        setText("homeNbaRebounds", "--");
-        setText("homeNbaAssists", "--");
-      }
-
-      try{
-        const updated = await loadJSON("./data/site_last_updated.json");
-        const d = new Date(updated.updatedAt || updated.updated_at);
-        const t = formatTime(updated.updatedAt || updated.updated_at);
-        setText("lastUpdated", t);
-        setText("homeMlbUpdated", t);
-        setText("activityMlbTime", t);
-      }catch(e){
-        setText("lastUpdated", "Live");
-        setText("homeMlbUpdated", "Live");
-        setText("activityMlbTime", "Live");
-      }
-
-      try{
-        const nbaUpdated = await loadJSON("./data/nba_last_updated.json");
-        const nt = formatTime(nbaUpdated.updatedAt || nbaUpdated.updated_at);
-        setText("homeNbaUpdated", nt);
-        setText("activityNbaTime", nt);
-      }catch(e){
-        setText("homeNbaUpdated", "Live");
-        setText("activityNbaTime", "Live");
-      }
-    }
-
-    loadHomepageLivePlays();
-  </script>
-
-  <script src="./health-widget.js?v=2"></script>
 </body>
 </html>
