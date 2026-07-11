@@ -21,14 +21,6 @@ function readJSON(file, fallback) {
   }
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -79,7 +71,7 @@ function minutesSignal(expectedMinutes, confidence) {
 }
 
 function volumeSignal(history) {
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
 
   let score = 0;
@@ -98,7 +90,7 @@ function volumeSignal(history) {
 }
 
 function scoringProfile(history) {
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
   const last10 = history?.last10 || {};
 
@@ -264,7 +256,7 @@ function buildCorePlayer(player, minutesMap, historyMap, usageMap) {
 
     history: {
       gamesPlayed: num(history.gamesPlayed),
-      season: history.season || {},
+      season: history.seasonSummary || {},
       last5: history.last5 || {},
       last10: history.last10 || {},
       recentGames: Array.isArray(history.recentGames) ? history.recentGames : []
@@ -314,25 +306,6 @@ async function main() {
     .map(p => buildCorePlayer(p, minutesMap, historyMap, usageMap))
     .sort((a, b) => b.scores.nbaScore - a.scores.nbaScore || a.player.localeCompare(b.player));
 
-  const existing = readExisting();
-  const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
-
-  if (corePlayers.length === 0 && existingPlayers.length > 0) {
-    const preserved = {
-      ...existing,
-      preservedAt: new Date().toISOString(),
-      preserveReason: "NBA core generated 0 players, keeping previous non-empty core"
-    };
-
-    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
-
-    console.log("NBA CORE PRESERVED PREVIOUS NON-EMPTY CORE");
-    console.log("Fetched Players:", corePlayers.length);
-    console.log("Preserved Players:", existingPlayers.length);
-    console.log("Saved:", OUT);
-    return;
-  }
-
   const out = {
     sport: "NBA",
     version: "3.0",
@@ -343,6 +316,7 @@ async function main() {
     gameCount: pool.gameCount || 0,
     teamCount: teams.length,
     playerCount: corePlayers.length,
+    availability: Number(pool.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "Core 3.0 merges player pool, minutes engine, history, and usage engine.",
       "Points, rebounds, assists, threes, decision center, and player cards should read from this file."

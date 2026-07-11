@@ -76,16 +76,6 @@ function summarize(games) {
   };
 }
 
-function emptyHistory() {
-  return {
-    gamesPlayed: 0,
-    seasonSummary: summarize([]),
-    last5: summarize([]),
-    last10: summarize([]),
-    recentGames: []
-  };
-}
-
 async function fetchJson(url, timeoutMs = FETCH_TIMEOUT_MS) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -197,12 +187,6 @@ async function main() {
   const players = Array.isArray(core.players) ? core.players : [];
   const season = seasonYear();
 
-  const previous = readJSON(OUT, { players: [] });
-  const previousById = new Map(
-    (Array.isArray(previous.players) ? previous.players : [])
-      .map(p => [String(p.playerId || ""), p])
-  );
-
   const rows = [];
   const errors = [];
 
@@ -225,8 +209,6 @@ async function main() {
 
       console.log("OK", player.player, history.gamesPlayed);
     } catch (err) {
-      const prior = previousById.get(String(player.playerId || ""));
-
       errors.push({
         playerId: player.playerId,
         player: player.player,
@@ -234,28 +216,14 @@ async function main() {
         error: err.message
       });
 
-      rows.push({
-        playerId: player.playerId,
-        player: safeName(player.player),
-        team: player.teamAbbr,
-        opponent: player.opponentAbbr,
-        position: player.position,
-        starter: Boolean(player.starter),
-        status: player.status,
-        season,
-        ...(prior ? {
-          gamesPlayed: num(prior.gamesPlayed),
-          seasonSummary: prior.seasonSummary || prior.season || summarize([]),
-          last5: prior.last5 || summarize([]),
-          last10: prior.last10 || summarize([]),
-          recentGames: Array.isArray(prior.recentGames) ? prior.recentGames : []
-        } : emptyHistory())
-      });
-
       console.log("ERR", player.player, err.message);
     }
 
     await sleep(BETWEEN_PLAYERS_MS);
+  }
+
+  if (errors.length) {
+    throw new Error(`NBA history failed for ${errors.length} player(s); stale history was not reused`);
   }
 
   const out = {
@@ -266,6 +234,7 @@ async function main() {
     date: core.date || "",
     season,
     playerCount: rows.length,
+    availability: players.length ? "players_available" : "no_games_scheduled",
     errorCount: errors.length,
     errors,
     players: rows

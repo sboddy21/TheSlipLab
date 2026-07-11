@@ -873,10 +873,11 @@
       try{
         const nba = await loadJSON("./data/nba_decision_center.json");
         const sections = nba.sections || {};
-        setText("homeNbaPoints", shortName(sections.bestPointsPlays?.[0]?.player));
-        setText("leaderNba", shortName(sections.topOverallPlays?.[0]?.player || sections.bestPointsPlays?.[0]?.player));
-        setText("homeNbaRebounds", shortName(sections.topRebounds?.[0]?.player));
-        setText("homeNbaAssists", shortName(sections.topAssists?.[0]?.player));
+        const offseason = nba.availability === "no_games_scheduled";
+        setText("homeNbaPoints", offseason ? "Offseason" : shortName(sections.bestPointsPlays?.[0]?.player));
+        setText("leaderNba", offseason ? "Offseason" : shortName(sections.topOverallPlays?.[0]?.player || sections.bestPointsPlays?.[0]?.player));
+        setText("homeNbaRebounds", offseason ? "No games" : shortName(sections.topRebounds?.[0]?.player));
+        setText("homeNbaAssists", offseason ? "No games" : shortName(sections.topAssists?.[0]?.player));
       }catch(e){
         setText("homeNbaPoints", "--");
         setText("homeNbaRebounds", "--");

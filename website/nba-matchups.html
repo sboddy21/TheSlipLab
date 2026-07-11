@@ -137,6 +137,7 @@
   <script>
     let DATA=[];
     let CARDS=[];
+    let NO_GAMES=false;
     function clean(v,f="--"){return v===undefined||v===null||v===""?f:String(v)}
     function html(v){return clean(v,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -171,6 +172,7 @@
       try{
         const slate=await getJSON("./data/nba_games_today.json");
         const games=Array.isArray(slate.games)?slate.games:[];
+        NO_GAMES=slate.availability==="no_games_scheduled";
         panel.innerHTML=`
           <div class="slate-head">
             <h2>Today’s NBA Slate</h2>
@@ -182,7 +184,7 @@
                 <div class="slate-matchup">${html(teamLine(game.awayTeam))} at ${html(teamLine(game.homeTeam))}</div>
                 <div class="slate-meta ${gameStatusClass(game)}">${html(gameStatusLabel(game))}</div>
               </div>
-            `).join("") || `<div class="slate-game"><div class="slate-meta">No NBA games loaded.</div></div>`}
+            `).join("") || `<div class="slate-game"><div class="slate-meta">NBA Offseason — No Games Scheduled</div></div>`}
           </div>
         `;
       }catch(e){
@@ -201,7 +203,9 @@
       const sort=document.getElementById("sort").value;
       const rows=DATA.filter(p=>matches(p,q)).filter(p=>tier==="all"||p.matchupTier===tier)
         .sort((a,b)=>num(b[sort])-num(a[sort])||num(b.matchupScore)-num(a.matchupScore));
-      document.getElementById("board").innerHTML=rows.length?rows.map(card).join(""):`<div class="empty">No players match this filter.</div>`;
+      document.getElementById("board").innerHTML=rows.length
+        ? rows.map(card).join("")
+        : `<div class="empty">${NO_GAMES ? "NBA Offseason — No Games Scheduled. Live matchup analysis will return when the schedule resumes." : "No players match this filter."}</div>`;
       installCards();
     }
     function findCard(playerId){
@@ -328,11 +332,14 @@
     async function boot(){
       const d=await getJSON("./data/nba_matchup_engine.json");
       const cards=await getJSON("./data/nba_player_cards.json");
+      NO_GAMES=d.availability==="no_games_scheduled";
       DATA=Array.isArray(d.players)?d.players:[];
       CARDS=Array.isArray(cards.players)?cards.players:[];
-      document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.date)} • version ${clean(d.version)} • neutral defense/pace until real datasets are added`;
+      document.getElementById("subtitle").textContent=NO_GAMES
+        ? `NBA Offseason • No games scheduled • ${clean(d.date)}`
+        : `${DATA.length} players • ${clean(d.date)} • version ${clean(d.version)} • live defense, pace, and defender context`;
       ["search","tier","sort"].forEach(id=>document.getElementById(id).addEventListener("input",render));
-      renderSlatePanel();
+      await renderSlatePanel();
       render();
     }
     document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});

@@ -6,7 +6,8 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
-const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
+const PLAYER_POOL_FILE = path.join(ROOT, "website/data/nba_player_pool.json");
+const HISTORY_FILE = path.join(ROOT, "website/data/nba_history.json");
 const OUT = path.join(ROOT, "website/data/nba_minutes_engine.json");
 
 function readJSON(file, fallback) {
@@ -30,6 +31,14 @@ function clamp(v, min = 0, max = 100) {
   return Math.max(min, Math.min(max, num(v)));
 }
 
+function byId(rows) {
+  const map = new Map();
+  for (const row of Array.isArray(rows) ? rows : []) {
+    if (row.playerId) map.set(String(row.playerId), row);
+  }
+  return map;
+}
+
 function roleFromMinutes(player, minutes) {
   if (String(player.status || "").toUpperCase() !== "ACTIVE") return "Inactive";
   if (minutes >= 34) return "Core Starter";
@@ -39,11 +48,10 @@ function roleFromMinutes(player, minutes) {
   return "Deep Bench";
 }
 
-function buildExpectedMinutes(player) {
-  const coreExpected = num(player.minutes?.expected);
-  const season = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
-  const last5 = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
-  const last10 = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
+function buildExpectedMinutes(player, history) {
+  const season = num(history?.seasonSummary?.minutes);
+  const last5 = num(history?.last5?.minutes);
+  const last10 = num(history?.last10?.minutes);
 
   if (String(player.status || "").toUpperCase() !== "ACTIVE") return 0;
 
@@ -53,11 +61,7 @@ function buildExpectedMinutes(player) {
     last10 * 0.25
   );
 
-  let expected = coreExpected || historyLean;
-
-  if (historyLean) {
-    expected = round1(expected * 0.55 + historyLean * 0.45);
-  }
+  let expected = historyLean;
 
   if (player.starter) expected = Math.max(expected, 28);
   if (!player.starter && expected > 28) expected = 28;
@@ -65,12 +69,12 @@ function buildExpectedMinutes(player) {
   return round1(clamp(expected, 0, 40));
 }
 
-function buildConfidence(player, expectedMinutes) {
+function buildConfidence(player, history, expectedMinutes) {
   let score = 0;
 
-  const season = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
-  const last5 = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
-  const last10 = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
+  const season = num(history?.seasonSummary?.minutes);
+  const last5 = num(history?.last5?.minutes);
+  const last10 = num(history?.last10?.minutes);
 
   if (String(player.status || "").toUpperCase() === "ACTIVE") score += 20;
   if (player.starter) score += 25;
@@ -91,13 +95,13 @@ function buildConfidence(player, expectedMinutes) {
   return round1(clamp(score));
 }
 
-function buildRow(player) {
-  const seasonMinutes = num(player.profile?.seasonMinutes ?? player.history?.season?.minutes);
-  const last5Minutes = num(player.profile?.last5Minutes ?? player.history?.last5?.minutes);
-  const last10Minutes = num(player.profile?.last10Minutes ?? player.history?.last10?.minutes);
+function buildRow(player, history) {
+  const seasonMinutes = num(history?.seasonSummary?.minutes);
+  const last5Minutes = num(history?.last5?.minutes);
+  const last10Minutes = num(history?.last10?.minutes);
 
-  const expectedMinutes = buildExpectedMinutes(player);
-  const minutesConfidence = buildConfidence(player, expectedMinutes);
+  const expectedMinutes = buildExpectedMinutes(player, history);
+  const minutesConfidence = buildConfidence(player, history, expectedMinutes);
   const minutesTrend = round1(last5Minutes - seasonMinutes);
   const role = roleFromMinutes(player, expectedMinutes);
 
@@ -136,11 +140,13 @@ function buildRow(player) {
 }
 
 async function main() {
-  const core = readJSON(CORE_FILE, { players: [] });
-  const players = Array.isArray(core.players) ? core.players : [];
+  const pool = readJSON(PLAYER_POOL_FILE, { players: [] });
+  const historyData = readJSON(HISTORY_FILE, { players: [] });
+  const players = Array.isArray(pool.players) ? pool.players : [];
+  const historyMap = byId(historyData.players);
 
   const rows = players
-    .map(buildRow)
+    .map(player => buildRow(player, historyMap.get(String(player.playerId)) || {}))
     .sort((a, b) =>
       b.minutesConfidence - a.minutesConfidence ||
       b.expectedMinutes - a.expectedMinutes ||
@@ -150,12 +156,13 @@ async function main() {
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: "nba_core.json",
+    source: "nba_player_pool plus nba_history",
     fetchedAt: new Date().toISOString(),
-    date: core.date || "",
+    date: pool.date || historyData.date || "",
+    season: historyData.season || "",
     playerCount: rows.length,
     modelNotes: [
-      "Minutes Engine 1.1 uses core expected minutes, season minutes, last 5 minutes, last 10 minutes, starter status, active status, and on court status.",
+      "Minutes Engine 1.1 uses player-pool status plus season, last 5, and last 10 minutes from NBA history.",
       "Roles are Core Starter, Starter, Rotation, Bench, Deep Bench, and Inactive.",
       "No odds or betting lines are used."
     ],

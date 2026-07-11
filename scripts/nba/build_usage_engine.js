@@ -71,7 +71,7 @@ function buildUsageScore({ seasonFGA, last5FGA, seasonFTA, last5FTA, seasonAssis
 }
 
 function buildRow(history, minutes) {
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
   const last10 = history?.last10 || {};
 

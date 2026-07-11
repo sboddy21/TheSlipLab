@@ -19,14 +19,6 @@ function readJSON(file, fallback) {
   }
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 function num(v) {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -241,6 +233,7 @@ async function main() {
     season: core.season || "",
     gameCount: core.gameCount || 0,
     playerCount: rows.length,
+    availability: Number(core.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "Points Board 1.3 reads from nba_core.json, nba_minutes_engine.json, and nba_usage_engine.json.",
       "Score is normalized to 0-100.",
@@ -250,21 +243,7 @@ async function main() {
     players: rows
   };
 
-  const existing = readExisting();
-const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
-
-if (rows.length === 0 && existingPlayers.length > 0) {
-  fs.writeFileSync(OUT, JSON.stringify({
-    ...existing,
-    preservedAt: new Date().toISOString(),
-    preserveReason: "Points board generated 0 players"
-  }, null, 2));
-
-  console.log("POINTS BOARD PRESERVED PREVIOUS DATA");
-  return;
-}
-
-fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+  fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA POINTS BOARD COMPLETE");
   console.log("Players:", rows.length);

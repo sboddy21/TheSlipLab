@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
+const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const OUT = path.join(ROOT, "website/data/nba_team_defense.json");
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -173,40 +174,34 @@ function parseTeamDefense(data) {
   }).filter(t => t.teamAbbr);
 }
 
-function buildFallbackTeam(teamAbbr) {
-  return {
-    teamId: "",
-    team: teamAbbr,
-    teamAbbr,
-    games: 0,
-    wins: 0,
-    losses: 0,
-    pointsAllowed: 0,
-    reboundsAllowed: 0,
-    assistsAllowed: 0,
-    threesAllowed: 0,
-    opponentFGAPerGame: 0,
-    opponentFTAPerGame: 0,
-    opponentThreeAttempts: 0,
-    opponentFieldGoalPct: 0,
-    opponentThreePct: 0,
-    rankPointsAllowed: 15,
-    rankReboundsAllowed: 15,
-    rankAssistsAllowed: 15,
-    rankThreesAllowed: 15,
-    rankOpponentFGA: 15,
-    rankOpponentThreeAttempts: 15,
-    overallDefenseRank: 15,
-    defensiveTier: "Average Defense",
-    pointsAllowedTier: "Average Defense",
-    reboundsAllowedTier: "Average Defense",
-    assistsAllowedTier: "Average Defense",
-    threesAllowedTier: "Average Defense"
-  };
-}
-
 async function main() {
   const season = seasonYear();
+  const gamesData = readJSON(GAMES_FILE, { games: [] });
+  const games = Array.isArray(gamesData.games) ? gamesData.games : [];
+
+  if (!games.length) {
+    const out = {
+      sport: "NBA",
+      version: "1.1",
+      source: "NBA stats leaguedashteamstats opponent per game",
+      fetchedAt: new Date().toISOString(),
+      date: gamesData.date || "",
+      season,
+      teamCount: 0,
+      availability: "no_games_scheduled",
+      error: "",
+      modelNotes: [
+        "No team-defense rows are required when the live NBA scoreboard has no scheduled games.",
+        "No previous or synthetic team-defense data is reused."
+      ],
+      teams: []
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+    console.log("NBA TEAM DEFENSE COMPLETE: NO GAMES SCHEDULED");
+    console.log("Saved:", OUT);
+    return;
+  }
 
   const params = new URLSearchParams({
     Conference: "",
@@ -243,21 +238,11 @@ async function main() {
 
   const url = `https://stats.nba.com/stats/leaguedashteamstats?${params.toString()}`;
 
-  let teams = [];
-  let error = null;
-
-  try {
-    const data = await fetchJsonWithRetry(url);
-    teams = parseTeamDefense(data);
-  } catch (err) {
-    error = err.message;
-    const previous = readJSON(OUT, { teams: [] });
-    teams = Array.isArray(previous.teams) ? previous.teams : [];
-    console.log("NBA TEAM DEFENSE USING PREVIOUS DATA:", error);
-  }
+  const data = await fetchJsonWithRetry(url);
+  const teams = parseTeamDefense(data);
 
   if (!teams.length) {
-    teams = Object.values(TEAM_ABBR).map(buildFallbackTeam);
+    throw new Error("NBA team defense API returned 0 teams for a non-empty slate");
   } else {
     rankRows(teams, "pointsAllowed", "rankPointsAllowed", true);
     rankRows(teams, "reboundsAllowed", "rankReboundsAllowed", true);
@@ -287,15 +272,17 @@ async function main() {
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: error ? "Previous NBA team defense data fallback" : "NBA stats leaguedashteamstats opponent per game",
+    source: "NBA stats leaguedashteamstats opponent per game",
     fetchedAt: new Date().toISOString(),
+    date: gamesData.date || "",
     season,
     teamCount: teams.length,
-    error: error || "",
+    availability: "games_scheduled",
+    error: "",
     modelNotes: [
       "Team Defense 1.1 uses NBA stats opponent per game team data when available.",
       "Lower allowed values rank as stronger defense.",
-      "If NBA stats times out, the file keeps the previous usable team defense snapshot.",
+      "If NBA stats is unavailable, the builder fails instead of reusing an earlier snapshot.",
       "No odds or betting lines are used."
     ],
     teams
@@ -306,7 +293,7 @@ async function main() {
   console.log("NBA TEAM DEFENSE COMPLETE");
   console.log("Season:", season);
   console.log("Teams:", teams.length);
-  console.log("Error:", error || "none");
+  console.log("Error: none");
   console.log("Saved:", OUT);
 }
 

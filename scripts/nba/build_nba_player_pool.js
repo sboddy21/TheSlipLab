@@ -17,14 +17,6 @@ function readJSON(file, fallback) {
   }
 }
 
-function readExisting() {
-  try {
-    return JSON.parse(fs.readFileSync(OUT, "utf8"));
-  } catch {
-    return null;
-  }
-}
-
 async function fetchJson(url) {
   const res = await fetch(url, {
     headers: {
@@ -161,31 +153,12 @@ async function main() {
     }
   }
 
-  const existing = readExisting();
-  const existingPlayers = Array.isArray(existing?.players) ? existing.players : [];
+  if (errors.length) {
+    throw new Error(`NBA player pool failed to load ${errors.length} scheduled game box score(s)`);
+  }
 
-  if (players.length === 0 && existingPlayers.length > 0) {
-    const preserved = {
-      ...existing,
-      preservedAt: new Date().toISOString(),
-      preserveReason: "NBA player pool generated 0 players, keeping previous non-empty pool",
-      latestEmptyAttempt: {
-        date: gamesData.date || "",
-        gameCount: games.length,
-        teamCount: teams.length,
-        errors
-      }
-    };
-
-    fs.writeFileSync(OUT, JSON.stringify(preserved, null, 2));
-
-    console.log("NBA PLAYER POOL PRESERVED PREVIOUS NON-EMPTY POOL");
-    console.log("Games:", games.length);
-    console.log("Teams:", teams.length);
-    console.log("Fetched Players:", players.length);
-    console.log("Preserved Players:", existingPlayers.length);
-    console.log("Saved:", OUT);
-    return;
+  if (games.length > 0 && players.length === 0) {
+    throw new Error("NBA player pool returned 0 players for a non-empty slate");
   }
 
   const out = {
@@ -196,6 +169,7 @@ async function main() {
     gameCount: games.length,
     teamCount: teams.length,
     playerCount: players.length,
+    availability: games.length ? "games_scheduled" : "no_games_scheduled",
     errors,
     teams,
     players

@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
+const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const OUT = path.join(ROOT, "website/data/nba_pace_engine.json");
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -154,24 +155,6 @@ function parseRows(data) {
   }).filter(t => t.teamAbbr && t.pace > 0);
 }
 
-function buildFallbackTeam(teamAbbr, index) {
-  const rank = index + 1;
-
-  return {
-    teamId: "",
-    team: teamAbbr,
-    teamAbbr,
-    games: 0,
-    pace: 0,
-    possessions: 0,
-    offensiveRating: 0,
-    defensiveRating: 0,
-    netRating: 0,
-    rankPace: rank,
-    paceTier: "Neutral Pace"
-  };
-}
-
 function applyPaceRanks(teams) {
   teams
     .slice()
@@ -187,6 +170,32 @@ function applyPaceRanks(teams) {
 
 async function main() {
   const season = seasonYear();
+  const gamesData = readJSON(GAMES_FILE, { games: [] });
+  const games = Array.isArray(gamesData.games) ? gamesData.games : [];
+
+  if (!games.length) {
+    const out = {
+      sport: "NBA",
+      version: "1.1",
+      source: "NBA stats leaguedashteamstats advanced per game",
+      fetchedAt: new Date().toISOString(),
+      date: gamesData.date || "",
+      season,
+      teamCount: 0,
+      availability: "no_games_scheduled",
+      error: "",
+      modelNotes: [
+        "No pace rows are required when the live NBA scoreboard has no scheduled games.",
+        "No previous or synthetic pace data is reused."
+      ],
+      teams: []
+    };
+
+    fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
+    console.log("NBA PACE ENGINE COMPLETE: NO GAMES SCHEDULED");
+    console.log("Saved:", OUT);
+    return;
+  }
 
   const params = new URLSearchParams({
     Conference: "",
@@ -223,37 +232,29 @@ async function main() {
 
   const url = `https://stats.nba.com/stats/leaguedashteamstats?${params.toString()}`;
 
-  let teams = [];
-  let error = null;
-
-  try {
-    const data = await fetchJsonWithRetry(url);
-    teams = parseRows(data);
-  } catch (err) {
-    error = err.message;
-    const previous = readJSON(OUT, { teams: [] });
-    teams = Array.isArray(previous.teams) ? previous.teams : [];
-    console.log("NBA PACE ENGINE USING PREVIOUS DATA:", error);
-  }
+  const data = await fetchJsonWithRetry(url);
+  const teams = parseRows(data);
 
   if (!teams.length) {
-    teams = Object.values(TEAM_ABBR).map(buildFallbackTeam);
-  } else {
-    applyPaceRanks(teams);
+    throw new Error("NBA pace API returned 0 teams for a non-empty slate");
   }
+
+  applyPaceRanks(teams);
 
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: error ? "Previous NBA pace data fallback" : "NBA stats leaguedashteamstats advanced per game",
+    source: "NBA stats leaguedashteamstats advanced per game",
     fetchedAt: new Date().toISOString(),
+    date: gamesData.date || "",
     season,
     teamCount: teams.length,
-    error: error || "",
+    availability: "games_scheduled",
+    error: "",
     modelNotes: [
       "Pace Engine 1.1 uses NBA stats advanced team pace when available.",
       "Higher pace ranks as faster game environment.",
-      "If NBA stats times out, the file keeps the previous usable pace snapshot.",
+      "If NBA stats is unavailable, the builder fails instead of reusing an earlier snapshot.",
       "No odds or betting lines are used."
     ],
     teams
@@ -264,7 +265,7 @@ async function main() {
   console.log("NBA PACE ENGINE COMPLETE");
   console.log("Season:", season);
   console.log("Teams:", teams.length);
-  console.log("Error:", error || "none");
+  console.log("Error: none");
   console.log("Saved:", OUT);
 }
 

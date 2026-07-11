@@ -616,7 +616,7 @@
                 <div class="slate-matchup">${html(teamLine(game.awayTeam))} at ${html(teamLine(game.homeTeam))}</div>
                 <div class="slate-meta ${gameStatusClass(game)}">${html(gameStatusLabel(game))}</div>
               </div>
-            `).join("") || `<div class="slate-game"><div class="slate-meta">No NBA games loaded.</div></div>`}
+            `).join("") || `<div class="slate-game"><div class="slate-meta">NBA Offseason — No Games Scheduled</div></div>`}
           </div>
         `;
       }catch(e){
@@ -841,18 +841,29 @@
     async function boot() {
       DATA = await getJSON("./data/nba_decision_center.json");
 
+      const offseason = DATA.availability === "no_games_scheduled";
+
       document.getElementById("subtitle").textContent =
-        `${clean(DATA.market, "Points")} board • ${clean(DATA.date)} • ${clean(DATA.source)}`;
+        offseason
+          ? `NBA Offseason • No games scheduled • ${clean(DATA.date)}`
+          : `${clean(DATA.market, "Points")} board • ${clean(DATA.date)} • ${clean(DATA.source)}`;
       document.getElementById("playerCount").textContent = clean(DATA.playerCount);
       document.getElementById("sectionCount").textContent = clean(DATA.sectionCount);
-      document.getElementById("topPoints").textContent = clean(DATA.sections?.bestPointsPlays?.[0]?.player);
-      document.getElementById("topRebounds").textContent = clean(DATA.sections?.topRebounds?.[0]?.player);
-      document.getElementById("topAssists").textContent = clean(DATA.sections?.topAssists?.[0]?.player);
-      document.getElementById("topThrees").textContent = clean(DATA.sections?.topThrees?.[0]?.player);
+      document.getElementById("topPoints").textContent = offseason ? "Offseason" : clean(DATA.sections?.bestPointsPlays?.[0]?.player);
+      document.getElementById("topRebounds").textContent = offseason ? "Offseason" : clean(DATA.sections?.topRebounds?.[0]?.player);
+      document.getElementById("topAssists").textContent = offseason ? "Offseason" : clean(DATA.sections?.topAssists?.[0]?.player);
+      document.getElementById("topThrees").textContent = offseason ? "Offseason" : clean(DATA.sections?.topThrees?.[0]?.player);
       document.getElementById("market").textContent = clean(DATA.market, "Points");
       document.getElementById("updated").textContent = niceDate(DATA.fetchedAt);
 
-      renderSlatePanel();
+      await renderSlatePanel();
+
+      if (offseason) {
+        document.getElementById("tabs").innerHTML = "";
+        document.getElementById("content").innerHTML = `<div class="empty">NBA Offseason — No Games Scheduled. Live boards will return when the NBA schedule resumes.</div>`;
+        return;
+      }
+
       renderTabs();
       renderSection();
     }

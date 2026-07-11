@@ -150,6 +150,7 @@
     let DATA=[];
     let CARDS=[];
     let MARKET_DATA=[];
+    let NO_GAMES=false;
     function clean(v,f="--"){return v===undefined||v===null||v===""?f:String(v)}
     function html(v){return clean(v,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
     function num(v){const n=Number(v);return Number.isFinite(n)?n:0}
@@ -184,6 +185,7 @@
       try{
         const slate=await getJSON("./data/nba_games_today.json");
         const games=Array.isArray(slate.games)?slate.games:[];
+        NO_GAMES=slate.availability==="no_games_scheduled";
         panel.innerHTML=`
           <div class="slate-head">
             <h2>Today’s NBA Slate</h2>
@@ -195,7 +197,7 @@
                 <div class="slate-matchup">${html(teamLine(game.awayTeam))} at ${html(teamLine(game.homeTeam))}</div>
                 <div class="slate-meta ${gameStatusClass(game)}">${html(gameStatusLabel(game))}</div>
               </div>
-            `).join("") || `<div class="slate-game"><div class="slate-meta">No NBA games loaded.</div></div>`}
+            `).join("") || `<div class="slate-game"><div class="slate-meta">NBA Offseason — No Games Scheduled</div></div>`}
           </div>
         `;
       }catch(e){
@@ -252,7 +254,9 @@
       const sort=document.getElementById("sort").value;
       const rows=DATA.filter(p=>matches(p,q)).filter(p=>tier==="all"||p.matchupTier===tier)
         .sort((a,b)=>num(b[sort])-num(a[sort])||num(b.threesScore)-num(a.threesScore));
-      document.getElementById("board").innerHTML=rows.length?rows.map(card).join(""):`<div class="empty">No players match this filter.</div>`;
+      document.getElementById("board").innerHTML=rows.length
+        ? rows.map(card).join("")
+        : `<div class="empty">${NO_GAMES ? "NBA Offseason — No Games Scheduled. Live threes projections will return when the schedule resumes." : "No players match this filter."}</div>`;
       installCards();
 
     }
@@ -411,12 +415,18 @@
     }
     async function boot(){
       const cards=await getJSON("./data/nba_player_cards.json");
-      const market=await getJSON("./data/nba_threes.json");
       const d=await getJSON("./data/nba_threes.json");
-      DATA=Array.isArray(d.players)?d.players:[];
       CARDS=Array.isArray(cards.players)?cards.players:[];
-      MARKET_DATA=Array.isArray(market.players)?market.players:[];
-      document.getElementById("subtitle").textContent=`${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
+      MARKET_DATA=Array.isArray(d.players)?d.players:[];
+      NO_GAMES=d.availability==="no_games_scheduled";
+      const cardMap=new Map(CARDS.map(card=>[String(card.playerId),card]));
+      DATA=MARKET_DATA.map(row=>{
+        const context=cardMap.get(String(row.playerId))?.matchup||{};
+        return {...row,matchup:context.matchup||`${row.team} vs ${row.opponent}`,matchupTier:context.matchupTier||"",opponentContext:context.opponentContext||"",paceContext:context.paceContext||""};
+      });
+      document.getElementById("subtitle").textContent=NO_GAMES
+        ? `NBA Offseason • No games scheduled • ${clean(d.date)}`
+        : `${DATA.length} players • ${clean(d.market)} • ${clean(d.date)} • version ${clean(d.version)}`;
       fillTeams();
       ["search","team","tier","minProjection","minScore","sort"].forEach(id=>{
         const el=document.getElementById(id);
@@ -429,10 +439,9 @@
         document.getElementById("tier").value="all";
         document.getElementById("minProjection").value="0";
         document.getElementById("minScore").value="0";
-        renderSlatePanel();
-      render();
+        render();
       });
-      renderSlatePanel();
+      await renderSlatePanel();
       render();
     }
     document.getElementById("modal").addEventListener("click",e=>{if(e.target.id==="modal")e.currentTarget.classList.remove("show")});
