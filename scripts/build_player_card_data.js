@@ -82,21 +82,25 @@ async function fetchGameLog(playerId) {
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}`;
 
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return [];
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`MLB game log returned ${res.status}`);
 
-    const json = await res.json();
-    return (json?.stats?.[0]?.splits || [])
-      .filter(row => row?.stat)
-      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-  } catch {
-    return [];
+      const json = await res.json();
+      return (json?.stats?.[0]?.splits || [])
+        .filter(row => row?.stat)
+        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    } catch (error) {
+      if (attempt === 2) return null;
+      await new Promise(resolve => setTimeout(resolve, 250));
+    }
   }
 }
 
 function collectPlayers() {
   const map = new Map();
+  const playerIdByName = new Map();
 
   const homeRuns = arr(readJSON(path.join(DATA, "mlb_home_runs.json"), []));
   const decision = arr(readJSON(path.join(DATA, "hr_decision_center.json"), {}));
@@ -104,11 +108,12 @@ function collectPlayers() {
 
   function add(row, extra = {}) {
     const player = row.player || row.name;
-    const playerId = row.playerId || row.mlbId || row.id;
+    const playerId = row.playerId || row.mlbId || row.id || playerIdByName.get(key(player));
 
     if (!player || !playerId) return;
 
     const id = String(playerId);
+    playerIdByName.set(key(player), id);
     map.set(id, {
       ...(map.get(id) || {}),
       ...row,
@@ -119,7 +124,6 @@ function collectPlayers() {
   }
 
   for (const row of homeRuns) add(row);
-  for (const row of decision) add(row);
 
   for (const game of matchups) {
     for (const row of game.hitters?.away || []) {
@@ -143,6 +147,11 @@ function collectPlayers() {
     }
   }
 
+  // Decision Center is the exclusive owner of matchup confidence, pitch edge,
+  // due, zones, and context scores. Apply it last so matchup rows cannot mask
+  // those fields, including when Decision Center rows identify players by name.
+  for (const row of decision) add(row);
+
   return [...map.values()];
 }
 
@@ -164,6 +173,53 @@ function buildTags(row, last7, last15) {
   return tags;
 }
 
+function buildSlateSignals(row, last7) {
+  const hrConfidence = num(row.hrConfidence ?? row.score);
+  const pitchEdge = num(row.pitchEdge);
+  const barrelScore = num(row.barrelScore);
+  const hardHitScore = num(row.hardHitScore);
+  const recentHr = num(last7.hr);
+  const signals = [];
+
+  if (hrConfidence >= 52) {
+    signals.push({
+      key: "hotLook",
+      emoji: "🔥",
+      label: "Hot Look",
+      evidence: { hrConfidence }
+    });
+  }
+
+  if (recentHr >= 2) {
+    signals.push({
+      key: "hotLately",
+      emoji: "☄️",
+      label: "Hot Lately",
+      evidence: { last7HomeRuns: recentHr, last7Games: num(last7.games) }
+    });
+  }
+
+  if (barrelScore >= 80 && hardHitScore >= 75 && recentHr === 0) {
+    signals.push({
+      key: "due",
+      emoji: "🎯",
+      label: "Due",
+      evidence: { barrelScore, hardHitScore, last7HomeRuns: recentHr, last7Games: num(last7.games) }
+    });
+  }
+
+  if (hrConfidence >= 42 && hrConfidence < 52 && pitchEdge >= 55 && recentHr === 0) {
+    signals.push({
+      key: "sleeper",
+      emoji: "👀",
+      label: "Sleeper Matchup",
+      evidence: { hrConfidence, pitchEdge, last7HomeRuns: recentHr, last7Games: num(last7.games) }
+    });
+  }
+
+  return signals;
+}
+
 async function main() {
   fs.mkdirSync(DATA, { recursive: true });
 
@@ -180,6 +236,9 @@ async function main() {
     console.log(`[${i}/${players.length}] ${player.player}`);
 
     const logs = await fetchGameLog(player.playerId);
+    if (logs === null) {
+      throw new Error(`MLB game log unavailable for ${player.player}; refusing to write incomplete recent-form data`);
+    }
     const last7Games = logs.slice(0, 7);
     const last15Games = logs.slice(0, 15);
 
@@ -218,19 +277,23 @@ async function main() {
       last15,
 
       model: {
-        score: num(player.score || player.hrConfidence),
+        score: num(player.hrConfidence ?? player.score),
         powerScore: num(player.powerScore),
         pitchEdge: num(player.pitchEdge),
         pitcherRisk: num(player.pitcherRisk),
         weather: num(player.weather),
         bullpen: num(player.bullpen),
         due: num(player.due),
+        barrelScore: num(player.barrelScore),
+        hardHitScore: num(player.hardHitScore),
         zoneOverlap: num(player.zoneOverlap),
         hitterZonePower: num(player.hitterZonePower),
         pitcherLeak: num(player.pitcherLeak),
         hotZoneCount: num(player.hotZoneCount),
         tier: player.tier || player.edge || ""
       },
+
+      slateSignals: buildSlateSignals(player, last7),
 
       tags: buildTags(player, last7, last15),
       gameLogs: last7Games.map(game => ({

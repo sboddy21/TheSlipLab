@@ -39,6 +39,11 @@ function fail(msg) {
   process.exit(1);
 }
 
+function num(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
 function filePath(file) {
   return path.join(DATA, file);
 }
@@ -79,6 +84,39 @@ function validateCurrentOutput(file, anchor, timestampFields = []) {
 function validateDependencyOrder(times, before, after) {
   if (times.get(before) > times.get(after)) {
     fail(`${before} was written after dependent output ${after}`);
+  }
+}
+
+function validatePlayerCardSignals() {
+  const payload = read("player_card_data.json");
+  const players = Array.isArray(payload.players) ? payload.players : [];
+
+  if (!players.length) fail("player_card_data.json has no players");
+
+  for (const player of players) {
+    if (!Array.isArray(player.slateSignals)) {
+      fail(`player_card_data.json is missing slateSignals for ${player.player || "unknown player"}`);
+    }
+
+    const keys = new Set(player.slateSignals.map(signal => signal?.key));
+    const confidence = num(player.model?.score);
+    const pitchEdge = num(player.model?.pitchEdge);
+    const barrelScore = num(player.model?.barrelScore);
+    const hardHitScore = num(player.model?.hardHitScore);
+    const recentHr = num(player.last7?.hr);
+
+    const expected = {
+      hotLook: confidence >= 52,
+      hotLately: recentHr >= 2,
+      due: barrelScore >= 80 && hardHitScore >= 75 && recentHr === 0,
+      sleeper: confidence >= 42 && confidence < 52 && pitchEdge >= 55 && recentHr === 0
+    };
+
+    for (const [key, active] of Object.entries(expected)) {
+      if (keys.has(key) !== active) {
+        fail(`player_card_data.json has an invalid ${key} signal for ${player.player || "unknown player"}`);
+      }
+    }
   }
 }
 
@@ -488,6 +526,7 @@ validatePitcherVulnerability(today);
 validateRealStatcastZones(today);
 validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);
+validatePlayerCardSignals();
 
 const siteUpdated = read("site_last_updated.json");
 if (siteUpdated.source !== "mlb_fast_refresh") {
