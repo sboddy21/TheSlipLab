@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], aiSays: {}, active: "all", last7: {}, market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
+  const state = { games: [], spray: {}, weather: [], aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -25,6 +25,35 @@
   const whole = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Math.round(Number(value)) : "N/A";
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
+  const playerNameKey = value => String(value || "").trim().toLowerCase();
+
+  function indexPlayerCards(payload) {
+    state.playerCardsById.clear();
+    state.playerCardsByName.clear();
+
+    for (const card of rows(payload)) {
+      const id = String(card?.playerId || "").trim();
+      const name = playerNameKey(card?.player);
+      if (id) state.playerCardsById.set(id, card);
+      if (name) state.playerCardsByName.set(name, card);
+      if (id && card?.last7) state.last7[id] = card.last7;
+    }
+  }
+
+  function playerCardFor(row) {
+    const id = String(row?.playerId || "").trim();
+    if (id && state.playerCardsById.has(id)) return state.playerCardsById.get(id);
+    return state.playerCardsByName.get(playerNameKey(row?.player)) || null;
+  }
+
+  function slateSignalsFor(row) {
+    const card = playerCardFor(row);
+    return Array.isArray(card?.slateSignals) ? card.slateSignals : [];
+  }
+
+  function signalClassName(key) {
+    return `signal-${String(key || "").replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()}`;
+  }
 
   function vulnerabilityTier(score) {
     if (score === null || score === undefined || score === "") return { label: "N/A", className: "vuln-unavailable" };
@@ -1031,11 +1060,16 @@
   function renderBat(row, index) {
     const s = statsOf(row);
     const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "matchup context warrants monitoring");
+    const signals = slateSignalsFor(row);
+    const signalClasses = signals.map(signal => signalClassName(signal.key)).join(" ");
+    const signalIcons = signals.map(signal => `<span class="slate-signal-icon ${signalClassName(signal.key)}" title="${esc(signal.label)}" aria-label="${esc(signal.label)}">${esc(signal.emoji)}</span>`).join("");
+    const signalLabels = signals.map(signal => `<span class="slate-signal-label ${signalClassName(signal.key)}"><span aria-hidden="true">${esc(signal.emoji)}</span>${esc(signal.label)}</span>`).join("");
     return `
-      <article class="bat sweet-bat" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
+      <article class="bat sweet-bat ${signalClasses}" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
         <div class="face">${esc(initials(row.player))}</div>
         <div class="sweet-main">
-          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}</div>
+          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
+          ${signalLabels ? `<div class="slate-signal-labels">${signalLabels}</div>` : ""}
           <div class="sweet-lineup">${esc(lineupSpotLabel(row))}</div>
           ${matchupBadges(row)}
           <div class="sweet-note">${esc(note)}</div>
@@ -1532,6 +1566,8 @@ body.tsl-editorial .matchup-chip.vs,body.tsl-editorial .matchup-chip.tag-top-ord
 body.tsl-editorial .matchup-chip.recent,body.tsl-editorial .matchup-chip.tag-pitch-edge,body.tsl-editorial .matchup-chip.tag-pitcher-vuln{background:#ffeadf;border-color:#a23c17;color:#7a2d12}
 body.tsl-editorial .matchup-chip.tag-speed,body.tsl-editorial .matchup-chip.tag-contact{background:#e1f5ed;border-color:#16745e;color:#075d4c}
 body.tsl-editorial .matchup-chip.tag-glow,body.tsl-editorial .matchup-chip.tag-glow-soft{box-shadow:none}
+.slate-signal-icons{display:inline-flex;align-items:center;gap:3px;margin-left:7px;vertical-align:middle}.slate-signal-icon{font-size:15px;line-height:1}.slate-signal-labels{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0}.slate-signal-label{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.07);color:#fff;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.slate-signal-label.signal-hot-look{border-color:#ff643c;background:rgba(255,82,42,.2);color:#ffc2b0}.slate-signal-label.signal-hot-lately{border-color:#9a68ff;background:rgba(120,70,255,.18);color:#d7c4ff}.slate-signal-label.signal-due{border-color:#ffc52a;background:rgba(255,197,42,.16);color:#ffe49a}.slate-signal-label.signal-sleeper{border-color:#00bfa5;background:rgba(0,191,165,.16);color:#8ff5e5}.sweet-bat.signal-hot-look{border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}.sweet-bat.signal-hot-look:nth-child(even){border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}
+body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.signal-hot-look:nth-child(even){border-left:6px solid #d84320;background:linear-gradient(105deg,#fff0e8 0,#fffdf7 48%)!important}.tsl-editorial .slate-signal-label{background:#f3f0e6;border-color:#506071;color:#071d36}.tsl-editorial .slate-signal-label.signal-hot-look{background:#ffe7df;border-color:#b63a1c;color:#7c2612}.tsl-editorial .slate-signal-label.signal-hot-lately{background:#eee7ff;border-color:#6d49a7;color:#452978}.tsl-editorial .slate-signal-label.signal-due{background:#fff1c7;border-color:#9a6b00;color:#684800}.tsl-editorial .slate-signal-label.signal-sleeper{background:#dcf5ef;border-color:#117461;color:#075447}
 @media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:600px){body.tsl-editorial .panel-head{align-items:flex-start;flex-direction:column;gap:8px}body.tsl-editorial .panel-note{line-height:1.4}.vulns{grid-template-columns:repeat(2,minmax(0,1fr))}.vuln{padding:15px 13px}}`;
     document.head.appendChild(style);
@@ -1582,6 +1618,7 @@ body.tsl-editorial .matchup-chip.tag-glow,body.tsl-editorial .matchup-chip.tag-g
   async function load() {
     injectStyles();
     injectShell();
+    indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
