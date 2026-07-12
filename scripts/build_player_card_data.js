@@ -277,7 +277,7 @@ async function main() {
       last15,
 
       model: {
-        score: num(player.score || player.hrConfidence),
+        score: num(player.hrConfidence ?? player.score),
         powerScore: num(player.powerScore),
         pitchEdge: num(player.pitchEdge),
         pitcherRisk: num(player.pitcherRisk),
