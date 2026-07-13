@@ -220,6 +220,39 @@ function validatePitcherVulnerability(expectedDate) {
   }
 }
 
+function inningsToNumber(value) {
+  const match = String(value ?? "").trim().match(/^(\d+)(?:\.([012]))?$/);
+  if (!match) return 0;
+  return Number(match[1]) + Number(match[2] || 0) / 3;
+}
+
+function validatePitcherRateFields() {
+  const matchups = read("game_pitcher_matchups.json");
+  const required = ["kPer9", "bbPer9", "hPer9", "hrPer9"];
+
+  for (const game of matchups.games || []) {
+    for (const side of ["away", "home"]) {
+      const pitcher = game[`${side}Pitcher`] || {};
+      const stats = pitcher.stats || {};
+      const innings = inningsToNumber(stats.inningsPitched);
+      if (innings <= 0) fail(`${pitcher.pitcher || pitcher.name || "Pitcher"} has invalid innings for rate validation`);
+
+      const expected = {
+        kPer9: Number(((num(stats.strikeOuts) / innings) * 9).toFixed(2)),
+        bbPer9: Number(((num(stats.walks) / innings) * 9).toFixed(2)),
+        hPer9: Number(((num(stats.hits) / innings) * 9).toFixed(2)),
+        hrPer9: Number(((num(stats.homeRuns) / innings) * 9).toFixed(2))
+      };
+
+      for (const field of required) {
+        if (!Number.isFinite(Number(stats[field])) || Math.abs(Number(stats[field]) - expected[field]) > 0.001) {
+          fail(`${pitcher.pitcher || pitcher.name || "Pitcher"} has an invalid derived ${field}`);
+        }
+      }
+    }
+  }
+}
+
 function validateRealStatcastZones(expectedDate) {
   const pool = read("mlb_player_pool.json");
   const matchups = read("game_pitcher_matchups.json");
@@ -523,6 +556,7 @@ validateSlateDate("mlb_weather.json", "date", today);
 validateSlateDate("hr_decision_center.json", "pitcherDate", today);
 validatePitchDamageCache(today);
 validatePitcherVulnerability(today);
+validatePitcherRateFields();
 validateRealStatcastZones(today);
 validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);

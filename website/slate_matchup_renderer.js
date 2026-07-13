@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
+  const state = { games: [], spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -30,6 +30,7 @@
   function indexPlayerCards(payload) {
     state.playerCardsById.clear();
     state.playerCardsByName.clear();
+    state.last7 = {};
 
     for (const card of rows(payload)) {
       const id = String(card?.playerId || "").trim();
@@ -218,6 +219,17 @@
           box-shadow: 0 0 0 2px rgba(140,255,50,.08);
         }
 
+        .pitcher-intel { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:7px; padding:10px 14px; border-top:1px solid rgba(255,255,255,.07); border-bottom:1px solid rgba(255,255,255,.07); }
+        .pitcher-intel div { min-width:0; }
+        .pitcher-intel label { display:block; color:#7f8f88; font-size:8px; font-weight:950; letter-spacing:.08em; text-transform:uppercase; }
+        .pitcher-intel b { display:block; margin-top:2px; color:#f3faf7; font-size:12px; }
+        .pitcher-context { padding:9px 14px; color:#a4b2ad; font-size:10px; font-weight:850; }
+        .pitcher-context b { color:#8cff32; }
+        body.tsl-editorial .pitcher-intel { border-color:#d2d8da; }
+        body.tsl-editorial .pitcher-intel label, body.tsl-editorial .pitcher-context { color:#526579; }
+        body.tsl-editorial .pitcher-intel b { color:#071d36; }
+        body.tsl-editorial .pitcher-context b { color:#075d4c; }
+
         @media(max-width:900px) {
           .market-filter-panel {
             grid-template-columns: 1fr;
@@ -323,54 +335,7 @@
   async function fetchLast7(playerId) {
     const id = String(playerId || "");
     if (!id) return null;
-    if (state.last7[id]) return state.last7[id];
-
-    const season = new Date().getFullYear();
-    const url = `https://statsapi.mlb.com/api/v1/people/${id}/stats?stats=gameLog&group=hitting&season=${season}`;
-
-    try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error("MLB game log failed");
-
-      const data = await response.json();
-      const splits = data?.stats?.[0]?.splits || [];
-
-      const games = splits
-        .filter(split => split?.stat)
-        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
-        .slice(0, 7);
-
-      let hr = 0;
-      let hits = 0;
-      let ab = 0;
-      let bb = 0;
-      let hbp = 0;
-      let sf = 0;
-      let tb = 0;
-
-      for (const game of games) {
-        const s = game.stat || {};
-        hr += num(s.homeRuns);
-        hits += num(s.hits);
-        ab += num(s.atBats);
-        bb += num(s.baseOnBalls);
-        hbp += num(s.hitByPitch);
-        sf += num(s.sacFlies);
-        tb += num(s.totalBases);
-      }
-
-      const avg = ab ? hits / ab : 0;
-      const obpDen = ab + bb + hbp + sf;
-      const obp = obpDen ? (hits + bb + hbp) / obpDen : 0;
-      const slg = ab ? tb / ab : 0;
-      const ops = obp + slg;
-
-      state.last7[id] = { hr, avg, ops, games: games.length };
-      return state.last7[id];
-    } catch {
-      state.last7[id] = null;
-      return null;
-    }
+    return state.last7[id] || null;
   }
 
   async function hydrateLast7() {
@@ -412,10 +377,7 @@
 
     if (Number.isFinite(Number(value))) return "BBL " + Math.round(Number(value)) + "%";
 
-    const s = statsOf(row);
-    if (num(s.slg) >= .500) return "BBL 12%";
-    if (num(s.slg) >= .440) return "BBL 9%";
-    return "BBL 6%";
+    return "";
   }
 
   function hardHitLabel(row) {
@@ -429,10 +391,7 @@
 
     if (Number.isFinite(Number(value))) return "HH " + Math.round(Number(value)) + "%";
 
-    const s = statsOf(row);
-    if (num(s.ops) >= .850) return "HH 57%";
-    if (num(s.ops) >= .780) return "HH 49%";
-    return "HH 42%";
+    return "";
   }
 
   function previousHrVsPitcher(row) {
@@ -937,46 +896,55 @@
     `;
   }
 
-  function projectedSlateHRs(rows) {
-    const games = state.games.length || 0;
-    if (!games) return 0;
+  function modelExpectedSlateHRs() {
+    let expected = 0;
+    const seen = new Set();
 
-    const avgVulnerability = rows.length
-      ? rows.reduce((sum, row) => sum + num(row.score), 0) / rows.length
-      : 50;
+    for (const game of state.games) {
+      for (const side of ["away", "home"]) {
+        const hitters = (game.hitters?.[side] || [])
+          .filter(row => String(row.lineupSource || "").toUpperCase() !== "NOT_IN_LINEUP")
+          .sort((a, b) => lineupSpotOf(a) - lineupSpotOf(b) || num(scoreOf(b)) - num(scoreOf(a)))
+          .slice(0, 9);
 
-    const highValue = rows.filter(row => row.score >= 45).length;
+        for (const hitter of hitters) {
+          const key = playerNameKey(hitter.player);
+          if (!key || seen.has(key)) continue;
+          const probability = state.probabilitiesByName.get(key);
+          if (!Number.isFinite(probability)) continue;
+          seen.add(key);
+          expected += probability / 100;
+        }
+      }
+    }
 
-    const baseline = games * 2.2;
-    const vulnerabilityBoost = Math.max(-4, Math.min(8, (avgVulnerability - 50) * 0.2));
-    const highValueBoost = highValue * 0.75;
-
-    const projected = baseline + vulnerabilityBoost + highValueBoost;
-
-    return Math.max(games * 1.6, Math.min(games * 3.2, projected));
+    return seen.size ? expected : null;
   }
 
   function renderTopVulnerabilities() {
     const rows = topPitcherRows();
     const highValue = rows.filter(row => row.score >= 45).length;
-    const projectedHRs = projectedSlateHRs(rows);
-    const avgPerGame = state.games.length ? projectedHRs / state.games.length : 0;
+    const projectedHRs = modelExpectedSlateHRs();
+    const avgPerGame = state.games.length && projectedHRs !== null ? projectedHRs / state.games.length : null;
 
     let environment = "LOW HR ENVIRONMENT";
 
-    if (projectedHRs >= 46) {
+    if (avgPerGame === null) {
+      environment = "MODEL UPDATING";
+    } else if (avgPerGame >= 3.05) {
       environment = "EXTREME HR ENVIRONMENT";
-    } else if (projectedHRs >= 40) {
+    } else if (avgPerGame >= 2.65) {
       environment = "HIGH HR ENVIRONMENT";
-    } else if (projectedHRs >= 34) {
+    } else if (avgPerGame >= 2.25) {
       environment = "ELEVATED HR ENVIRONMENT";
-    } else if (projectedHRs >= 28) {
+    } else if (avgPerGame >= 1.85) {
       environment = "AVERAGE HR ENVIRONMENT";
     }
 
     const avgVuln = document.getElementById("avgVuln");
-    avgVuln.innerHTML =
-      ` | 🔥 <span class="vuln-proj-number" data-target="${projectedHRs.toFixed(1)}">0.0</span> Projected Home Runs Today <span class="vuln-env-tag">${esc(environment)}</span> ${avgPerGame.toFixed(2)} HR/Game • ${highValue} High Value Games`;
+    avgVuln.innerHTML = projectedHRs === null
+      ? ` | <span class="vuln-env-tag">${esc(environment)}</span> • ${highValue} High Value Games`
+      : ` | 🔥 <span class="vuln-proj-number" data-target="${projectedHRs.toFixed(1)}">0.0</span> Model Expected HR <span class="vuln-env-tag">${esc(environment)}</span> ${avgPerGame.toFixed(2)} HR/Game • ${highValue} High Value Games`;
 
     animateProjectedHRNumber();
 
@@ -1097,6 +1065,14 @@
     const hand = pitcher?.side || pitcher?.throws || "";
     const vuln = pitcherVulnerability(game, side);
     const vulnClass = vulnerabilityTier(vuln).className;
+    const pitcherStats = pitcherStatsFor(game, side);
+    const pitcherId = String(pitcher?.id || pitcher?.playerId || "");
+    const strikeoutRow = state.marketRows.pitcherKs.find(row =>
+      String(row.pitcherId || row.playerId || "") === pitcherId || playerNameKey(row.pitcher || row.player) === playerNameKey(pitcherLabel)
+    );
+    const bullpenRows = state.bullpen.filter(row => String(row.team || "") === String(pitcherTeam || ""));
+    const peakBullpen = bullpenRows.slice().sort((a, b) => num(b.hrRiskScore) - num(a.hrRiskScore))[0];
+    const rate = key => Number.isFinite(Number(pitcherStats?.[key])) ? Number(pitcherStats[key]).toFixed(2) : "N/A";
     return `
       <article class="side ${vulnClass}">
         <div class="side-top"><div>
@@ -1104,6 +1080,13 @@
           <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
           <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${esc(lineupText)}</b></div><div><label>Risk</label><b>${whole(vuln)}</b></div></div>
         </div><div class="vbox"><b>${whole(vuln)}</b><span>RISK INDEX</span></div></div>
+        <div class="pitcher-intel">
+          <div><label>ERA</label><b>${esc(rate("era"))}</b></div><div><label>WHIP</label><b>${esc(rate("whip"))}</b></div>
+          <div><label>K/9</label><b>${esc(rate("kPer9"))}</b></div><div><label>BB/9</label><b>${esc(rate("bbPer9"))}</b></div>
+          <div><label>H/9</label><b>${esc(rate("hPer9"))}</b></div><div><label>HR/9</label><b>${esc(rate("hrPer9"))}</b></div>
+          <div><label>Season HR</label><b>${esc(show(pitcherStats?.homeRuns))}</b></div><div><label>Projected K</label><b>${esc(strikeoutRow ? show(strikeoutRow.projectedStrikeouts) : "N/A")}</b></div>
+        </div>
+        ${peakBullpen ? `<div class="pitcher-context">Bullpen: <b>${esc(peakBullpen.tag || "Live")}</b> · peak reliever HR risk ${esc(whole(peakBullpen.hrRiskScore))}</div>` : ""}
         <div class="danger"><div class="danger-head"><span>Danger Batters</span><span>${hitters.length} bats</span></div><div class="bats">${hitters.slice(0, 8).map(renderBat).join("") || `<div class="empty">No hitter data yet for ${esc(hitterTeam)}</div>`}</div></div>
       </article>
     `;
@@ -1114,7 +1097,7 @@
       <section class="game-card" data-game="${index}">
         <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill ${lineupStatusLabel(game).toLowerCase()}">${esc(lineupStatusLabel(game))}</div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
-        ${renderWeather(game.weather)}
+        ${renderWeather(weatherForVenue(game.venue))}
       </section>
     `;
   }
@@ -1624,6 +1607,9 @@ body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.sign
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
     state.marketRows.pitcherKs = rows(await json("./data/mlb_pitcher_strikeouts.json", []));
+    state.bullpen = rows(await json("./data/bullpen_relievers.json", []));
+    const probabilityPayload = await json("./data/hr_probability_tracking.json", { players: [] });
+    state.probabilitiesByName = new Map(rows(probabilityPayload).map(row => [playerNameKey(row.player), Number(row.realHrProbability)]));
     const weatherPayload = await json("./data/mlb_weather.json", []);
     state.weather = Array.isArray(weatherPayload) ? weatherPayload : weatherPayload.weather || weatherPayload.rows || weatherPayload.data || [];
     state.spray = await json("./data/player_spray_charts.json", {});
