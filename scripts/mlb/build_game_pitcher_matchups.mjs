@@ -65,14 +65,26 @@ async function getPitcherStats(playerId) {
   const stat = data?.stats?.[0]?.splits?.[0]?.stat;
   if (!stat) return null;
 
+  const outs = inningsToOuts(stat.inningsPitched);
+  if (!outs) return null;
+  const innings = outs / 3;
+  const hits = num(stat.hits);
+  const homeRuns = num(stat.homeRuns);
+  const strikeOuts = num(stat.strikeOuts);
+  const walks = num(stat.baseOnBalls);
+
   return {
     era: num(stat.era),
     whip: num(stat.whip),
-    hits: num(stat.hits),
-    homeRuns: num(stat.homeRuns),
-    inningsPitched: num(stat.inningsPitched),
-    strikeOuts: num(stat.strikeOuts),
-    walks: num(stat.baseOnBalls)
+    hits,
+    homeRuns,
+    inningsPitched: clean(stat.inningsPitched),
+    strikeOuts,
+    walks,
+    kPer9: Number(((strikeOuts / innings) * 9).toFixed(2)),
+    bbPer9: Number(((walks / innings) * 9).toFixed(2)),
+    hPer9: Number(((hits / innings) * 9).toFixed(2)),
+    hrPer9: Number(((homeRuns / innings) * 9).toFixed(2))
   };
 }
 
