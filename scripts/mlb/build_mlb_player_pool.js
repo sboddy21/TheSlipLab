@@ -193,6 +193,24 @@ async function main() {
   const games = gamesData.games || [];
   const analysisGames = selectAnalysisGames(games);
 
+  if (!games.length) {
+    const output = {
+      date: gamesData.date,
+      source: "MLB Stats API",
+      updatedAt: new Date().toISOString(),
+      availability: "no_games_scheduled",
+      playerCount: 0,
+      players: []
+    };
+
+    fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
+    console.log("MLB player pool saved");
+    console.log("Availability: no games scheduled");
+    console.log("Players: 0");
+    console.log("File:", OUT_FILE);
+    return;
+  }
+
   if (!analysisGames.length) {
     throw new Error("No MLB games currently have both probable pitchers announced");
   }

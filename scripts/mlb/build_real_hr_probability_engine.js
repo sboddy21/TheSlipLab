@@ -98,7 +98,26 @@ const homeRuns = readRequired("mlb_home_runs.json");
 const rows = rowsOf(homeRuns);
 
 if (!rows.length) {
-  throw new Error("mlb_home_runs.json contains no players");
+  const playerPool = readRequired("mlb_player_pool.json");
+  if (playerPool?.availability !== "no_games_scheduled") {
+    throw new Error("mlb_home_runs.json contains no players");
+  }
+
+  write("hr_probability_tracking.json", {
+    generatedAt: new Date().toISOString(),
+    date: playerPool.date,
+    availability: "no_games_scheduled",
+    scoringMode: "Calibrated Logistic HR Probability",
+    players: []
+  });
+
+  console.log("");
+  console.log("REAL HR PROBABILITY ENGINE CALIBRATED");
+  console.log("Availability: no games scheduled");
+  console.log("Players: 0");
+  console.log("Tracking Export Created");
+  console.log("");
+  process.exit(0);
 }
 
 const calibrated = rows

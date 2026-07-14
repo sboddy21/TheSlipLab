@@ -760,6 +760,47 @@ function topUnique(rows, scoreKey, limit = 12) {
 
 async function main() {
   const pitcherDate = todayEastern();
+
+  if (
+    playerPoolPayload?.availability === "no_games_scheduled" &&
+    playerPoolPayload?.date === pitcherDate &&
+    !playerPoolRows.length &&
+    !hrRows.length
+  ) {
+    const output = {
+      updatedAt: new Date().toISOString(),
+      availability: "no_games_scheduled",
+      totalPlayers: 0,
+      pitcherSource: "MLB Stats API probablePitcher",
+      pitcherDate,
+      pitcherDebug: {
+        scheduleGames: 0,
+        pitcherPairs: 0,
+        players: 0,
+        withPitchers: 0,
+        tbd: 0
+      },
+      sections: {
+        ifOnlyOne: {},
+        bestPicks: [],
+        safestPlays: [],
+        bestValue: [],
+        lottoBombs: [],
+        pitchTypeEdges: [],
+        weatherCarry: [],
+        bullpenBoosts: []
+      },
+      allPlayers: []
+    };
+
+    fs.writeFileSync(OUTFILE, JSON.stringify(output, null, 2));
+    console.log("HR DECISION CENTER COMPLETE");
+    console.log("Availability: no games scheduled");
+    console.log("Players: 0");
+    console.log("Saved:", OUTFILE);
+    return;
+  }
+
   const schedule = await getSchedule(pitcherDate);
   const { opponentMap, games } = buildPitcherMaps(schedule);
 

@@ -976,6 +976,16 @@ async function main() {
   const baseRows = await buildBaseRows();
 
   if (!Array.isArray(baseRows) || !baseRows.length) {
+    const playerPool = read("mlb_player_pool.json", {});
+    if (playerPool?.availability === "no_games_scheduled" && Array.isArray(playerPool.players) && !playerPool.players.length) {
+      write("mlb_home_runs.json", []);
+      console.log("MASTER HR MODEL COMPLETE");
+      console.log("Availability: no games scheduled");
+      console.log("Base rows: 0");
+      console.log("Updated mlb_home_runs.json: 0");
+      return;
+    }
+
     throw new Error("Master HR model could not build base rows");
   }
 

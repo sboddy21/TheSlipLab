@@ -350,7 +350,31 @@ async function main() {
   const players = rowsFrom(playerPool);
 
   if (!players.length) {
-    throw new Error("mlb_player_pool.json contains no current players");
+    if (playerPool?.availability !== "no_games_scheduled" || playerPool?.date !== SLATE_DATE) {
+      throw new Error("mlb_player_pool.json contains no current players");
+    }
+
+    const cache = readJson(CACHE_FILE, { players: {} });
+    if (!cache.players || typeof cache.players !== "object" || Array.isArray(cache.players)) {
+      throw new Error("pitch_type_damage_cache.json has an invalid players object");
+    }
+
+    writeJson(CACHE_FILE, cache);
+    writeJson(OUT_FILE, {
+      updated_at: new Date().toISOString(),
+      source: "baseball_savant_statcast_pitch_events",
+      availability: "no_games_scheduled",
+      season: SEASON,
+      start_date: START_DATE,
+      end_date: END_DATE,
+      players: {}
+    });
+
+    console.log("PITCH TYPE DAMAGE COMPLETE");
+    console.log("Availability: no games scheduled");
+    console.log("Players: 0");
+    console.log(`Saved: ${OUT_FILE}`);
+    return;
   }
 
   if (playerPool?.date !== SLATE_DATE) {

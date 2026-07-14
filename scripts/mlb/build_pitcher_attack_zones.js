@@ -142,7 +142,30 @@ function main() {
   const matchups = readJson(MATCHUPS_FILE);
   const rows = Array.isArray(board) ? board : [];
 
-  if (!rows.length) throw new Error("mlb_home_runs.json contains no current players");
+  if (!rows.length) {
+    if (
+      statcast?.availability === "no_games_scheduled" &&
+      matchups?.availability === "no_games_scheduled" &&
+      statcast?.date === matchups?.date
+    ) {
+      writeJson(OUT_FILE, {
+        updated_at: new Date().toISOString(),
+        date: statcast.date,
+        availability: "no_games_scheduled",
+        source: SOURCE,
+        statcastSource: statcast.source,
+        note: "No games scheduled; no hitter-versus-pitcher zone overlaps were built.",
+        players: {}
+      });
+      console.log("PITCHER ATTACK ZONES COMPLETE");
+      console.log("Availability: no games scheduled");
+      console.log("Players: 0");
+      console.log(`Saved: ${OUT_FILE}`);
+      return;
+    }
+
+    throw new Error("mlb_home_runs.json contains no current players");
+  }
   if (statcast.source !== "baseball_savant_statcast_pitch_detail_csv") {
     throw new Error(`statcast_zones.json has invalid source ${statcast.source || "missing"}`);
   }

@@ -96,7 +96,7 @@ const confirmed = allPlayers.filter(row => row.confirmedLineup && num(row.lineup
 const pitchers = arr(vulnerability.pitchers).slice().sort((a, b) => num(b.vulnerability) - num(a.vulnerability));
 const gameRows = arr(games.games);
 const weatherRows = arr(weather.weather);
-const homeRuns = arr(results.homeRuns);
+const homeRuns = results.date === easternDate() ? arr(results.homeRuns) : [];
 
 function latestPregameSnapshot(result) {
   const gameStart = Date.parse(result?.gameStartTime || "");
@@ -147,6 +147,9 @@ const recentPosts = arr(history.posts).filter(post => {
 const candidates = [];
 const TODAY = easternDate();
 const NOW = new Date().toISOString();
+const noGamesScheduled = games?.date === TODAY
+  && Array.isArray(games?.games)
+  && games.games.length === 0;
 
 function add(slot, type, weight, text, players = [], meta = {}) {
   const body = text.trim();
@@ -322,7 +325,7 @@ That distinction matters. Results are volatile; the audit trail should not be.`,
   }
 }
 
-add("evening", "process_question", 55,
+if (!noGamesScheduled) add("evening", "process_question", 55,
 `Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?
 
 I built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.`, []);
@@ -339,6 +342,7 @@ const output = {
   date: TODAY,
   version: "Content Engine 3.0",
   source: "live Slip Lab MLB production outputs",
+  availability: noGamesScheduled ? "no_games_scheduled" : "live_slate",
   fakeData: false,
   count: selected.length,
   rules: [

@@ -124,9 +124,18 @@ function validatePitchDamageCache(expectedDate) {
 function validateHealthStatus(expectedDate) {
   const health = readJson(outputPath("health_status.json"));
   const updatedAt = Date.parse(health.updatedAt);
+  const games = readJson(outputPath("mlb_games_today.json"));
+  const noGamesScheduled = games.date === expectedDate
+    && Array.isArray(games.games)
+    && games.games.length === 0;
+  const expectedLabel = noGamesScheduled ? "CLOSED" : "LIVE";
 
-  if (health.status !== "healthy" || health.label !== "LIVE") {
+  if (health.status !== "healthy" || health.label !== expectedLabel) {
     throw new Error(`health_status.json is not healthy: ${(health.errors || []).join(" | ") || "unknown error"}`);
+  }
+
+  if (noGamesScheduled && health.availability !== "no_games_scheduled") {
+    throw new Error("health_status.json does not declare the verified no-games state");
   }
 
   if (health.source !== "mlb_fast_refresh") {
@@ -137,7 +146,6 @@ function validateHealthStatus(expectedDate) {
     throw new Error("health_status.json updatedAt does not belong to the current refresh");
   }
 
-  const games = readJson(outputPath("mlb_games_today.json"));
   if (games.date !== expectedDate) {
     throw new Error(`Health status is not tied to the ${expectedDate} slate`);
   }
