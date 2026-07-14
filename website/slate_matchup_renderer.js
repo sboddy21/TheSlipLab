@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
+  const state = { games: [], schedule: null, health: null, spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -1310,16 +1310,107 @@
     wireCards();
   }
 
+  function isVerifiedClosedSlate() {
+    const scheduledGames = state.schedule?.games;
+    return state.games.length === 0 &&
+      state.health?.status === "healthy" &&
+      state.health?.availability === "no_games_scheduled" &&
+      Array.isArray(scheduledGames) &&
+      scheduledGames.length === 0;
+  }
+
+  function slateDateLabel() {
+    const raw = String(state.schedule?.date || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return "Today";
+    const date = new Date(`${raw}T12:00:00`);
+    return new Intl.DateTimeFormat("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+  }
+
+  function slateUpdatedLabel() {
+    const raw = state.health?.updatedAt || state.health?.generatedAt || state.schedule?.updatedAt;
+    const date = new Date(raw || "");
+    if (!Number.isFinite(date.getTime())) return "Current";
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/New_York",
+      hour: "numeric",
+      minute: "2-digit",
+      timeZoneName: "short"
+    }).format(date);
+  }
+
+  function renderClosedSlate() {
+    document.body.classList.add("tsl-closed-slate");
+
+    const topPanel = document.getElementById("topVulnPanel");
+    if (topPanel) topPanel.style.display = "none";
+
+    const hero = document.getElementById("hero");
+    if (hero) hero.innerHTML = "";
+
+    const tabs = document.getElementById("tabs");
+    if (tabs) tabs.innerHTML = "";
+
+    document.getElementById("games").innerHTML = `
+      <section class="closed-slate-dashboard" aria-labelledby="closedSlateTitle">
+        <div class="closed-slate-topline">
+          <span class="closed-slate-kicker"><i aria-hidden="true"></i> MLB DATA CURRENT</span>
+          <span class="closed-slate-date">${esc(slateDateLabel())}</span>
+        </div>
+
+        <div class="closed-slate-copy">
+          <span class="closed-slate-label">TODAY'S SLATE</span>
+          <h2 id="closedSlateTitle">No MLB games<br><em>scheduled today.</em></h2>
+          <p>The board is intentionally closed. There is no live slate to model, so The Slip Lab is not showing stale matchups or recycled player recommendations.</p>
+        </div>
+
+        <div class="closed-slate-status" aria-label="Current slate status">
+          <div><span>Scheduled games</span><strong>${esc(state.schedule?.gameCount ?? 0)}</strong></div>
+          <div><span>Model state</span><strong>CLOSED</strong></div>
+          <div><span>Data checked</span><strong>${esc(slateUpdatedLabel())}</strong></div>
+          <div><span>Next refresh</span><strong>AUTOMATIC</strong></div>
+        </div>
+
+        <div class="closed-slate-actions">
+          <a class="closed-slate-primary" href="./results.html">Review recent results <span aria-hidden="true">→</span></a>
+          <a class="closed-slate-secondary" href="./lab-notes.html">Read Lab Notes</a>
+        </div>
+
+        <div class="closed-slate-footer">
+          <span aria-hidden="true">●</span>
+          The next board will populate automatically when MLB posts the next slate and probable pitchers.
+        </div>
+      </section>
+    `;
+  }
+
+  function clearClosedSlate() {
+    document.body.classList.remove("tsl-closed-slate");
+    const topPanel = document.getElementById("topVulnPanel");
+    if (topPanel) topPanel.style.display = "";
+  }
+
   function render() {
     injectVulnerabilityStyles();
     wireMarketTabs();
+
+    if (state.market === "hr" && isVerifiedClosedSlate()) {
+      renderClosedSlate();
+      return;
+    }
+
+    clearClosedSlate();
 
     if (state.market === "hr") {
       renderTopVulnerabilities();
       renderTabs();
       document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
       const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
-      document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">No games loaded. Run the MLB refresh.</div>';
+      document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">The current slate could not be verified. Live matchup cards are unavailable until the next successful refresh.</div>';
       wireCards();
       hydrateLast7();
       return;
@@ -1551,6 +1642,39 @@ body.tsl-editorial .matchup-chip.tag-speed,body.tsl-editorial .matchup-chip.tag-
 body.tsl-editorial .matchup-chip.tag-glow,body.tsl-editorial .matchup-chip.tag-glow-soft{box-shadow:none}
 .slate-signal-icons{display:inline-flex;align-items:center;gap:3px;margin-left:7px;vertical-align:middle}.slate-signal-icon{font-size:15px;line-height:1}.slate-signal-labels{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0}.slate-signal-label{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.07);color:#fff;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.slate-signal-label.signal-hot-look{border-color:#ff643c;background:rgba(255,82,42,.2);color:#ffc2b0}.slate-signal-label.signal-hot-lately{border-color:#9a68ff;background:rgba(120,70,255,.18);color:#d7c4ff}.slate-signal-label.signal-due{border-color:#ffc52a;background:rgba(255,197,42,.16);color:#ffe49a}.slate-signal-label.signal-sleeper{border-color:#00bfa5;background:rgba(0,191,165,.16);color:#8ff5e5}.sweet-bat.signal-hot-look{border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}.sweet-bat.signal-hot-look:nth-child(even){border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}
 body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.signal-hot-look:nth-child(even){border-left:6px solid #d84320;background:linear-gradient(105deg,#fff0e8 0,#fffdf7 48%)!important}.tsl-editorial .slate-signal-label{background:#f3f0e6;border-color:#506071;color:#071d36}.tsl-editorial .slate-signal-label.signal-hot-look{background:#ffe7df;border-color:#b63a1c;color:#7c2612}.tsl-editorial .slate-signal-label.signal-hot-lately{background:#eee7ff;border-color:#6d49a7;color:#452978}.tsl-editorial .slate-signal-label.signal-due{background:#fff1c7;border-color:#9a6b00;color:#684800}.tsl-editorial .slate-signal-label.signal-sleeper{background:#dcf5ef;border-color:#117461;color:#075447}
+
+body.tsl-closed-slate{background:#050811!important}
+body.tsl-closed-slate main.wrap{max-width:none!important;min-height:calc(100vh - 132px);padding:0 0 80px!important;background:radial-gradient(circle at 70% 12%,rgba(18,104,243,.12),transparent 33%),#050811!important;color:#f4f7fb!important}
+body.tsl-closed-slate main.wrap>.report-line,body.tsl-closed-slate main.wrap>.eyebrow,body.tsl-closed-slate main.wrap>h1,body.tsl-closed-slate main.wrap>.sub,body.tsl-closed-slate #topVulnPanel,body.tsl-closed-slate #marketTabs,body.tsl-closed-slate #hero,body.tsl-closed-slate #tabs{display:none!important}
+body.tsl-closed-slate #games{display:block;max-width:1500px;margin:0 auto;padding:52px 24px 0}
+.closed-slate-dashboard{position:relative;overflow:hidden;min-height:610px;border:1px solid rgba(125,156,199,.18);background:linear-gradient(145deg,rgba(10,18,34,.97),rgba(5,8,17,.99));box-shadow:0 30px 90px rgba(0,0,0,.32);padding:30px}
+.closed-slate-dashboard:before{content:"";position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 72%);pointer-events:none}
+.closed-slate-dashboard:after{content:"SLATE";position:absolute;right:-20px;bottom:-58px;color:rgba(255,255,255,.025);font-size:210px;font-weight:1000;line-height:1;letter-spacing:-.08em;pointer-events:none}
+.closed-slate-topline,.closed-slate-copy,.closed-slate-status,.closed-slate-actions,.closed-slate-footer{position:relative;z-index:1}
+.closed-slate-topline{display:flex;align-items:center;justify-content:space-between;gap:18px;padding-bottom:24px;border-bottom:1px solid rgba(125,156,199,.16)}
+.closed-slate-kicker,.closed-slate-date,.closed-slate-label{font-family:Inter,Arial,sans-serif;font-size:10px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}
+.closed-slate-kicker{display:inline-flex;align-items:center;gap:9px;color:#dce8f7}
+.closed-slate-kicker i{width:8px;height:8px;border-radius:50%;background:#58f28b;box-shadow:0 0 18px rgba(88,242,139,.72)}
+.closed-slate-date{color:#7f91aa}
+.closed-slate-copy{max-width:900px;padding:74px 0 54px}
+.closed-slate-label{display:block;margin-bottom:16px;color:#ff5a30}
+.closed-slate-copy h2{margin:0;color:#f7f9fc;font-family:Georgia,"Times New Roman",serif;font-size:clamp(54px,7.2vw,104px);line-height:.88;letter-spacing:-.055em}
+.closed-slate-copy h2 em{color:#2b78ff;font-weight:500}
+.closed-slate-copy p{max-width:730px;margin:30px 0 0;color:#aab7c8;font-size:16px;line-height:1.65}
+.closed-slate-status{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(125,156,199,.18);border-bottom:1px solid rgba(125,156,199,.18)}
+.closed-slate-status>div{min-height:108px;padding:24px;border-right:1px solid rgba(125,156,199,.18)}
+.closed-slate-status>div:last-child{border-right:0}
+.closed-slate-status span{display:block;margin-bottom:14px;color:#70829a;font-size:9px;font-weight:950;letter-spacing:.14em;text-transform:uppercase}
+.closed-slate-status strong{color:#f2f6fc;font-size:18px;letter-spacing:.02em}
+.closed-slate-actions{display:flex;gap:12px;align-items:center;padding:28px 0}
+.closed-slate-actions a{display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:48px;padding:0 18px;border:1px solid rgba(125,156,199,.24);font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.closed-slate-primary{background:#1268f3;color:#fff!important;border-color:#1268f3!important}
+.closed-slate-primary:hover{background:#2879f5}
+.closed-slate-secondary{background:rgba(255,255,255,.025);color:#dce8f7!important}
+.closed-slate-footer{display:flex;align-items:center;gap:10px;color:#7f91aa;font-size:12px}
+.closed-slate-footer span{color:#58f28b;font-size:9px}
+@media(max-width:760px){body.tsl-closed-slate #games{padding:24px 14px 0}.closed-slate-dashboard{min-height:0;padding:20px}.closed-slate-topline{align-items:flex-start;flex-direction:column}.closed-slate-copy{padding:52px 0 42px}.closed-slate-copy h2{font-size:clamp(46px,15vw,72px)}.closed-slate-copy p{font-size:14px}.closed-slate-status{grid-template-columns:1fr 1fr}.closed-slate-status>div:nth-child(2){border-right:0}.closed-slate-status>div:nth-child(-n+2){border-bottom:1px solid rgba(125,156,199,.18)}.closed-slate-actions{align-items:stretch;flex-direction:column}.closed-slate-actions a{width:100%}.closed-slate-dashboard:after{font-size:100px}}
+
 @media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:600px){body.tsl-editorial .panel-head{align-items:flex-start;flex-direction:column;gap:8px}body.tsl-editorial .panel-note{line-height:1.4}.vulns{grid-template-columns:repeat(2,minmax(0,1fr))}.vuln{padding:15px 13px}}`;
     document.head.appendChild(style);
@@ -1602,6 +1726,8 @@ body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.sign
     injectStyles();
     injectShell();
     indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));
+    state.schedule = await json("./data/mlb_games_today.json", null);
+    state.health = await json("./data/health_status.json", null);
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
