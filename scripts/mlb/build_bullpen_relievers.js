@@ -164,6 +164,25 @@ async function main() {
   const teams = teamIdList();
 
   if (!teams.length) {
+    const games = read("mlb_games_today.json", {});
+    const rows = Array.isArray(games) ? games : games.games || games.dates?.[0]?.games || [];
+
+    if (!rows.length && games?.date) {
+      write("bullpen_relievers.json", {
+        updatedAt: new Date().toISOString(),
+        date: games.date,
+        availability: "no_games_scheduled",
+        totalRelievers: 0,
+        byTeam: {},
+        players: []
+      });
+      console.log("BULLPEN RELIEVERS COMPLETE");
+      console.log("Availability: no games scheduled");
+      console.log("Teams: 0");
+      console.log("Relievers: 0");
+      return;
+    }
+
     throw new Error("No teams found in mlb_games_today.json");
   }
 

@@ -228,6 +228,46 @@ const analysisGamePks = new Set(
 );
 
 if (!analysisGamePks.size) {
+  if (
+    !allSlateGames.length &&
+    poolPayload?.availability === "no_games_scheduled" &&
+    poolPayload?.date === slatePayload?.date
+  ) {
+    const updatedAt = new Date().toISOString();
+    writeJSON("game_pitcher_matchups.json", {
+      updatedAt,
+      date: slatePayload.date,
+      availability: "no_games_scheduled",
+      vulnerabilityModel: {
+        source: "MLB Stats API live season pitching",
+        scale: "0-100 risk index; not a probability",
+        liveSlateMedian: null,
+        fullSampleInnings: 60
+      },
+      count: 0,
+      games: []
+    });
+    writeJSON("pitcher_vulnerability.json", {
+      updatedAt,
+      date: slatePayload.date,
+      availability: "no_games_scheduled",
+      source: "MLB Stats API live season pitching",
+      scale: "0-100 risk index; not a probability",
+      liveSlateMedian: null,
+      fullSampleInnings: 60,
+      count: 0,
+      pitchers: []
+    });
+    console.log("");
+    console.log("GAME PITCHER MATCHUPS COMPLETE");
+    console.log("Availability: no games scheduled");
+    console.log("Games: 0");
+    console.log("Pitchers: 0");
+    console.log("Saved: website/data/game_pitcher_matchups.json");
+    console.log("Saved: website/data/pitcher_vulnerability.json");
+    process.exit(0);
+  }
+
   throw new Error("Current player pool contains no canonical analysis game IDs");
 }
 

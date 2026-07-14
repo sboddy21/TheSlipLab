@@ -90,8 +90,15 @@ function validateDependencyOrder(times, before, after) {
 function validatePlayerCardSignals() {
   const payload = read("player_card_data.json");
   const players = Array.isArray(payload.players) ? payload.players : [];
+  const schedule = read("mlb_games_today.json");
+  const noGamesScheduled = schedule.date === todayET()
+    && Array.isArray(schedule.games)
+    && schedule.games.length === 0;
 
-  if (!players.length) fail("player_card_data.json has no players");
+  if (!players.length) {
+    if (noGamesScheduled) return;
+    fail("player_card_data.json has no players");
+  }
 
   for (const player of players) {
     if (!Array.isArray(player.slateSignals)) {
@@ -157,9 +164,18 @@ function validatePitchDamageCache(expectedDate) {
 function validateHealthStatus(expectedDate, anchor) {
   const health = read("health_status.json");
   const updatedAt = Date.parse(health.updatedAt);
+  const games = read("mlb_games_today.json");
+  const noGamesScheduled = games.date === expectedDate
+    && Array.isArray(games.games)
+    && games.games.length === 0;
+  const expectedLabel = noGamesScheduled ? "CLOSED" : "LIVE";
 
-  if (health.status !== "healthy" || health.label !== "LIVE") {
+  if (health.status !== "healthy" || health.label !== expectedLabel) {
     fail(`health_status.json is not healthy: ${(health.errors || []).join(" | ") || "unknown error"}`);
+  }
+
+  if (noGamesScheduled && health.availability !== "no_games_scheduled") {
+    fail("health_status.json does not declare the verified no-games state");
   }
 
   if (health.source !== "mlb_fast_refresh") {
@@ -170,7 +186,6 @@ function validateHealthStatus(expectedDate, anchor) {
     fail("health_status.json updatedAt does not belong to the current refresh");
   }
 
-  const games = read("mlb_games_today.json");
   if (games.date !== expectedDate) fail(`Health status is not tied to the ${expectedDate} slate`);
 }
 
@@ -436,6 +451,9 @@ const today = todayET();
 const games = read("mlb_games_today.json");
 const slateDate = games.date || today;
 const refreshAnchor = Date.parse(games.updatedAt);
+const noGamesScheduled = games.date === today
+  && Array.isArray(games.games)
+  && games.games.length === 0;
 
 if (!Number.isFinite(refreshAnchor)) fail("mlb_games_today.json has invalid or missing updatedAt");
 if (Date.now() - refreshAnchor > MAX_REFRESH_AGE_MS) {
@@ -591,7 +609,25 @@ for (const [player, probability] of trackingByPlayer) {
 
 const pool = read("mlb_player_pool.json");
 if (pool.date !== slateDate) fail(`mlb_player_pool date is ${pool.date}, expected slate date ${slateDate}`);
-if (!Array.isArray(pool.players) || pool.players.length < 50) fail("player pool is too small");
+if (!Array.isArray(pool.players)) fail("player pool players is not an array");
+
+if (noGamesScheduled) {
+  const zeroSlateOutputs = [
+    ["mlb_player_pool.json", pool.availability === "no_games_scheduled" && pool.players.length === 0],
+    ["game_pitcher_matchups.json", read("game_pitcher_matchups.json").availability === "no_games_scheduled" && read("game_pitcher_matchups.json").games?.length === 0],
+    ["hr_decision_center.json", read("hr_decision_center.json").availability === "no_games_scheduled" && read("hr_decision_center.json").allPlayers?.length === 0],
+    ["mlb_home_runs.json", Array.isArray(read("mlb_home_runs.json")) && read("mlb_home_runs.json").length === 0],
+    ["mlb_hits.json", Array.isArray(read("mlb_hits.json")) && read("mlb_hits.json").length === 0],
+    ["mlb_total_bases.json", Array.isArray(read("mlb_total_bases.json")) && read("mlb_total_bases.json").length === 0],
+    ["mlb_rbis.json", Array.isArray(read("mlb_rbis.json")) && read("mlb_rbis.json").length === 0]
+  ];
+
+  for (const [file, valid] of zeroSlateOutputs) {
+    if (!valid) fail(`${file} is not a current empty no-games output`);
+  }
+} else if (pool.players.length < 50) {
+  fail("player pool is too small");
+}
 
 const analysisGamePks = new Set(
   pool.players
@@ -599,7 +635,7 @@ const analysisGamePks = new Set(
     .filter(Boolean)
 );
 
-if (!analysisGamePks.size) fail("player pool contains no canonical analysis game IDs");
+if (!noGamesScheduled && !analysisGamePks.size) fail("player pool contains no canonical analysis game IDs");
 
 const matchups = read("game_pitcher_matchups.json");
 if (!Array.isArray(matchups.games) || matchups.games.length !== analysisGamePks.size) {
@@ -628,15 +664,15 @@ for (const g of matchups.games) {
 }
 
 const hr = read("mlb_home_runs.json");
-if (!Array.isArray(hr) || hr.length < 40) fail("HR board is too small");
+if (!Array.isArray(hr) || (!noGamesScheduled && hr.length < 40)) fail("HR board is too small");
 
 const hits = read("mlb_hits.json");
-if (!Array.isArray(hits) || hits.length < 20) fail("Hits board is too small");
+if (!Array.isArray(hits) || (!noGamesScheduled && hits.length < 20)) fail("Hits board is too small");
 
 const tb = read("mlb_total_bases.json");
-if (!Array.isArray(tb) || tb.length < 20) fail("Total Bases board is too small");
+if (!Array.isArray(tb) || (!noGamesScheduled && tb.length < 20)) fail("Total Bases board is too small");
 
 const rbis = read("mlb_rbis.json");
-if (!Array.isArray(rbis) || rbis.length < 20) fail("RBI board is too small");
+if (!Array.isArray(rbis) || (!noGamesScheduled && rbis.length < 20)) fail("RBI board is too small");
 
 console.log("MLB validation passed:", slateDate);

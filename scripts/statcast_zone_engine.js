@@ -393,6 +393,40 @@ function sleep(ms) {
 async function main() {
   ensureDir(WEBSITE_DATA_DIR);
 
+  const playerPool = readJson(PLAYER_POOL_FILE);
+  const matchups = readJson(MATCHUPS_FILE);
+  if (
+    playerPool?.availability === "no_games_scheduled" &&
+    matchups?.availability === "no_games_scheduled" &&
+    playerPool?.date === SLATE_DATE &&
+    matchups?.date === SLATE_DATE
+  ) {
+    const completedAt = new Date().toISOString();
+    fs.writeFileSync(OUT_WEB, JSON.stringify({
+      date: SLATE_DATE,
+      season: SEASON,
+      availability: "no_games_scheduled",
+      playerCount: 0,
+      source: SOURCE,
+      note: "No games scheduled; no current Statcast zone profiles were requested.",
+      pitcherCount: 0,
+      players: {},
+      pitchers: {},
+      updated_at: completedAt,
+      generatedAt: completedAt,
+      playersWithRows: 0,
+      playersWithZones: 0,
+      pitchersWithRows: 0,
+      pitchersWithZones: 0
+    }, null, 2));
+    console.log("STATCAST ZONE ENGINE COMPLETE");
+    console.log("Availability: no games scheduled");
+    console.log("Players: 0");
+    console.log("Pitchers: 0");
+    console.log("Saved:", OUT_WEB);
+    return;
+  }
+
   const players = collectPlayers();
   const pitchers = collectPitchers();
   const previous = readJson(OUT_WEB);

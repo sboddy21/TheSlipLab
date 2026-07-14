@@ -77,6 +77,8 @@ const weather = artifacts.weather.data || {};
 const results = artifacts.results.data || {};
 const generatedAt = new Date().toISOString();
 const slateDate = todayEastern();
+const scheduledGames = Array.isArray(games.games) ? games.games : [];
+const noGamesScheduled = games.date === slateDate && scheduledGames.length === 0;
 
 const productionArtifacts = [
   [artifacts.games, ["updatedAt"]],
@@ -97,7 +99,8 @@ const updatedAt = productionTimes.length
 const payload = {
   sport: "MLB",
   status: "healthy",
-  label: "LIVE",
+  label: noGamesScheduled ? "CLOSED" : "LIVE",
+  availability: noGamesScheduled ? "no_games_scheduled" : "live_slate",
   updatedAt,
   generatedAt,
   source: "mlb_fast_refresh",
@@ -150,6 +153,20 @@ for (const [file, actualDate] of expectedDates) {
   }
 }
 
+if (noGamesScheduled) {
+  const zeroSlateChecks = [
+    ["mlb_player_pool.json", playerPool.availability === "no_games_scheduled" && payload.checks.players === 0],
+    ["mlb_home_runs.json", payload.checks.hrBoard === 0],
+    ["game_pitcher_matchups.json", matchups.availability === "no_games_scheduled" && payload.checks.matchups === 0],
+    ["hr_decision_center.json", decision.availability === "no_games_scheduled" && payload.checks.decisionCenter === 0],
+    ["mlb_weather.json", payload.checks.weather === 0]
+  ];
+
+  for (const [file, valid] of zeroSlateChecks) {
+    if (!valid) payload.errors.push(`${file} is not a current empty no-games output`);
+  }
+}
+
 const sections = decision.sections || {};
 for (const [key, value] of Object.entries(sections)) {
   payload.sections[key] = Array.isArray(value)
@@ -159,12 +176,14 @@ for (const [key, value] of Object.entries(sections)) {
       : 0;
 }
 
-if (payload.checks.games <= 0) payload.errors.push("No MLB games loaded");
-if (payload.checks.players <= 0) payload.errors.push("No player pool loaded");
-if (payload.checks.hrBoard <= 0) payload.errors.push("No HR board loaded");
-if (payload.checks.matchups <= 0) payload.errors.push("No matchup data loaded");
-if (payload.checks.decisionCenter <= 0) payload.errors.push("Decision Center empty");
-if (payload.checks.weather <= 0) payload.errors.push("No weather data loaded");
+if (!noGamesScheduled) {
+  if (payload.checks.games <= 0) payload.errors.push("No MLB games loaded");
+  if (payload.checks.players <= 0) payload.errors.push("No player pool loaded");
+  if (payload.checks.hrBoard <= 0) payload.errors.push("No HR board loaded");
+  if (payload.checks.matchups <= 0) payload.errors.push("No matchup data loaded");
+  if (payload.checks.decisionCenter <= 0) payload.errors.push("Decision Center empty");
+  if (payload.checks.weather <= 0) payload.errors.push("No weather data loaded");
+}
 
 if (payload.errors.length) {
   payload.status = "error";

@@ -76,7 +76,8 @@ function validateQueueFreshness(queue) {
     throw new Error("X queue freshness validation failed: queue is outside the 15-minute production window");
   }
 
-  if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== 5) {
+  const expectedInputs = queue.slot === "closed" ? 1 : queue.slot === "overnight" ? 3 : 5;
+  if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== expectedInputs) {
     throw new Error("X queue freshness validation failed: required live-input validation is missing");
   }
 }
