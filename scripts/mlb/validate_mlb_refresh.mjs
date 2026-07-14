@@ -128,9 +128,7 @@ function validatePlayerCardSignals() {
 }
 
 function validatePitchDamageCache(expectedDate) {
-  const specialEventSlate = games.some(game => game.gameType === "A");
-
-const pool = read("mlb_player_pool.json");
+  const pool = read("mlb_player_pool.json");
   const cache = read("pitch_type_damage_cache.json");
   const damage = read("pitch_type_damage.json");
   const players = Array.isArray(pool.players) ? pool.players : [];
@@ -484,6 +482,8 @@ function validateRealPitcherAttackZones(expectedDate) {
 const today = todayET();
 
 const games = read("mlb_games_today.json");
+const scheduleGames = Array.isArray(games.games) ? games.games : [];
+const specialEventSlate = scheduleGames.some(game => game.gameType === "A");
 const slateDate = games.date || today;
 const refreshAnchor = Date.parse(games.updatedAt);
 const noGamesScheduled = games.date === today
@@ -664,7 +664,7 @@ if (noGamesScheduled) {
 } else if (specialEventSlate) {
   if (pool.players.length < 18) fail("All-Star player pool is too small");
 
-  const allStarGames = games.filter(game => game.gameType === "A");
+  const allStarGames = scheduleGames.filter(game => game.gameType === "A");
   for (const game of allStarGames) {
     const awayPlayers = pool.players.filter(
       player => String(player.gamePk) === String(game.gamePk) && player.homeAway === "away"
