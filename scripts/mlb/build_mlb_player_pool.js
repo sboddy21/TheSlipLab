@@ -166,22 +166,88 @@ function selectAnalysisGames(games) {
 }
 
 
-async function getRoster(teamId) {
-  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster/Active`;
-  const data = await getJson(url);
-
-  return (data.roster || [])
+function mapRosterRows(rows) {
+  return rows
     .filter(item => {
-      const type = item.position?.type || "";
-      return type !== "Pitcher";
+      const type = item?.position?.type || "";
+      const playerId = item?.person?.id ?? null;
+      return type !== "Pitcher" && playerId;
     })
     .map(item => ({
-      playerId: item.person?.id ?? null,
+      playerId: item.person.id,
       player: safe(item.person?.fullName),
       jerseyNumber: safe(item.jerseyNumber),
       position: safe(item.position?.abbreviation),
       positionType: safe(item.position?.type)
     }));
+}
+
+const boxscoreCache = new Map();
+
+async function getBoxscore(gamePk) {
+  const key = String(gamePk);
+
+  if (!boxscoreCache.has(key)) {
+    boxscoreCache.set(
+      key,
+      getJson(`https://statsapi.mlb.com/api/v1/game/${gamePk}/boxscore`)
+    );
+  }
+
+  return boxscoreCache.get(key);
+}
+
+async function getRoster(teamId, gamePk, side, officialLineup) {
+  const url = `https://statsapi.mlb.com/api/v1/teams/${teamId}/roster/Active`;
+  const data = await getJson(url);
+  const activeRoster = mapRosterRows(data.roster || []);
+
+  if (activeRoster.length) {
+    return {
+      source: "MLB_ACTIVE_ROSTER",
+      players: activeRoster
+    };
+  }
+
+  console.log(
+    `Active roster is empty for team ${teamId}; checking official game ${gamePk} boxscore roster`
+  );
+
+  const boxscore = await getBoxscore(gamePk);
+  const gamePlayers = Object.values(boxscore?.teams?.[side]?.players || {});
+  const boxscoreRoster = mapRosterRows(gamePlayers);
+
+  if (boxscoreRoster.length) {
+    return {
+      source: "MLB_GAME_BOXSCORE",
+      players: boxscoreRoster
+    };
+  }
+
+  const lineupRoster = mapRosterRows(
+    (Array.isArray(officialLineup) ? officialLineup : []).map(row => ({
+      person: {
+        id: row?.playerId ?? row?.id ?? row?.personId,
+        fullName: row?.player ?? row?.name ?? row?.fullName
+      },
+      jerseyNumber: row?.jerseyNumber,
+      position: {
+        abbreviation: row?.position,
+        type: row?.positionType || "Position Player"
+      }
+    }))
+  );
+
+  if (lineupRoster.length) {
+    return {
+      source: "MLB_GAME_LINEUP",
+      players: lineupRoster
+    };
+  }
+
+  throw new Error(
+    `MLB has not published a usable roster for team ${teamId} in game ${gamePk}`
+  );
 }
 
 async function main() {
@@ -220,8 +286,25 @@ async function main() {
   for (const game of analysisGames) {
     console.log(`Building pool for ${game.matchup}`);
 
-    const awayRoster = await getRoster(game.awayTeamId);
-    const homeRoster = await getRoster(game.homeTeamId);
+    const awayRosterResult = await getRoster(
+      game.awayTeamId,
+      game.gamePk,
+      "away",
+      game.awayBattingOrder
+    );
+    const homeRosterResult = await getRoster(
+      game.homeTeamId,
+      game.gamePk,
+      "home",
+      game.homeBattingOrder
+    );
+    const awayRoster = awayRosterResult.players;
+    const homeRoster = homeRosterResult.players;
+
+    console.log(
+      `Roster sources: ${game.awayTeam}=${awayRosterResult.source} (${awayRoster.length}), ` +
+      `${game.homeTeam}=${homeRosterResult.source} (${homeRoster.length})`
+    );
 
     const awayLineupMap = lineupMap(game.awayBattingOrder);
     const homeLineupMap = lineupMap(game.homeBattingOrder);
@@ -247,6 +330,7 @@ async function main() {
         opposingProbablePitcher: game.homeProbablePitcher,
         opposingProbablePitcherId: game.homeProbablePitcherId,
         homeAway: "away",
+        rosterSource: awayRosterResult.source,
         lineupSpot: lineup.lineupSpot,
         lineupStatus: lineup.lineupStatus,
         lineupSource: lineup.lineupSource,
@@ -275,12 +359,17 @@ async function main() {
         opposingProbablePitcher: game.awayProbablePitcher,
         opposingProbablePitcherId: game.awayProbablePitcherId,
         homeAway: "home",
+        rosterSource: homeRosterResult.source,
         lineupSpot: lineup.lineupSpot,
         lineupStatus: lineup.lineupStatus,
         lineupSource: lineup.lineupSource,
         confirmedLineup: lineup.confirmedLineup
       });
     });
+  }
+
+  if (!pool.length) {
+    throw new Error("Scheduled analysis games produced no official MLB hitters");
   }
 
   const output = {

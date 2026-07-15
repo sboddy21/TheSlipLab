@@ -482,6 +482,8 @@ function validateRealPitcherAttackZones(expectedDate) {
 const today = todayET();
 
 const games = read("mlb_games_today.json");
+const scheduleGames = Array.isArray(games.games) ? games.games : [];
+const specialEventSlate = scheduleGames.some(game => game.gameType === "A");
 const slateDate = games.date || today;
 const refreshAnchor = Date.parse(games.updatedAt);
 const noGamesScheduled = games.date === today
@@ -659,6 +661,29 @@ if (noGamesScheduled) {
   for (const [file, valid] of zeroSlateOutputs) {
     if (!valid) fail(`${file} is not a current empty no-games output`);
   }
+} else if (specialEventSlate) {
+  if (pool.players.length < 18) fail("All-Star player pool is too small");
+
+  const allStarGames = scheduleGames.filter(game => game.gameType === "A");
+  for (const game of allStarGames) {
+    const awayPlayers = pool.players.filter(
+      player => String(player.gamePk) === String(game.gamePk) && player.homeAway === "away"
+    );
+    const homePlayers = pool.players.filter(
+      player => String(player.gamePk) === String(game.gamePk) && player.homeAway === "home"
+    );
+
+    if (awayPlayers.length < 9 || homePlayers.length < 9) {
+      fail(`${game.matchup} does not have at least nine official hitters on both sides`);
+    }
+
+    const invalidSource = [...awayPlayers, ...homePlayers].find(
+      player => !["MLB_ACTIVE_ROSTER", "MLB_GAME_BOXSCORE", "MLB_GAME_LINEUP"].includes(player.rosterSource)
+    );
+    if (invalidSource) {
+      fail(`${game.matchup} contains a hitter without a verified MLB roster source`);
+    }
+  }
 } else if (pool.players.length < 50) {
   fail("player pool is too small");
 }
@@ -698,15 +723,17 @@ for (const g of matchups.games) {
 }
 
 const hr = read("mlb_home_runs.json");
-if (!Array.isArray(hr) || (!noGamesScheduled && hr.length < 40)) fail("HR board is too small");
+const minimumHrRows = specialEventSlate ? Math.min(40, pool.players.length) : 40;
+if (!Array.isArray(hr) || (!noGamesScheduled && hr.length < minimumHrRows)) fail("HR board is too small");
 
 const hits = read("mlb_hits.json");
-if (!Array.isArray(hits) || (!noGamesScheduled && hits.length < 20)) fail("Hits board is too small");
+const minimumPropRows = specialEventSlate ? Math.min(20, pool.players.length) : 20;
+if (!Array.isArray(hits) || (!noGamesScheduled && hits.length < minimumPropRows)) fail("Hits board is too small");
 
 const tb = read("mlb_total_bases.json");
-if (!Array.isArray(tb) || (!noGamesScheduled && tb.length < 20)) fail("Total Bases board is too small");
+if (!Array.isArray(tb) || (!noGamesScheduled && tb.length < minimumPropRows)) fail("Total Bases board is too small");
 
 const rbis = read("mlb_rbis.json");
-if (!Array.isArray(rbis) || (!noGamesScheduled && rbis.length < 20)) fail("RBI board is too small");
+if (!Array.isArray(rbis) || (!noGamesScheduled && rbis.length < minimumPropRows)) fail("RBI board is too small");
 
 console.log("MLB validation passed:", slateDate);
