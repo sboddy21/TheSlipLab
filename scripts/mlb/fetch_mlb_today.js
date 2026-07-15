@@ -170,6 +170,7 @@ async function main() {
 
     return {
       gamePk: game.gamePk,
+      gameType: safe(game.gameType),
       gameDate: game.gameDate,
       status: safe(live.liveStatus || game.status?.detailedState, "Unknown"),
       abstractStatus: safe(game.status?.abstractGameState, "Unknown"),
