@@ -84,6 +84,7 @@ const weather = readJson(path.join(DATA, "mlb_weather.json"));
 const games = readJson(path.join(DATA, "mlb_games_today.json"));
 const results = readJson(path.join(DATA, "mlb_results.json"));
 const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
+const resultsHistory = readJson(path.join(DATA, "hr_results_history.json"), { days: [] });
 const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"), { history: {} });
 const history = readJson(HISTORY_FILE, { posts: [] });
 
@@ -150,6 +151,35 @@ const NOW = new Date().toISOString();
 const noGamesScheduled = games?.date === TODAY
   && Array.isArray(games?.games)
   && games.games.length === 0;
+const noPublishableSlate = noGamesScheduled || allPlayers.length === 0;
+
+function resultDaySummary(day) {
+  const rows = arr(day?.homeRuns).filter(row => clean(row?.player || row?.batter));
+  if (!rows.length) return null;
+
+  const hardest = rows.slice().sort((a, b) => num(b.exitVelocity) - num(a.exitVelocity))[0];
+  const longest = rows.slice().sort((a, b) => num(b.distance) - num(a.distance))[0];
+  const pitchCounts = new Map();
+  for (const row of rows) {
+    const pitch = clean(row.pitchType);
+    if (pitch) pitchCounts.set(pitch, (pitchCounts.get(pitch) || 0) + 1);
+  }
+  const topPitch = [...pitchCounts.entries()].sort((a, b) => b[1] - a[1])[0] || null;
+
+  return {
+    date: clean(day.date),
+    rows,
+    total: rows.length,
+    hardest,
+    longest,
+    topPitch
+  };
+}
+
+const recentResultDays = arr(resultsHistory.days)
+  .map(resultDaySummary)
+  .filter(Boolean)
+  .slice(0, 8);
 
 function add(slot, type, weight, text, players = [], meta = {}) {
   const body = text.trim();
@@ -169,7 +199,7 @@ function add(slot, type, weight, text, players = [], meta = {}) {
   });
 }
 
-if (best.length >= 3) {
+if (!noPublishableSlate && best.length >= 3) {
   const lead = best[0];
   add("morning", "slate_read", 100,
 `I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:
@@ -183,7 +213,7 @@ The important part: ${reasonSentence(lead)}
 Who is your favorite HR look today?`, best.slice(0, 3).map(row => row.player));
 }
 
-if (confirmed.length) {
+if (!noPublishableSlate && confirmed.length) {
   const row = confirmed[0];
   add("midday", "lineup_spotlight", 96,
 `The confirmed lineups gave me one profile worth revisiting: ${clean(row.player)}.
@@ -195,7 +225,7 @@ ${reasonSentence(row)} Projected plate appearances: ${one(row.projectedPlateAppe
 That is the kind of lineup context that can turn an interesting profile into a playable one.`, [row.player]);
 }
 
-if (pitchers.length) {
+if (!noPublishableSlate && pitchers.length) {
   const pitcher = pitchers[0];
   const bats = allPlayers.filter(row => norm(row.opposingPitcher || row.pitcher) === norm(pitcher.pitcher || pitcher.name)).slice(0, 2);
   const batText = bats.length
@@ -213,7 +243,7 @@ ${batText}
 Is this the game you are targeting, or are you fading the obvious spot?`, bats.map(row => row.player));
 }
 
-if (value.length) {
+if (!noPublishableSlate && value.length) {
   const row = value[0];
   add("afternoon", "value_thought", 86,
 `A less obvious name on my board today: ${clean(row.player)}.
@@ -225,7 +255,7 @@ HR confidence ${one(row.hrConfidence)} | Pitch edge ${one(row.pitchEdge)} | Oppo
 Would you rather play the stronger name or the better price?`, [row.player]);
 }
 
-if (best.length) {
+if (!noPublishableSlate && best.length) {
   const row = confirmed[0] || best[0];
   const finalMetrics = [
     `HR confidence ${one(row.hrConfidence)}`,
@@ -252,7 +282,7 @@ const weatherGames = weatherRows.map(row => {
 }).filter(row => row.matchup && (num(row.windSpeed) >= 10 || num(row.temp) >= 82 || row.carry > 0))
   .sort((a, b) => b.carry - a.carry || num(b.windSpeed) - num(a.windSpeed));
 
-if (weatherGames.length) {
+if (!noPublishableSlate && weatherGames.length) {
   const row = weatherGames[0];
   add("midday", "weather_note", 78,
 `Weather note—not a pick by itself:
@@ -325,10 +355,68 @@ That distinction matters. Results are volatile; the audit trail should not be.`,
   }
 }
 
-if (!noGamesScheduled) add("evening", "process_question", 55,
+if (!noPublishableSlate) add("evening", "process_question", 55,
 `Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?
 
 I built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.`, []);
+
+if (noPublishableSlate) {
+  for (const [index, day] of recentResultDays.entries()) {
+    const hardestName = clean(day.hardest.player || day.hardest.batter);
+    const longestName = clean(day.longest.player || day.longest.batter);
+    const commonMeta = {
+      resultsDate: day.date,
+      verifiedResults: true,
+      limitedSlate: true
+    };
+    const slateLabel = noGamesScheduled ? "No MLB games are scheduled today" : "There is no full model-ready MLB slate today";
+
+    add("morning", `off_day_receipt_${index + 1}`, 92 - index,
+`${slateLabel}, so I used the morning to review the ${day.date} result feed instead.
+
+${day.total} home run${day.total === 1 ? "" : "s"} recorded.
+Longest: ${longestName} — ${Math.round(num(day.longest.distance))} ft
+Hardest: ${hardestName} — ${one(day.hardest.exitVelocity)} mph
+
+No forced picks on an empty board. Just verified results and a cleaner read for the next slate.`, [longestName, hardestName], commonMeta);
+
+    add("midday", `swing_review_${index + 1}`, 91 - index,
+`One swing from the ${day.date} results worth revisiting: ${hardestName}.
+
+• ${one(day.hardest.exitVelocity)} mph exit velocity
+• ${Math.round(num(day.hardest.distance))} feet
+• ${clean(day.hardest.pitchType) || "Pitch type unavailable"} from ${clean(day.hardest.pitcher) || "the listed pitcher"}
+
+With no current MLB slate to force, this is a good day to study what actually left the yard. What part of a home run profile do you trust most?`, [hardestName], commonMeta);
+
+    if (day.topPitch) {
+      add("afternoon", `pitch_result_review_${index + 1}`, 90 - index,
+`A quick pitch-type note from the ${day.date} home run results:
+
+${day.topPitch[1]} of the ${day.total} recorded homers came against ${day.topPitch[0]}s.
+
+That is descriptive—not a claim that every ${day.topPitch[0]} is vulnerable. The useful question is where the pitch was located and whether the hitter's damage profile matched it.
+
+That is the matchup layer I will be watching when the next full slate opens.`, [], commonMeta);
+    }
+
+    add("pregame", `off_day_long_ball_${index + 1}`, 93 - index,
+`No regular pregame HR board tonight, but this result from ${day.date} deserves a second look:
+
+${longestName} went ${Math.round(num(day.longest.distance))} feet at ${one(day.longest.exitVelocity)} mph off a ${clean(day.longest.pitchType) || "recorded pitch"}.
+
+I would rather post one verified swing than manufacture a play when there is no model-ready slate.
+
+Results board: ${SITE_URL}/results.html`, [longestName], commonMeta);
+
+    add("evening", `off_day_question_${index + 1}`, 89 - index,
+`The ${day.date} feed finished with ${day.total} home run${day.total === 1 ? "" : "s"}.
+
+${hardestName} supplied the hardest contact at ${one(day.hardest.exitVelocity)} mph. ${longestName} supplied the longest ball at ${Math.round(num(day.longest.distance))} feet.
+
+Which tells you more about a hitter going forward: peak exit velocity, distance, pitch-type matchup, or recent frequency?`, [hardestName, longestName], commonMeta);
+  }
+}
 
 const selected = [];
 for (const slot of ["morning", "midday", "afternoon", "pregame", "evening", "overnight"]) {
@@ -342,7 +430,11 @@ const output = {
   date: TODAY,
   version: "Content Engine 3.0",
   source: "live Slip Lab MLB production outputs",
-  availability: noGamesScheduled ? "no_games_scheduled" : "live_slate",
+  availability: noGamesScheduled
+    ? "no_games_scheduled"
+    : noPublishableSlate
+      ? "no_publishable_slate"
+      : "live_slate",
   fakeData: false,
   count: selected.length,
   rules: [

@@ -164,7 +164,10 @@ async function main() {
       : [];
 
   if (!posts.length) {
-    console.log("No queued posts.");
+    if (!["closed_window", "already_posted"].includes(queue.emptyReason)) {
+      throw new Error(`X publish failed: empty queue has no valid no-op reason (${queue.emptyReason || "missing"})`);
+    }
+    console.log(`No queued posts: ${queue.emptyReason}.`);
     return;
   }
 
