@@ -98,7 +98,7 @@ jobs:
         run: node scripts/content/post_x_queue.js
 
       - name: Commit updated data and queue
-        if: always()
+        if: success()
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
@@ -106,7 +106,7 @@ jobs:
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
       - name: Push updates
-        if: always()
+        if: success()
         run: |
           for i in 1 2 3; do
             git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0

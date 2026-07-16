@@ -124,10 +124,12 @@ const alreadyPosted = new Set((Array.isArray(history?.posts) ? history.posts : [
   .map(post => post.id));
 const slotAlreadyPosted = (Array.isArray(history?.posts) ? history.posts : [])
   .some(post => post.date === now.date && post.slot === slot && post.status === "posted" && post.x_post_id);
+const slotCandidates = (Array.isArray(content.posts) ? content.posts : [])
+  .filter(post => post.date === now.date && post.slot === slot);
 
-const due = slotAlreadyPosted ? [] : (Array.isArray(content.posts) ? content.posts : [])
-  .filter(post => post.date === now.date && post.slot === slot && !alreadyPosted.has(post.id))
-  .filter(post => slot !== "overnight" || post.verifiedPregame === true)
+const due = slotAlreadyPosted ? [] : slotCandidates
+  .filter(post => !alreadyPosted.has(post.id))
+  .filter(post => slot !== "overnight" || post.verifiedPregame === true || post.verifiedResults === true)
   .sort((a, b) => Number(b.weight || 0) - Number(a.weight || 0))
   .slice(0, 1)
   .map(post => ({
@@ -145,6 +147,20 @@ const due = slotAlreadyPosted ? [] : (Array.isArray(content.posts) ? content.pos
     created_at: post.createdAt || content.updatedAt
   }));
 
+const emptyReason = due.length
+  ? null
+  : slot === "closed"
+    ? "closed_window"
+    : slotAlreadyPosted
+      ? "already_posted"
+      : slotCandidates.length
+        ? "no_eligible_content"
+        : "no_content_for_slot";
+
+if (!due.length && !["closed_window", "already_posted"].includes(emptyReason)) {
+  throw new Error(`X queue build failed: ${emptyReason} for ${now.date} ${slot}; refusing to report a successful empty posting run`);
+}
+
 const payload = {
   updatedAt: new Date().toISOString(),
   date: now.date,
@@ -152,6 +168,7 @@ const payload = {
   cadence: "one current story per workflow run",
   source: "Content Engine 3.0 selected from current production MLB data",
   fakeData: false,
+  emptyReason,
   inputValidation: { status: "passed", checkedAt: new Date().toISOString(), maxAgeMinutes: 15, inputs: validatedInputs },
   count: due.length,
   posts: due
@@ -164,4 +181,5 @@ console.log("THE SLIP LAB X DAILY QUEUE V3 COMPLETE");
 console.log("Date:", payload.date);
 console.log("Slot:", slot);
 console.log("Posts queued:", due.length);
+if (emptyReason) console.log("Empty reason:", emptyReason);
 console.log("Saved:", SITE_OUT);
