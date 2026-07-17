@@ -124,6 +124,9 @@ const alreadyPosted = new Set((Array.isArray(history?.posts) ? history.posts : [
   .map(post => post.id));
 const slotAlreadyPosted = (Array.isArray(history?.posts) ? history.posts : [])
   .some(post => post.date === now.date && post.slot === slot && post.status === "posted" && post.x_post_id);
+const availableSlots = [...new Set((Array.isArray(content?.posts) ? content.posts : [])
+  .filter(post => post.date === now.date)
+  .map(post => post.slot))];
 const slotCandidates = (Array.isArray(content.posts) ? content.posts : [])
   .filter(post => post.date === now.date && post.slot === slot);
 
@@ -158,7 +161,7 @@ const emptyReason = due.length
         : "no_content_for_slot";
 
 if (!due.length && !["closed_window", "already_posted"].includes(emptyReason)) {
-  throw new Error(`X queue build failed: ${emptyReason} for ${now.date} ${slot}; refusing to report a successful empty posting run`);
+  throw new Error(`X queue build failed: ${emptyReason} for ${now.date} ${slot}; available slots: ${availableSlots.join(", ") || "none"}; refusing to report a successful empty posting run`);
 }
 
 const payload = {
@@ -169,6 +172,11 @@ const payload = {
   source: "Content Engine 3.0 selected from current production MLB data",
   fakeData: false,
   emptyReason,
+  slotResolution: {
+    requested: requestedSlot || "automatic",
+    selected: slot,
+    available: availableSlots
+  },
   inputValidation: { status: "passed", checkedAt: new Date().toISOString(), maxAgeMinutes: 15, inputs: validatedInputs },
   count: due.length,
   posts: due
@@ -180,6 +188,8 @@ fs.writeFileSync(TXT_OUT, due.length ? due.map(post => `${post.slot.toUpperCase(
 console.log("THE SLIP LAB X DAILY QUEUE V3 COMPLETE");
 console.log("Date:", payload.date);
 console.log("Slot:", slot);
+console.log("Requested slot:", requestedSlot || "automatic");
+console.log("Available story slots:", availableSlots.join(", ") || "none");
 console.log("Posts queued:", due.length);
 if (emptyReason) console.log("Empty reason:", emptyReason);
 console.log("Saved:", SITE_OUT);
