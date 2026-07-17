@@ -120,6 +120,18 @@ function isHomeRun(play) {
   return event === "home run" || eventType === "home_run" || event.includes("home run");
 }
 
+function airborneCategory(play) {
+  const event = String(play?.result?.event || "").trim().toLowerCase();
+  const eventType = String(play?.result?.eventType || "").trim().toLowerCase();
+
+  if (isHomeRun(play)) return "home_run";
+  if (event === "sac fly" || eventType === "sac_fly") return "sac_fly";
+  if (event.includes("flyout") || event.includes("fly out")) return "flyout";
+  if (event.includes("lineout") || event.includes("line out")) return "lineout";
+  if (event.includes("pop out") || event.includes("popout")) return "pop_out";
+  return "";
+}
+
 function uniquePlays(feed) {
   const allPlays = feed?.liveData?.plays?.allPlays || [];
   const scoringIndexes = feed?.liveData?.plays?.scoringPlays || [];
@@ -180,6 +192,56 @@ function getOpponent(play, feed) {
   return safe(feed?.liveData?.boxscore?.teams?.[side]?.team?.name);
 }
 
+function buildEventRow({ date, game, feed, play, status, gameLabel, score, gameContext }) {
+  const pitch = getLastPitch(play);
+  const hitData = pitch?.hitData || {};
+  const pitchData = pitch?.pitchData || {};
+  const details = pitch?.details || {};
+  const batter = safe(play?.matchup?.batter?.fullName);
+  const category = airborneCategory(play);
+  const distance = num(hitData?.totalDistance);
+
+  return {
+    date,
+    gamePk: game?.gamePk,
+    game: gameLabel,
+    gameStartTime: safe(game?.gameDate || feed?.gameData?.datetime?.dateTime),
+    status,
+    inning: getInning(play),
+    playerId: safe(play?.matchup?.batter?.id),
+    batter,
+    player: batter,
+    team: getTeam(play, feed),
+    opponent: getOpponent(play, feed),
+    pitcherId: safe(play?.matchup?.pitcher?.id),
+    pitcher: safe(play?.matchup?.pitcher?.fullName),
+    rbi: Number(play?.result?.rbi || 0),
+    description: safe(play?.result?.description),
+    event: safe(play?.result?.event),
+    eventType: safe(play?.result?.eventType),
+    category,
+    isCloseCall: category !== "home_run" && distance !== "" && Number(distance) >= 350,
+    score,
+    playId: safe(play?.about?.atBatIndex),
+    startTime: safe(play?.about?.startTime),
+    endTime: safe(play?.about?.endTime),
+    exitVelocity: num(hitData?.launchSpeed),
+    launchAngle: num(hitData?.launchAngle),
+    distance,
+    trajectory: safe(hitData?.trajectory),
+    hardness: safe(hitData?.hardness),
+    pitchType: safe(details?.type?.description || details?.type?.code),
+    pitchCode: safe(details?.type?.code),
+    pitchVelocity: num(pitchData?.startSpeed),
+    plateX: num(pitchData?.coordinates?.pX),
+    plateZ: num(pitchData?.coordinates?.pZ),
+    strikeZoneTop: num(pitchData?.strikeZoneTop),
+    strikeZoneBottom: num(pitchData?.strikeZoneBottom),
+    count: getCount(play, pitch),
+    ...gameContext
+  };
+}
+
 async function buildResults(date) {
   const schedule = await getJSON(SCHEDULE_URL);
   const games = schedule?.dates?.flatMap(d => d.games || []) || [];
@@ -187,6 +249,7 @@ async function buildResults(date) {
   const contextMap = buildContextMap(date);
 
   const homeRuns = [];
+  const playerEvents = [];
   let checkedGames = 0;
   let skippedGames = 0;
   let finalGames = 0;
@@ -212,55 +275,19 @@ async function buildResults(date) {
     const gameContext = getGameContext(game, feed, contextMap);
 
     for (const play of plays) {
-      if (!isHomeRun(play)) continue;
+      const category = airborneCategory(play);
+      if (!category) continue;
 
-      const pitch = getLastPitch(play);
-      const hitData = pitch?.hitData || {};
-      const pitchData = pitch?.pitchData || {};
-      const details = pitch?.details || {};
-
-      const batter = safe(play?.matchup?.batter?.fullName);
-      const pitcher = safe(play?.matchup?.pitcher?.fullName);
-
-      homeRuns.push({
-        date,
-        gamePk,
-        game: gameLabel,
-        gameStartTime: safe(game?.gameDate || feed?.gameData?.datetime?.dateTime),
-        status,
-        inning: getInning(play),
-        batter,
-        player: batter,
-        team: getTeam(play, feed),
-        opponent: getOpponent(play, feed),
-        pitcher,
-        rbi: Number(play?.result?.rbi || 0),
-        description: safe(play?.result?.description),
-        event: safe(play?.result?.event),
-        eventType: safe(play?.result?.eventType),
-        score,
-        playId: safe(play?.about?.atBatIndex),
-        startTime: safe(play?.about?.startTime),
-        endTime: safe(play?.about?.endTime),
-        exitVelocity: num(hitData?.launchSpeed),
-        launchAngle: num(hitData?.launchAngle),
-        distance: num(hitData?.totalDistance),
-        trajectory: safe(hitData?.trajectory),
-        hardness: safe(hitData?.hardness),
-        pitchType: safe(details?.type?.description || details?.type?.code),
-        pitchCode: safe(details?.type?.code),
-        pitchVelocity: num(pitchData?.startSpeed),
-        plateX: num(pitchData?.coordinates?.pX),
-        plateZ: num(pitchData?.coordinates?.pZ),
-        strikeZoneTop: num(pitchData?.strikeZoneTop),
-        strikeZoneBottom: num(pitchData?.strikeZoneBottom),
-        count: getCount(play, pitch),
-        ...gameContext
-      });
+      const row = buildEventRow({ date, game, feed, play, status, gameLabel, score, gameContext });
+      playerEvents.push(row);
+      if (category === "home_run") homeRuns.push(row);
     }
   }
 
   homeRuns.sort((a, b) =>
+    String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || ""))
+  );
+  playerEvents.sort((a, b) =>
     String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || ""))
   );
 
@@ -275,7 +302,9 @@ async function buildResults(date) {
     finalGames,
     liveGames,
     count: homeRuns.length,
-    homeRuns
+    homeRuns,
+    playerEventCount: playerEvents.length,
+    playerEvents
   };
 }
 
@@ -290,6 +319,7 @@ async function main() {
   console.log("Games checked:", results.checkedGames);
   console.log("Games skipped:", results.skippedGames);
   console.log("Home Runs:", results.homeRuns.length);
+  console.log("Tracked Airborne Events:", results.playerEvents.length);
   console.log("Saved:", outputFile);
 }
 
