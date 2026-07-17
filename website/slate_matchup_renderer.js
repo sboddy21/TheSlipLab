@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], schedule: null, health: null, spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 } };
+  const state = { games: [], schedule: null, health: null, spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 }, selectedGameKeys: new Set(), comparisonOpen: false, selectionMessage: "" };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -312,6 +312,66 @@
     if (lock === "PARTIAL CONFIRMED") return "PARTIAL";
 
     return "PROJECTED";
+  }
+
+  function finiteNumber(value) {
+    if (value === undefined || value === null || value === "") return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function gameKey(game) {
+    if (game?.gamePk !== undefined && game?.gamePk !== null && game?.gamePk !== "") return String(game.gamePk);
+    return [game?.gameDate, game?.awayTeam, game?.homeTeam].map(value => String(value || "")).join("|");
+  }
+
+  function selectedGames() {
+    return state.games.filter(game => state.selectedGameKeys.has(gameKey(game)));
+  }
+
+  function topHitterForGame(game) {
+    return allHitters(game)
+      .map(row => ({ row, score: finiteNumber(scoreOf(row)) }))
+      .filter(item => item.score !== null)
+      .sort((a, b) => b.score - a.score)[0] || null;
+  }
+
+  function topTargetsForGame(game, limit = 3) {
+    return allHitters(game)
+      .map(row => ({ row, score: finiteNumber(scoreOf(row)) }))
+      .filter(item => item.score !== null)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+  }
+
+  function bullpenLeaderForTeam(team) {
+    return state.bullpen
+      .filter(row => String(row?.team || "") === String(team || ""))
+      .map(row => ({ row, score: finiteNumber(row?.hrRiskScore) }))
+      .filter(item => item.score !== null)
+      .sort((a, b) => b.score - a.score)[0] || null;
+  }
+
+  function pitcherRiskSummary(game) {
+    const away = finiteNumber(pitcherVulnerability(game, "away"));
+    const home = finiteNumber(pitcherVulnerability(game, "home"));
+    const available = [
+      away === null ? null : { pitcher: pitcherName(game, "away"), team: game.awayTeam, score: away },
+      home === null ? null : { pitcher: pitcherName(game, "home"), team: game.homeTeam, score: home }
+    ].filter(Boolean).sort((a, b) => b.score - a.score);
+    return available[0] || null;
+  }
+
+  function comparisonWeather(game) {
+    const weather = weatherForVenue(game?.venue);
+    if (!weather) return "Updating";
+    const details = [];
+    const temp = finiteNumber(weather.temp ?? weather.temperature);
+    const wind = finiteNumber(weather.windSpeed ?? weather.wind_speed);
+    if (temp !== null) details.push(`${Math.round(temp)}°F`);
+    if (wind !== null) details.push(`${wind} mph${weather.windCompass ? ` ${weather.windCompass}` : ""}`);
+    if (weather.status) details.push(String(weather.status));
+    return details.length ? details.join(" · ") : "Updating";
   }
 
 
@@ -810,7 +870,7 @@
   function injectShell() {
     const wrap = document.querySelector("main.wrap");
     if (!wrap) return;
-    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs"]) {
+    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs", "gameComparison"]) {
       const el = document.getElementById(id);
       if (el) el.remove();
     }
@@ -829,6 +889,7 @@
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
       <div class="tabs" id="tabs"></div>
+      <section class="game-comparison" id="gameComparison" aria-live="polite"></section>
       <section class="games" id="games"></section>
     `);
   }
@@ -1093,13 +1154,100 @@
   }
 
   function renderGame(game, index) {
+    const key = gameKey(game);
+    const selected = state.selectedGameKeys.has(key);
     return `
-      <section class="game-card" data-game="${index}">
-        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="pill ${lineupStatusLabel(game).toLowerCase()}">${esc(lineupStatusLabel(game))}</div></div>
+      <section class="game-card${selected ? " game-card-selected" : ""}" data-game="${index}" data-game-key="${esc(key)}">
+        <div class="game-head"><div><h2>${esc(game.awayTeam)} at ${esc(game.homeTeam)}</h2><div class="game-meta">${esc(gameTime(game))}${game.venue ? " • " + esc(game.venue) : ""}${game.status ? " • " + esc(game.status) : ""}</div></div><div class="game-head-actions"><div class="pill ${lineupStatusLabel(game).toLowerCase()}">${esc(lineupStatusLabel(game))}</div><button class="game-select-button" type="button" data-select-game="${esc(key)}" aria-pressed="${selected}">${selected ? "Selected ✓" : "Compare game"}</button></div></div>
         <div class="matchup-grid">${renderSide(game, "away")}${renderSide(game, "home")}</div>
         ${renderWeather(weatherForVenue(game.venue))}
       </section>
     `;
+  }
+
+  function comparisonGameCard(game) {
+    const risk = pitcherRiskSummary(game);
+    const topHitter = topHitterForGame(game);
+    const targets = topTargetsForGame(game);
+    const awayBullpen = bullpenLeaderForTeam(game.awayTeam);
+    const homeBullpen = bullpenLeaderForTeam(game.homeTeam);
+    const bullpenRows = [awayBullpen, homeBullpen].filter(Boolean).sort((a, b) => b.score - a.score);
+    const bullpen = bullpenRows[0] || null;
+    const key = gameKey(game);
+
+    return `
+      <article class="comparison-game-card">
+        <div class="comparison-game-head">
+          <div><span>${esc(gameTime(game) || "Time updating")}</span><h3>${esc(code(game.awayTeam))} at ${esc(code(game.homeTeam))}</h3></div>
+          <button type="button" data-remove-game="${esc(key)}" aria-label="Remove ${esc(game.awayTeam)} at ${esc(game.homeTeam)} from comparison">Remove</button>
+        </div>
+        <div class="comparison-signal-grid">
+          <div><span>Highest pitcher risk</span><strong>${risk ? `${esc(risk.pitcher || "Pitcher")} · ${esc(whole(risk.score))}` : "Updating"}</strong></div>
+          <div><span>Top hitter score</span><strong>${topHitter ? `${esc(topHitter.row.player)} · ${esc(whole(topHitter.score))}` : "Updating"}</strong></div>
+          <div><span>Lineups</span><strong>${esc(lineupStatusLabel(game))}</strong></div>
+          <div><span>Weather</span><strong>${esc(comparisonWeather(game))}</strong></div>
+          <div><span>Peak bullpen HR risk</span><strong>${bullpen ? `${esc(bullpen.row.team)} · ${esc(whole(bullpen.score))}` : "Updating"}</strong></div>
+        </div>
+        <div class="comparison-targets"><span>Existing model leaders</span>${targets.length ? targets.map(item => `<b>${esc(item.row.player)} <em>${esc(whole(item.score))}</em></b>`).join("") : "<b>Updating</b>"}</div>
+      </article>
+    `;
+  }
+
+  function renderGameComparison() {
+    const host = document.getElementById("gameComparison");
+    if (!host) return;
+    const selected = selectedGames();
+    const count = selected.length;
+
+    host.innerHTML = `
+      <div class="comparison-tray-head">
+        <div><span class="comparison-kicker">GAME COMPARISON</span><h2>Select up to five games</h2><p>Compare the live pitcher, hitter, lineup, weather and bullpen signals already on the Slate.</p></div>
+        <div class="comparison-tray-actions"><strong>${count} / 5 selected</strong>${count ? `<button type="button" data-clear-games>Clear</button>` : ""}</div>
+      </div>
+      ${state.selectionMessage ? `<div class="comparison-message">${esc(state.selectionMessage)}</div>` : ""}
+      ${count ? `<div class="comparison-picks">${selected.map(game => `<button type="button" data-focus-game="${esc(gameKey(game))}">${esc(code(game.awayTeam))} at ${esc(code(game.homeTeam))}</button>`).join("")}</div>` : `<div class="comparison-empty">Use <b>Compare game</b> on any matchup card to build a focused slate.</div>`}
+      ${count ? `<button class="comparison-analyze-button" type="button" data-analyze-games aria-expanded="${state.comparisonOpen}">${state.comparisonOpen ? "Hide consolidated analysis" : `Analyze ${count} selected game${count === 1 ? "" : "s"}`}</button>` : ""}
+      ${count && state.comparisonOpen ? `<div class="comparison-analysis"><div class="comparison-analysis-intro"><b>Consolidated live read</b><span>No new score is created here. Every value below comes directly from the current production Slate.</span></div><div class="comparison-analysis-grid">${selected.map(comparisonGameCard).join("")}</div></div>` : ""}
+    `;
+    wireGameComparison();
+  }
+
+  function toggleGameSelection(key) {
+    if (state.selectedGameKeys.has(key)) {
+      state.selectedGameKeys.delete(key);
+      state.selectionMessage = "Game removed from comparison.";
+    } else if (state.selectedGameKeys.size >= 5) {
+      state.selectionMessage = "The comparison is limited to five games. Remove one before adding another.";
+    } else {
+      state.selectedGameKeys.add(key);
+      state.selectionMessage = "Game added to comparison.";
+    }
+    if (!state.selectedGameKeys.size) state.comparisonOpen = false;
+    render();
+  }
+
+  function wireGameComparison() {
+    document.querySelectorAll("[data-select-game]").forEach(button => {
+      button.addEventListener("click", () => toggleGameSelection(button.dataset.selectGame));
+    });
+    document.querySelectorAll("[data-remove-game]").forEach(button => {
+      button.addEventListener("click", () => toggleGameSelection(button.dataset.removeGame));
+    });
+    document.querySelector("[data-clear-games]")?.addEventListener("click", () => {
+      state.selectedGameKeys.clear();
+      state.comparisonOpen = false;
+      state.selectionMessage = "Comparison cleared.";
+      render();
+    });
+    document.querySelector("[data-analyze-games]")?.addEventListener("click", () => {
+      state.comparisonOpen = !state.comparisonOpen;
+      state.selectionMessage = "";
+      render();
+      if (state.comparisonOpen) document.querySelector(".comparison-analysis")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    document.querySelectorAll("[data-focus-game]").forEach(button => {
+      button.addEventListener("click", () => document.querySelector(`[data-game-key="${CSS.escape(button.dataset.focusGame)}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    });
   }
 
   function renderWeather(weather) {
@@ -1355,6 +1503,9 @@
     const tabs = document.getElementById("tabs");
     if (tabs) tabs.innerHTML = "";
 
+    const comparison = document.getElementById("gameComparison");
+    if (comparison) comparison.innerHTML = "";
+
     document.getElementById("games").innerHTML = `
       <section class="closed-slate-dashboard" aria-labelledby="closedSlateTitle">
         <div class="closed-slate-topline">
@@ -1411,6 +1562,7 @@
       document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
       const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
       document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">The current slate could not be verified. Live matchup cards are unavailable until the next successful refresh.</div>';
+      renderGameComparison();
       wireCards();
       hydrateLast7();
       return;
@@ -1420,6 +1572,8 @@
     if (vuln) vuln.style.display = "none";
     const aiPanel = document.getElementById("aiSaysPanel");
     if (aiPanel) aiPanel.style.display = "none";
+    const comparison = document.getElementById("gameComparison");
+    if (comparison) comparison.innerHTML = "";
     renderTabs();
     renderMarketBoard();
   }
@@ -1643,6 +1797,10 @@ body.tsl-editorial .matchup-chip.tag-glow,body.tsl-editorial .matchup-chip.tag-g
 .slate-signal-icons{display:inline-flex;align-items:center;gap:3px;margin-left:7px;vertical-align:middle}.slate-signal-icon{font-size:15px;line-height:1}.slate-signal-labels{display:flex;flex-wrap:wrap;gap:5px;margin:5px 0}.slate-signal-label{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border:1px solid rgba(255,255,255,.18);border-radius:999px;background:rgba(255,255,255,.07);color:#fff;font-size:9px;font-weight:950;text-transform:uppercase;letter-spacing:.04em}.slate-signal-label.signal-hot-look{border-color:#ff643c;background:rgba(255,82,42,.2);color:#ffc2b0}.slate-signal-label.signal-hot-lately{border-color:#9a68ff;background:rgba(120,70,255,.18);color:#d7c4ff}.slate-signal-label.signal-due{border-color:#ffc52a;background:rgba(255,197,42,.16);color:#ffe49a}.slate-signal-label.signal-sleeper{border-color:#00bfa5;background:rgba(0,191,165,.16);color:#8ff5e5}.sweet-bat.signal-hot-look{border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}.sweet-bat.signal-hot-look:nth-child(even){border-left-color:#ff5425;background:linear-gradient(110deg,rgba(170,45,18,.42),rgba(18,12,24,.9))}
 body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.signal-hot-look:nth-child(even){border-left:6px solid #d84320;background:linear-gradient(105deg,#fff0e8 0,#fffdf7 48%)!important}.tsl-editorial .slate-signal-label{background:#f3f0e6;border-color:#506071;color:#071d36}.tsl-editorial .slate-signal-label.signal-hot-look{background:#ffe7df;border-color:#b63a1c;color:#7c2612}.tsl-editorial .slate-signal-label.signal-hot-lately{background:#eee7ff;border-color:#6d49a7;color:#452978}.tsl-editorial .slate-signal-label.signal-due{background:#fff1c7;border-color:#9a6b00;color:#684800}.tsl-editorial .slate-signal-label.signal-sleeper{background:#dcf5ef;border-color:#117461;color:#075447}
 
+.game-head-actions{display:flex;align-items:flex-end;flex-direction:column;gap:8px}.game-select-button{appearance:none;min-width:118px;padding:8px 11px;border:1px solid rgba(140,255,50,.42);border-radius:9px;background:rgba(140,255,50,.08);color:#baff83;font-size:10px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}.game-select-button:hover,.game-select-button[aria-pressed="true"]{background:#8cff32;border-color:#8cff32;color:#071007}.game-card-selected{border-color:#8cff32;box-shadow:0 0 0 1px rgba(140,255,50,.24),0 16px 40px rgba(0,0,0,.22)}
+.game-comparison{margin:0 0 18px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(135deg,rgba(16,31,32,.98),rgba(5,10,10,.98));overflow:hidden}.comparison-tray-head{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding:18px}.comparison-kicker{display:block;margin-bottom:6px;color:#8cff32;font-size:9px;font-weight:950;letter-spacing:.2em}.comparison-tray-head h2{margin:0 0 5px;font-size:21px}.comparison-tray-head p{max-width:720px;margin:0;color:#9fb0aa;font-size:12px;line-height:1.5}.comparison-tray-actions{display:flex;align-items:center;gap:10px;white-space:nowrap}.comparison-tray-actions strong{color:#8cff32;font-size:12px}.comparison-tray-actions button,.comparison-game-head button{appearance:none;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:#11191b;color:#dce8e3;padding:7px 9px;font-size:10px;font-weight:900;cursor:pointer}.comparison-message{padding:9px 18px;border-top:1px solid rgba(255,255,255,.07);color:#ffd25a;font-size:11px;font-weight:850}.comparison-empty{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);color:#8d9c97;font-size:12px}.comparison-picks{display:flex;gap:8px;overflow:auto;padding:12px 18px;border-top:1px solid rgba(255,255,255,.07)}.comparison-picks button{appearance:none;white-space:nowrap;padding:8px 11px;border:1px solid rgba(0,224,164,.3);border-radius:999px;background:rgba(0,224,164,.08);color:#7fffe0;font-size:10px;font-weight:950;cursor:pointer}.comparison-analyze-button{appearance:none;width:calc(100% - 36px);margin:0 18px 18px;padding:12px 15px;border:1px solid #8cff32;border-radius:10px;background:#8cff32;color:#071007;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.comparison-analysis{border-top:1px solid rgba(255,255,255,.09);padding:18px}.comparison-analysis-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:14px}.comparison-analysis-intro b{font-size:14px;color:#fff}.comparison-analysis-intro span{max-width:620px;color:#8d9c97;font-size:11px;text-align:right}.comparison-analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:10px}.comparison-game-card{min-width:0;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#071010;padding:13px}.comparison-game-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:11px;border-bottom:1px solid rgba(255,255,255,.08)}.comparison-game-head span{color:#7f918b;font-size:9px;font-weight:900;text-transform:uppercase}.comparison-game-head h3{margin:3px 0 0;color:#fff;font-size:16px}.comparison-signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.comparison-signal-grid>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.025)}.comparison-signal-grid span,.comparison-targets>span{display:block;margin-bottom:4px;color:#758781;font-size:8px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.comparison-signal-grid strong{display:block;color:#eef8f3;font-size:11px;line-height:1.35}.comparison-targets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.comparison-targets>span{width:100%}.comparison-targets b{padding:5px 7px;border-radius:6px;background:rgba(140,255,50,.08);color:#dfffd0;font-size:9px}.comparison-targets em{color:#8cff32;font-style:normal}
+body.tsl-editorial .game-comparison{border-color:#071d36;border-radius:0;background:#fffdf7;color:#071d36}body.tsl-editorial .comparison-kicker{color:#9b3219}body.tsl-editorial .comparison-tray-head p,body.tsl-editorial .comparison-empty{color:#41566b}body.tsl-editorial .comparison-tray-actions strong{color:#084aab}body.tsl-editorial .comparison-tray-actions button,body.tsl-editorial .comparison-game-head button{border-color:#506071;border-radius:0;background:#f3f0e6;color:#071d36}body.tsl-editorial .comparison-message{border-color:rgba(7,29,54,.18);background:#fff1c7;color:#684800}body.tsl-editorial .comparison-picks,body.tsl-editorial .comparison-empty,body.tsl-editorial .comparison-analysis{border-color:rgba(7,29,54,.18)}body.tsl-editorial .comparison-picks button{border-color:#1268f3;border-radius:0;background:#e8f1ff;color:#084aab}body.tsl-editorial .comparison-analyze-button{border-color:#1268f3;border-radius:0;background:#1268f3;color:#fff}body.tsl-editorial .comparison-analysis-intro b{color:#071d36}body.tsl-editorial .comparison-analysis-intro span{color:#41566b}body.tsl-editorial .comparison-game-card{border-color:#071d36;border-radius:0;background:#fffdf7}body.tsl-editorial .comparison-game-head{border-color:rgba(7,29,54,.18)}body.tsl-editorial .comparison-game-head span{color:#52667a}body.tsl-editorial .comparison-game-head h3{color:#071d36}body.tsl-editorial .comparison-signal-grid>div{border-color:rgba(7,29,54,.18);border-radius:0;background:#f8f5ec}body.tsl-editorial .comparison-signal-grid span,body.tsl-editorial .comparison-targets>span{color:#52667a}body.tsl-editorial .comparison-signal-grid strong{color:#071d36}body.tsl-editorial .comparison-targets b{border:1px solid #aeb7bd;border-radius:0;background:#f3f0e6;color:#071d36}body.tsl-editorial .comparison-targets em{color:#084aab}body.tsl-editorial .game-select-button{border-color:#1268f3;border-radius:0;background:#e8f1ff;color:#084aab}body.tsl-editorial .game-select-button:hover,body.tsl-editorial .game-select-button[aria-pressed="true"]{background:#1268f3;color:#fff}body.tsl-editorial .game-card-selected{border-color:#1268f3;box-shadow:inset 5px 0 0 #1268f3}
+
 body.tsl-closed-slate{background:#050811!important}
 body.tsl-closed-slate main.wrap{max-width:none!important;min-height:calc(100vh - 132px);padding:0 0 80px!important;background:radial-gradient(circle at 70% 12%,rgba(18,104,243,.12),transparent 33%),#050811!important;color:#f4f7fb!important}
 body.tsl-closed-slate main.wrap>.report-line,body.tsl-closed-slate main.wrap>.eyebrow,body.tsl-closed-slate main.wrap>h1,body.tsl-closed-slate main.wrap>.sub,body.tsl-closed-slate #topVulnPanel,body.tsl-closed-slate #marketTabs,body.tsl-closed-slate #hero,body.tsl-closed-slate #tabs{display:none!important}
@@ -1676,6 +1834,7 @@ body.tsl-closed-slate #games{display:block;max-width:1500px;margin:0 auto;paddin
 @media(max-width:760px){body.tsl-closed-slate #games{padding:24px 14px 0}.closed-slate-dashboard{min-height:0;padding:20px}.closed-slate-topline{align-items:flex-start;flex-direction:column}.closed-slate-copy{padding:52px 0 42px}.closed-slate-copy h2{font-size:clamp(46px,15vw,72px)}.closed-slate-copy p{font-size:14px}.closed-slate-status{grid-template-columns:1fr 1fr}.closed-slate-status>div:nth-child(2){border-right:0}.closed-slate-status>div:nth-child(-n+2){border-bottom:1px solid rgba(125,156,199,.18)}.closed-slate-actions{align-items:stretch;flex-direction:column}.closed-slate-actions a{width:100%}.closed-slate-dashboard:after{font-size:100px}}
 
 @media(max-width:1050px){.vulns{grid-template-columns:repeat(2,1fr)}.player-stat-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){.comparison-tray-head,.comparison-analysis-intro{flex-direction:column}.comparison-tray-actions{width:100%;justify-content:space-between}.comparison-analysis-intro span{text-align:left}.comparison-signal-grid{grid-template-columns:1fr}.game-head-actions{width:100%;align-items:stretch}.game-select-button{width:100%}}
 @media(max-width:600px){body.tsl-editorial .panel-head{align-items:flex-start;flex-direction:column;gap:8px}body.tsl-editorial .panel-note{line-height:1.4}.vulns{grid-template-columns:repeat(2,minmax(0,1fr))}.vuln{padding:15px 13px}}`;
     document.head.appendChild(style);
   }
@@ -1729,6 +1888,8 @@ body.tsl-closed-slate #games{display:block;max-width:1500px;margin:0 auto;paddin
     state.schedule = await json("./data/mlb_games_today.json", null);
     state.health = await json("./data/health_status.json", null);
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
+    const currentGameKeys = new Set(state.games.map(gameKey));
+    state.selectedGameKeys = new Set([...state.selectedGameKeys].filter(key => currentGameKeys.has(key)));
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
