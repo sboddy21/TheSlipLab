@@ -127,6 +127,40 @@ function validatePlayerCardSignals() {
   }
 }
 
+function validatePlayerResultEvents() {
+  const payload = read("mlb_results.json");
+
+  if (!Array.isArray(payload.homeRuns)) {
+    fail("mlb_results.json has an invalid homeRuns array");
+  }
+
+  if (!Object.prototype.hasOwnProperty.call(payload, "playerEvents")) return;
+  if (!Array.isArray(payload.playerEvents)) {
+    fail("mlb_results.json has an invalid playerEvents array");
+  }
+
+  const allowedCategories = new Set(["home_run", "flyout", "lineout", "pop_out", "sac_fly"]);
+
+  for (const event of payload.playerEvents) {
+    const label = event.player || event.batter || "unknown player";
+    if (!event.playerId || !String(label).trim()) {
+      fail(`mlb_results.json has an event without a player identity for ${label}`);
+    }
+    if (!allowedCategories.has(event.category)) {
+      fail(`mlb_results.json has an invalid event category for ${label}`);
+    }
+    if (typeof event.isCloseCall !== "boolean") {
+      fail(`mlb_results.json has an invalid close-call flag for ${label}`);
+    }
+    if (event.isCloseCall) {
+      const distance = Number(event.distance);
+      if (event.category === "home_run" || !Number.isFinite(distance) || distance < 350) {
+        fail(`mlb_results.json has an unsupported close-call classification for ${label}`);
+      }
+    }
+  }
+}
+
 function validatePitchDamageCache(expectedDate) {
   const pool = read("mlb_player_pool.json");
   const cache = read("pitch_type_damage_cache.json");
@@ -581,6 +615,7 @@ validateRealStatcastZones(today);
 validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);
 validatePlayerCardSignals();
+validatePlayerResultEvents();
 
 const siteUpdated = read("site_last_updated.json");
 if (siteUpdated.source !== "mlb_fast_refresh") {

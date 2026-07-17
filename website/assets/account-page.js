@@ -24,12 +24,22 @@ const elements = {
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
-  summary: document.getElementById("favoritesSummary")
+  summary: document.getElementById("favoritesSummary"),
+  detailDialog: document.getElementById("favoriteDetailDialog"),
+  detailTitle: document.getElementById("favoriteDetailTitle"),
+  detailBody: document.getElementById("favoriteDetailBody"),
+  detailClose: document.getElementById("favoriteDetailClose")
 };
 
 let catalog = [];
 let favorites = [];
 let recoveryMode = false;
+let detailData = {
+  playerCards: [],
+  currentResults: {},
+  previousResults: {},
+  historyDays: []
+};
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, character => ({
@@ -119,12 +129,30 @@ function normalizeCatalog(playerPool, matchups) {
 
 async function loadCatalog() {
   const version = Date.now();
-  const [poolResponse, matchupResponse] = await Promise.all([
-    fetch(`./data/mlb_player_pool.json?v=${version}`),
-    fetch(`./data/game_pitcher_matchups.json?v=${version}`)
+  const [playerPool, matchups, playerCards, currentResults, previousResults, history] = await Promise.all([
+    fetchOptionalJSON(`./data/mlb_player_pool.json?v=${version}`, { players: [] }),
+    fetchOptionalJSON(`./data/game_pitcher_matchups.json?v=${version}`, { games: [] }),
+    fetchOptionalJSON(`./data/player_card_data.json?v=${version}`, { players: [] }),
+    fetchOptionalJSON(`./data/mlb_results.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
+    fetchOptionalJSON(`./data/mlb_results_previous.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
+    fetchOptionalJSON(`./data/hr_results_history.json?v=${version}`, { days: [] })
   ]);
-  if (!poolResponse.ok || !matchupResponse.ok) throw new Error("Today's MLB player list is unavailable");
-  catalog = normalizeCatalog(await poolResponse.json(), await matchupResponse.json());
+  catalog = normalizeCatalog(playerPool, matchups);
+  detailData = {
+    playerCards: Array.isArray(playerCards.players) ? playerCards.players : [],
+    currentResults,
+    previousResults,
+    historyDays: Array.isArray(history.days) ? history.days : []
+  };
+}
+
+async function fetchOptionalJSON(url, fallback) {
+  try {
+    const response = await fetch(url);
+    return response.ok ? await response.json() : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 function favoriteKey(item) {
@@ -147,8 +175,110 @@ function renderSearchResults() {
 
 function renderFavorites() {
   elements.summary.textContent = favorites.length === 1 ? "1 saved favorite" : `${favorites.length} saved favorites`;
-  elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><div><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span></div><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
+  elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
   renderSearchResults();
+}
+
+function normalizedName(value) {
+  return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function samePlayer(row, favorite) {
+  const rowId = String(row?.playerId || row?.batterId || "").trim();
+  const favoriteId = String(favorite?.external_id || "").trim();
+  if (rowId && favoriteId) return rowId === favoriteId;
+  return normalizedName(row?.player || row?.batter) === normalizedName(favorite?.display_name);
+}
+
+function samePitcher(row, favorite) {
+  const rowId = String(row?.pitcherId || "").trim();
+  const favoriteId = String(favorite?.external_id || "").trim();
+  if (rowId && favoriteId) return rowId === favoriteId;
+  return normalizedName(row?.pitcher) === normalizedName(favorite?.display_name);
+}
+
+function uniqueRows(rows) {
+  const seen = new Set();
+  return rows.filter(row => {
+    const key = [
+      row.date || String(row.endTime || "").slice(0, 10),
+      row.playerId || normalizedName(row.player || row.batter),
+      row.pitcherId || normalizedName(row.pitcher),
+      row.inning,
+      row.category || row.eventType,
+      row.description,
+      row.distance
+    ].join("|");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function collectedEvents() {
+  const direct = [detailData.currentResults, detailData.previousResults]
+    .flatMap(payload => Array.isArray(payload?.playerEvents) ? payload.playerEvents : []);
+  const history = detailData.historyDays.flatMap(day => Array.isArray(day?.playerEvents) ? day.playerEvents : []);
+  return uniqueRows([...direct, ...history]).sort((a, b) => String(b.endTime || b.date || "").localeCompare(String(a.endTime || a.date || "")));
+}
+
+function collectedHomeRuns() {
+  const direct = [detailData.currentResults, detailData.previousResults]
+    .flatMap(payload => Array.isArray(payload?.homeRuns) ? payload.homeRuns : []);
+  const history = detailData.historyDays.flatMap(day => (day.homeRuns || []).map(row => ({ ...row, date: row.date || day.date, category: "home_run" })));
+  return uniqueRows([...direct, ...history]);
+}
+
+function metric(label, value) {
+  return `<div class="favorite-detail-metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function valueOrDash(value, suffix = "") {
+  return value === "" || value === null || value === undefined ? "—" : `${value}${suffix}`;
+}
+
+function eventLabel(row) {
+  const labels = { home_run: "Home run", sac_fly: "Sac fly", flyout: "Flyout", lineout: "Lineout", pop_out: "Pop out" };
+  return row.isCloseCall ? `Close call · ${labels[row.category] || row.event}` : labels[row.category] || row.event || "Batted-ball event";
+}
+
+function renderEventRows(rows) {
+  if (!rows.length) return '<div class="empty-state">No verified airborne plate appearances are available for this player yet.</div>';
+  return `<div class="favorite-event-list">${rows.slice(0, 16).map(row => `<article class="favorite-event-card ${row.isCloseCall ? "close-call" : ""}"><div class="favorite-event-title"><strong>${escapeHtml(eventLabel(row))}</strong><span>${escapeHtml(row.date || "Date unavailable")}</span></div><p>${escapeHtml(row.description || `${row.player || "Player"} recorded a ${String(row.event || "batted-ball event").toLowerCase()}.`)}</p><div class="favorite-event-facts"><span>${escapeHtml(row.game || "Game unavailable")}</span><span>${escapeHtml(row.inning || "Inning unavailable")}</span><span>vs ${escapeHtml(row.pitcher || "pitcher unavailable")}</span><span>${escapeHtml(valueOrDash(row.distance, " ft"))}</span><span>${escapeHtml(valueOrDash(row.exitVelocity, " mph EV"))}</span><span>${escapeHtml(valueOrDash(row.launchAngle, "° LA"))}</span></div></article>`).join("")}</div>`;
+}
+
+function openFavoriteDetails(favorite) {
+  const isPitcher = favorite.entity_type === "pitcher";
+  const allEvents = collectedEvents();
+  const rows = allEvents.filter(row => isPitcher ? samePitcher(row, favorite) : samePlayer(row, favorite));
+  const historicalHomeRuns = collectedHomeRuns().filter(row => isPitcher ? samePitcher(row, favorite) : samePlayer(row, favorite));
+  const homeRuns = uniqueRows([...rows.filter(row => row.category === "home_run"), ...historicalHomeRuns]);
+  const playerCard = !isPitcher ? detailData.playerCards.find(row => samePlayer(row, favorite)) : null;
+  const airOuts = rows.filter(row => ["flyout", "lineout", "pop_out"].includes(row.category)).length;
+  const sacFlies = rows.filter(row => row.category === "sac_fly").length;
+  const closeCalls = rows.filter(row => row.isCloseCall).length;
+  const gameLine = playerCard
+    ? `${playerCard.team || favorite.team_name || "Team unavailable"} vs ${playerCard.opponent || "opponent TBD"} · ${playerCard.opposingPitcher ? `vs ${playerCard.opposingPitcher}` : "pitcher TBD"}`
+    : catalog.find(item => item.entityType === favorite.entity_type && String(item.externalId) === String(favorite.external_id))?.context || "No current scheduled-game context is available.";
+
+  elements.detailTitle.textContent = favorite.display_name;
+  elements.detailBody.innerHTML = `
+    <section class="favorite-detail-summary">
+      <span class="favorite-card-type">${escapeHtml(favorite.sport)} ${escapeHtml(favorite.entity_type)}</span>
+      <p>${escapeHtml(gameLine)}</p>
+      ${playerCard ? `<p class="favorite-lineup-note">${escapeHtml(playerCard.lineupStatus || "Lineup status unavailable")} · Season ${escapeHtml(valueOrDash(playerCard.season?.hr))} HR · Last 7 ${escapeHtml(valueOrDash(playerCard.last7?.hr))} HR</p>` : ""}
+    </section>
+    <div class="favorite-detail-metrics">
+      ${metric(isPitcher ? "HR allowed in tracked feed" : "Home runs", homeRuns.length)}
+      ${metric(isPitcher ? "Air outs induced" : "Air outs", airOuts)}
+      ${metric(isPitcher ? "Sac flies allowed" : "Sac flies", sacFlies)}
+      ${metric("Close calls", closeCalls)}
+    </div>
+    <div class="favorite-detail-definition"><strong>Close call rule</strong><span>A verified non-home-run airborne ball with an MLB-tracked distance of at least 350 feet. Missing distance is never estimated.</span></div>
+    <section class="favorite-detail-events"><h3>Verified recent events</h3>${renderEventRows(uniqueRows([...rows, ...homeRuns]).sort((a, b) => String(b.endTime || b.date || "").localeCompare(String(a.endTime || a.date || ""))))}</section>`;
+
+  if (typeof elements.detailDialog.showModal === "function") elements.detailDialog.showModal();
+  else elements.detailDialog.setAttribute("open", "");
 }
 
 async function refreshFavorites() {
@@ -294,11 +424,22 @@ elements.results.addEventListener("click", async event => {
 });
 
 elements.list.addEventListener("click", async event => {
+  const openButton = event.target.closest("[data-open-favorite]");
+  if (openButton) {
+    const favorite = favorites.find(item => String(item.id) === String(openButton.dataset.openFavorite));
+    if (favorite) openFavoriteDetails(favorite);
+    return;
+  }
   const button = event.target.closest("[data-remove-favorite]");
   if (!button) return;
   button.disabled = true;
   try { await window.TSLAccount.removeFavorite(Number(button.dataset.removeFavorite)); await refreshFavorites(); }
   catch (error) { button.disabled = false; button.textContent = error.message; }
+});
+
+elements.detailClose.addEventListener("click", () => elements.detailDialog.close());
+elements.detailDialog.addEventListener("click", event => {
+  if (event.target === elements.detailDialog) elements.detailDialog.close();
 });
 
 window.addEventListener("tsl-account-ready", event => showSession(event.detail.session));
