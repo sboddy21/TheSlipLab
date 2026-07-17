@@ -124,6 +124,7 @@ function validatePitchDamageCache(expectedDate) {
 function validateHealthStatus(expectedDate) {
   const health = readJson(outputPath("health_status.json"));
   const updatedAt = Date.parse(health.updatedAt);
+  const generatedAt = Date.parse(health.generatedAt);
   const games = readJson(outputPath("mlb_games_today.json"));
   const noGamesScheduled = games.date === expectedDate
     && Array.isArray(games.games)
@@ -140,6 +141,36 @@ function validateHealthStatus(expectedDate) {
 
   if (health.source !== "mlb_fast_refresh") {
     throw new Error(`health_status.json has unexpected source ${health.source || "missing"}`);
+  }
+
+  if (health.slateDate !== expectedDate) {
+    throw new Error(`health_status.json monitoring slate is ${health.slateDate || "missing"}; expected ${expectedDate}`);
+  }
+
+  const monitoring = health.monitoring || {};
+  const expectedState = noGamesScheduled ? "closed" : "live";
+  const checkedAt = Date.parse(monitoring.checkedAt);
+  const lastSuccessfulAt = Date.parse(monitoring.lastSuccessfulAt);
+  const freshUntil = Date.parse(monitoring.freshUntil);
+  if (monitoring.state !== expectedState) {
+    throw new Error(`health_status.json monitoring state is ${monitoring.state || "missing"}; expected ${expectedState}`);
+  }
+  if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
+    throw new Error("health_status.json monitoring timestamps do not identify the completed refresh");
+  }
+  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+    throw new Error("health_status.json monitoring freshness window is invalid");
+  }
+
+  const requiredArtifacts = ["games", "playerPool", "hrBoard", "matchups", "decision", "weather"];
+  for (const key of requiredArtifacts) {
+    const artifact = health.artifacts?.[key];
+    if (!artifact || artifact.required !== true || artifact.freshness !== "current") {
+      throw new Error(`health_status.json has invalid monitoring metadata for ${key}`);
+    }
+    if (!artifact.file || !Number.isFinite(Date.parse(artifact.timestamp)) || !Number.isFinite(artifact.ageSeconds)) {
+      throw new Error(`health_status.json has incomplete artifact monitoring metadata for ${key}`);
+    }
   }
 
   if (!Number.isFinite(updatedAt) || updatedAt < REFRESH_STARTED_AT - 1000) {
@@ -505,6 +536,8 @@ const requiredOutputs = [
 console.log("");
 console.log("THE SLIP LAB FAST REFRESH");
 console.log("Time:", new Date().toISOString());
+
+run("Health Status: Updating", "SL_HEALTH_STATE=updating node scripts/build_health_status.js");
 
 for (const [label, command] of steps) {
   run(label, command);
