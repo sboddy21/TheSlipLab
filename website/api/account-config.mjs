@@ -12,7 +12,7 @@ function firstAvailable(names) {
   return names.map(name => process.env[name]).find(Boolean) || "";
 }
 
-function handler(request, response) {
+export default function handler(request, response) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     return response.status(405).json({ error: "Method not allowed" });
@@ -32,5 +32,3 @@ function handler(request, response) {
 
   return response.status(200).json({ url, publishableKey });
 }
-
-module.exports = handler;
