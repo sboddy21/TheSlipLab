@@ -16,6 +16,7 @@
   initAnalytics();
 
   const items = [
+    ["Sign In","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Lab Notes","./blog.html",["/blog.html","/blog-hr-shortlist.html","/blog-pitcher-vulnerability.html","/blog-signal-stack.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
@@ -70,7 +71,11 @@
       const a = document.createElement("a");
       a.href = href;
       a.textContent = label;
-      if (activePaths.includes(path)) a.className = "active";
+      if (href === "./account.html") {
+        a.dataset.tslAccountLink = "true";
+        a.classList.add("tsl-account-link");
+      }
+      if (activePaths.includes(path)) a.classList.add("active");
       nav.appendChild(a);
     });
 
@@ -84,6 +89,13 @@
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
     document.body.insertBefore(buildHeader(), document.body.firstChild);
+    if (!document.querySelector('script[data-tsl-account-client]')) {
+      const accountScript = document.createElement("script");
+      accountScript.type = "module";
+      accountScript.src = "./assets/account-client.js";
+      accountScript.dataset.tslAccountClient = "true";
+      document.head.appendChild(accountScript);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
