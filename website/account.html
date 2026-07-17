@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Sign in to The Slip Lab and save your favorite MLB players and pitchers." />
+  <title>My Account | The Slip Lab</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="stylesheet" href="./assets/site-header.css" />
+  <link rel="stylesheet" href="./assets/account.css" />
+  <script defer src="./assets/site-header.js"></script>
+</head>
+<body class="account-page tsl-editorial">
+  <main class="account-shell">
+    <div class="account-eyebrow">Optional Slip Lab account</div>
+    <h1 class="account-title">Save your board.<em>Follow your players.</em></h1>
+    <p class="account-intro">The live MLB tools remain free to browse. Sign in only if you want a private list of players and pitchers to revisit each day.</p>
+
+    <section class="account-panel" aria-labelledby="accountHeading">
+      <div class="account-panel-head">
+        <h2 id="accountHeading">Account access</h2>
+        <span class="account-status" id="accountStatus">Connecting</span>
+      </div>
+      <div class="account-panel-body">
+        <div id="signedOutPanel">
+          <form class="account-form" id="magicLinkForm">
+            <label for="accountEmail">Email address</label>
+            <input id="accountEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            <button class="account-button" type="submit">Email my sign-in link</button>
+          </form>
+          <p class="account-message" id="signInMessage" aria-live="polite">No password required. We will send a secure sign-in link to this address.</p>
+        </div>
+
+        <div id="signedInPanel" hidden>
+          <div class="account-user-row">
+            <div><strong>Your Slip Lab board</strong><span id="accountEmailDisplay"></span></div>
+            <button class="account-button secondary" id="signOutButton" type="button">Sign out</button>
+          </div>
+
+          <div class="favorites-layout">
+            <section class="favorites-section" aria-labelledby="findFavoritesHeading">
+              <h3 id="findFavoritesHeading">Find today’s MLB players</h3>
+              <p>Search the current live player pool. Pitchers from today’s scheduled matchups are included.</p>
+              <input class="favorite-search" id="favoriteSearch" type="search" placeholder="Search player, pitcher, or team" autocomplete="off" />
+              <div class="favorite-search-results" id="favoriteSearchResults"></div>
+            </section>
+            <section class="favorites-section" aria-labelledby="savedFavoritesHeading">
+              <h3 id="savedFavoritesHeading">Saved favorites</h3>
+              <p id="favoritesSummary">Your private favorites will appear here.</p>
+              <div class="favorite-list" id="favoriteList"></div>
+            </section>
+          </div>
+        </div>
+        <p class="account-private-note">Your saved list is private. The database uses row-level security so an authenticated user can read and change only their own favorites.</p>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="./assets/account-page.js"></script>
+</body>
+</html>
