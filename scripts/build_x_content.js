@@ -421,8 +421,21 @@ Which tells you more about a hitter going forward: peak exit velocity, distance,
 const selected = [];
 for (const slot of ["morning", "midday", "afternoon", "pregame", "evening", "overnight"]) {
   const choices = candidates.filter(candidate => candidate.slot === slot).sort((a, b) => b.weight - a.weight);
-  const fresh = choices.find(candidate => !recentPosts.some(post => similarity(candidate.text, post.text || "") >= 0.64));
-  if (fresh) selected.push(fresh);
+  const scored = choices.map(candidate => ({
+    candidate,
+    similarity: recentPosts.reduce((highest, post) => Math.max(highest, similarity(candidate.text, post.text || "")), 0)
+  }));
+  const fresh = scored.find(item => item.similarity < 0.64);
+  const leastRepetitive = scored.slice().sort((a, b) => a.similarity - b.similarity || b.candidate.weight - a.candidate.weight)[0];
+  const choice = fresh || leastRepetitive;
+
+  if (choice) {
+    selected.push({
+      ...choice.candidate,
+      contentSelection: fresh ? "fresh_language" : "least_repetitive_live_story",
+      recentSimilarity: Number(choice.similarity.toFixed(3))
+    });
+  }
 }
 
 const output = {
@@ -441,7 +454,7 @@ const output = {
     "One strongest story per daypart",
     "Every metric comes from a current production JSON input",
     "Results are not described as predictions without pregame evidence",
-    "Recent post history blocks highly similar language",
+    "Recent post history prefers fresh language and falls back to the least-repetitive current live story",
     "Website links appear selectively rather than in every post"
   ],
   posts: selected,

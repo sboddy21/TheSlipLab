@@ -62,19 +62,32 @@ jobs:
         run: |
           SLOT="${REQUESTED_SLOT:-auto}"
 
-          if [ "$SLOT" = "auto" ] && { [ "$SCHEDULE_EXPRESSION" = "30 5 * * *" ] || [ "$SCHEDULE_EXPRESSION" = "30 6 * * *" ]; }; then
-            EASTERN_OFFSET=$(node -e "const name=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',timeZoneName:'shortOffset'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';console.log(name);")
+          if [ "$SLOT" = "auto" ]; then
+            case "$SCHEDULE_EXPRESSION" in
+              "35 13 * * *") SLOT="morning" ;;
+              "5 16 * * *") SLOT="midday" ;;
+              "5 19 * * *") SLOT="afternoon" ;;
+              "5 22 * * *") SLOT="pregame" ;;
+              "30 2 * * *") SLOT="evening" ;;
+              "30 5 * * *"|"30 6 * * *")
+                EASTERN_OFFSET=$(node -e "const name=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',timeZoneName:'shortOffset'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';console.log(name);")
 
-            if { [ "$SCHEDULE_EXPRESSION" = "30 5 * * *" ] && [ "$EASTERN_OFFSET" = "GMT-4" ]; } || { [ "$SCHEDULE_EXPRESSION" = "30 6 * * *" ] && [ "$EASTERN_OFFSET" = "GMT-5" ]; }; then
-              SLOT="overnight"
-            else
-              SLOT="closed"
-            fi
+                if { [ "$SCHEDULE_EXPRESSION" = "30 5 * * *" ] && [ "$EASTERN_OFFSET" = "GMT-4" ]; } || { [ "$SCHEDULE_EXPRESSION" = "30 6 * * *" ] && [ "$EASTERN_OFFSET" = "GMT-5" ]; }; then
+                  SLOT="overnight"
+                else
+                  SLOT="closed"
+                fi
+                ;;
+              "") SLOT="" ;;
+              *)
+                echo "Unknown X posting schedule: $SCHEDULE_EXPRESSION"
+                exit 1
+                ;;
+            esac
           fi
 
-          [ "$SLOT" = "auto" ] && SLOT=""
           echo "X_SLOT_OVERRIDE=$SLOT" >> "$GITHUB_ENV"
-          echo "Resolved posting slot: ${SLOT:-automatic}"
+          echo "Resolved posting slot: ${SLOT:-automatic} (schedule: ${SCHEDULE_EXPRESSION:-manual})"
 
       - name: Refresh current MLB inputs
         if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
