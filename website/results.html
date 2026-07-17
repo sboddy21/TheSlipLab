@@ -605,8 +605,8 @@
 }
 
 </style>
-  <link rel="stylesheet" href="hr_results_calendar.css?v=20260530">
   <link rel="stylesheet" href="./assets/site-header.css">
+  <link rel="stylesheet" href="hr_results_calendar.css?v=20260717">
   <script defer src="./assets/site-header.js"></script>
 </head>
 
@@ -632,35 +632,42 @@
 
 <main class="wrap">
   <div class="report-line"><span>Results ledger</span><span>Verified MLB outcomes</span></div>
-  <section class="top-row">
-    <div>
+  <section class="top-row results-hero">
+    <div class="results-hero-copy">
       <div class="eyebrow" id="dateLabel">HR Results</div>
-      <h1 class="title">HR Results</h1>
-      <p class="sub">
-        Every home run hit on this slate with opposing pitcher, matchup grade, power signals, and Slip Lab tags.
-      </p>
+      <h1 class="title">The outcome report.</h1>
+      <p class="sub">Every verified home run, the pitch that left the yard, and the pregame signals that were already on the board.</p>
     </div>
-    <div class="date-box" id="dateBox">Loading</div>
+    <div class="results-date-panel">
+      <span>Report date</span>
+      <strong class="date-box" id="dateBox">Loading</strong>
+      <small id="resultsSourceNote">Loading live results</small>
+    </div>
   </section>
 
-  <section class="summary">
-    <div class="summary-top">
-      <div class="big-count" id="hrCount">0</div>
-      <div class="summary-label">home runs on this date</div>
-      <div class="milestone" id="milestone">0 tagged</div>
+  <section class="results-overview" aria-labelledby="resultsOverviewTitle">
+    <div class="section-heading">
+      <div><span>01 / Daily audit</span><h2 id="resultsOverviewTitle">What happened.</h2></div>
+      <p>Outcome totals and the model signals attached before first pitch.</p>
     </div>
 
-    <div class="bar">
-      <div class="bar-fill" id="barFill" style="width:0%"></div>
-    </div>
+    <div class="summary">
+      <div class="summary-top">
+        <div class="big-count" id="hrCount">0</div>
+        <div class="summary-label">home runs on this date</div>
+        <div class="milestone" id="milestone">0 tagged</div>
+      </div>
 
-    <div class="summary-grid">
-      <div><div class="mini-label">Strong</div><div class="mini-value" id="strongCount">0</div><div class="mini-sub" id="strongPct">0%</div></div>
-      <div><div class="mini-label">Mod.</div><div class="mini-value" id="modCount">0</div><div class="mini-sub" id="modPct">0%</div></div>
-      <div><div class="mini-label">Hot</div><div class="mini-value" id="hotCount">0</div><div class="mini-sub" id="hotPct">0%</div></div>
-      <div><div class="mini-label">Danger</div><div class="mini-value" id="dangerCount">0</div><div class="mini-sub" id="dangerPct">0%</div></div>
-      <div><div class="mini-label">Top 30</div><div class="mini-value" id="topCount">0</div><div class="mini-sub" id="topPct">0%</div></div>
-      <div><div class="mini-label">Avg Sig.</div><div class="mini-value" id="avgSig">0.0</div><div class="mini-sub">per hitter</div></div>
+      <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+
+      <div class="summary-grid">
+        <div><div class="mini-label">Strong</div><div class="mini-value" id="strongCount">0</div><div class="mini-sub" id="strongPct">0%</div></div>
+        <div><div class="mini-label">Moderate</div><div class="mini-value" id="modCount">0</div><div class="mini-sub" id="modPct">0%</div></div>
+        <div><div class="mini-label">Matchup edge</div><div class="mini-value" id="hotCount">0</div><div class="mini-sub" id="hotPct">0%</div></div>
+        <div><div class="mini-label">Pitcher danger</div><div class="mini-value" id="dangerCount">0</div><div class="mini-sub" id="dangerPct">0%</div></div>
+        <div><div class="mini-label">Top 30</div><div class="mini-value" id="topCount">0</div><div class="mini-sub" id="topPct">0%</div></div>
+        <div><div class="mini-label">Avg. signals</div><div class="mini-value" id="avgSig">0.0</div><div class="mini-sub">per hitter</div></div>
+      </div>
     </div>
   </section>
 
@@ -689,6 +696,12 @@
       <div class="tracker-sub">Strong model tags</div>
     </div>
   </div>
+
+  <section class="results-notables" aria-labelledby="resultsNotablesTitle">
+    <div class="section-heading compact">
+      <div><span>02 / Notable outcomes</span><h2 id="resultsNotablesTitle">The swings that mattered.</h2></div>
+      <p>Game leaders and the strongest pregame receipts.</p>
+    </div>
 
   <div class="leader-grid">
     <div class="leader-card">
@@ -734,10 +747,20 @@
     <div class="hr-leaders" id="hrLeaders"></div>
 
   </div>
+  </section>
 
-  <div class="search-wrap">
-    <input class="search-box" id="resultSearch" placeholder="Search batter, team, pitcher, pitch type..." />
-  </div>
+  <section id="hr-results-calendar" class="results-archive" aria-label="Historical home run results"></section>
+
+  <section class="results-ledger" aria-labelledby="resultsLedgerTitle">
+    <div class="section-heading compact">
+      <div><span>04 / Full ledger</span><h2 id="resultsLedgerTitle">Every verified homer.</h2></div>
+      <p>Open any row for pitch location, weather, park, umpire, and model context.</p>
+    </div>
+
+    <div class="search-wrap">
+      <label for="resultSearch">Search the report</label>
+      <input class="search-box" id="resultSearch" placeholder="Batter, team, pitcher or pitch type" />
+    </div>
 
   <div class="tabs">
     <button class="tab active" data-filter="all" id="allTab">All HRs</button>
@@ -774,6 +797,7 @@
       <tbody id="tbody"></tbody>
     </table>
   </div>
+  </section>
 </main>
 
 <script src="/js/player-tags.js"></script>
@@ -1404,6 +1428,18 @@ async function load(){
 
   document.getElementById("dateBox").textContent = clean(json.date);
   document.getElementById("dateLabel").textContent = clean(json.mode || "HR Results");
+  const sourceNote = document.getElementById("resultsSourceNote");
+  if(sourceNote){
+    const finalGames = n(json.finalGames);
+    const liveGames = n(json.liveGames);
+    sourceNote.textContent = resultsSource === "previous"
+      ? `Previous completed slate • ${finalGames || n(json.checkedGames)} games`
+      : liveGames > 0
+        ? `Live report • ${liveGames} game${liveGames === 1 ? "" : "s"} in progress`
+        : finalGames > 0
+          ? `Final report • ${finalGames} completed game${finalGames === 1 ? "" : "s"}`
+          : "Today’s report will populate as games begin";
+  }
 
   render();
 }
@@ -1433,7 +1469,7 @@ load().catch(err => {
 });
 </script>
 
-  <script src="hr_results_calendar.js?v=20260530"></script>
+  <script src="hr_results_calendar.js?v=20260717"></script>
   <script src="./health-widget.js?v=2"></script>
 </body>
 </html>
