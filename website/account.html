@@ -23,12 +23,55 @@
       </div>
       <div class="account-panel-body">
         <div id="signedOutPanel">
-          <form class="account-form" id="magicLinkForm">
-            <label for="accountEmail">Email address</label>
-            <input id="accountEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
-            <button class="account-button" type="submit">Email my sign-in link</button>
+          <div class="account-auth-tabs" role="tablist" aria-label="Account access options">
+            <button class="account-auth-tab active" id="signInTab" type="button" role="tab" aria-selected="true" aria-controls="signInForm">Sign in</button>
+            <button class="account-auth-tab" id="signUpTab" type="button" role="tab" aria-selected="false" aria-controls="signUpForm">Create account</button>
+          </div>
+
+          <form class="account-form" id="signInForm">
+            <label for="signInEmail">Email address</label>
+            <input id="signInEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            <label for="signInPassword">Password</label>
+            <input id="signInPassword" name="password" type="password" autocomplete="current-password" minlength="8" required placeholder="Your password" />
+            <button class="account-button" type="submit">Sign in</button>
+            <button class="account-text-button" id="showResetButton" type="button">Forgot password?</button>
           </form>
-          <p class="account-message" id="signInMessage" aria-live="polite">No password required. We will send a secure sign-in link to this address.</p>
+
+          <form class="account-form" id="signUpForm" hidden>
+            <label for="signUpEmail">Email address</label>
+            <input id="signUpEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            <label for="signUpPassword">Create password</label>
+            <input id="signUpPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters" />
+            <label for="signUpPasswordConfirm">Confirm password</label>
+            <input id="signUpPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter the password again" />
+            <button class="account-button" type="submit">Create account</button>
+          </form>
+
+          <form class="account-form account-reset-form" id="resetRequestForm" hidden>
+            <div class="account-form-heading">
+              <strong>Reset your password</strong>
+              <span>We will email a secure recovery link to your account address.</span>
+            </div>
+            <label for="resetEmail">Email address</label>
+            <input id="resetEmail" name="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+            <button class="account-button" type="submit">Email recovery link</button>
+            <button class="account-text-button" id="cancelResetButton" type="button">Back to sign in</button>
+          </form>
+
+          <form class="account-form account-reset-form" id="newPasswordForm" hidden>
+            <div class="account-form-heading">
+              <strong>Choose a new password</strong>
+              <span>Your recovery link was verified. Enter the new password below.</span>
+            </div>
+            <label for="newPassword">New password</label>
+            <input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="8" required placeholder="At least 8 characters" />
+            <label for="newPasswordConfirm">Confirm new password</label>
+            <input id="newPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required placeholder="Enter the password again" />
+            <button class="account-button" type="submit">Save new password</button>
+          </form>
+
+          <p class="account-message" id="signInMessage" aria-live="polite">Sign in with your email and password. New here? Create a free account.</p>
+          <p class="account-auth-note">Previously used a magic link? Choose <strong>Forgot password?</strong> once to create a password for the same account.</p>
         </div>
 
         <div id="signedInPanel" hidden>

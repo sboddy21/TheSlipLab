@@ -10,14 +10,25 @@ body.account-page main.account-shell{width:min(1180px,calc(100% - 40px));margin:
 .account-panel-head h2{margin:0;font:700 26px/1 Georgia,"Times New Roman",serif}
 .account-status{font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
 .account-panel-body{padding:24px}
+.account-auth-tabs{display:flex;gap:8px;margin-bottom:18px;border-bottom:1px solid rgba(7,29,54,.25)}
+.account-auth-tab{padding:12px 18px;border:0;border-bottom:3px solid transparent;background:transparent;color:var(--account-soft);font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.account-auth-tab.active{border-color:var(--account-blue);color:var(--account-ink)}
 .account-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
 .account-form label{grid-column:1/-1;font-size:11px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
 .account-form input,.favorite-search{width:100%;min-height:48px;padding:12px 14px;border:1px solid var(--account-rule);background:#fff;color:var(--account-ink);font:700 16px Arial,sans-serif}
+.account-form input{grid-column:1/-1;box-sizing:border-box}
 .account-button{min-height:48px;padding:12px 20px;border:1px solid var(--account-ink);background:var(--account-blue);color:#fff;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.account-button:disabled{cursor:not-allowed;opacity:.58}
 .account-button.secondary{background:transparent;color:var(--account-ink)}
 .account-button.danger{border-color:#a93419;background:#a93419}
+.account-text-button{align-self:center;justify-self:start;padding:10px 4px;border:0;background:transparent;color:var(--account-blue);font-size:12px;font-weight:900;text-decoration:underline;cursor:pointer}
+.account-form-heading{grid-column:1/-1;margin-bottom:4px;padding:15px 17px;border-left:4px solid var(--account-blue);background:#ebe6d8}
+.account-form-heading strong{display:block;font:700 22px/1.1 Georgia,"Times New Roman",serif}
+.account-form-heading span{display:block;margin-top:6px;color:var(--account-soft);font-size:13px;line-height:1.45}
 .account-message{min-height:24px;margin:15px 0 0;color:var(--account-soft);font-weight:700;line-height:1.45}
 .account-message.error{color:#a93419}
+.account-auth-note{margin:8px 0 0;color:var(--account-soft);font-size:12px;line-height:1.45}
+.account-auth-note strong{color:var(--account-ink)}
 .account-user-row{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
 .account-user-row strong{display:block;font:700 28px/1.05 Georgia,"Times New Roman",serif}
 .account-user-row span{display:block;margin-top:7px;color:var(--account-soft)}
