@@ -198,6 +198,7 @@ function validatePitchDamageCache(expectedDate) {
 function validateHealthStatus(expectedDate, anchor) {
   const health = read("health_status.json");
   const updatedAt = Date.parse(health.updatedAt);
+  const generatedAt = Date.parse(health.generatedAt);
   const games = read("mlb_games_today.json");
   const noGamesScheduled = games.date === expectedDate
     && Array.isArray(games.games)
@@ -214,6 +215,36 @@ function validateHealthStatus(expectedDate, anchor) {
 
   if (health.source !== "mlb_fast_refresh") {
     fail(`health_status.json has unexpected source ${health.source || "missing"}`);
+  }
+
+  if (health.slateDate !== expectedDate) {
+    fail(`health_status.json monitoring slate is ${health.slateDate || "missing"}; expected ${expectedDate}`);
+  }
+
+  const monitoring = health.monitoring || {};
+  const expectedState = noGamesScheduled ? "closed" : "live";
+  const checkedAt = Date.parse(monitoring.checkedAt);
+  const lastSuccessfulAt = Date.parse(monitoring.lastSuccessfulAt);
+  const freshUntil = Date.parse(monitoring.freshUntil);
+  if (monitoring.state !== expectedState) {
+    fail(`health_status.json monitoring state is ${monitoring.state || "missing"}; expected ${expectedState}`);
+  }
+  if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
+    fail("health_status.json monitoring timestamps do not identify the completed refresh");
+  }
+  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+    fail("health_status.json monitoring freshness window is invalid");
+  }
+
+  const requiredArtifacts = ["games", "playerPool", "hrBoard", "matchups", "decision", "weather"];
+  for (const key of requiredArtifacts) {
+    const artifact = health.artifacts?.[key];
+    if (!artifact || artifact.required !== true || artifact.freshness !== "current") {
+      fail(`health_status.json has invalid monitoring metadata for ${key}`);
+    }
+    if (!artifact.file || !Number.isFinite(Date.parse(artifact.timestamp)) || !Number.isFinite(artifact.ageSeconds)) {
+      fail(`health_status.json has incomplete artifact monitoring metadata for ${key}`);
+    }
   }
 
   if (!Number.isFinite(updatedAt) || updatedAt < anchor - CLOCK_TOLERANCE_MS) {

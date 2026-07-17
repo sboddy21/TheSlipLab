@@ -6,6 +6,19 @@ const DATA = path.join(ROOT, "website", "data");
 const OUT = path.join(DATA, "health_status.json");
 const MAX_REFRESH_AGE_MS = 15 * 60 * 1000;
 const CLOCK_TOLERANCE_MS = 1000;
+const requestedState = String(process.env.SL_HEALTH_STATE || "").trim().toLowerCase();
+
+function previousSuccessfulAt() {
+  try {
+    if (!fs.existsSync(OUT)) return null;
+    const previous = JSON.parse(fs.readFileSync(OUT, "utf8"));
+    const value = previous.monitoring?.lastSuccessfulAt
+      || (previous.status === "healthy" ? previous.generatedAt : null);
+    return Number.isFinite(Date.parse(value)) ? value : null;
+  } catch {
+    return null;
+  }
+}
 
 function todayEastern() {
   return new Intl.DateTimeFormat("en-CA", {
@@ -48,6 +61,21 @@ function embeddedTimestamp(artifact, fields) {
   return NaN;
 }
 
+function timestampDetails(artifact, fields) {
+  for (const field of fields) {
+    const value = artifact.data?.[field];
+    if (!value) continue;
+    const timestamp = Date.parse(value);
+    if (Number.isFinite(timestamp)) return { timestamp, field };
+  }
+
+  if (!fields.length && Number.isFinite(artifact.mtimeMs)) {
+    return { timestamp: artifact.mtimeMs, field: "filesystem.mtime" };
+  }
+
+  return { timestamp: NaN, field: null };
+}
+
 function count(data, keys = []) {
   if (Array.isArray(data)) return data.length;
   if (!data || typeof data !== "object") return 0;
@@ -68,6 +96,16 @@ const artifacts = {
   results: readArtifact("mlb_results.json")
 };
 
+const artifactDefinitions = {
+  games: { timestampFields: ["updatedAt"], countKeys: ["games"], dateField: "date", required: true },
+  playerPool: { timestampFields: ["updatedAt"], countKeys: ["players"], dateField: "date", required: true },
+  hrBoard: { timestampFields: [], countKeys: ["players", "rows"], dateField: "date", required: true },
+  matchups: { timestampFields: ["updatedAt"], countKeys: ["games"], dateField: "date", required: true },
+  decision: { timestampFields: ["updatedAt"], countKeys: ["allPlayers"], dateField: "pitcherDate", required: true },
+  weather: { timestampFields: ["updatedAt"], countKeys: ["games", "weather"], dateField: "date", required: true },
+  results: { timestampFields: ["generatedAt", "updatedAt"], countKeys: ["homeRuns", "results"], dateField: "date", required: false }
+};
+
 const games = artifacts.games.data || {};
 const playerPool = artifacts.playerPool.data || {};
 const hrBoard = artifacts.hrBoard.data || {};
@@ -76,6 +114,8 @@ const decision = artifacts.decision.data || {};
 const weather = artifacts.weather.data || {};
 const results = artifacts.results.data || {};
 const generatedAt = new Date().toISOString();
+const generatedAtMs = Date.parse(generatedAt);
+const priorSuccessfulAt = previousSuccessfulAt();
 const slateDate = todayEastern();
 const scheduledGames = Array.isArray(games.games) ? games.games : [];
 const noGamesScheduled = games.date === slateDate && scheduledGames.length === 0;
@@ -101,6 +141,7 @@ const payload = {
   status: "healthy",
   label: noGamesScheduled ? "CLOSED" : "LIVE",
   availability: noGamesScheduled ? "no_games_scheduled" : "live_slate",
+  slateDate,
   updatedAt,
   generatedAt,
   source: "mlb_fast_refresh",
@@ -114,6 +155,16 @@ const payload = {
     results: count(results, ["homeRuns", "results"])
   },
   sections: {},
+  artifacts: {},
+  monitoring: {
+    state: noGamesScheduled ? "closed" : "live",
+    checkedAt: generatedAt,
+    lastSuccessfulAt: generatedAt,
+    freshUntil: new Date(generatedAtMs + MAX_REFRESH_AGE_MS).toISOString(),
+    refreshWindowSeconds: Math.round(MAX_REFRESH_AGE_MS / 1000),
+    productionAgeSeconds: null
+  },
+  delays: [],
   errors: []
 };
 
@@ -125,8 +176,13 @@ const gamesAnchor = Date.parse(games.updatedAt);
 if (!Number.isFinite(gamesAnchor)) {
   payload.errors.push("mlb_games_today.json has no valid updatedAt");
 } else {
+  payload.monitoring.productionAgeSeconds = Math.max(0, Math.round((generatedAtMs - gamesAnchor) / 1000));
   if (Date.now() - gamesAnchor > MAX_REFRESH_AGE_MS) {
-    payload.errors.push("MLB production chain is older than 15 minutes");
+    payload.delays.push("MLB production chain is older than 15 minutes");
+  }
+
+  if (gamesAnchor > generatedAtMs + CLOCK_TOLERANCE_MS) {
+    payload.errors.push("mlb_games_today.json updatedAt is in the future");
   }
 
   for (const [artifact, fields] of productionArtifacts) {
@@ -135,8 +191,36 @@ if (!Number.isFinite(gamesAnchor)) {
       payload.errors.push(`${artifact.file} has no valid ${fields.join(" or ") || "filesystem timestamp"}`);
     } else if (timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) {
       payload.errors.push(`${artifact.file} predates the current production chain`);
+    } else if (timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) {
+      payload.errors.push(`${artifact.file} timestamp is in the future`);
     }
   }
+}
+
+for (const [key, definition] of Object.entries(artifactDefinitions)) {
+  const artifact = artifacts[key];
+  const details = timestampDetails(artifact, definition.timestampFields);
+  const ageSeconds = Number.isFinite(details.timestamp)
+    ? Math.round((generatedAtMs - details.timestamp) / 1000)
+    : null;
+  let freshness = "current";
+
+  if (artifact.error) freshness = "missing";
+  else if (!Number.isFinite(details.timestamp)) freshness = "invalid";
+  else if (details.timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) freshness = "future";
+  else if (definition.required && Number.isFinite(gamesAnchor) && details.timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) freshness = "stale_chain";
+  else if (ageSeconds > MAX_REFRESH_AGE_MS / 1000) freshness = "delayed";
+
+  payload.artifacts[key] = {
+    file: artifact.file,
+    required: definition.required,
+    timestamp: Number.isFinite(details.timestamp) ? new Date(details.timestamp).toISOString() : null,
+    timestampField: details.field,
+    ageSeconds,
+    rowCount: count(artifact.data, definition.countKeys),
+    slateDate: artifact.data?.[definition.dateField] || null,
+    freshness
+  };
 }
 
 const expectedDates = [
@@ -188,6 +272,20 @@ if (!noGamesScheduled) {
 if (payload.errors.length) {
   payload.status = "error";
   payload.label = "CHECK";
+  payload.monitoring.state = "check";
+  payload.monitoring.lastSuccessfulAt = priorSuccessfulAt;
+} else if (payload.delays.length) {
+  payload.status = "delayed";
+  payload.label = "DELAYED";
+  payload.monitoring.state = "delayed";
+  payload.monitoring.lastSuccessfulAt = priorSuccessfulAt;
+}
+
+if (requestedState === "updating") {
+  payload.status = "updating";
+  payload.label = "UPDATING";
+  payload.monitoring.state = "updating";
+  payload.monitoring.lastSuccessfulAt = priorSuccessfulAt;
 }
 
 fs.writeFileSync(OUT, JSON.stringify(payload, null, 2));
