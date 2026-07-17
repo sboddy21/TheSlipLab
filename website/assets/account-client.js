@@ -48,31 +48,60 @@ function updateAccountLinks(nextSession) {
 async function initialize() {
   try {
     const client = await getClient();
+
+    client.auth.onAuthStateChange((event, nextSession) => {
+      session = nextSession;
+      updateAccountLinks(session);
+      if (event === "PASSWORD_RECOVERY") {
+        notify("tsl-account-recovery", { session });
+        return;
+      }
+      notify("tsl-account-changed", { session });
+    });
+
     const { data, error } = await client.auth.getSession();
     if (error) throw error;
     session = data.session;
     updateAccountLinks(session);
     notify("tsl-account-ready", { session });
-
-    client.auth.onAuthStateChange((_event, nextSession) => {
-      session = nextSession;
-      updateAccountLinks(session);
-      notify("tsl-account-changed", { session });
-    });
   } catch (error) {
     updateAccountLinks(null);
     notify("tsl-account-error", { message: error.message });
   }
 }
 
-async function signInWithEmail(email) {
+async function signInWithPassword(email, password) {
   const client = await getClient();
-  const redirectTo = `${window.location.origin}/account.html`;
-  const { error } = await client.auth.signInWithOtp({
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+async function signUpWithPassword(email, password) {
+  const client = await getClient();
+  const emailRedirectTo = `${window.location.origin}/account.html`;
+  const { data, error } = await client.auth.signUp({
     email,
-    options: { emailRedirectTo: redirectTo }
+    password,
+    options: { emailRedirectTo }
   });
   if (error) throw error;
+  return data;
+}
+
+async function requestPasswordReset(email) {
+  const client = await getClient();
+  const redirectTo = `${window.location.origin}/account.html`;
+  const { data, error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+  if (error) throw error;
+  return data;
+}
+
+async function updatePassword(password) {
+  const client = await getClient();
+  const { data, error } = await client.auth.updateUser({ password });
+  if (error) throw error;
+  return data;
 }
 
 async function signOut() {
@@ -122,7 +151,10 @@ async function removeFavorite(id) {
 window.TSLAccount = {
   get session() { return session; },
   getClient,
-  signInWithEmail,
+  signInWithPassword,
+  signUpWithPassword,
+  requestPasswordReset,
+  updatePassword,
   signOut,
   listFavorites,
   addFavorite,
