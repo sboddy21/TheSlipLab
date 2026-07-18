@@ -25,6 +25,9 @@ const elements = {
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
   summary: document.getElementById("favoritesSummary"),
+  dailyLabSummary: document.getElementById("dailyLabSummary"),
+  dailyLabList: document.getElementById("dailyLabList"),
+  dailyLabFreshness: document.getElementById("dailyLabFreshness"),
   detailDialog: document.getElementById("favoriteDetailDialog"),
   detailTitle: document.getElementById("favoriteDetailTitle"),
   detailBody: document.getElementById("favoriteDetailBody"),
@@ -36,9 +39,14 @@ let favorites = [];
 let recoveryMode = false;
 let detailData = {
   playerCards: [],
+  decisionPlayers: [],
+  reasoningReports: [],
+  homeRunBoard: [],
+  matchups: [],
   currentResults: {},
   previousResults: {},
-  historyDays: []
+  historyDays: [],
+  dailyTimestamps: []
 };
 
 function escapeHtml(value) {
@@ -129,10 +137,13 @@ function normalizeCatalog(playerPool, matchups) {
 
 async function loadCatalog() {
   const version = Date.now();
-  const [playerPool, matchups, playerCards, currentResults, previousResults, history] = await Promise.all([
+  const [playerPool, matchups, playerCards, decisionCenter, reasoning, homeRunBoard, currentResults, previousResults, history] = await Promise.all([
     fetchOptionalJSON(`./data/mlb_player_pool.json?v=${version}`, { players: [] }),
     fetchOptionalJSON(`./data/game_pitcher_matchups.json?v=${version}`, { games: [] }),
     fetchOptionalJSON(`./data/player_card_data.json?v=${version}`, { players: [] }),
+    fetchOptionalJSON(`./data/hr_decision_center.json?v=${version}`, { allPlayers: [] }),
+    fetchOptionalJSON(`./data/ai_reasoning_engine.json?v=${version}`, { reports: [] }),
+    fetchOptionalJSON(`./data/mlb_home_runs.json?v=${version}`, []),
     fetchOptionalJSON(`./data/mlb_results.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
     fetchOptionalJSON(`./data/mlb_results_previous.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
     fetchOptionalJSON(`./data/hr_results_history.json?v=${version}`, { days: [] })
@@ -140,9 +151,15 @@ async function loadCatalog() {
   catalog = normalizeCatalog(playerPool, matchups);
   detailData = {
     playerCards: Array.isArray(playerCards.players) ? playerCards.players : [],
+    decisionPlayers: Array.isArray(decisionCenter.allPlayers) ? decisionCenter.allPlayers : [],
+    reasoningReports: Array.isArray(reasoning.reports) ? reasoning.reports : [],
+    homeRunBoard: Array.isArray(homeRunBoard) ? homeRunBoard : [],
+    matchups: Array.isArray(matchups.games) ? matchups.games : [],
     currentResults,
     previousResults,
-    historyDays: Array.isArray(history.days) ? history.days : []
+    historyDays: Array.isArray(history.days) ? history.days : [],
+    dailyTimestamps: [playerPool.fetchedAt, playerPool.updatedAt, matchups.updatedAt, playerCards.updatedAt, decisionCenter.updatedAt, reasoning.updatedAt, currentResults.updatedAt]
+      .filter(Boolean)
   };
 }
 
@@ -176,6 +193,7 @@ function renderSearchResults() {
 function renderFavorites() {
   elements.summary.textContent = favorites.length === 1 ? "1 saved favorite" : `${favorites.length} saved favorites`;
   elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
+  renderDailyLab();
   renderSearchResults();
 }
 
@@ -195,6 +213,154 @@ function samePitcher(row, favorite) {
   const favoriteId = String(favorite?.external_id || "").trim();
   if (rowId && favoriteId) return rowId === favoriteId;
   return normalizedName(row?.pitcher) === normalizedName(favorite?.display_name);
+}
+
+function sameNamedEntity(row, favorite) {
+  return favorite.entity_type === "pitcher" ? samePitcher(row, favorite) : samePlayer(row, favorite);
+}
+
+function matchupPitchers(game) {
+  return [
+    game?.awayPitcher,
+    game?.homePitcher,
+    { id: game?.awayProbablePitcherId, name: game?.awayProbablePitcher, team: game?.awayTeam, opponent: game?.homeTeam },
+    { id: game?.homeProbablePitcherId, name: game?.homeProbablePitcher, team: game?.homeTeam, opponent: game?.awayTeam }
+  ].filter(Boolean);
+}
+
+function findFavoriteGame(favorite, playerCard) {
+  if (favorite.entity_type === "pitcher") {
+    return detailData.matchups.find(game => matchupPitchers(game).some(pitcher => {
+      const idMatch = pitcher.id && favorite.external_id && String(pitcher.id) === String(favorite.external_id);
+      return idMatch || normalizedName(pitcher.name || pitcher.pitcher) === normalizedName(favorite.display_name);
+    }));
+  }
+  const cardGame = normalizedName(playerCard?.game);
+  if (cardGame) {
+    const exact = detailData.matchups.find(game => [game.game, game.matchup].some(value => normalizedName(value) === cardGame));
+    if (exact) return exact;
+  }
+  const team = normalizedName(playerCard?.team || favorite.team_name);
+  const opponent = normalizedName(playerCard?.opponent);
+  return detailData.matchups.find(game => {
+    const teams = [normalizedName(game.awayTeam), normalizedName(game.homeTeam)];
+    return team && teams.includes(team) && (!opponent || teams.includes(opponent));
+  });
+}
+
+function favoriteDailyModel(favorite) {
+  const playerCard = favorite.entity_type === "player" ? detailData.playerCards.find(row => samePlayer(row, favorite)) : null;
+  const decision = favorite.entity_type === "player" ? detailData.decisionPlayers.find(row => samePlayer(row, favorite)) : null;
+  const reasoning = favorite.entity_type === "player" ? detailData.reasoningReports.find(row => samePlayer(row, favorite)) : null;
+  const board = favorite.entity_type === "player" ? detailData.homeRunBoard.find(row => samePlayer(row, favorite)) : null;
+  const game = findFavoriteGame(favorite, playerCard);
+  const pitcher = favorite.entity_type === "pitcher"
+    ? matchupPitchers(game).find(row => {
+      const idMatch = row.id && favorite.external_id && String(row.id) === String(favorite.external_id);
+      return idMatch || normalizedName(row.name || row.pitcher) === normalizedName(favorite.display_name);
+    })
+    : null;
+  const currentEvents = [
+    ...(Array.isArray(detailData.currentResults?.playerEvents) ? detailData.currentResults.playerEvents : []),
+    ...(Array.isArray(detailData.currentResults?.homeRuns) ? detailData.currentResults.homeRuns : [])
+  ].filter(row => sameNamedEntity(row, favorite));
+  return { favorite, playerCard, decision, reasoning, board, game, pitcher, currentEvents: uniqueRows(currentEvents), onSlate: Boolean(game || playerCard || decision || board) };
+}
+
+function gameStateLabel(game) {
+  if (!game) return "Off today’s slate";
+  const status = game.status || game.abstractStatus || "Scheduled";
+  if (String(game.abstractStatus).toLowerCase() === "live" && game.currentInning) {
+    return `${game.inningState || game.inningHalf || ""} ${game.currentInning}`.trim();
+  }
+  return status;
+}
+
+function formatDailyFreshness() {
+  const valid = detailData.dailyTimestamps.map(value => new Date(value)).filter(date => !Number.isNaN(date.getTime()));
+  if (!valid.length) return "Current-data timestamp unavailable";
+  const oldest = new Date(Math.min(...valid.map(date => date.getTime())));
+  return `All required inputs current through ${oldest.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`;
+}
+
+function dailyOutcome(events, isPitcher) {
+  const homeRuns = events.filter(row => row.category === "home_run" || /home run/i.test(row.event || "")).length;
+  const closeCalls = events.filter(row => row.isCloseCall).length;
+  const airOuts = events.filter(row => ["flyout", "lineout", "pop_out", "sac_fly"].includes(row.category)).length;
+  if (homeRuns) return `${homeRuns} verified HR${homeRuns === 1 ? "" : "s"}${isPitcher ? " allowed" : ""}`;
+  if (closeCalls) return `${closeCalls} verified close call${closeCalls === 1 ? "" : "s"}`;
+  if (airOuts) return `${airOuts} verified air out${airOuts === 1 ? "" : "s"}`;
+  return "No verified tracked event yet";
+}
+
+function dailyReasons(model) {
+  const reasons = [
+    ...(Array.isArray(model.decision?.reasons) ? model.decision.reasons : []),
+    ...(Array.isArray(model.reasoning?.whyToday) ? model.reasoning.whyToday : []),
+    model.reasoning?.oneLine
+  ].filter(Boolean);
+  return [...new Set(reasons)].slice(0, 2);
+}
+
+function dailyMetric(label, value) {
+  return `<div class="daily-lab-metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(valueOrDash(value))}</strong></div>`;
+}
+
+function dailySignalMarkup(signals) {
+  if (!signals.length) return "";
+  return `<div class="daily-lab-signals">${signals.slice(0, 5).map(signal => `<span>${escapeHtml(signal.emoji || "")}${signal.emoji ? " " : ""}${escapeHtml(signal.label || signal)}</span>`).join("")}</div>`;
+}
+
+function dailyPlayerCard(model) {
+  const { favorite, playerCard, decision, reasoning, board, game, currentEvents } = model;
+  const confidence = decision?.hrConfidence ?? playerCard?.model?.score ?? board?.hrConfidence;
+  const tier = decision?.tier || playerCard?.model?.tier || board?.powerTier || reasoning?.aiVerdict;
+  const lineup = decision?.lineupStatus || playerCard?.lineupStatus || "Lineup pending";
+  const opponent = playerCard?.opponent || decision?.opponent || board?.opponent;
+  const pitcher = playerCard?.opposingPitcher || decision?.opposingPitcher || decision?.pitcher || board?.opposingPitcher;
+  const signals = Array.isArray(playerCard?.slateSignals) ? playerCard.slateSignals : [];
+  const reasons = dailyReasons(model);
+  return `<article class="daily-lab-card player ${!model.onSlate ? "off-slate" : ""}">
+    <button class="daily-lab-open" type="button" data-open-daily-favorite="${favorite.id}" aria-label="Open details for ${escapeHtml(favorite.display_name)}">
+      <div class="daily-lab-card-head"><div><span class="daily-lab-type">Saved hitter</span><h4>${escapeHtml(favorite.display_name)}</h4><p>${escapeHtml(favorite.team_name || playerCard?.team || "Team unavailable")}${opponent ? ` vs ${escapeHtml(opponent)}` : ""}</p></div><span class="daily-lab-state">${escapeHtml(gameStateLabel(game))}</span></div>
+      ${model.onSlate ? `<div class="daily-lab-context"><strong>${escapeHtml(lineup)}</strong><span>${pitcher ? `Opposing pitcher: ${escapeHtml(pitcher)}` : "Opposing pitcher pending"}</span></div>
+      <div class="daily-lab-metrics">${dailyMetric("HR confidence", confidence === undefined ? "—" : `${confidence}%`)}${dailyMetric("Tier", tier)}${dailyMetric("Season HR", playerCard?.season?.hr ?? decision?.seasonHr)}${dailyMetric("Last 7 HR", playerCard?.last7?.hr)}</div>
+      <div class="daily-lab-metrics compact">${dailyMetric("Power", decision?.powerScore ?? playerCard?.model?.powerScore)}${dailyMetric("Pitch edge", decision?.pitchEdge ?? playerCard?.model?.pitchEdge)}${dailyMetric("Pitcher risk", decision?.pitcherRisk ?? playerCard?.model?.pitcherRisk)}</div>
+      ${dailySignalMarkup(signals)}
+      ${reasons.length ? `<ul class="daily-lab-reasons">${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>` : ""}
+      <div class="daily-lab-outcome">${escapeHtml(dailyOutcome(currentEvents, false))}</div>` : '<div class="daily-lab-off-slate">Saved for future slates. No current-game model values are shown.</div>'}
+      <span class="daily-lab-details">Open verified player history →</span>
+    </button>
+  </article>`;
+}
+
+function dailyPitcherCard(model) {
+  const { favorite, game, pitcher, currentEvents } = model;
+  const stats = pitcher?.stats || {};
+  return `<article class="daily-lab-card pitcher ${!model.onSlate ? "off-slate" : ""}">
+    <button class="daily-lab-open" type="button" data-open-daily-favorite="${favorite.id}" aria-label="Open details for ${escapeHtml(favorite.display_name)}">
+      <div class="daily-lab-card-head"><div><span class="daily-lab-type">Saved pitcher</span><h4>${escapeHtml(favorite.display_name)}</h4><p>${escapeHtml(favorite.team_name || pitcher?.team || "Team unavailable")}${pitcher?.opponent ? ` vs ${escapeHtml(pitcher.opponent)}` : ""}</p></div><span class="daily-lab-state">${escapeHtml(gameStateLabel(game))}</span></div>
+      ${model.onSlate ? `<div class="daily-lab-context"><strong>${escapeHtml(game?.matchup || game?.game || "Today’s matchup")}</strong><span>${escapeHtml(game?.venue || "Venue unavailable")}</span></div>
+      <div class="daily-lab-metrics">${dailyMetric("Vulnerability", pitcher?.vulnerability)}${dailyMetric("ERA", stats.era)}${dailyMetric("WHIP", stats.whip)}${dailyMetric("HR/9", stats.hrPer9)}</div>
+      <div class="daily-lab-outcome">${escapeHtml(dailyOutcome(currentEvents, true))}</div>` : '<div class="daily-lab-off-slate">Saved for future slates. No current-game pitcher values are shown.</div>'}
+      <span class="daily-lab-details">Open verified pitcher history →</span>
+    </button>
+  </article>`;
+}
+
+function renderDailyLab() {
+  if (!elements.dailyLabList || !elements.dailyLabSummary || !elements.dailyLabFreshness) return;
+  const models = favorites.map(favoriteDailyModel).sort((a, b) => Number(b.onSlate) - Number(a.onSlate) || a.favorite.entity_type.localeCompare(b.favorite.entity_type) || a.favorite.display_name.localeCompare(b.favorite.display_name));
+  const onSlate = models.filter(model => model.onSlate).length;
+  const confirmed = models.filter(model => model.decision?.confirmedLineup || /confirmed/i.test(model.playerCard?.lineupStatus || "")).length;
+  const active = models.filter(model => ["live", "final"].includes(String(model.game?.abstractStatus || "").toLowerCase())).length;
+  elements.dailyLabFreshness.textContent = formatDailyFreshness();
+  elements.dailyLabSummary.innerHTML = [
+    ["Saved", models.length], ["On slate", onSlate], ["Confirmed", confirmed], ["Live / final", active]
+  ].map(([label, value]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("");
+  elements.dailyLabList.innerHTML = models.length
+    ? models.map(model => model.favorite.entity_type === "pitcher" ? dailyPitcherCard(model) : dailyPlayerCard(model)).join("")
+    : '<div class="empty-state">Save an MLB player or pitcher to build your personalized daily board.</div>';
 }
 
 function uniqueRows(rows) {
@@ -435,6 +601,13 @@ elements.list.addEventListener("click", async event => {
   button.disabled = true;
   try { await window.TSLAccount.removeFavorite(Number(button.dataset.removeFavorite)); await refreshFavorites(); }
   catch (error) { button.disabled = false; button.textContent = error.message; }
+});
+
+elements.dailyLabList.addEventListener("click", event => {
+  const openButton = event.target.closest("[data-open-daily-favorite]");
+  if (!openButton) return;
+  const favorite = favorites.find(item => String(item.id) === String(openButton.dataset.openDailyFavorite));
+  if (favorite) openFavoriteDetails(favorite);
 });
 
 elements.detailClose.addEventListener("click", () => elements.detailDialog.close());
