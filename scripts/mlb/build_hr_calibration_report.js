@@ -1,205 +1,136 @@
 import fs from "fs";
 import path from "path";
 
-const ROOT = process.cwd();
-const DATA_DIR = path.join(ROOT, "website", "data");
+const DATA = path.join(process.cwd(), "website", "data");
+const now = new Date();
+const nowIso = now.toISOString();
+function read(name, fallback) { try { return JSON.parse(fs.readFileSync(path.join(DATA, name), "utf8")); } catch { return fallback; } }
+function arr(v) { return Array.isArray(v) ? v : []; }
+function num(v, fallback = null) { const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+function round(v, d = 2) { const n = num(v, 0); return Number(n.toFixed(d)); }
+function pct(hits, predictions) { return predictions ? round(hits / predictions * 100) : null; }
+function key(gamePk, playerId) { return `${Number(gamePk)}|${Number(playerId)}`; }
+function etDate(date = now) { return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(date); }
+function daysAgo(count) { const d = new Date(`${etDate()}T12:00:00Z`); d.setUTCDate(d.getUTCDate() - count + 1); return d.toISOString().slice(0, 10); }
 
-function readJson(file, fallback) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(DATA_DIR, file), "utf8"));
-  } catch {
-    return fallback;
-  }
+const history = read("hr_ai_history.json", { history: {} });
+const results = read("hr_results_history.json", { days: [] });
+const receipts = Object.values(history.history || {}).flatMap(arr).filter(row => row?.verifiedPregame === true);
+const resultDays = new Map(arr(results.days).map(day => [day.date, day]));
+const hrByDay = new Map();
+for (const day of arr(results.days)) {
+  const map = new Map();
+  for (const hr of arr(day.homeRuns)) map.set(key(hr.gamePk, hr.playerId), hr);
+  hrByDay.set(day.date, map);
 }
 
-function writeJson(file, data) {
-  fs.writeFileSync(
-    path.join(DATA_DIR, file),
-    JSON.stringify(data, null, 2)
-  );
+const exclusionCounts = { legacyUnverified: 0, missingIdentifiers: 0, afterFirstPitch: 0, incompleteResultDay: 0, missingProbability: 0 };
+for (const snapshots of Object.values(history.history || {})) for (const row of arr(snapshots)) if (row?.verifiedPregame !== true) exclusionCounts.legacyUnverified++;
+
+const graded = [];
+for (const receipt of receipts) {
+  if (!num(receipt.gamePk) || !num(receipt.playerId) || !receipt.slateDate) { exclusionCounts.missingIdentifiers++; continue; }
+  const snapshotMs = Date.parse(receipt.snapshotAt || receipt.timestamp || "");
+  const startMs = Date.parse(receipt.gameStartTime || "");
+  if (!Number.isFinite(snapshotMs) || !Number.isFinite(startMs) || snapshotMs >= startMs) { exclusionCounts.afterFirstPitch++; continue; }
+  const day = resultDays.get(receipt.slateDate);
+  if (!day || day.status !== "final") { exclusionCounts.incompleteResultDay++; continue; }
+  if (num(receipt.probability) === null) { exclusionCounts.missingProbability++; continue; }
+  const hr = hrByDay.get(receipt.slateDate)?.get(key(receipt.gamePk, receipt.playerId)) || null;
+  graded.push({ ...receipt, hit: Boolean(hr), result: hr });
 }
 
-function rowsOf(data) {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.players)) return data.players;
-  if (Array.isArray(data?.rows)) return data.rows;
-  if (Array.isArray(data?.homeRuns)) return data.homeRuns;
-  if (Array.isArray(data?.results)) return data.results;
-  return [];
+function basic(rows, label = null) {
+  const predictions = rows.length;
+  const hits = rows.filter(row => row.hit).length;
+  const expectedHomeRuns = round(rows.reduce((sum, row) => sum + num(row.probability, 0) / 100, 0));
+  return { ...(label ? { label } : {}), predictions, hits, hitRate: pct(hits, predictions), averageProbability: predictions ? round(rows.reduce((s, r) => s + num(r.probability, 0), 0) / predictions) : null, expectedHomeRuns };
 }
-
-function num(v) {
-  const n = Number(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function round(v, d = 2) {
-  return Number(num(v).toFixed(d));
-}
-
-function key(player, team) {
-  return `${String(player || "").trim().toLowerCase()}|${String(team || "").trim().toLowerCase()}`;
-}
-
-function playerName(row) {
-  return row.player || row.name || row.batter || row.hitter || "";
-}
-
-function teamName(row) {
-  return row.team || row.battingTeam || row.playerTeam || "";
-}
-
-function didHitHr(row) {
-  return Boolean(
-    row.did_homer === true ||
-    row.actualHr === true ||
-    row.actual_hr === true ||
-    row.hitHr === true ||
-    row.hit_hr === true ||
-    row.hr === true ||
-    num(row.homeRuns) > 0 ||
-    num(row.home_runs) > 0 ||
-    num(row.hrs) > 0
-  );
-}
-
-function tierSummary(rows, resultMap) {
-  const tiers = {};
-
+function group(rows, labelFor) {
+  const groups = new Map();
   for (const row of rows) {
-    const tier = row.probabilityTier || "UNKNOWN";
-
-    if (!tiers[tier]) {
-      tiers[tier] = {
-        tier,
-        players: 0,
-        actualHr: 0,
-        avgProbability: 0,
-        hitRate: 0
-      };
-    }
-
-    const result = resultMap.get(key(playerName(row), teamName(row)));
-    const hit = result ? didHitHr(result) : didHitHr(row);
-
-    tiers[tier].players += 1;
-    tiers[tier].actualHr += hit ? 1 : 0;
-    tiers[tier].avgProbability += num(row.realHrProbability);
+    const label = labelFor(row);
+    if (!label) continue;
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label).push(row);
   }
-
-  return Object.values(tiers).map(tier => ({
-    ...tier,
-    avgProbability: round(tier.avgProbability / Math.max(1, tier.players), 2),
-    hitRate: round((tier.actualHr / Math.max(1, tier.players)) * 100, 2)
-  }));
+  return [...groups.entries()].map(([label, values]) => basic(values, label)).sort((a, b) => b.predictions - a.predictions || a.label.localeCompare(b.label));
 }
-
-function topGroup(rows, resultMap, count) {
-  const sample = rows.slice(0, count);
-  const actualHr = sample.filter(row => {
-    const result = resultMap.get(key(playerName(row), teamName(row)));
-    return result ? didHitHr(result) : didHitHr(row);
-  }).length;
-
+function probabilityBand(row) {
+  const p = num(row.probability);
+  if (p === null) return null;
+  if (p < 5) return "0–4.9%";
+  if (p < 10) return "5–9.9%";
+  if (p < 15) return "10–14.9%";
+  if (p < 20) return "15–19.9%";
+  return "20%+";
+}
+function weatherBand(row) {
+  const score = num(row.weatherScore);
+  if (score === null) return null;
+  if (score >= 65) return "BOOST";
+  if (score <= 35) return "SUPPRESS";
+  return "NEUTRAL";
+}
+function windowReport(label, startDate) {
+  const rows = graded.filter(row => row.slateDate >= startDate);
+  const days = [...new Set(rows.map(row => row.slateDate))];
+  const daily = days.sort().map(date => {
+    const dayRows = rows.filter(row => row.slateDate === date);
+    const resultDay = resultDays.get(date);
+    return { date, ...basic(dayRows), actualSlateHomeRuns: arr(resultDay?.homeRuns).length };
+  });
   return {
-    count,
-    players: sample.length,
-    actualHr,
-    hitRate: round((actualHr / Math.max(1, sample.length)) * 100, 2),
-    avgProbability: round(
-      sample.reduce((sum, row) => sum + num(row.realHrProbability), 0) /
-        Math.max(1, sample.length),
-      2
-    )
+    label, startDate, endDate: etDate(), ...basic(rows),
+    top10: basic(rows.filter(row => num(row.probabilityRank ?? row.rank, 9999) <= 10)),
+    top30: basic(rows.filter(row => num(row.probabilityRank ?? row.rank, 9999) <= 30)),
+    probabilityBands: group(rows, probabilityBand),
+    probabilityTiers: group(rows, row => row.probabilityTier || null),
+    tags: group(rows.flatMap(row => arr(row.tags).map(tag => ({ ...row, _group: tag }))), row => row._group),
+    signals: group(rows.flatMap(row => arr(row.signals).map(signal => ({ ...row, _group: signal }))), row => row._group),
+    pitcherRiskTiers: group(rows, row => row.pitcherRiskTier || null),
+    parks: group(rows, row => row.venue || null),
+    weather: group(rows, weatherBand),
+    handedness: group(rows, row => row.batterHand && row.pitcherHand ? `${row.batterHand} vs ${row.pitcherHand}` : null),
+    daily
   };
 }
 
-function falsePositives(rows, resultMap, limit = 15) {
-  return rows
-    .filter(row => {
-      const result = resultMap.get(key(playerName(row), teamName(row)));
-      return !(result ? didHitHr(result) : didHitHr(row));
-    })
-    .slice(0, limit)
-    .map(row => ({
-      rank: row.probabilityRank,
-      player: playerName(row),
-      team: teamName(row),
-      opponent: row.opponent,
-      probability: row.realHrProbability,
-      tier: row.probabilityTier,
-      rawHrEventScore: row.rawHrEventScore
-    }));
-}
-
-function actualHrHits(rows, resultMap) {
-  return rows
-    .filter(row => {
-      const result = resultMap.get(key(playerName(row), teamName(row)));
-      return result ? didHitHr(result) : didHitHr(row);
-    })
-    .map(row => ({
-      rank: row.probabilityRank,
-      player: playerName(row),
-      team: teamName(row),
-      opponent: row.opponent,
-      probability: row.realHrProbability,
-      tier: row.probabilityTier,
-      rawHrEventScore: row.rawHrEventScore
-    }));
-}
-
-const hrRows = rowsOf(readJson("mlb_home_runs.json", []));
-const resultRows = rowsOf(readJson("mlb_results.json", []));
-
-const resultMap = new Map();
-for (const row of resultRows) {
-  resultMap.set(key(playerName(row), teamName(row)), row);
-}
-
-const sorted = [...hrRows].sort(
-  (a, b) => num(a.probabilityRank) - num(b.probabilityRank)
-);
-
-const actualHits = actualHrHits(sorted, resultMap);
+const season = Number(etDate().slice(0, 4));
+const last7Days = windowReport("Last 7 days", daysAgo(7));
+const last30Days = windowReport("Last 30 days", daysAgo(30));
+const seasonWindow = windowReport(`${season} season`, `${season}-01-01`);
+const windows = {
+  "7d": last7Days,
+  "30d": last30Days,
+  season: seasonWindow,
+  // Preserve the descriptive aliases for existing report consumers.
+  last7Days,
+  last30Days
+};
+const seasonRows = graded.filter(row => row.slateDate >= `${season}-01-01`);
+const actualHrHits = seasonRows.filter(row => row.hit).map(row => ({ receiptId: row.receiptId, date: row.slateDate, gamePk: row.gamePk, playerId: row.playerId, player: row.player, team: row.team, probability: row.probability, tier: row.probabilityTier, rank: row.probabilityRank, distance: row.result?.distance || "", exitVelocity: row.result?.exitVelocity || "" }));
 
 const report = {
-  generatedAt: new Date().toISOString(),
-  sourceRows: sorted.length,
-  resultRows: resultRows.length,
-  resultsAvailable: resultRows.length > 0,
-  summary: {
-    top10: topGroup(sorted, resultMap, 10),
-    top25: topGroup(sorted, resultMap, 25),
-    top50: topGroup(sorted, resultMap, 50),
-    fullBoard: topGroup(sorted, resultMap, sorted.length),
-    actualHrCount: actualHits.length,
-    averageProbabilityOfActualHr: round(
-      actualHits.reduce((sum, row) => sum + num(row.probability), 0) /
-        Math.max(1, actualHits.length),
-      2
-    )
-  },
-  tiers: tierSummary(sorted, resultMap),
-  actualHrHits: actualHits,
-  biggestFalsePositives: falsePositives(sorted, resultMap, 20),
-  notes: [
-    resultRows.length > 0
-      ? "Results were found and included in the calibration report."
-      : "No mlb_results.json rows were found yet, so hit rate fields will remain zero until results are available.",
-    "This report does not change the website layout.",
-    "This report only evaluates the calibrated HR probability layer."
-  ]
+  generatedAt: nowIso,
+  schemaVersion: "2.0",
+  source: "verified pregame receipts in hr_ai_history.json joined to completed days in hr_results_history.json by date + gamePk + playerId",
+  sourceRows: receipts.length,
+  resultRows: arr(results.days).reduce((sum, day) => sum + arr(day.homeRuns).length, 0),
+  resultsAvailable: arr(results.days).some(day => day.status === "final"),
+  verification: { eligibleReceipts: graded.length, exclusionCounts, join: "slateDate+gamePk+playerId", joinKey: ["slateDate", "gamePk", "playerId"], requiresSnapshotBeforeFirstPitch: true, requiresCompletedResultDay: true },
+  windows,
+  summary: { top10: windows.season.top10, top25: basic(seasonRows.filter(row => num(row.probabilityRank ?? row.rank, 9999) <= 25)), top50: basic(seasonRows.filter(row => num(row.probabilityRank ?? row.rank, 9999) <= 50)), fullBoard: basic(seasonRows), actualHrCount: actualHrHits.length, averageProbabilityOfActualHr: actualHrHits.length ? round(actualHrHits.reduce((s, r) => s + num(r.probability, 0), 0) / actualHrHits.length) : null },
+  tiers: windows.season.probabilityTiers,
+  actualHrHits,
+  longshotHits: actualHrHits.filter(row => row.tier === "LONGSHOT"),
+  biggestFalsePositives: seasonRows.filter(row => !row.hit).sort((a, b) => num(b.probability, 0) - num(a.probability, 0)).slice(0, 20).map(row => ({ receiptId: row.receiptId, date: row.slateDate, player: row.player, team: row.team, probability: row.probability, tier: row.probabilityTier, rank: row.probabilityRank })),
+  notes: ["Every displayed percentage includes its sample size in the same metric object.", "Legacy snapshots without proof of capture before first pitch are excluded.", "Incomplete result days are excluded rather than treated as misses.", "Weather bands are descriptive analysis of the stored 0–100 weather score: BOOST 65+, SUPPRESS 35 or lower, otherwise NEUTRAL."]
 };
 
-writeJson("hr_calibration_report.json", report);
-
-console.log("");
+fs.writeFileSync(path.join(DATA, "hr_calibration_report.json"), JSON.stringify(report, null, 2));
 console.log("HR CALIBRATION REPORT BUILT");
-console.log("Source rows:", report.sourceRows);
-console.log("Result rows:", report.resultRows);
-console.log("Results available:", report.resultsAvailable);
-console.log("Top 10 hit rate:", report.summary.top10.hitRate + "%");
-console.log("Top 25 hit rate:", report.summary.top25.hitRate + "%");
+console.log("Verified receipts:", receipts.length);
+console.log("Eligible graded receipts:", graded.length);
+console.log("Season hits / predictions:", report.summary.fullBoard.hits, "/", report.summary.fullBoard.predictions);
 console.log("Saved: website/data/hr_calibration_report.json");
-console.log("");

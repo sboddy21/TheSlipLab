@@ -697,9 +697,51 @@
     </div>
   </div>
 
+  <section class="model-performance" aria-labelledby="modelPerformanceTitle">
+    <div class="section-heading compact">
+      <div><span>02 / Model performance</span><h2 id="modelPerformanceTitle">Grade the call, not the result.</h2></div>
+      <p>Only frozen pregame receipts matched to final MLB results by date, game and player.</p>
+    </div>
+
+    <div class="performance-shell" id="performanceShell">
+      <div class="performance-head">
+        <div>
+          <span class="performance-kicker">Verified receipt ledger</span>
+          <strong id="performanceWindowLabel">Last 7 days</strong>
+        </div>
+        <div class="performance-tabs" role="group" aria-label="Model performance period">
+          <button class="performance-tab active" type="button" data-performance-window="7d">7 days</button>
+          <button class="performance-tab" type="button" data-performance-window="30d">30 days</button>
+          <button class="performance-tab" type="button" data-performance-window="season">Season</button>
+        </div>
+      </div>
+
+      <div class="performance-status" id="performanceStatus">Loading verified model receipts.</div>
+
+      <div class="performance-metrics" id="performanceMetrics" hidden>
+        <article><span>Verified predictions</span><strong id="performancePredictions">—</strong><small>frozen before first pitch</small></article>
+        <article><span>Home-run hits</span><strong id="performanceHits">—</strong><small id="performanceHitRate">— hit rate</small></article>
+        <article><span>Expected HR</span><strong id="performanceExpected">—</strong><small>sum of stored probabilities</small></article>
+        <article><span>Calibration gap</span><strong id="performanceGap">—</strong><small>actual minus expected HR</small></article>
+        <article><span>Top 10</span><strong id="performanceTop10">—</strong><small id="performanceTop10Sample">— verified calls</small></article>
+        <article><span>Top 30</span><strong id="performanceTop30">—</strong><small id="performanceTop30Sample">— verified calls</small></article>
+      </div>
+
+      <div class="performance-detail" id="performanceDetail" hidden>
+        <div>
+          <h3>Probability calibration</h3>
+          <p>Actual outcomes compared with the probability printed before the game.</p>
+        </div>
+        <div class="performance-band-list" id="performanceBands"></div>
+      </div>
+
+      <p class="performance-method">Legacy snapshots without proof of capture time are excluded. Incomplete result days are never counted as misses.</p>
+    </div>
+  </section>
+
   <section class="results-notables" aria-labelledby="resultsNotablesTitle">
     <div class="section-heading compact">
-      <div><span>02 / Notable outcomes</span><h2 id="resultsNotablesTitle">The swings that mattered.</h2></div>
+      <div><span>03 / Notable outcomes</span><h2 id="resultsNotablesTitle">The swings that mattered.</h2></div>
       <p>Game leaders and the strongest pregame receipts.</p>
     </div>
 
@@ -753,7 +795,7 @@
 
   <section class="results-ledger" aria-labelledby="resultsLedgerTitle">
     <div class="section-heading compact">
-      <div><span>04 / Full ledger</span><h2 id="resultsLedgerTitle">Every verified homer.</h2></div>
+      <div><span>05 / Full ledger</span><h2 id="resultsLedgerTitle">Every verified homer.</h2></div>
       <p>Open any row for pitch location, weather, park, umpire, and model context.</p>
     </div>
 
@@ -806,6 +848,8 @@ let results = [];
 let model = [];
 let contextFactors = [];
 let parkFactors = [];
+let calibrationReport = null;
+let calibrationWindow = "7d";
 let activeFilter = "all";
 let searchTerm = "";
 
@@ -814,9 +858,74 @@ function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
 function score(v){return n(v).toFixed(0)}
 function pct(v){return n(v).toFixed(1)}
 function norm(v){return String(v || "").trim().toLowerCase()}
+function escapeHtml(value){return String(value ?? "").replace(/[&<>"']/g, character => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[character]))}
+function displayNumber(value, digits = 1){
+  if(value === null || value === undefined || value === "") return "—";
+  const valueNumber = Number(value);
+  return Number.isFinite(valueNumber) ? valueNumber.toFixed(digits) : "—";
+}
+function displayRate(value){
+  if(value === null || value === undefined || value === "") return "—";
+  const valueNumber = Number(value);
+  return Number.isFinite(valueNumber) ? `${valueNumber.toFixed(1)}%` : "—";
+}
 
 function getRows(json){
   return Array.isArray(json) ? json : json.homeRuns || json.results || json.data || json.rows || [];
+}
+
+function renderModelPerformance(){
+  const status = document.getElementById("performanceStatus");
+  const metrics = document.getElementById("performanceMetrics");
+  const detail = document.getElementById("performanceDetail");
+  const reportWindow = calibrationReport?.windows?.[calibrationWindow];
+  if(!status || !metrics || !detail) return;
+
+  document.querySelectorAll("[data-performance-window]").forEach(button => {
+    button.classList.toggle("active", button.dataset.performanceWindow === calibrationWindow);
+  });
+
+  if(!calibrationReport || !reportWindow){
+    status.hidden = false;
+    status.textContent = "Verified model performance is temporarily unavailable.";
+    metrics.hidden = true;
+    detail.hidden = true;
+    return;
+  }
+
+  const label = document.getElementById("performanceWindowLabel");
+  if(label) label.textContent = reportWindow.label || "Verified period";
+
+  if(!Number(reportWindow.predictions)){
+    const saved = Number(calibrationReport.sourceRows || 0);
+    const awaiting = Number(calibrationReport.verification?.exclusionCounts?.incompleteResultDay || 0);
+    status.hidden = false;
+    status.innerHTML = `<strong>${saved.toLocaleString()} pregame receipt${saved === 1 ? "" : "s"} saved.</strong> ${awaiting ? `${awaiting.toLocaleString()} await completed game results before grading.` : "The first verified grade will appear after a completed slate is matched."}`;
+    metrics.hidden = true;
+    detail.hidden = true;
+    return;
+  }
+
+  status.hidden = true;
+  metrics.hidden = false;
+  detail.hidden = false;
+  const actual = Number(reportWindow.hits || 0);
+  const expected = Number(reportWindow.expectedHomeRuns || 0);
+  const gap = actual - expected;
+  document.getElementById("performancePredictions").textContent = Number(reportWindow.predictions).toLocaleString();
+  document.getElementById("performanceHits").textContent = actual.toLocaleString();
+  document.getElementById("performanceHitRate").textContent = `${displayRate(reportWindow.hitRate)} hit rate`;
+  document.getElementById("performanceExpected").textContent = displayNumber(expected, 2);
+  document.getElementById("performanceGap").textContent = `${gap > 0 ? "+" : ""}${displayNumber(gap, 2)}`;
+  document.getElementById("performanceTop10").textContent = displayRate(reportWindow.top10?.hitRate);
+  document.getElementById("performanceTop10Sample").textContent = `${Number(reportWindow.top10?.predictions || 0).toLocaleString()} verified calls`;
+  document.getElementById("performanceTop30").textContent = displayRate(reportWindow.top30?.hitRate);
+  document.getElementById("performanceTop30Sample").textContent = `${Number(reportWindow.top30?.predictions || 0).toLocaleString()} verified calls`;
+
+  const bands = Array.isArray(reportWindow.probabilityBands) ? reportWindow.probabilityBands : [];
+  document.getElementById("performanceBands").innerHTML = bands.length
+    ? bands.map(band => `<article><strong>${escapeHtml(band.label)}</strong><span>${displayRate(band.hitRate)} actual</span><span>${displayNumber(band.averageProbability, 1)}% forecast</span><small>n=${Number(band.predictions || 0).toLocaleString()}</small></article>`).join("")
+    : `<div class="performance-empty">No probability bands have a completed sample in this period.</div>`;
 }
 
 function contextScore(row){
@@ -1355,6 +1464,12 @@ document.addEventListener("input", e => {
 });
 
 document.addEventListener("click", e => {
+  const performanceButton = e.target.closest("[data-performance-window]");
+  if(performanceButton){
+    calibrationWindow = performanceButton.dataset.performanceWindow || "7d";
+    renderModelPerformance();
+    return;
+  }
   const btn = e.target.closest("[data-filter]");
   if(!btn) return;
   activeFilter = btn.dataset.filter || "all";
@@ -1423,6 +1538,15 @@ async function load(){
     parkFactors = [];
   }
 
+  try {
+    const calibrationRes = await fetch("./data/hr_calibration_report.json?v=" + Date.now(), { cache: "no-store" });
+    if(!calibrationRes.ok) throw new Error("Calibration report failed");
+    calibrationReport = await calibrationRes.json();
+  } catch(error) {
+    console.warn("MODEL PERFORMANCE LOAD FAILED", error);
+    calibrationReport = null;
+  }
+
   results = getRows(json);
   model = (modelJson.allPlayers || []).sort((a,b) => n(b.hrConfidence) - n(a.hrConfidence));
 
@@ -1442,6 +1566,7 @@ async function load(){
   }
 
   render();
+  renderModelPerformance();
 }
 
 load().catch(err => {

@@ -508,6 +508,233 @@ body.tsl-results-page .hr-results-empty {
   opacity: 1;
 }
 
+body.tsl-results-page .model-performance {
+  margin-top: 42px;
+}
+
+body.tsl-results-page .performance-shell {
+  border: 1px solid var(--navy, #09223d);
+  background: #fbfaf5;
+}
+
+body.tsl-results-page .performance-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 22px;
+  color: #fff;
+  background: var(--navy, #09223d);
+}
+
+body.tsl-results-page .performance-head > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+body.tsl-results-page .performance-kicker {
+  color: #aebfd0;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+}
+
+body.tsl-results-page .performance-head strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 25px;
+}
+
+body.tsl-results-page .performance-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+body.tsl-results-page .performance-tab {
+  min-height: 38px;
+  padding: 8px 13px;
+  border: 1px solid #7990a7;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+body.tsl-results-page .performance-tab.active {
+  border-color: #1769ff;
+  background: #1769ff;
+}
+
+body.tsl-results-page .performance-status {
+  margin: 22px;
+  padding: 18px;
+  border-left: 4px solid #1769ff;
+  background: #eeeadf;
+  color: #41576d;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+body.tsl-results-page .performance-status strong {
+  color: #09223d;
+}
+
+body.tsl-results-page .performance-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid #c9ced1;
+}
+
+body.tsl-results-page .performance-metrics[hidden],
+body.tsl-results-page .performance-detail[hidden],
+body.tsl-results-page .performance-status[hidden] {
+  display: none;
+}
+
+body.tsl-results-page .performance-metrics article {
+  min-height: 130px;
+  padding: 20px 22px;
+  border-right: 1px solid #c9ced1;
+  border-bottom: 1px solid #c9ced1;
+  display: grid;
+  align-content: center;
+  gap: 6px;
+}
+
+body.tsl-results-page .performance-metrics article:nth-child(3n) {
+  border-right: 0;
+}
+
+body.tsl-results-page .performance-metrics article:nth-last-child(-n+3) {
+  border-bottom: 0;
+}
+
+body.tsl-results-page .performance-metrics span,
+body.tsl-results-page .performance-band-list small {
+  color: #566b7f;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.tsl-results-page .performance-metrics strong {
+  color: #1769ff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 34px;
+}
+
+body.tsl-results-page .performance-metrics small {
+  color: #566b7f;
+  font-size: 12px;
+}
+
+body.tsl-results-page .performance-detail {
+  padding: 24px 22px;
+  display: grid;
+  gap: 18px;
+}
+
+body.tsl-results-page .performance-detail h3 {
+  color: #09223d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+}
+
+body.tsl-results-page .performance-detail p,
+body.tsl-results-page .performance-method {
+  color: #566b7f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body.tsl-results-page .performance-band-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid #c9ced1;
+}
+
+body.tsl-results-page .performance-band-list article {
+  padding: 16px;
+  border-right: 1px solid #c9ced1;
+  display: grid;
+  gap: 5px;
+}
+
+body.tsl-results-page .performance-band-list article:last-child {
+  border-right: 0;
+}
+
+body.tsl-results-page .performance-band-list strong {
+  color: #09223d;
+  font-size: 14px;
+}
+
+body.tsl-results-page .performance-band-list span {
+  color: #1769ff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+body.tsl-results-page .performance-empty {
+  grid-column: 1 / -1;
+  padding: 18px;
+  color: #566b7f;
+}
+
+body.tsl-results-page .performance-method {
+  padding: 0 22px 22px;
+  font-style: italic;
+}
+
+@media (max-width: 760px) {
+  body.tsl-results-page .performance-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  body.tsl-results-page .performance-tabs {
+    width: 100%;
+  }
+
+  body.tsl-results-page .performance-tab {
+    flex: 1;
+  }
+
+  body.tsl-results-page .performance-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  body.tsl-results-page .performance-metrics article:nth-child(3n) {
+    border-right: 1px solid #c9ced1;
+  }
+
+  body.tsl-results-page .performance-metrics article:nth-child(2n) {
+    border-right: 0;
+  }
+
+  body.tsl-results-page .performance-metrics article:nth-last-child(-n+3) {
+    border-bottom: 1px solid #c9ced1;
+  }
+
+  body.tsl-results-page .performance-metrics article:nth-last-child(-n+2) {
+    border-bottom: 0;
+  }
+
+  body.tsl-results-page .performance-band-list {
+    grid-template-columns: 1fr;
+  }
+
+  body.tsl-results-page .performance-band-list article {
+    border-right: 0;
+    border-bottom: 1px solid #c9ced1;
+  }
+}
+
 body.tsl-results-page .search-wrap {
   display: grid;
   grid-template-columns: auto minmax(260px, 620px);

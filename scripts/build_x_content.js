@@ -102,19 +102,21 @@ const homeRuns = results.date === easternDate() ? arr(results.homeRuns) : [];
 function latestPregameSnapshot(result) {
   const gameStart = Date.parse(result?.gameStartTime || "");
   if (!Number.isFinite(gameStart)) return null;
+  const gamePk = num(result?.gamePk);
+  const playerId = num(result?.playerId);
+  if (!gamePk || !playerId) return null;
 
-  const playerKey = norm(result?.player || result?.batter);
-  const historyEntry = Object.entries(aiHistory.history || {})
-    .find(([name]) => norm(name) === playerKey)?.[1];
-
-  return arr(historyEntry)
+  return Object.values(aiHistory.history || {}).flatMap(arr)
     .filter(snapshot => {
-      const timestamp = Date.parse(snapshot?.timestamp || "");
-      return Number.isFinite(timestamp)
+      const timestamp = Date.parse(snapshot?.snapshotAt || snapshot?.timestamp || "");
+      return snapshot?.verifiedPregame === true
+        && num(snapshot?.gamePk) === gamePk
+        && num(snapshot?.playerId) === playerId
+        && Number.isFinite(timestamp)
         && timestamp < gameStart
-        && timestamp >= gameStart - 24 * 60 * 60 * 1000;
+        && snapshot?.slateDate === result?.date;
     })
-    .sort((a, b) => Date.parse(b.timestamp) - Date.parse(a.timestamp))[0] || null;
+    .sort((a, b) => Date.parse(b.snapshotAt || b.timestamp) - Date.parse(a.snapshotAt || a.timestamp))[0] || null;
 }
 
 function verifiedHit(result) {
