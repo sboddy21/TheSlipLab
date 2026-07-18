@@ -84,6 +84,7 @@ const weather = readJson(path.join(DATA, "mlb_weather.json"));
 const games = readJson(path.join(DATA, "mlb_games_today.json"));
 const results = readJson(path.join(DATA, "mlb_results.json"));
 const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
+const calibration = readJson(path.join(DATA, "hr_calibration_report.json"), {});
 const resultsHistory = readJson(path.join(DATA, "hr_results_history.json"), { days: [] });
 const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"), { history: {} });
 const history = readJson(HISTORY_FILE, { posts: [] });
@@ -320,41 +321,39 @@ I would rather show the receipts honestly than pretend every homer was predicted
   }
 }
 
-if (allGamesFinal(previousResults)) {
-  const verified = arr(previousResults.homeRuns).map(verifiedHit).filter(Boolean);
-  const core = verified.filter(item => item.tier === "core")
-    .sort((a, b) => num(a.snapshot.rank, 9999) - num(b.snapshot.rank, 9999))[0];
-  const secondary = verified.filter(item => item.tier === "secondary")
-    .sort((a, b) => num(b.result.distance) - num(a.result.distance))[0];
-  const hardest = verified.slice().sort((a, b) => num(b.result.exitVelocity) - num(a.result.exitVelocity))[0];
-  const featured = [core, secondary, hardest].filter(Boolean)
-    .filter((item, index, rows) => rows.findIndex(other => norm(other.result.player || other.result.batter) === norm(item.result.player || item.result.batter)) === index)
-    .slice(0, 3);
+const dailyReport = calibration?.dailyReport;
+if (dailyReport?.status === "verified"
+  && dailyReport.reportDate === previousResults?.date
+  && dailyReport.verification?.latestSnapshotBeforeFirstPitch === true
+  && dailyReport.verification?.resultSlateFinal === true
+  && arr(dailyReport.verifiedCalls).length) {
+  const featured = arr(dailyReport.verifiedCalls).slice(0, 3);
+  const lines = featured.map(call => {
+    const details = [
+      call.rank ? `pregame rank #${call.rank}` : "verified pregame call",
+      call.probability !== null ? `${one(call.probability)}% model probability` : "",
+      call.distance ? `${Math.round(num(call.distance))} ft` : ""
+    ].filter(Boolean).join(" | ");
+    return `• ${clean(call.player)}: ${details}`;
+  });
+  const delta = num(dailyReport.actualVsExpected);
 
-  if (featured.length) {
-    const lines = featured.map(item => {
-      const player = clean(item.result.player || item.result.batter);
-      const label = item.tier === "core" ? "core pregame call" : "B+ secondary model hit";
-      const resultDetails = [
-        item.result.distance ? `${Math.round(num(item.result.distance))} ft` : "",
-        item.result.exitVelocity ? `${one(item.result.exitVelocity)} mph EV` : "",
-        item.snapshot.bestPitch ? `${clean(item.snapshot.bestPitch)} edge` : ""
-      ].filter(Boolean).join(" | ");
-      return `• ${player}: ${label}, rank #${num(item.snapshot.rank)}${resultDetails ? ` — ${resultDetails}` : ""}`;
-    });
+  add("overnight", "verified_daily_recap", 110,
+`The verified MLB model report for ${clean(dailyReport.reportDate)} is in.
 
-    add("overnight", "verified_daily_recap", 110,
-`The final MLB receipt for ${clean(previousResults.date)} is in.
+${dailyReport.actualSlateHomeRuns} home runs landed against ${one(dailyReport.expectedHomeRuns)} expected (${delta >= 0 ? "+" : ""}${one(delta)}).
+Top 10: ${dailyReport.top10?.hits || 0} hits from ${dailyReport.top10?.predictions || 0} archived players.
 
 ${lines.join("\n")}
 
-Every model label above comes from the latest archived snapshot before that player's first pitch—not a ranking rebuilt after the result.
-
-That distinction matters. Results are volatile; the audit trail should not be.`, featured.map(item => item.result.player || item.result.batter), {
-      resultsDate: previousResults.date,
-      verifiedPregame: true
-    });
-  }
+Every label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?`, featured.map(call => call.player), {
+    graphic: `exports/content/graphics/${TODAY}_VERIFIED_MODEL_REPORT.png`,
+    graphicType: "verified_model_report",
+    reportDate: dailyReport.reportDate,
+    resultsDate: previousResults.date,
+    verifiedPregame: true,
+    verifiedResults: true
+  });
 }
 
 if (!noPublishableSlate) add("evening", "process_question", 55,

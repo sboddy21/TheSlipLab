@@ -79,12 +79,28 @@ function requirePregameHistory(label, data) {
   return { file: label, timestampField: "updatedAt", timestamp, players, mode: "historical pregame archive" };
 }
 
+function requireVerifiedReport(label, data, expectedDate) {
+  const fresh = requireFresh(label, data, "generatedAt");
+  const report = data?.dailyReport;
+  if (report?.status !== "verified" || report?.reportDate !== expectedDate
+    || report?.verification?.latestSnapshotBeforeFirstPitch !== true
+    || report?.verification?.resultSlateFinal !== true
+    || Number(report?.archivedPlayers || 0) <= 0
+    || Number(report?.capturedGames || 0) !== Number(report?.scheduledGames || 0)
+    || Number(report?.gameCoverage) !== 100
+    || !Number.isFinite(Number(report?.actualSlateHomeRuns))) {
+    throw new Error(`X queue overnight validation failed: ${label} is not a verified daily report for ${expectedDate}`);
+  }
+  return { ...fresh, reportDate: report.reportDate, archivedPlayers: report.archivedPlayers, mode: "verified daily model report" };
+}
+
 const content = readJson(path.join(SITE_CONTENT, "x_posts.json"));
 const decision = readJson(path.join(DATA, "hr_decision_center.json"));
 const weather = readJson(path.join(DATA, "mlb_weather.json"));
 const results = readJson(path.join(DATA, "mlb_results.json"));
 const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
 const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"));
+const calibration = readJson(path.join(DATA, "hr_calibration_report.json"));
 const health = readJson(path.join(DATA, "health_status.json"));
 const history = readJson(HISTORY_FILE, { posts: [] });
 const now = easternParts();
@@ -109,7 +125,8 @@ const validatedInputs = slot === "closed"
     ? [
       requireFresh("content/x_posts.json", content, "updatedAt", "date"),
       requireFinalizedResults("mlb_results_previous.json", previousResults, yesterday),
-      requirePregameHistory("hr_ai_history.json", aiHistory)
+      requirePregameHistory("hr_ai_history.json", aiHistory),
+      requireVerifiedReport("hr_calibration_report.json", calibration, yesterday)
     ]
     : [
       requireFresh("content/x_posts.json", content, "updatedAt", "date"),
@@ -132,7 +149,7 @@ const slotCandidates = (Array.isArray(content.posts) ? content.posts : [])
 
 const due = slotAlreadyPosted ? [] : slotCandidates
   .filter(post => !alreadyPosted.has(post.id))
-  .filter(post => slot !== "overnight" || post.verifiedPregame === true || post.verifiedResults === true)
+  .filter(post => slot !== "overnight" || (post.verifiedPregame === true && post.verifiedResults === true))
   .sort((a, b) => Number(b.weight || 0) - Number(a.weight || 0))
   .slice(0, 1)
   .map(post => ({
@@ -144,6 +161,12 @@ const due = slotAlreadyPosted ? [] : slotCandidates
     scheduled_for_eastern: new Date().toISOString(),
     text: post.text,
     players: post.players || [],
+    graphic: post.graphic || null,
+    graphicType: post.graphicType || null,
+    reportDate: post.reportDate || null,
+    resultsDate: post.resultsDate || null,
+    verifiedPregame: post.verifiedPregame === true,
+    verifiedResults: post.verifiedResults === true,
     posted: false,
     posted_at: null,
     x_post_id: null,
