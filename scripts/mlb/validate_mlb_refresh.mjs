@@ -152,6 +152,84 @@ function validateCalibrationReport() {
   }
 }
 
+function validateMarketOdds(expectedDate) {
+  const payload = read("mlb_market_odds.json");
+  const validAvailability = new Set(["available", "partial", "unavailable", "no_games_scheduled"]);
+  const pool = read("mlb_player_pool.json");
+  const currentPlayers = new Set(
+    (pool.players || []).map(player => `${Number(player.gamePk)}|${Number(player.playerId)}`)
+  );
+
+  if (payload?.schemaVersion !== "1.0") fail("mlb_market_odds.json has an invalid schemaVersion");
+  if (payload?.source !== "The Odds API" || payload?.market !== "batter_home_runs") {
+    fail("mlb_market_odds.json has invalid provider or market metadata");
+  }
+  if (payload?.date !== expectedDate) {
+    fail(`mlb_market_odds.json date is ${payload?.date || "missing"}, expected ${expectedDate}`);
+  }
+  if (!validAvailability.has(payload?.availability)) {
+    fail(`mlb_market_odds.json has invalid availability ${payload?.availability || "missing"}`);
+  }
+  if (!Array.isArray(payload?.events) || !Array.isArray(payload?.prices) || !Array.isArray(payload?.rejections)) {
+    fail("mlb_market_odds.json must contain events, prices, and rejections arrays");
+  }
+  if (payload?.policy?.staleQuotesRetained !== false || payload?.policy?.unmatchedPlayersRetained !== false) {
+    fail("mlb_market_odds.json does not enforce strict stale/unmatched quote rejection");
+  }
+  if (["unavailable", "no_games_scheduled"].includes(payload.availability) && payload.prices.length) {
+    fail(`mlb_market_odds.json retained prices while ${payload.availability}`);
+  }
+  if (["available", "partial"].includes(payload.availability) && !payload.prices.length) {
+    fail(`mlb_market_odds.json is ${payload.availability} without verified prices`);
+  }
+
+  const generatedAt = Date.parse(payload.generatedAt);
+  if (!Number.isFinite(generatedAt)) {
+    fail("mlb_market_odds.json has an invalid generatedAt timestamp");
+  }
+
+  const maxAgeMs = Number(payload?.policy?.maxQuoteAgeMinutes) * 60 * 1000;
+  if (!Number.isFinite(maxAgeMs) || maxAgeMs <= 0 || maxAgeMs > MAX_REFRESH_AGE_MS) {
+    fail("mlb_market_odds.json has an invalid quote-age policy");
+  }
+
+  const quoteIds = new Set();
+  for (const quote of payload.prices) {
+    if (!quote?.quoteId || quoteIds.has(quote.quoteId)) {
+      fail(`mlb_market_odds.json contains a missing or duplicate quoteId ${quote?.quoteId || "missing"}`);
+    }
+    quoteIds.add(quote.quoteId);
+
+    const identity = `${Number(quote.gamePk)}|${Number(quote.playerId)}`;
+    if (!currentPlayers.has(identity)) {
+      fail(`mlb_market_odds.json quote ${quote.quoteId} is not joined to the current canonical slate`);
+    }
+    if (quote.date !== expectedDate || quote.market !== "batter_home_runs") {
+      fail(`mlb_market_odds.json quote ${quote.quoteId} has invalid slate or market identity`);
+    }
+    const updatedAt = Date.parse(quote.providerLastUpdate);
+    if (!Number.isFinite(updatedAt) || generatedAt - updatedAt > maxAgeMs || updatedAt > generatedAt + 60000) {
+      fail(`mlb_market_odds.json quote ${quote.quoteId} is stale or has an invalid provider timestamp`);
+    }
+    for (const field of ["modelProbability", "impliedProbability"]) {
+      const value = Number(quote[field]);
+      if (!Number.isFinite(value) || value < 0 || value > 1) {
+        fail(`mlb_market_odds.json quote ${quote.quoteId} has invalid ${field}`);
+      }
+    }
+    for (const field of ["overPriceAmerican", "rawEdge", "expectedValue"]) {
+      if (!Number.isFinite(Number(quote[field]))) {
+        fail(`mlb_market_odds.json quote ${quote.quoteId} has invalid ${field}`);
+      }
+    }
+    for (const field of ["noVigProbability", "noVigEdge", "underPriceAmerican"]) {
+      if (quote[field] !== null && !Number.isFinite(Number(quote[field]))) {
+        fail(`mlb_market_odds.json quote ${quote.quoteId} has invalid ${field}`);
+      }
+    }
+  }
+}
+
 function validateLiveChangeAlerts(expectedDate) {
   const payload = read("live_change_alerts.json");
   const validStatuses = new Set(["baseline_established", "ready", "no_games_scheduled"]);
@@ -670,6 +748,7 @@ const currentOutputs = [
   ["bullpen_relievers.json", ["updatedAt"]],
   ["mlb_home_runs.json", []],
   ["hr_probability_tracking.json", ["generatedAt"]],
+  ["mlb_market_odds.json", ["generatedAt"]],
   ["hr_decision_center.json", ["updatedAt"]],
   ["player_card_data.json", ["updatedAt"]],
   ["live_change_alerts.json", ["generatedAt"]],
@@ -709,6 +788,7 @@ validateDependencyOrder(outputTimes, "statcast_zones.json", "pitcher_attack_zone
 validateDependencyOrder(outputTimes, "mlb_home_runs.json", "pitcher_attack_zones.json");
 validateDependencyOrder(outputTimes, "mlb_home_runs.json", "statcast_zones.json");
 validateDependencyOrder(outputTimes, "mlb_home_runs.json", "hr_probability_tracking.json");
+validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "mlb_market_odds.json");
 validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_hits.json");
 validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_total_bases.json");
 validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_pitcher_strikeouts.json");
@@ -739,6 +819,7 @@ validateSlateDate("pitcher_vulnerability.json", "date", today);
 validateSlateDate("mlb_weather.json", "date", today);
 validateSlateDate("hr_decision_center.json", "pitcherDate", today);
 validateSlateDate("live_change_alerts.json", "date", today);
+validateMarketOdds(today);
 validatePitchDamageCache(today);
 validatePitcherVulnerability(today);
 validatePitcherRateFields();
