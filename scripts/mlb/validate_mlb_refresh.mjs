@@ -152,6 +152,32 @@ function validateCalibrationReport() {
   }
 }
 
+function validateLiveChangeAlerts(expectedDate) {
+  const payload = read("live_change_alerts.json");
+  const validStatuses = new Set(["baseline_established", "ready", "no_games_scheduled"]);
+
+  if (payload?.schemaVersion !== "1.0") fail("live_change_alerts.json has an invalid schemaVersion");
+  if (payload?.date !== expectedDate) fail(`live_change_alerts.json date is ${payload?.date || "missing"}, expected ${expectedDate}`);
+  if (!validStatuses.has(payload?.status)) fail(`live_change_alerts.json has invalid status ${payload?.status || "missing"}`);
+  if (!Array.isArray(payload?.alerts)) fail("live_change_alerts.json alerts must be an array");
+  if (!payload?.snapshot || typeof payload.snapshot !== "object" || Array.isArray(payload.snapshot)) {
+    fail("live_change_alerts.json has an invalid snapshot");
+  }
+
+  const ids = new Set();
+  for (const alert of payload.alerts) {
+    const required = ["id", "kind", "entityType", "entityId", "entityName", "date", "sport", "createdAt"];
+    for (const field of required) {
+      if (alert?.[field] === undefined || alert?.[field] === null || alert?.[field] === "") {
+        fail(`live_change_alerts.json alert is missing ${field}`);
+      }
+    }
+    if (alert.date !== expectedDate || alert.sport !== "MLB") fail(`live_change_alerts.json alert ${alert.id} has invalid slate identity`);
+    if (ids.has(alert.id)) fail(`live_change_alerts.json contains duplicate alert ${alert.id}`);
+    ids.add(alert.id);
+  }
+}
+
 function validatePlayerCardSignals() {
   const payload = read("player_card_data.json");
   const players = Array.isArray(payload.players) ? payload.players : [];
@@ -646,6 +672,7 @@ const currentOutputs = [
   ["hr_probability_tracking.json", ["generatedAt"]],
   ["hr_decision_center.json", ["updatedAt"]],
   ["player_card_data.json", ["updatedAt"]],
+  ["live_change_alerts.json", ["generatedAt"]],
   ["hr_ai_breakdowns.json", ["updatedAt"]],
   ["hr_ai_history.json", ["updatedAt"]],
   ["hr_calibration_report.json", ["generatedAt"]],
@@ -695,6 +722,11 @@ validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.jso
 validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
 validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "ai_reasoning_engine.json");
 validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "tag_registry.json");
+validateDependencyOrder(outputTimes, "mlb_player_pool.json", "live_change_alerts.json");
+validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "live_change_alerts.json");
+validateDependencyOrder(outputTimes, "pitcher_vulnerability.json", "live_change_alerts.json");
+validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "live_change_alerts.json");
+validateDependencyOrder(outputTimes, "player_card_data.json", "live_change_alerts.json");
 validateDependencyOrder(outputTimes, "tag_registry.json", "public_tags.json");
 validateDependencyOrder(outputTimes, "public_tags.json", "ai_2.json");
 validateDependencyOrder(outputTimes, "health_status.json", "site_last_updated.json");
@@ -706,6 +738,7 @@ validateSlateDate("game_pitcher_matchups.json", "date", today);
 validateSlateDate("pitcher_vulnerability.json", "date", today);
 validateSlateDate("mlb_weather.json", "date", today);
 validateSlateDate("hr_decision_center.json", "pitcherDate", today);
+validateSlateDate("live_change_alerts.json", "date", today);
 validatePitchDamageCache(today);
 validatePitcherVulnerability(today);
 validatePitcherRateFields();
@@ -713,6 +746,7 @@ validateRealStatcastZones(today);
 validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);
 validatePlayerCardSignals();
+validateLiveChangeAlerts(today);
 validatePlayerResultEvents();
 validateVerifiedPregameReceipts();
 validateCalibrationReport();

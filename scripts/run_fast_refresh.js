@@ -77,6 +77,25 @@ function validateSlateDate(file, field, expectedDate) {
   }
 }
 
+function validateLiveChangeAlerts(expectedDate) {
+  const payload = readJson(outputPath("live_change_alerts.json"));
+  const statuses = new Set(["baseline_established", "ready", "no_games_scheduled"]);
+  if (payload?.schemaVersion !== "1.0" || payload?.date !== expectedDate || !statuses.has(payload?.status)) {
+    throw new Error("live_change_alerts.json has invalid metadata");
+  }
+  if (!Array.isArray(payload.alerts) || !payload.snapshot?.players || !payload.snapshot?.pitchers) {
+    throw new Error("live_change_alerts.json has invalid collections");
+  }
+  const ids = new Set();
+  for (const alert of payload.alerts) {
+    if (!alert?.id || !alert?.kind || !alert?.entityType || !alert?.entityId || !alert?.entityName || alert?.date !== expectedDate || alert?.sport !== "MLB" || !Number.isFinite(Date.parse(alert?.createdAt))) {
+      throw new Error("live_change_alerts.json contains an invalid alert");
+    }
+    if (ids.has(alert.id)) throw new Error(`live_change_alerts.json contains duplicate alert ${alert.id}`);
+    ids.add(alert.id);
+  }
+}
+
 function validateDependencyOrder(times, before, after) {
   if (times.get(before) > times.get(after)) {
     throw new Error(`${before} was written after dependent output ${after}`);
@@ -550,6 +569,7 @@ const steps = [
   ["Final Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
 
   ["Player Card Data", "node scripts/build_player_card_data.js"],
+  ["Live Change Alerts", "node scripts/mlb/build_live_change_alerts.js"],
   ["AI Breakdowns", "node scripts/build_hr_ai_breakdowns.cjs"],
   ["AI History", "node scripts/build_hr_ai_history.cjs"],
   ["HR Calibration Report", "node scripts/mlb/build_hr_calibration_report.js"],
@@ -586,6 +606,7 @@ const requiredOutputs = [
   { file: "hr_probability_tracking.json", timestampFields: ["generatedAt"] },
   { file: "hr_decision_center.json", timestampFields: ["updatedAt"] },
   { file: "player_card_data.json", timestampFields: ["updatedAt"] },
+  { file: "live_change_alerts.json", timestampFields: ["generatedAt"] },
   { file: "hr_ai_breakdowns.json", timestampFields: ["updatedAt"] },
   { file: "hr_ai_history.json", timestampFields: ["updatedAt"] },
   { file: "hr_calibration_report.json", timestampFields: ["generatedAt"] },
@@ -664,6 +685,8 @@ try {
   validateSlateDate("pitcher_vulnerability.json", "date", slateDate);
   validateSlateDate("mlb_weather.json", "date", slateDate);
   validateSlateDate("hr_decision_center.json", "pitcherDate", slateDate);
+  validateSlateDate("live_change_alerts.json", "date", slateDate);
+  validateLiveChangeAlerts(slateDate);
   validatePitchDamageCache(slateDate);
   validatePitcherVulnerability(slateDate);
   validateRealStatcastZones(slateDate);
@@ -701,6 +724,11 @@ try {
   validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
   validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "ai_reasoning_engine.json");
   validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "tag_registry.json");
+  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "live_change_alerts.json");
+  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "live_change_alerts.json");
+  validateDependencyOrder(outputTimes, "pitcher_vulnerability.json", "live_change_alerts.json");
+  validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "live_change_alerts.json");
+  validateDependencyOrder(outputTimes, "player_card_data.json", "live_change_alerts.json");
   validateDependencyOrder(outputTimes, "tag_registry.json", "public_tags.json");
   validateDependencyOrder(outputTimes, "public_tags.json", "ai_2.json");
 } catch (error) {

@@ -13,6 +13,10 @@ const ownershipRules = [
     allowedWriters: new Set(["scripts/build_player_card_data.js"])
   },
   {
+    target: "live_change_alerts.json",
+    allowedWriters: new Set(["scripts/mlb/build_live_change_alerts.js"])
+  },
+  {
     target: "game_pitcher_matchups.json",
     allowedWriters: new Set(["scripts/mlb/build_game_pitcher_matchups.mjs"])
   },
