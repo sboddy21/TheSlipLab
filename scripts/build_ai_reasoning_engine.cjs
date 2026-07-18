@@ -31,6 +31,19 @@ function pct(v) {
   return Math.round(clamp(n <= 1 && n > 0 ? n * 100 : n));
 }
 
+function finite(v) {
+  if (v === undefined || v === null || v === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+}
+
+function rounded(v, digits = 1) {
+  const n = finite(v);
+  if (n === null) return null;
+  const factor = 10 ** digits;
+  return Math.round(n * factor) / factor;
+}
+
 function getName(row) {
   return text(
     row?.player ||
@@ -106,7 +119,7 @@ const SOURCE_FILES = [
 
 const { rows: allPlayers, debug } = mergeRows(SOURCE_FILES);
 
-function pickScore(row, keys, fallback = 70) {
+function pickScore(row, keys) {
   for (const k of keys) {
     if (row[k] !== undefined && row[k] !== null && row[k] !== "") {
       if (k === "realHrProbability") {
@@ -117,58 +130,85 @@ function pickScore(row, keys, fallback = 70) {
       return pct(row[k]);
     }
   }
-  return fallback;
+  return null;
 }
 
-function buildWhy(row) {
-  const reasons = [];
+function signal(key, label, detail, value, source, severity = "support") {
+  return { key, label, detail, value: rounded(value), source, severity };
+}
 
-  const trust = pickScore(row, ["aiTrust", "trustScore", "confidence", "aiConfidence"], 70);
-  const power = pickScore(row, ["powerScore", "powerProfile", "hrPowerScore", "barrelScore", "damageScore"], 70);
-  const recent = pickScore(row, ["recentScore", "formScore", "trendScore", "last7Score"], 70);
-  const pitch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);
-  const value = pickScore(row, ["valueScore", "marketScore", "edgeScore"], 70);
-  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
+function buildSupportingSignals(row, probability) {
+  const out = [];
+  const power = finite(row.hrPowerIndex);
+  const contactDamage = finite(row.contactDamageScore);
+  const launchPower = finite(row.launchPowerScore);
 
-  if (probability >= 20) reasons.push("The AI sees a strong home run probability profile for today's slate.");
-  if (trust >= 85) reasons.push("The AI Trust Engine shows strong agreement across multiple signals.");
-  if (power >= 80) reasons.push("Power indicators support real home run upside.");
-  if (recent >= 78) reasons.push("Recent form is strong enough to support an aggressive power read.");
-  if (pitch >= 78) reasons.push("The pitch matchup fits this hitter's damage profile.");
-  if (value >= 78) reasons.push("The market/value profile is stronger than the raw price suggests.");
-
-  if (row.tags && Array.isArray(row.tags) && row.tags.length) {
-    reasons.push(`Player tags support the profile: ${row.tags.slice(0,3).join(", ")}.`);
+  if (probability !== null && probability >= 20) {
+    out.push(signal("hr_probability", "Top-tier HR probability", `${probability}% tracked HR probability (${text(row.probabilityTier, "unclassified")}).`, probability, "hr_probability_tracking.json"));
+  } else if (probability !== null && probability >= 15) {
+    out.push(signal("hr_probability", "Viable HR probability", `${probability}% tracked HR probability (${text(row.probabilityTier, "unclassified")}).`, probability, "hr_probability_tracking.json"));
+  }
+  if (power !== null && power >= 55) {
+    out.push(signal("power_profile", power >= 70 ? "Impact power" : "Power support", `${rounded(power)} HR Power Index (${text(row.powerTier, "unclassified").replaceAll("_", " ")}).`, power, "hr_power_profiles.json"));
+  }
+  if (contactDamage !== null && contactDamage >= 55) {
+    out.push(signal("contact_damage", "Authoritative contact", `${rounded(contactDamage)} contact-damage score in the current power profile.`, contactDamage, "hr_power_profiles.json"));
+  }
+  if (launchPower !== null && launchPower >= 50) {
+    out.push(signal("launch_power", "Launch-angle power", `${rounded(launchPower)} launch-power score supports home-run damage.`, launchPower, "hr_power_profiles.json"));
   }
 
-  if (row.summary || row.cardTake || row.analystTake) {
-    reasons.push(text(row.summary || row.cardTake || row.analystTake));
+  return out.slice(0, 6);
+}
+
+function buildCounterSignals(row, probability) {
+  const out = [];
+  const power = finite(row.hrPowerIndex);
+  const contactDamage = finite(row.contactDamageScore);
+  const launchPower = finite(row.launchPowerScore);
+  const strikeoutRate = finite(row.rates?.strikeoutRate);
+  const samplePenalty = finite(row.samplePenalty);
+
+  if (probability !== null && probability < 10) {
+    out.push(signal("low_hr_probability", "Longshot base rate", `${probability}% tracked HR probability (${text(row.probabilityTier, "unclassified")}).`, probability, "hr_probability_tracking.json", "high"));
+  } else if (probability !== null && probability < 15) {
+    out.push(signal("modest_hr_probability", "Modest base probability", `${probability}% tracked HR probability; below the model's top probability tier.`, probability, "hr_probability_tracking.json", "moderate"));
   }
 
-  if (!reasons.length) {
-    reasons.push("The AI found enough supporting signals to keep this player in the home run report pool.");
+  if (text(row.powerTier) === "LOW_POWER" || (power !== null && power < 45)) {
+    out.push(signal("limited_power", "Limited raw-power support", `${rounded(power)} HR Power Index (${text(row.powerTier, "unclassified").replaceAll("_", " ")}).`, power, "hr_power_profiles.json", "high"));
+  }
+  if (strikeoutRate !== null && strikeoutRate >= 28) {
+    out.push(signal("contact_risk", "Contact risk", `${rounded(strikeoutRate)}% strikeout rate can reduce damage opportunities.`, strikeoutRate, "hr_power_profiles.json", strikeoutRate >= 32 ? "high" : "moderate"));
+  }
+  if (samplePenalty !== null && samplePenalty > 0) {
+    out.push(signal("sample_penalty", "Limited sample confidence", `${rounded(samplePenalty)}-point sample penalty is active in the power profile.`, samplePenalty, "hr_power_profiles.json", "moderate"));
+  }
+  if (contactDamage !== null && contactDamage < 45) {
+    out.push(signal("limited_contact_damage", "Contact quality concern", `${rounded(contactDamage)} contact-damage score limits the supporting power case.`, contactDamage, "hr_power_profiles.json", contactDamage < 30 ? "high" : "moderate"));
+  }
+  if (launchPower !== null && launchPower < 35) {
+    out.push(signal("limited_launch_power", "Launch profile concern", `${rounded(launchPower)} launch-power score is below the stronger home-run profiles.`, launchPower, "hr_power_profiles.json", launchPower < 20 ? "high" : "moderate"));
   }
 
+  const seen = new Set();
+  return out.filter(item => {
+    const key = `${item.key}|${item.detail}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }).slice(0, 6);
+}
+
+function buildWhy(row, supportingSignals) {
+  const reasons = supportingSignals.map(item => item.detail);
+  if (!reasons.length) reasons.push("No supporting signal crossed the current explanation threshold.");
   return [...new Set(reasons)].slice(0, 6);
 }
 
-function buildRisks(row) {
-  const risks = [];
-
-  const kRisk = pickScore(row, ["kRisk", "strikeoutRisk"], 0);
-  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb"], 0);
-  const trust = pickScore(row, ["aiTrust", "trustScore", "confidence", "aiConfidence"], 70);
-
-  if (kRisk >= 70) risks.push("Strikeout risk could limit quality contact chances.");
-  if (probability && probability < 15) risks.push("Raw home run probability remains volatile.");
-  if (trust < 65) risks.push("Model agreement is weaker than the top tier profiles.");
-
-  risks.push("Home run betting is naturally volatile, even when the process is strong.");
-
-  return [...new Set(risks)].slice(0, 4);
-}
-
 function verdict(confidence, probability) {
+  if (probability !== null && probability < 10) return "High-Variance Longshot";
+  if (probability !== null && probability < 15) return "Speculative HR Target";
   if (confidence >= 88 && probability >= 20) return "Elite AI Play";
   if (confidence >= 80 && probability >= 16) return "Strong AI Play";
   if (confidence >= 72) return "Playable HR Target";
@@ -177,30 +217,16 @@ function verdict(confidence, probability) {
 }
 
 function buildReport(row) {
-  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb", "modelProbability"], 0);
-
-  const modelAgreement = pickScore(row, ["aiTrust", "trustScore", "consensusScore", "confidence", "aiConfidence"], 70);
-  const pitchMatch = pickScore(row, ["pitchMatchScore", "pitchTypeScore", "pitchScore"], 70);
-  const powerProfile = pickScore(row, ["powerScore", "powerProfile", "hrPowerScore", "barrelScore", "damageScore"], 70);
-  const weather = pickScore(row, ["weatherScore", "weatherBoost", "carryScore"], 70);
-  const bullpen = pickScore(row, ["bullpenScore", "bullpenBoost"], 70);
-  const market = pickScore(row, ["valueScore", "marketScore", "edgeScore"], 70);
-  const history = pickScore(row, ["historyScore", "similarityScore", "trackRecordScore"], 70);
-  const recentForm = pickScore(row, ["recentScore", "formScore", "trendScore", "last7Score"], 70);
-
-  const confidence = pct(
-    modelAgreement * .20 +
-    powerProfile * .18 +
-    pitchMatch * .16 +
-    recentForm * .12 +
-    market * .10 +
-    history * .10 +
-    weather * .08 +
-    bullpen * .06
-  );
-
-  const whyToday = buildWhy(row);
-  const riskFactors = buildRisks(row);
+  const probability = pickScore(row, ["realHrProbability", "hrProbability", "probability", "hrChance", "hrProb", "modelProbability"]);
+  const breakdown = row.breakdown || {};
+  const confidence = rounded(row.trustScore, 0);
+  const supportingSignals = buildSupportingSignals(row, probability);
+  const counterSignals = buildCounterSignals(row, probability);
+  const whyToday = buildWhy(row, supportingSignals);
+  const riskFactors = [
+    ...counterSignals.map(item => item.detail),
+    "Home runs remain high-variance outcomes even when several independent signals agree."
+  ].slice(0, 7);
 
   return {
     player: getName(row),
@@ -215,40 +241,44 @@ function buildReport(row) {
     stars: confidence >= 90 ? 5 : confidence >= 80 ? 4 : confidence >= 70 ? 3 : confidence >= 60 ? 2 : 1,
     whyToday,
     riskFactors,
+    supportingSignals,
+    counterSignals,
     trustBreakdown: {
-      modelAgreement,
-      pitchMatch,
-      powerProfile,
-      weather,
-      bullpen,
-      market,
-      history,
-      recentForm
+      modelAgreement: rounded(row.trustScore, 0),
+      pitchMatch: rounded(breakdown.matchup, 0),
+      powerProfile: rounded(breakdown.power, 0),
+      environment: rounded(breakdown.environment, 0),
+      pitchMix: rounded(breakdown.pitchMix, 0),
+      consensus: rounded(breakdown.consensus, 0),
+      recentForm: rounded(breakdown.trend, 0),
+      bullpen: null,
+      market: null,
+      history: null
     },
     homeRunDNA: {
-      pullPower: pickScore(row, ["pullPower", "pullScore"], powerProfile),
-      fastballHunter: pickScore(row, ["fastballScore", "fastballHunter"], pitchMatch),
-      mistakePunisher: pickScore(row, ["mistakePunisher", "damageScore", "barrelScore"], powerProfile),
-      flyBallSwing: pickScore(row, ["flyBallScore", "launchScore"], recentForm),
-      weatherBoost: weather,
-      bullpenHunter: bullpen,
-      recentForm
+      hrPowerIndex: rounded(row.hrPowerIndex),
+      truePowerScore: rounded(row.truePowerScore),
+      contactDamageScore: rounded(row.contactDamageScore),
+      launchPowerScore: rounded(row.launchPowerScore),
+      strikeoutRate: rounded(row.rates?.strikeoutRate),
+      powerTier: text(row.powerTier) || null,
+      recentForm: rounded(breakdown.trend, 0)
     },
     expected: {
-      pitch: text(row.expectedPitch || row.bestPitch || "Best matchup pitch"),
-      zone: text(row.expectedZone || row.damageZone || "Damage zone"),
-      distance: Math.round(num(row.expectedDistance || row.projectedDistance || 410)),
-      count: text(row.expectedCount || "Hitter's count")
+      pitch: text(row.expectedPitch || row.bestPitch) || null,
+      zone: text(row.expectedZone || row.damageZone) || null,
+      distance: rounded(row.expectedDistance ?? row.projectedDistance, 0),
+      count: text(row.expectedCount) || null
     },
     source: {
-      fromAdvancedIntelligence: true
+      files: SOURCE_FILES
     }
   };
 }
 
 const reports = allPlayers
   .map(buildReport)
-  .filter(r => r.player)
+  .filter(r => r.player && r.probability !== null && r.confidence !== null)
   .sort((a,b) => {
     if (b.confidence !== a.confidence) return b.confidence - a.confidence;
     return b.probability - a.probability;
@@ -257,14 +287,14 @@ const reports = allPlayers
 const out = {
   sport: "MLB",
   market: "Home Runs",
-  version: "1.2",
+  version: "1.3",
   updatedAt: new Date().toISOString(),
   playerCount: reports.length,
   sourceDebug: debug,
   notes: [
-    "AI Reasoning Engine 1.2 reads the actual active MLB player sources currently available in website/data.",
-    "Empty HR-specific files are skipped automatically.",
-    "This powers AI Says and future AI player reports."
+    "AI Reasoning Engine 1.3 reads only the active MLB player sources listed in sourceDebug.",
+    "Supporting and counter-signals are emitted only when a verified source field is present.",
+    "Missing signals remain null and do not receive neutral default scores."
   ],
   topReports: reports.slice(0,25),
   reports
