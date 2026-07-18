@@ -28,6 +28,9 @@ const elements = {
   dailyLabSummary: document.getElementById("dailyLabSummary"),
   dailyLabList: document.getElementById("dailyLabList"),
   dailyLabFreshness: document.getElementById("dailyLabFreshness"),
+  liveAlertsSummary: document.getElementById("liveAlertsSummary"),
+  liveAlertsList: document.getElementById("liveAlertsList"),
+  liveAlertsFreshness: document.getElementById("liveAlertsFreshness"),
   detailDialog: document.getElementById("favoriteDetailDialog"),
   detailTitle: document.getElementById("favoriteDetailTitle"),
   detailBody: document.getElementById("favoriteDetailBody"),
@@ -46,6 +49,7 @@ let detailData = {
   currentResults: {},
   previousResults: {},
   historyDays: [],
+  liveAlerts: { alerts: [], status: "unavailable" },
   dailyTimestamps: []
 };
 
@@ -137,7 +141,7 @@ function normalizeCatalog(playerPool, matchups) {
 
 async function loadCatalog() {
   const version = Date.now();
-  const [playerPool, matchups, playerCards, decisionCenter, reasoning, homeRunBoard, currentResults, previousResults, history] = await Promise.all([
+  const [playerPool, matchups, playerCards, decisionCenter, reasoning, homeRunBoard, currentResults, previousResults, history, liveAlerts] = await Promise.all([
     fetchOptionalJSON(`./data/mlb_player_pool.json?v=${version}`, { players: [] }),
     fetchOptionalJSON(`./data/game_pitcher_matchups.json?v=${version}`, { games: [] }),
     fetchOptionalJSON(`./data/player_card_data.json?v=${version}`, { players: [] }),
@@ -146,7 +150,8 @@ async function loadCatalog() {
     fetchOptionalJSON(`./data/mlb_home_runs.json?v=${version}`, []),
     fetchOptionalJSON(`./data/mlb_results.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
     fetchOptionalJSON(`./data/mlb_results_previous.json?v=${version}`, { playerEvents: [], homeRuns: [] }),
-    fetchOptionalJSON(`./data/hr_results_history.json?v=${version}`, { days: [] })
+    fetchOptionalJSON(`./data/hr_results_history.json?v=${version}`, { days: [] }),
+    fetchOptionalJSON(`./data/live_change_alerts.json?v=${version}`, { alerts: [], status: "unavailable" })
   ]);
   catalog = normalizeCatalog(playerPool, matchups);
   detailData = {
@@ -158,7 +163,8 @@ async function loadCatalog() {
     currentResults,
     previousResults,
     historyDays: Array.isArray(history.days) ? history.days : [],
-    dailyTimestamps: [playerPool.fetchedAt, playerPool.updatedAt, matchups.updatedAt, playerCards.updatedAt, decisionCenter.updatedAt, reasoning.updatedAt, currentResults.updatedAt]
+    liveAlerts,
+    dailyTimestamps: [playerPool.fetchedAt, playerPool.updatedAt, matchups.updatedAt, playerCards.updatedAt, decisionCenter.updatedAt, reasoning.updatedAt, currentResults.updatedAt, liveAlerts.generatedAt]
       .filter(Boolean)
   };
 }
@@ -194,6 +200,7 @@ function renderFavorites() {
   elements.summary.textContent = favorites.length === 1 ? "1 saved favorite" : `${favorites.length} saved favorites`;
   elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
   renderDailyLab();
+  renderLiveAlerts();
   renderSearchResults();
 }
 
@@ -281,6 +288,66 @@ function formatDailyFreshness() {
   if (!valid.length) return "Current-data timestamp unavailable";
   const oldest = new Date(Math.min(...valid.map(date => date.getTime())));
   return `All required inputs current through ${oldest.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`;
+}
+
+function alertMatchesFavorite(alert, favorite) {
+  if (alert?.entityType !== favorite?.entity_type) return false;
+  const alertId = String(alert?.entityId || "").trim();
+  const favoriteId = String(favorite?.external_id || "").trim();
+  if (alertId && favoriteId) return alertId === favoriteId;
+  return normalizedName(alert?.entityName) === normalizedName(favorite?.display_name);
+}
+
+function alertKindLabel(kind) {
+  return ({
+    lineup_confirmed: "Lineup confirmed",
+    lineup_removed: "Lineup change",
+    opponent_pitcher_changed: "Pitcher change",
+    probability_move: "Probability move",
+    model_score_move: "Model move",
+    signal_change: "Signal change",
+    pitcher_vulnerability_move: "Pitcher risk move"
+  })[kind] || "Verified change";
+}
+
+function renderLiveAlerts() {
+  if (!elements.liveAlertsList || !elements.liveAlertsSummary || !elements.liveAlertsFreshness) return;
+  const payload = detailData.liveAlerts || {};
+  const allAlerts = Array.isArray(payload.alerts) ? payload.alerts : [];
+  const matching = allAlerts.filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
+  const players = favorites.filter(favorite => favorite.entity_type === "player").length;
+  const pitchers = favorites.filter(favorite => favorite.entity_type === "pitcher").length;
+  elements.liveAlertsSummary.innerHTML = [
+    ["Verified changes", matching.length], ["Saved players", players], ["Saved pitchers", pitchers]
+  ].map(([label, value]) => `<div><strong>${value}</strong><span>${label}</span></div>`).join("");
+
+  const generated = new Date(payload.generatedAt || "");
+  elements.liveAlertsFreshness.textContent = Number.isNaN(generated.getTime())
+    ? "Alert timestamp unavailable"
+    : `Checked ${generated.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`;
+
+  if (!favorites.length) {
+    elements.liveAlertsList.innerHTML = '<div class="empty-state">Save an MLB player or pitcher to monitor verified changes.</div>';
+    return;
+  }
+  if (payload.status === "unavailable") {
+    elements.liveAlertsList.innerHTML = '<div class="empty-state">The verified change feed is temporarily unavailable. No stale alerts are being shown.</div>';
+    return;
+  }
+  if (payload.status === "baseline_established") {
+    elements.liveAlertsList.innerHTML = '<div class="empty-state">Today’s monitoring baseline is set. Verified changes will appear after a later refresh detects one.</div>';
+    return;
+  }
+  if (payload.status === "no_games_scheduled") {
+    elements.liveAlertsList.innerHTML = '<div class="empty-state">No MLB games are scheduled today, so there are no live changes to monitor.</div>';
+    return;
+  }
+  elements.liveAlertsList.innerHTML = matching.length ? matching.map(alert => {
+    const created = new Date(alert.createdAt || "");
+    const time = Number.isNaN(created.getTime()) ? "Time unavailable" : created.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const sources = Array.isArray(alert.sourceFiles) ? alert.sourceFiles.join(" · ") : "Verified production data";
+    return `<article class="live-alert-card ${escapeHtml(alert.severity || "info")}"><div class="live-alert-card-head"><span>${escapeHtml(alertKindLabel(alert.kind))}</span><time>${escapeHtml(time)}</time></div><h4>${escapeHtml(alert.title || alert.entityName)}</h4><p>${escapeHtml(alert.message || "A verified live change was detected.")}</p><small>Source: ${escapeHtml(sources)}</small></article>`;
+  }).join("") : '<div class="empty-state">No verified changes have been detected for your saved players or pitchers yet today.</div>';
 }
 
 function dailyOutcome(events, isPitcher) {
