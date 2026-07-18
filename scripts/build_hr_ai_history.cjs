@@ -2,76 +2,189 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = process.cwd();
+const DATA = path.join(ROOT, "website/data");
+const OUT_FILE = path.join(DATA, "hr_ai_history.json");
+const MODEL_VERSION = "MLB-HR-1.0";
 
-const AI_FILE = path.join(ROOT, "website/data/hr_ai_breakdowns.json");
-const OUT_FILE = path.join(ROOT, "website/data/hr_ai_history.json");
+function read(name, fallback = {}) {
+  try { return JSON.parse(fs.readFileSync(path.join(DATA, name), "utf8")); }
+  catch { return fallback; }
+}
+function norm(v) { return String(v || "").trim().toLowerCase().replace(/[^a-z0-9]/g, ""); }
+function num(v, fallback = null) { const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+function arr(v) { return Array.isArray(v) ? v : []; }
+function easternDate(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
+}
+function playerName(row) { return row?.player || row?.name || ""; }
+function matchPlayer(rows, player, team) {
+  const pid = num(player?.playerId);
+  return rows.find(row => (pid && num(row?.playerId) === pid) ||
+    (norm(playerName(row)) === norm(playerName(player)) && (!team || norm(row?.team) === norm(team)))) || null;
+}
+function teamMatches(gameTeam, value) {
+  if (typeof gameTeam === "string") return norm(gameTeam) === norm(value);
+  return norm(gameTeam?.name) === norm(value) || norm(gameTeam?.abbreviation) === norm(value);
+}
+function findGame(games, player) {
+  const candidates = games.filter(game => {
+    const team = player?.team;
+    const opponent = player?.opponent;
+    const teamsMatch = teamMatches(game?.homeTeam, team) || teamMatches(game?.awayTeam, team);
+    const opponentMatches = !opponent || teamMatches(game?.homeTeam, opponent) || teamMatches(game?.awayTeam, opponent);
+    return teamsMatch && opponentMatches;
+  });
+  if (candidates.length <= 1) return candidates[0] || null;
 
-const now = new Date();
-const cutoff = now.getTime() - (7 * 24 * 60 * 60 * 1000);
-
-const ai = JSON.parse(fs.readFileSync(AI_FILE, "utf8"));
-
-let history = {
-  updatedAt: now.toISOString(),
-  history: {}
-};
-
-if (fs.existsSync(OUT_FILE)) {
-  try {
-    history = JSON.parse(fs.readFileSync(OUT_FILE, "utf8"));
-  } catch {}
+  const pitcherName = norm(player?.pitcher);
+  if (pitcherName) {
+    const pitcherMatch = candidates.find(game => norm(opposingPitcher(game, player?.team).name) === pitcherName);
+    if (pitcherMatch) return pitcherMatch;
+  }
+  return null;
+}
+function opposingPitcher(game, team) {
+  const playerIsHome = teamMatches(game?.homeTeam, team);
+  return playerIsHome
+    ? { id: num(game?.awayProbablePitcherId), name: game?.awayProbablePitcher || "", hand: game?.awayProbablePitcherHand || "" }
+    : { id: num(game?.homeProbablePitcherId), name: game?.homeProbablePitcher || "", hand: game?.homeProbablePitcherHand || "" };
+}
+function riskTier(value) {
+  const risk = num(value);
+  if (risk === null) return null;
+  if (risk >= 70) return "HIGH";
+  if (risk >= 55) return "ELEVATED";
+  if (risk >= 35) return "WATCH";
+  return "LOW";
 }
 
+const now = new Date();
+const nowIso = now.toISOString();
+const season = Number(easternDate(now).slice(0, 4));
+const ai = read("hr_ai_breakdowns.json", { players: {} });
+const gamesPayload = read("mlb_games_today.json", { games: [] });
+const probabilities = arr(read("hr_probability_tracking.json", { players: [] }).players);
+const master = arr(read("mlb_home_runs.json", { players: [] }).players || read("mlb_home_runs.json", []));
+const decision = read("hr_decision_center.json", { allPlayers: [] });
+const decisionRows = arr(decision.allPlayers);
+const vulnerability = arr(read("pitcher_vulnerability.json", { pitchers: [] }).pitchers);
+const weatherRows = arr(read("mlb_weather.json", { weather: [] }).weather);
+const games = arr(gamesPayload.games);
+
+let history = read("hr_ai_history.json", { updatedAt: nowIso, history: {} });
 history.history ||= {};
 
-const players = Object.values(ai.players || {});
+let captured = 0;
+let updated = 0;
+let skippedAfterStart = 0;
 
-players.forEach((player, index) => {
+Object.values(ai.players || {}).forEach((player, index) => {
+  const name = playerName(player) || `player_${index}`;
+  const playerId = num(player.playerId);
+  const game = findGame(games, player);
+  const gamePk = num(game?.gamePk);
+  const gameStartTime = game?.gameDate || game?.gameStartTime || "";
+  const startMs = Date.parse(gameStartTime);
+  if (!playerId || !gamePk || !Number.isFinite(startMs)) return;
 
-  const key =
-    player.player ||
-    player.name ||
-    `player_${index}`;
+  const receiptId = `${gamesPayload.date || easternDate(now)}|${gamePk}|${playerId}`;
+  history.history[name] ||= [];
+  const snapshots = history.history[name];
+  const existingIndex = snapshots.findIndex(row => row?.verifiedPregame === true && row?.receiptId === receiptId);
+  if (now.getTime() >= startMs) {
+    if (existingIndex < 0) skippedAfterStart++;
+    return;
+  }
 
-  history.history[key] ||= [];
+  const probability = matchPlayer(probabilities, player, player.team);
+  const masterRow = matchPlayer(master, player, player.team);
+  const decisionRow = matchPlayer(decisionRows, player, player.team);
+  const pitcher = opposingPitcher(game, player.team);
+  const pitcherRow = vulnerability.find(row => (pitcher.id && num(row?.pitcherId || row?.id) === pitcher.id) || norm(row?.pitcher || row?.name) === norm(pitcher.name)) || null;
+  const weather = weatherRows.find(row => norm(row?.venue || row?.venueName) === norm(game?.venue?.name || game?.venue)) || null;
+  const tags = [...new Set(arr(decisionRow?.tags).map(String).filter(Boolean))];
+  const signals = [...new Set([...arr(player.consensus), ...arr(player.badges), ...arr(decisionRow?.reasons)].map(String).filter(Boolean))];
+  const pitcherRisk = num(decisionRow?.pitcherRisk ?? pitcherRow?.vulnerability);
 
-  history.history[key].push({
-    timestamp: now.toISOString(),
-    score: Number(player.score || 0),
-    rank: Number(player.rank || index + 1),
-    grade: player.grade || "Watch",
-    confidence: Number(player.confidence || 0),
+  const receipt = {
+    timestamp: nowIso,
+    snapshotAt: nowIso,
+    firstCapturedAt: existingIndex >= 0 ? snapshots[existingIndex].firstCapturedAt || snapshots[existingIndex].snapshotAt : nowIso,
+    verifiedPregame: true,
+    verificationStatus: "verified_before_first_pitch",
+    receiptId,
+    slateDate: gamesPayload.date || easternDate(now),
+    season,
+    gamePk,
+    gameStartTime,
+    playerId,
+    player: name,
     team: player.team || "",
     opponent: player.opponent || "",
-    pitcher: player.pitcher || "",
-    reasons: Array.isArray(player.reasons) ? player.reasons.slice(0, 5) : [],
-    consensus: Array.isArray(player.consensus) ? player.consensus : [],
-    agreementCount: Number(player.agreementCount || 0),
+    pitcherId: pitcher.id,
+    pitcher: pitcher.name || player.pitcher || "",
+    batterHand: masterRow?.batSide || masterRow?.batterHand || "",
+    pitcherHand: pitcher.hand || pitcherRow?.side || "",
+    venue: game?.venue?.name || game?.venue || "",
+    score: num(player.score, 0),
+    rank: num(player.rank, index + 1),
+    grade: player.grade || "Watch",
+    confidence: num(player.confidence, 0),
+    probability: num(probability?.realHrProbability),
+    probabilityRank: num(probability?.probabilityRank),
+    probabilityTier: probability?.probabilityTier || "",
+    rawHrEventScore: num(probability?.rawHrEventScore),
+    pitcherRisk,
+    pitcherRiskTier: riskTier(pitcherRisk),
+    parkFactor: num(decisionRow?.parkFactor ?? masterRow?.parkFactor),
+    weatherScore: num(decisionRow?.weather ?? masterRow?.weatherScore),
+    weather: weather ? {
+      temperature: num(weather.temperature ?? weather.temp),
+      humidity: num(weather.humidity),
+      windSpeed: num(weather.windSpeed),
+      windDirection: weather.windDirection || "",
+      summary: weather.summary || weather.condition || ""
+    } : null,
+    reasons: arr(player.reasons).slice(0, 8),
+    consensus: arr(player.consensus),
+    agreementCount: num(player.agreementCount, 0),
     bestPitch: player.bestPitch || "",
-    calloutTier: ["A+", "A"].includes(player.grade)
-      ? "core"
-      : player.grade === "B+" && Number(player.agreementCount || 0) > 0
-        ? "secondary"
-        : "watch"
-  });
+    tags,
+    signals,
+    headshot: player.headshot || masterRow?.headshot || "",
+    modelVersion: MODEL_VERSION,
+    modelCommit: process.env.GITHUB_SHA || null,
+    calloutTier: ["A+", "A"].includes(player.grade) ? "core" : player.grade === "B+" && num(player.agreementCount, 0) > 0 ? "secondary" : "watch"
+  };
 
-  history.history[key] =
-    history.history[key]
-      .filter(r => {
-        const t = new Date(r.timestamp).getTime();
-        return t >= cutoff;
-      })
-      .slice(-500);
-
+  if (existingIndex >= 0) { snapshots[existingIndex] = receipt; updated++; }
+  else { snapshots.push(receipt); captured++; }
 });
 
-history.updatedAt = now.toISOString();
+let verifiedReceiptCount = 0;
+let legacySnapshotCount = 0;
+for (const [name, snapshots] of Object.entries(history.history)) {
+  history.history[name] = arr(snapshots).filter(row => {
+    if (row?.verifiedPregame === true) {
+      return !row.season || Number(row.season) === season;
+    }
+    return true;
+  }).slice(-500);
 
-fs.writeFileSync(
-  OUT_FILE,
-  JSON.stringify(history, null, 2)
-);
+  for (const row of history.history[name]) {
+    if (row?.verifiedPregame === true) verifiedReceiptCount++;
+    else legacySnapshotCount++;
+  }
+}
+
+history.updatedAt = nowIso;
+history.schemaVersion = "2.0";
+history.modelVersion = MODEL_VERSION;
+history.verification = { verifiedReceiptCount, legacySnapshotCount, captured, updated, skippedAfterStart };
+fs.writeFileSync(OUT_FILE, JSON.stringify(history, null, 2));
 
 console.log("AI HISTORY COMPLETE");
 console.log("Players:", Object.keys(history.history).length);
+console.log("Verified receipts:", verifiedReceiptCount);
+console.log("Captured / updated / skipped after start:", captured, updated, skippedAfterStart);
 console.log("Saved:", OUT_FILE);

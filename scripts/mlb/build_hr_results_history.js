@@ -54,6 +54,7 @@ function cleanHrRows(rows) {
       inning: r.inning || "",
       game: r.game || "",
       gameStartTime: r.gameStartTime || "",
+      status: r.status || "",
       score: r.score || "",
       hr: Number(r.hr || r.HR || 1),
       rbi: Number(r.rbi || 0),
@@ -103,6 +104,8 @@ function cleanEventRows(rows) {
       pitcherId: row.pitcherId || "",
       inning: row.inning || "",
       game: row.game || "",
+      gameStartTime: row.gameStartTime || "",
+      status: row.status || "",
       event: row.event || "",
       eventType: row.eventType || "",
       category: row.category,
@@ -126,15 +129,32 @@ function cleanEventRows(rows) {
     });
 }
 
-function upsertDay(days, date, rawRows, rawEventRows) {
+function completionStatus(payload) {
+  const scheduled = Number(payload?.totalScheduledGames || 0);
+  const finalGames = Number(payload?.finalGames || 0);
+  const liveGames = Number(payload?.liveGames || 0);
+  const skippedGames = Number(payload?.skippedGames || 0);
+  if (scheduled === 0) return "no_games_scheduled";
+  if (finalGames === scheduled && liveGames === 0 && skippedGames === 0) return "final";
+  return "in_progress";
+}
+
+function upsertDay(days, payload) {
+  const date = payload?.date;
   if (!date) return days;
 
-  const homeRuns = cleanHrRows(rawRows);
-  const playerEvents = cleanEventRows(rawEventRows);
-  if (!homeRuns.length && !playerEvents.length) return days;
+  const homeRuns = cleanHrRows(normalizeRows(payload));
+  const playerEvents = cleanEventRows(normalizeEventRows(payload));
 
   const dayEntry = {
     date,
+    sourceUpdatedAt: payload?.updatedAt || null,
+    status: completionStatus(payload),
+    totalScheduledGames: Number(payload?.totalScheduledGames || 0),
+    checkedGames: Number(payload?.checkedGames || 0),
+    skippedGames: Number(payload?.skippedGames || 0),
+    finalGames: Number(payload?.finalGames || 0),
+    liveGames: Number(payload?.liveGames || 0),
     homeRuns,
     playerEvents,
     total: homeRuns.reduce((sum, r) => sum + Number(r.hr || 0), 0)
@@ -156,22 +176,34 @@ let days = Array.isArray(history.days) ? history.days : [];
 
 const previous = readJSON(PREVIOUS_RESULTS_FILE, null);
 if (previous?.date) {
-  days = upsertDay(days, previous.date, normalizeRows(previous), normalizeEventRows(previous));
+  days = upsertDay(days, previous);
 }
 
 const live = readJSON(LIVE_RESULTS_FILE, null);
 if (live?.date) {
-  days = upsertDay(days, live.date, normalizeRows(live), normalizeEventRows(live));
+  days = upsertDay(days, live);
 }
+
+const currentSeason = String(new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/New_York", year: "numeric"
+}).format(new Date()));
 
 days = days
   .filter(d => d && d.date && (Array.isArray(d.homeRuns) || Array.isArray(d.playerEvents)))
-  .sort((a, b) => String(b.date).localeCompare(String(a.date)))
-  .slice(0, 60);
+  .filter(d => String(d.date).startsWith(`${currentSeason}-`))
+  .sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
 writeJSON(HISTORY_FILE, {
   updatedAt: new Date().toISOString(),
+  schemaVersion: "2.0",
+  season: Number(currentSeason),
   source: "live mlb_results.json plus previous day mlb_results_previous.json",
+  coverage: {
+    days: days.length,
+    finalDays: days.filter(day => day.status === "final").length,
+    inProgressDays: days.filter(day => day.status === "in_progress").length,
+    noGameDays: days.filter(day => day.status === "no_games_scheduled").length
+  },
   days
 });
 

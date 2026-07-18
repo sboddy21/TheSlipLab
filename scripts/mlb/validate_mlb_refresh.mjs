@@ -87,6 +87,71 @@ function validateDependencyOrder(times, before, after) {
   }
 }
 
+function validateVerifiedPregameReceipts() {
+  const payload = read("hr_ai_history.json");
+  const history = payload?.history;
+  if (!history || typeof history !== "object" || Array.isArray(history)) {
+    fail("hr_ai_history.json has an invalid history object");
+  }
+
+  let verifiedCount = 0;
+  for (const snapshots of Object.values(history)) {
+    if (!Array.isArray(snapshots)) fail("hr_ai_history.json contains a non-array player history");
+
+    for (const receipt of snapshots) {
+      if (receipt?.verifiedPregame !== true) continue;
+      verifiedCount++;
+
+      const snapshotAt = Date.parse(receipt.snapshotAt || receipt.timestamp);
+      const gameStartTime = Date.parse(receipt.gameStartTime);
+      const expectedId = `${receipt.slateDate}|${receipt.gamePk}|${receipt.playerId}`;
+      if (!receipt.slateDate || !Number(receipt.gamePk) || !Number(receipt.playerId)) {
+        fail("Verified HR receipt is missing its canonical game/player identity");
+      }
+      if (receipt.receiptId !== expectedId) {
+        fail(`Verified HR receipt has invalid receiptId ${receipt.receiptId || "missing"}`);
+      }
+      if (!Number.isFinite(snapshotAt) || !Number.isFinite(gameStartTime) || snapshotAt >= gameStartTime) {
+        fail(`Verified HR receipt ${receipt.receiptId} was not captured before first pitch`);
+      }
+      if (!receipt.modelVersion || receipt.verificationStatus !== "verified_before_first_pitch") {
+        fail(`Verified HR receipt ${receipt.receiptId} is missing model verification metadata`);
+      }
+      if (receipt.probability !== null && receipt.probability !== undefined) {
+        const probability = Number(receipt.probability);
+        if (!Number.isFinite(probability) || probability < 0 || probability > 100) {
+          fail(`Verified HR receipt ${receipt.receiptId} has invalid probability`);
+        }
+      }
+    }
+  }
+
+  if (Number(payload?.verification?.verifiedReceiptCount) !== verifiedCount) {
+    fail("hr_ai_history.json verified receipt count does not match stored receipts");
+  }
+}
+
+function validateCalibrationReport() {
+  const report = read("hr_calibration_report.json");
+  if (report?.schemaVersion !== "2.0" || report?.verification?.join !== "slateDate+gamePk+playerId") {
+    fail("hr_calibration_report.json is not using the verified receipt schema");
+  }
+
+  for (const window of ["7d", "30d", "season"]) {
+    const metrics = report?.windows?.[window];
+    if (!metrics) fail(`hr_calibration_report.json is missing ${window} metrics`);
+    const predictions = Number(metrics.predictions);
+    const hits = Number(metrics.hits);
+    if (!Number.isInteger(predictions) || !Number.isInteger(hits) || predictions < 0 || hits < 0 || hits > predictions) {
+      fail(`hr_calibration_report.json has invalid ${window} counts`);
+    }
+  }
+
+  if (Number(report?.summary?.fullBoard?.predictions) !== Number(report?.windows?.season?.predictions)) {
+    fail("hr_calibration_report.json season summary is inconsistent");
+  }
+}
+
 function validatePlayerCardSignals() {
   const payload = read("player_card_data.json");
   const players = Array.isArray(payload.players) ? payload.players : [];
@@ -583,6 +648,7 @@ const currentOutputs = [
   ["player_card_data.json", ["updatedAt"]],
   ["hr_ai_breakdowns.json", ["updatedAt"]],
   ["hr_ai_history.json", ["updatedAt"]],
+  ["hr_calibration_report.json", ["generatedAt"]],
   ["hr_ai_movement.json", ["updatedAt"]],
   ["ai_trust_engine.json", ["updatedAt"]],
   ["ai_reasoning_engine.json", ["updatedAt"]],
@@ -623,6 +689,7 @@ validateDependencyOrder(outputTimes, "lineup_impact_engine.json", "hr_decision_c
 validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
 validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
 validateDependencyOrder(outputTimes, "hr_ai_breakdowns.json", "hr_ai_history.json");
+validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_calibration_report.json");
 validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_ai_movement.json");
 validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.json");
 validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
@@ -647,6 +714,8 @@ validateRealPitcherAttackZones(today);
 validateHealthStatus(today, refreshAnchor);
 validatePlayerCardSignals();
 validatePlayerResultEvents();
+validateVerifiedPregameReceipts();
+validateCalibrationReport();
 
 const siteUpdated = read("site_last_updated.json");
 if (siteUpdated.source !== "mlb_fast_refresh") {

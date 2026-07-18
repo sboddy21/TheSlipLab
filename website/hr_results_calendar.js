@@ -50,7 +50,7 @@
     target.innerHTML = `
       <div class="section-heading compact hr-results-calendar-heading">
         <div>
-          <span>03 / Results archive</span>
+          <span>04 / Results archive</span>
           <h2>Review the record.</h2>
         </div>
         <p>Choose a completed slate to inspect its verified home-run outcomes.</p>
