@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-07-18T08:20:42.093Z",
+  "updatedAt": "2026-07-18T14:37:38.457Z",
   "date": "2026-07-18",
-  "slot": "closed",
+  "slot": "morning",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "morning",
+    "selected": "morning",
     "available": [
       "morning",
       "midday",
@@ -19,17 +19,60 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-18T08:20:42.093Z",
+    "checkedAt": "2026-07-18T14:37:38.457Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-18T08:20:41.877Z",
+        "timestamp": "2026-07-18T14:37:38.305Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "hr_decision_center.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-18T14:36:40.245Z",
+        "ageSeconds": 58
+      },
+      {
+        "file": "mlb_weather.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-18T14:36:04.703Z",
+        "ageSeconds": 93
+      },
+      {
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-18T14:37:38.127Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-07-18T14:37:36.533Z",
+        "ageSeconds": 1
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-07-18_MORNING_SLATE_READ",
+      "date": "2026-07-18",
+      "type": "slate_read",
+      "slot": "morning",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-07-18T14:37:38.457Z",
+      "text": "I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:\n\n1. Tyrone Taylor — 61.8 HR confidence | Splitter matchup\n2. Jordan Walker — 59.9 HR confidence | Curveball matchup 89.1\n3. Ben Rice — 59.9 HR confidence | 4 Seam matchup 69.6\n\nThe important part: Crushes this pitch mix.\n\nWho is your favorite HR look today?",
+      "players": [
+        "Tyrone Taylor",
+        "Jordan Walker",
+        "Ben Rice"
+      ],
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-07-18T14:37:38.305Z"
+    }
+  ]
 }
