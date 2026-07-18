@@ -26,6 +26,24 @@
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
   const playerNameKey = value => String(value || "").trim().toLowerCase();
+  const comparisonStorageKey = "the-slip-lab:five-game-comparison:v1";
+
+  function restoreGameComparison() {
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(comparisonStorageKey) || "[]");
+      state.selectedGameKeys = new Set(Array.isArray(saved) ? saved.map(String).slice(0, 5) : []);
+    } catch {
+      state.selectedGameKeys = new Set();
+    }
+  }
+
+  function saveGameComparison() {
+    try {
+      sessionStorage.setItem(comparisonStorageKey, JSON.stringify([...state.selectedGameKeys].slice(0, 5)));
+    } catch {
+      // The comparison remains usable when browser storage is unavailable.
+    }
+  }
 
   function indexPlayerCards(payload) {
     state.playerCardsById.clear();
@@ -372,6 +390,60 @@
     if (wind !== null) details.push(`${wind} mph${weather.windCompass ? ` ${weather.windCompass}` : ""}`);
     if (weather.status) details.push(String(weather.status));
     return details.length ? details.join(" · ") : "Updating";
+  }
+
+  function probabilityForRow(row) {
+    const value = state.probabilitiesByName.get(playerNameKey(row?.player));
+    return Number.isFinite(value) ? value : null;
+  }
+
+  function topProbabilityForGame(game) {
+    return allHitters(game)
+      .map(row => ({ row, score: probabilityForRow(row) }))
+      .filter(item => item.score !== null)
+      .sort((a, b) => b.score - a.score)[0] || null;
+  }
+
+  function weatherEnvironmentForGame(game) {
+    const scores = allHitters(game)
+      .map(row => finiteNumber(row?.hrEnvironmentScore))
+      .filter(value => value !== null);
+    return scores.length ? Math.max(...scores) : null;
+  }
+
+  function gameComparisonSnapshot(game) {
+    const risk = pitcherRiskSummary(game);
+    const topHitter = topHitterForGame(game);
+    const topProbability = topProbabilityForGame(game);
+    const bullpen = [bullpenLeaderForTeam(game.awayTeam), bullpenLeaderForTeam(game.homeTeam)]
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score)[0] || null;
+
+    return {
+      game,
+      key: gameKey(game),
+      risk,
+      topHitter,
+      topProbability,
+      bullpen,
+      weatherEnvironment: weatherEnvironmentForGame(game),
+      lineup: lineupStatusLabel(game)
+    };
+  }
+
+  function comparisonLeaders(snapshots) {
+    const leader = selector => snapshots
+      .map(snapshot => ({ snapshot, value: selector(snapshot) }))
+      .filter(item => Number.isFinite(Number(item.value)))
+      .sort((a, b) => b.value - a.value)[0] || null;
+
+    return [
+      { label: "Highest pitcher risk", item: leader(snapshot => snapshot.risk?.score ?? null), value: item => whole(item.snapshot.risk.score) },
+      { label: "Strongest top hitter", item: leader(snapshot => snapshot.topHitter?.score ?? null), value: item => `${item.snapshot.topHitter.row.player} · ${whole(item.snapshot.topHitter.score)}` },
+      { label: "Highest HR probability", item: leader(snapshot => snapshot.topProbability?.score ?? null), value: item => `${item.snapshot.topProbability.row.player} · ${item.snapshot.topProbability.score.toFixed(1)}%` },
+      { label: "Highest HR environment", item: leader(snapshot => snapshot.weatherEnvironment), value: item => whole(item.snapshot.weatherEnvironment) },
+      { label: "Highest bullpen risk", item: leader(snapshot => snapshot.bullpen?.score ?? null), value: item => whole(item.snapshot.bullpen.score) }
+    ].filter(entry => entry.item);
   }
 
 
@@ -1165,15 +1237,20 @@
     `;
   }
 
-  function comparisonGameCard(game) {
-    const risk = pitcherRiskSummary(game);
-    const topHitter = topHitterForGame(game);
+  function comparisonTarget(target) {
+    const probability = probabilityForRow(target.row);
+    const signals = slateSignalsFor(target.row);
+    return `<div class="comparison-target-row">
+      <div><strong>${esc(target.row.player)}</strong><span>${esc(target.row.team)} · vs ${esc(target.row.opposingPitcher || target.row.opposingProbablePitcher || "pitcher updating")}</span></div>
+      <div class="comparison-target-metrics"><b>${esc(whole(target.score))}<small>MODEL</small></b><b>${probability === null ? "Updating" : esc(probability.toFixed(1) + "%")}<small>HR PROB.</small></b></div>
+      ${signals.length ? `<div class="comparison-target-signals">${signals.map(signal => `<span title="${esc(signal.label)}"><i aria-hidden="true">${esc(signal.emoji)}</i>${esc(signal.label)}</span>`).join("")}</div>` : ""}
+    </div>`;
+  }
+
+  function comparisonGameCard(snapshot, leaderKeys) {
+    const { game, risk, topHitter, bullpen, key } = snapshot;
     const targets = topTargetsForGame(game);
-    const awayBullpen = bullpenLeaderForTeam(game.awayTeam);
-    const homeBullpen = bullpenLeaderForTeam(game.homeTeam);
-    const bullpenRows = [awayBullpen, homeBullpen].filter(Boolean).sort((a, b) => b.score - a.score);
-    const bullpen = bullpenRows[0] || null;
-    const key = gameKey(game);
+    const leaderBadges = leaderKeys.get(key) || [];
 
     return `
       <article class="comparison-game-card">
@@ -1181,6 +1258,7 @@
           <div><span>${esc(gameTime(game) || "Time updating")}</span><h3>${esc(code(game.awayTeam))} at ${esc(code(game.homeTeam))}</h3></div>
           <button type="button" data-remove-game="${esc(key)}" aria-label="Remove ${esc(game.awayTeam)} at ${esc(game.homeTeam)} from comparison">Remove</button>
         </div>
+        ${leaderBadges.length ? `<div class="comparison-leader-badges">${leaderBadges.map(label => `<span>${esc(label)}</span>`).join("")}</div>` : ""}
         <div class="comparison-signal-grid">
           <div><span>Highest pitcher risk</span><strong>${risk ? `${esc(risk.pitcher || "Pitcher")} · ${esc(whole(risk.score))}` : "Updating"}</strong></div>
           <div><span>Top hitter score</span><strong>${topHitter ? `${esc(topHitter.row.player)} · ${esc(whole(topHitter.score))}` : "Updating"}</strong></div>
@@ -1188,9 +1266,33 @@
           <div><span>Weather</span><strong>${esc(comparisonWeather(game))}</strong></div>
           <div><span>Peak bullpen HR risk</span><strong>${bullpen ? `${esc(bullpen.row.team)} · ${esc(whole(bullpen.score))}` : "Updating"}</strong></div>
         </div>
-        <div class="comparison-targets"><span>Existing model leaders</span>${targets.length ? targets.map(item => `<b>${esc(item.row.player)} <em>${esc(whole(item.score))}</em></b>`).join("") : "<b>Updating</b>"}</div>
+        <div class="comparison-targets"><span>Top live targets</span>${targets.length ? targets.map(comparisonTarget).join("") : "<b>Updating</b>"}</div>
       </article>
     `;
+  }
+
+  function comparisonLeaderStrip(leaders) {
+    if (!leaders.length) return "";
+    return `<section class="comparison-leaders" aria-label="Selected game category leaders">
+      ${leaders.map(entry => `<article><span>${esc(entry.label)}</span><strong>${esc(code(entry.item.snapshot.game.awayTeam))} at ${esc(code(entry.item.snapshot.game.homeTeam))}</strong><b>${esc(entry.value(entry.item))}</b></article>`).join("")}
+    </section>`;
+  }
+
+  function comparisonTable(snapshots) {
+    const cell = value => value === null || value === undefined || value === "" ? "Updating" : value;
+    return `<div class="comparison-table-wrap"><table class="comparison-table">
+      <caption>Direct comparison of existing live Slate signals</caption>
+      <thead><tr><th scope="col">Game</th><th scope="col">Lineups</th><th scope="col">Pitcher risk</th><th scope="col">Top hitter</th><th scope="col">HR probability</th><th scope="col">HR environment</th><th scope="col">Bullpen risk</th></tr></thead>
+      <tbody>${snapshots.map(snapshot => `<tr>
+        <th scope="row">${esc(code(snapshot.game.awayTeam))} at ${esc(code(snapshot.game.homeTeam))}<small>${esc(gameTime(snapshot.game) || "Time updating")}</small></th>
+        <td>${esc(snapshot.lineup)}</td>
+        <td>${snapshot.risk ? `${esc(whole(snapshot.risk.score))}<small>${esc(snapshot.risk.pitcher || "")}</small>` : "Updating"}</td>
+        <td>${snapshot.topHitter ? `${esc(snapshot.topHitter.row.player)}<small>Score ${esc(whole(snapshot.topHitter.score))}</small>` : "Updating"}</td>
+        <td>${snapshot.topProbability ? `${esc(snapshot.topProbability.score.toFixed(1))}%<small>${esc(snapshot.topProbability.row.player)}</small>` : "Updating"}</td>
+        <td>${esc(cell(snapshot.weatherEnvironment === null ? null : whole(snapshot.weatherEnvironment)))}</td>
+        <td>${snapshot.bullpen ? `${esc(whole(snapshot.bullpen.score))}<small>${esc(snapshot.bullpen.row.team)}</small>` : "Updating"}</td>
+      </tr>`).join("")}</tbody>
+    </table></div>`;
   }
 
   function renderGameComparison() {
@@ -1198,6 +1300,14 @@
     if (!host) return;
     const selected = selectedGames();
     const count = selected.length;
+    const snapshots = selected.map(gameComparisonSnapshot);
+    const leaders = comparisonLeaders(snapshots);
+    const leaderKeys = new Map();
+    leaders.forEach(entry => {
+      const key = entry.item.snapshot.key;
+      if (!leaderKeys.has(key)) leaderKeys.set(key, []);
+      leaderKeys.get(key).push(entry.label);
+    });
 
     host.innerHTML = `
       <div class="comparison-tray-head">
@@ -1207,7 +1317,7 @@
       ${state.selectionMessage ? `<div class="comparison-message">${esc(state.selectionMessage)}</div>` : ""}
       ${count ? `<div class="comparison-picks">${selected.map(game => `<button type="button" data-focus-game="${esc(gameKey(game))}">${esc(code(game.awayTeam))} at ${esc(code(game.homeTeam))}</button>`).join("")}</div>` : `<div class="comparison-empty">Use <b>Compare game</b> on any matchup card to build a focused slate.</div>`}
       ${count ? `<button class="comparison-analyze-button" type="button" data-analyze-games aria-expanded="${state.comparisonOpen}">${state.comparisonOpen ? "Hide consolidated analysis" : `Analyze ${count} selected game${count === 1 ? "" : "s"}`}</button>` : ""}
-      ${count && state.comparisonOpen ? `<div class="comparison-analysis"><div class="comparison-analysis-intro"><b>Consolidated live read</b><span>No new score is created here. Every value below comes directly from the current production Slate.</span></div><div class="comparison-analysis-grid">${selected.map(comparisonGameCard).join("")}</div></div>` : ""}
+      ${count && state.comparisonOpen ? `<div class="comparison-analysis"><div class="comparison-analysis-intro"><b>Five-game comparison analyzer</b><span>No composite score is created. Category leaders and every value below come directly from the current production Slate.</span></div>${comparisonLeaderStrip(leaders)}${comparisonTable(snapshots)}<div class="comparison-analysis-grid">${snapshots.map(snapshot => comparisonGameCard(snapshot, leaderKeys)).join("")}</div></div>` : ""}
     `;
     wireGameComparison();
   }
@@ -1223,6 +1333,7 @@
       state.selectionMessage = "Game added to comparison.";
     }
     if (!state.selectedGameKeys.size) state.comparisonOpen = false;
+    saveGameComparison();
     render();
   }
 
@@ -1237,6 +1348,7 @@
       state.selectedGameKeys.clear();
       state.comparisonOpen = false;
       state.selectionMessage = "Comparison cleared.";
+      saveGameComparison();
       render();
     });
     document.querySelector("[data-analyze-games]")?.addEventListener("click", () => {
@@ -1800,6 +1912,7 @@ body.tsl-editorial .sweet-bat.signal-hot-look,body.tsl-editorial .sweet-bat.sign
 .game-head-actions{display:flex;align-items:flex-end;flex-direction:column;gap:8px}.game-select-button{appearance:none;min-width:118px;padding:8px 11px;border:1px solid rgba(140,255,50,.42);border-radius:9px;background:rgba(140,255,50,.08);color:#baff83;font-size:10px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}.game-select-button:hover,.game-select-button[aria-pressed="true"]{background:#8cff32;border-color:#8cff32;color:#071007}.game-card-selected{border-color:#8cff32;box-shadow:0 0 0 1px rgba(140,255,50,.24),0 16px 40px rgba(0,0,0,.22)}
 .game-comparison{margin:0 0 18px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(135deg,rgba(16,31,32,.98),rgba(5,10,10,.98));overflow:hidden}.comparison-tray-head{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding:18px}.comparison-kicker{display:block;margin-bottom:6px;color:#8cff32;font-size:9px;font-weight:950;letter-spacing:.2em}.comparison-tray-head h2{margin:0 0 5px;font-size:21px}.comparison-tray-head p{max-width:720px;margin:0;color:#9fb0aa;font-size:12px;line-height:1.5}.comparison-tray-actions{display:flex;align-items:center;gap:10px;white-space:nowrap}.comparison-tray-actions strong{color:#8cff32;font-size:12px}.comparison-tray-actions button,.comparison-game-head button{appearance:none;border:1px solid rgba(255,255,255,.18);border-radius:8px;background:#11191b;color:#dce8e3;padding:7px 9px;font-size:10px;font-weight:900;cursor:pointer}.comparison-message{padding:9px 18px;border-top:1px solid rgba(255,255,255,.07);color:#ffd25a;font-size:11px;font-weight:850}.comparison-empty{padding:14px 18px;border-top:1px solid rgba(255,255,255,.07);color:#8d9c97;font-size:12px}.comparison-picks{display:flex;gap:8px;overflow:auto;padding:12px 18px;border-top:1px solid rgba(255,255,255,.07)}.comparison-picks button{appearance:none;white-space:nowrap;padding:8px 11px;border:1px solid rgba(0,224,164,.3);border-radius:999px;background:rgba(0,224,164,.08);color:#7fffe0;font-size:10px;font-weight:950;cursor:pointer}.comparison-analyze-button{appearance:none;width:calc(100% - 36px);margin:0 18px 18px;padding:12px 15px;border:1px solid #8cff32;border-radius:10px;background:#8cff32;color:#071007;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.comparison-analysis{border-top:1px solid rgba(255,255,255,.09);padding:18px}.comparison-analysis-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:14px}.comparison-analysis-intro b{font-size:14px;color:#fff}.comparison-analysis-intro span{max-width:620px;color:#8d9c97;font-size:11px;text-align:right}.comparison-analysis-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:10px}.comparison-game-card{min-width:0;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#071010;padding:13px}.comparison-game-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding-bottom:11px;border-bottom:1px solid rgba(255,255,255,.08)}.comparison-game-head span{color:#7f918b;font-size:9px;font-weight:900;text-transform:uppercase}.comparison-game-head h3{margin:3px 0 0;color:#fff;font-size:16px}.comparison-signal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.comparison-signal-grid>div{min-width:0;padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:7px;background:rgba(255,255,255,.025)}.comparison-signal-grid span,.comparison-targets>span{display:block;margin-bottom:4px;color:#758781;font-size:8px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.comparison-signal-grid strong{display:block;color:#eef8f3;font-size:11px;line-height:1.35}.comparison-targets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.comparison-targets>span{width:100%}.comparison-targets b{padding:5px 7px;border-radius:6px;background:rgba(140,255,50,.08);color:#dfffd0;font-size:9px}.comparison-targets em{color:#8cff32;font-style:normal}
 body.tsl-editorial .game-comparison{border-color:#071d36;border-radius:0;background:#fffdf7;color:#071d36}body.tsl-editorial .comparison-kicker{color:#9b3219}body.tsl-editorial .comparison-tray-head p,body.tsl-editorial .comparison-empty{color:#41566b}body.tsl-editorial .comparison-tray-actions strong{color:#084aab}body.tsl-editorial .comparison-tray-actions button,body.tsl-editorial .comparison-game-head button{border-color:#506071;border-radius:0;background:#f3f0e6;color:#071d36}body.tsl-editorial .comparison-message{border-color:rgba(7,29,54,.18);background:#fff1c7;color:#684800}body.tsl-editorial .comparison-picks,body.tsl-editorial .comparison-empty,body.tsl-editorial .comparison-analysis{border-color:rgba(7,29,54,.18)}body.tsl-editorial .comparison-picks button{border-color:#1268f3;border-radius:0;background:#e8f1ff;color:#084aab}body.tsl-editorial .comparison-analyze-button{border-color:#1268f3;border-radius:0;background:#1268f3;color:#fff}body.tsl-editorial .comparison-analysis-intro b{color:#071d36}body.tsl-editorial .comparison-analysis-intro span{color:#41566b}body.tsl-editorial .comparison-game-card{border-color:#071d36;border-radius:0;background:#fffdf7}body.tsl-editorial .comparison-game-head{border-color:rgba(7,29,54,.18)}body.tsl-editorial .comparison-game-head span{color:#52667a}body.tsl-editorial .comparison-game-head h3{color:#071d36}body.tsl-editorial .comparison-signal-grid>div{border-color:rgba(7,29,54,.18);border-radius:0;background:#f8f5ec}body.tsl-editorial .comparison-signal-grid span,body.tsl-editorial .comparison-targets>span{color:#52667a}body.tsl-editorial .comparison-signal-grid strong{color:#071d36}body.tsl-editorial .comparison-targets b{border:1px solid #aeb7bd;border-radius:0;background:#f3f0e6;color:#071d36}body.tsl-editorial .comparison-targets em{color:#084aab}body.tsl-editorial .game-select-button{border-color:#1268f3;border-radius:0;background:#e8f1ff;color:#084aab}body.tsl-editorial .game-select-button:hover,body.tsl-editorial .game-select-button[aria-pressed="true"]{background:#1268f3;color:#fff}body.tsl-editorial .game-card-selected{border-color:#1268f3;box-shadow:inset 5px 0 0 #1268f3}
+.comparison-leaders{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:14px}.comparison-leaders article{min-width:0;padding:10px;border:1px solid rgba(140,255,50,.2);border-radius:9px;background:rgba(140,255,50,.055)}.comparison-leaders span,.comparison-leaders strong,.comparison-leaders b{display:block}.comparison-leaders span{color:#8fa29b;font-size:8px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.comparison-leaders strong{margin-top:5px;color:#f4fff8;font-size:11px}.comparison-leaders b{margin-top:2px;color:#8cff32;font-size:12px}.comparison-table-wrap{margin-bottom:14px;overflow-x:auto;border:1px solid rgba(255,255,255,.1);border-radius:10px}.comparison-table{width:100%;min-width:850px;border-collapse:collapse;background:#071010;color:#eef8f3;font-size:10px}.comparison-table caption{padding:9px 11px;text-align:left;color:#93a59f;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.comparison-table th,.comparison-table td{padding:10px;border-top:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}.comparison-table thead th{color:#8cff32;font-size:8px;letter-spacing:.08em;text-transform:uppercase}.comparison-table tbody th{color:#fff;font-size:11px}.comparison-table small{display:block;margin-top:3px;color:#81928d;font-size:8px;font-weight:750}.comparison-leader-badges{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}.comparison-leader-badges span{padding:4px 6px;border:1px solid rgba(140,255,50,.3);border-radius:999px;background:rgba(140,255,50,.08);color:#baff86;font-size:7px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.comparison-targets{display:block}.comparison-target-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;margin-top:7px;padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:7px;background:rgba(255,255,255,.025)}.comparison-target-row strong,.comparison-target-row span{display:block}.comparison-target-row strong{color:#eef8f3;font-size:10px}.comparison-target-row>div:first-child span{margin-top:2px;color:#80928c;font-size:8px;line-height:1.3}.comparison-target-metrics{display:flex;gap:5px}.comparison-target-metrics b{min-width:43px;padding:4px!important;text-align:center}.comparison-target-metrics small{display:block;margin-top:2px;color:#7f918b;font-size:6px}.comparison-target-signals{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px}.comparison-target-signals span{display:inline-flex;align-items:center;gap:3px;padding:3px 5px;border-radius:999px;background:rgba(255,255,255,.05);color:#b9c8c3;font-size:7px;font-weight:850}.comparison-target-signals i{font-style:normal}.tsl-editorial .comparison-leaders article{border-color:#aeb7bd;border-radius:0;background:#f3f0e6}.tsl-editorial .comparison-leaders span{color:#52667a}.tsl-editorial .comparison-leaders strong{color:#071d36}.tsl-editorial .comparison-leaders b{color:#084aab}.tsl-editorial .comparison-table-wrap{border-color:#071d36;border-radius:0}.tsl-editorial .comparison-table{background:#fffdf7;color:#071d36}.tsl-editorial .comparison-table caption{color:#52667a}.tsl-editorial .comparison-table th,.tsl-editorial .comparison-table td{border-color:rgba(7,29,54,.18)}.tsl-editorial .comparison-table thead th{background:#071d36;color:#fff}.tsl-editorial .comparison-table tbody th{color:#071d36}.tsl-editorial .comparison-table small{color:#52667a}.tsl-editorial .comparison-leader-badges span{border-color:#1268f3;border-radius:0;background:#e8f1ff;color:#084aab}.tsl-editorial .comparison-target-row{border-color:rgba(7,29,54,.18);border-radius:0;background:#f8f5ec}.tsl-editorial .comparison-target-row strong{color:#071d36}.tsl-editorial .comparison-target-row>div:first-child span,.tsl-editorial .comparison-target-metrics small{color:#52667a}.tsl-editorial .comparison-target-signals span{border:1px solid #c2c9cd;border-radius:0;background:#fffdf7;color:#071d36}
 
 body.tsl-closed-slate{background:#050811!important}
 body.tsl-closed-slate main.wrap{max-width:none!important;min-height:calc(100vh - 132px);padding:0 0 80px!important;background:radial-gradient(circle at 70% 12%,rgba(18,104,243,.12),transparent 33%),#050811!important;color:#f4f7fb!important}
@@ -1884,12 +1997,14 @@ body.tsl-closed-slate #games{display:block;max-width:1500px;margin:0 auto;paddin
   async function load() {
     injectStyles();
     injectShell();
+    restoreGameComparison();
     indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));
     state.schedule = await json("./data/mlb_games_today.json", null);
     state.health = await json("./data/health_status.json", null);
     state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
     const currentGameKeys = new Set(state.games.map(gameKey));
     state.selectedGameKeys = new Set([...state.selectedGameKeys].filter(key => currentGameKeys.has(key)));
+    saveGameComparison();
     state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
     state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
