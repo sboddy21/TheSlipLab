@@ -129,6 +129,7 @@ const calibrated = rows
     const probability = clamp(logisticProbability(rawHrEventScore) * 100, 1.5, 24);
 
     return {
+      playerId: Number.isFinite(Number(row.playerId)) ? Number(row.playerId) : null,
       player,
       team,
       opponent,

@@ -555,6 +555,7 @@ const steps = [
   ["Bullpen Relievers", "node scripts/mlb/build_bullpen_relievers.js"],
   ["Master HR Model", "node scripts/mlb/build_master_hr_model.js"],
   ["Real HR Probability Engine", "node scripts/mlb/build_real_hr_probability_engine.js"],
+  ["Market Odds", "node scripts/mlb/build_market_odds.js"],
 
   ["Game Pitcher Matchups", "node scripts/mlb/build_game_pitcher_matchups.mjs"],
   ["Lineup Impact", "node scripts/mlb/build_lineup_impact_engine.js"],
@@ -604,6 +605,7 @@ const requiredOutputs = [
   { file: "bullpen_relievers.json", timestampFields: ["updatedAt"] },
   { file: "mlb_home_runs.json" },
   { file: "hr_probability_tracking.json", timestampFields: ["generatedAt"] },
+  { file: "mlb_market_odds.json", timestampFields: ["generatedAt"] },
   { file: "hr_decision_center.json", timestampFields: ["updatedAt"] },
   { file: "player_card_data.json", timestampFields: ["updatedAt"] },
   { file: "live_change_alerts.json", timestampFields: ["generatedAt"] },
@@ -711,6 +713,7 @@ try {
   validateDependencyOrder(outputTimes, "mlb_home_runs.json", "pitcher_attack_zones.json");
   validateDependencyOrder(outputTimes, "mlb_home_runs.json", "statcast_zones.json");
   validateDependencyOrder(outputTimes, "mlb_home_runs.json", "hr_probability_tracking.json");
+  validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "mlb_market_odds.json");
   validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_hits.json");
   validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_total_bases.json");
   validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_pitcher_strikeouts.json");

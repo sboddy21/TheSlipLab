@@ -35,6 +35,8 @@ jobs:
 
       - name: Run MLB refresh only
         timeout-minutes: 18
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/run_fast_refresh.js
 
       - name: Validate MLB data
