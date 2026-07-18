@@ -7,6 +7,8 @@ const API_ROOT = "https://api.the-odds-api.com/v4";
 const SPORT_KEY = "baseball_mlb";
 const MARKET_KEY = "batter_home_runs";
 const MAX_QUOTE_AGE_MS = Number(process.env.ODDS_MAX_QUOTE_AGE_MINUTES || 15) * 60 * 1000;
+const REQUEST_SPACING_MS = Number(process.env.ODDS_REQUEST_SPACING_MS || 500);
+const RATE_LIMIT_RETRY_DELAYS_MS = [2500, 5000];
 
 function read(file) {
   return JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -100,16 +102,33 @@ function captureQuota(headers) {
   return Object.keys(result).length ? result : null;
 }
 
+function sleep(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
 async function getJson(url) {
-  const response = await fetch(url, {
-    headers: { Accept: "application/json", "User-Agent": "the-slip-lab-market-odds" },
-    signal: AbortSignal.timeout(15000)
-  });
-  const text = await response.text();
-  if (!response.ok) {
+  for (let attempt = 0; attempt <= RATE_LIMIT_RETRY_DELAYS_MS.length; attempt++) {
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "the-slip-lab-market-odds" },
+      signal: AbortSignal.timeout(15000)
+    });
+    const text = await response.text();
+
+    if (response.ok) {
+      return { data: JSON.parse(text), quota: captureQuota(response.headers) };
+    }
+
+    const retryDelay = RATE_LIMIT_RETRY_DELAYS_MS[attempt];
+    if (response.status === 429 && retryDelay) {
+      console.warn(`The Odds API rate-limited a request; retrying in ${retryDelay / 1000}s`);
+      await sleep(retryDelay);
+      continue;
+    }
+
     throw new Error(`The Odds API returned HTTP ${response.status}: ${text.slice(0, 240)}`);
   }
-  return { data: JSON.parse(text), quota: captureQuota(response.headers) };
+
+  throw new Error("The Odds API request exhausted its rate-limit retries");
 }
 
 function currentGames(payload) {
@@ -257,6 +276,7 @@ async function main() {
     const now = Date.now();
 
     for (const match of matched.matches) {
+      await sleep(REQUEST_SPACING_MS);
       const query = new URLSearchParams({
         apiKey,
         regions: "us",
