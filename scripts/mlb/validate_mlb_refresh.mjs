@@ -741,6 +741,59 @@ for (const source of Object.keys(reasoning.sourceDebug || {})) {
   }
 }
 
+function validateReasoningSignals() {
+  const trust = read("ai_trust_engine.json");
+  const trustByPlayer = new Map(
+    (trust.players || []).map(row => [playerKey(row.player), Number(row.trustScore)])
+  );
+  const allowedSources = new Set([
+    "ai_trust_engine.json",
+    "hr_power_profiles.json",
+    "hr_probability_tracking.json"
+  ]);
+  const reports = Array.isArray(reasoning.reports) ? reasoning.reports : [];
+
+  if (!reports.length && !noGamesScheduled) {
+    fail("ai_reasoning_engine.json has no reports for the active slate");
+  }
+
+  for (const report of reports) {
+    const player = playerKey(report.player);
+    if (!player) fail("ai_reasoning_engine.json contains a report without a player");
+    if (!Array.isArray(report.supportingSignals) || !Array.isArray(report.counterSignals)) {
+      fail(`AI Reasoning is missing balanced signal arrays for ${report.player}`);
+    }
+    if (!Array.isArray(report.whyToday) || !Array.isArray(report.riskFactors)) {
+      fail(`AI Reasoning has invalid explanation arrays for ${report.player}`);
+    }
+
+    const expectedTrust = trustByPlayer.get(player);
+    if (!Number.isFinite(expectedTrust) || Number(report.confidence) !== expectedTrust) {
+      fail(`AI Reasoning confidence does not match AI Trust for ${report.player}`);
+    }
+
+    for (const item of [...report.supportingSignals, ...report.counterSignals]) {
+      if (!item || !String(item.key || "").trim() || !String(item.label || "").trim() || !String(item.detail || "").trim()) {
+        fail(`AI Reasoning has an incomplete structured signal for ${report.player}`);
+      }
+      if (!allowedSources.has(item.source)) {
+        fail(`AI Reasoning has an unverified signal source for ${report.player}: ${item.source || "missing"}`);
+      }
+      if (!new Set(["support", "moderate", "high"]).has(item.severity)) {
+        fail(`AI Reasoning has an invalid signal severity for ${report.player}`);
+      }
+      if (item.value !== null && !Number.isFinite(Number(item.value))) {
+        fail(`AI Reasoning has a non-numeric signal value for ${report.player}`);
+      }
+    }
+
+    const expected = report.expected || {};
+    if (expected.pitch === "Best matchup pitch" || expected.zone === "Damage zone" || expected.count === "Hitter's count") {
+      fail(`AI Reasoning reused a legacy invented expectation for ${report.player}`);
+    }
+  }
+}
+
 const registry = read("tag_registry.json");
 for (const tag of registry.tags || []) {
   for (const source of tag.source || []) {
@@ -753,6 +806,8 @@ for (const tag of registry.tags || []) {
 function playerKey(value) {
   return String(value || "").trim().toLowerCase();
 }
+
+validateReasoningSignals();
 
 const tracking = read("hr_probability_tracking.json");
 const trackingByPlayer = new Map(
