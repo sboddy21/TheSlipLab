@@ -103,11 +103,18 @@ jobs:
         if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
         run: node scripts/mlb/build_hr_results.js
 
+      - name: Build verified model report
+        if: env.X_SLOT_OVERRIDE == 'overnight'
+        run: node scripts/mlb/build_hr_calibration_report.js
+
       - name: Build current X stories
         run: node scripts/build_x_content.js
 
       - name: Build current X queue
         run: node scripts/content/build_x_daily_queue_v2.js
+
+      - name: Render verified X graphic
+        run: node scripts/content/render_x_graphics.js
 
       - name: Post X queue
         run: node scripts/content/post_x_queue.js
@@ -117,7 +124,7 @@ jobs:
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-          git add website/data/content/x_daily_queue.json website/data/content/x_post_history.json exports/content/x_daily_queue.json exports/content/x_daily_queue.txt || true
+          git add website/data/content/x_daily_queue.json website/data/content/x_post_history.json website/data/hr_calibration_report.json exports/content/x_daily_queue.json exports/content/x_daily_queue.txt || true
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
       - name: Push updates

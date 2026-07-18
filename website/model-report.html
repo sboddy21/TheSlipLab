@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Daily Model Report | The Slip Lab</title>
+  <meta name="description" content="The Slip Lab's verified daily MLB model report, built from finalized results and archived pregame model receipts.">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="stylesheet" href="./assets/site-header.css">
+  <link rel="stylesheet" href="./assets/model-report.css">
+  <script defer src="./assets/site-header.js"></script>
+  <script defer src="./model_report.js"></script>
+</head>
+<body class="tsl-editorial tsl-model-report-page">
+  <main class="report-shell">
+    <div class="report-strip"><span>Verified model receipts</span><span id="report-date-label">Loading report</span></div>
+    <header class="report-hero">
+      <div class="report-kicker">Public accountability / MLB</div>
+      <h1>The model report.<em>Receipts, not hindsight.</em></h1>
+      <p>Every published call on this page must match a completed game result to a model snapshot archived before that player's first pitch.</p>
+    </header>
+
+    <section id="report-state" class="report-state" aria-live="polite">
+      <strong>Loading the verified report…</strong>
+    </section>
+
+    <div id="verified-report" hidden>
+      <section class="report-scoreboard" aria-label="Daily model totals">
+        <article><span>Actual home runs</span><strong id="actual-home-runs">—</strong></article>
+        <article><span>Model expectation</span><strong id="expected-home-runs">—</strong></article>
+        <article><span>Difference</span><strong id="home-run-delta">—</strong></article>
+        <article><span>Pregame coverage</span><strong id="pregame-coverage">—</strong></article>
+      </section>
+
+      <section class="report-performance">
+        <header><div><span>Board accountability</span><h2>What the ranked board delivered.</h2></div><p>These are verified outcomes from the archived pregame board—not rankings rebuilt after the games.</p></header>
+        <div class="performance-grid">
+          <article><span>Top 10</span><strong id="top10-hits">—</strong><small id="top10-rate">—</small></article>
+          <article><span>Top 30</span><strong id="top30-hits">—</strong><small id="top30-rate">—</small></article>
+          <article><span>Full board</span><strong id="board-hits">—</strong><small id="board-rate">—</small></article>
+        </div>
+      </section>
+
+      <section class="report-list-section">
+        <header><span>Verified calls</span><h2>Documented before first pitch.</h2></header>
+        <div id="verified-calls" class="report-list"></div>
+      </section>
+
+      <section class="report-list-section misses-section">
+        <header><span>Notable misses</span><h2>The other side of the record.</h2></header>
+        <div id="notable-misses" class="report-list"></div>
+      </section>
+    </div>
+
+    <section class="report-method">
+      <h2>How verification works.</h2>
+      <p>The report requires a fully finalized MLB result slate and an exact player/game/date match to the latest archived model snapshot recorded before first pitch. If coverage is incomplete, inputs are stale or the slate is not final, the report stays unavailable. The model report is informational analysis, not a guarantee or sportsbook odds.</p>
+    </section>
+  </main>
+</body>
+</html>

@@ -13,6 +13,7 @@ if (process.env.X_DRY_RUN === undefined) {
 const ROOT = process.cwd();
 const QUEUE_FILE = path.join(ROOT, "website/data/content/x_daily_queue.json");
 const HISTORY_FILE = path.join(ROOT, "website/data/content/x_post_history.json");
+const GRAPHICS_ROOT = path.join(ROOT, "exports", "content", "graphics");
 
 const DRY_RUN = String(process.env.X_DRY_RUN || "true").toLowerCase() === "true";
 const MAX_POST_LENGTH = 25_000;
@@ -76,10 +77,22 @@ function validateQueueFreshness(queue) {
     throw new Error("X queue freshness validation failed: queue is outside the 15-minute production window");
   }
 
-  const expectedInputs = queue.slot === "closed" ? 1 : queue.slot === "overnight" ? 3 : 5;
+  const expectedInputs = queue.slot === "closed" ? 1 : queue.slot === "overnight" ? 4 : 5;
   if (queue.inputValidation?.status !== "passed" || !Array.isArray(queue.inputValidation.inputs) || queue.inputValidation.inputs.length !== expectedInputs) {
     throw new Error("X queue freshness validation failed: required live-input validation is missing");
   }
+}
+
+function graphicPath(post) {
+  if (!post.graphic) return null;
+  const filePath = path.resolve(ROOT, post.graphic);
+  if (!filePath.startsWith(`${GRAPHICS_ROOT}${path.sep}`) || path.extname(filePath).toLowerCase() !== ".png") {
+    throw new Error(`${post.id} has an invalid graphic path`);
+  }
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    throw new Error(`${post.id} graphic is missing`);
+  }
+  return filePath;
 }
 
 function validateQueue(posts) {
@@ -111,6 +124,12 @@ function validateQueue(posts) {
     if (!Number.isFinite(scheduledTime(post))) {
       errors.push(`${label} has an invalid scheduled_for_eastern value`);
     }
+
+    try { if (post.graphic) graphicPath(post); } catch (error) { errors.push(error.message); }
+    if (post.slot === "overnight" && (!post.graphic || post.graphicType !== "verified_model_report"
+      || post.verifiedPregame !== true || post.verifiedResults !== true)) {
+      errors.push(`${label} is missing verified overnight report proof`);
+    }
   }
 
   if (errors.length) {
@@ -119,13 +138,18 @@ function validateQueue(posts) {
 }
 
 async function publish(api, post) {
+  const image = post.graphic ? graphicPath(post) : null;
   if (DRY_RUN) {
     console.log(`DRY RUN OK: ${post.id}`);
     console.log(post.text);
+    if (image) console.log(`GRAPHIC: ${image}`);
     return null;
   }
 
-  const tweet = await api.v2.tweet({ text: post.text });
+  const mediaId = image ? await api.v1.uploadMedia(image, { mimeType: "image/png" }) : null;
+  const tweet = mediaId
+    ? await api.v2.tweet({ text: post.text, media: { media_ids: [mediaId] } })
+    : await api.v2.tweet({ text: post.text });
   return tweet?.data?.id || null;
 }
 
@@ -140,7 +164,12 @@ function recordSuccessfulPost(history, post) {
     type: post.type,
     slot: post.slot || null,
     text: post.text,
-    entities: post.players || post.entities || []
+    entities: post.players || post.entities || [],
+    graphic: post.graphic || null,
+    graphicType: post.graphicType || null,
+    reportDate: post.reportDate || null,
+    verifiedPregame: post.verifiedPregame === true,
+    verifiedResults: post.verifiedResults === true
   };
 
   const previous = Array.isArray(history.posts) ? history.posts : [];
