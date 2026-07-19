@@ -2,7 +2,7 @@
   "sport": "MLB",
   "market": "Home Runs",
   "version": "1.3",
-  "updatedAt": "2026-07-19T08:38:24.562Z",
+  "updatedAt": "2026-07-19T10:14:45.178Z",
   "playerCount": 390,
   "sourceDebug": {
     "ai_trust_engine.json": 780,
@@ -17632,6 +17632,100 @@
       }
     },
     {
+      "player": "Jo Adell",
+      "team": "Los Angeles Angels",
+      "opponent": "Detroit Tigers",
+      "game": "Detroit Tigers at Los Angeles Angels",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "No supporting signal crossed the current explanation threshold.",
+      "probability": 9,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "No supporting signal crossed the current explanation threshold."
+      ],
+      "riskFactors": [
+        "9% tracked HR probability (LONGSHOT).",
+        "23.7 HR Power Index (LOW POWER).",
+        "23.9 contact-damage score limits the supporting power case.",
+        "34.1 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "9% tracked HR probability (LONGSHOT).",
+          "value": 9,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "23.7 HR Power Index (LOW POWER).",
+          "value": 23.7,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "23.9 contact-damage score limits the supporting power case.",
+          "value": 23.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "34.1 launch-power score is below the stronger home-run profiles.",
+          "value": 34.1,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 23.7,
+        "truePowerScore": 26.4,
+        "contactDamageScore": 23.9,
+        "launchPowerScore": 34.1,
+        "strikeoutRate": 22.4,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Sam Antonacci",
       "team": "Chicago White Sox",
       "opponent": "Toronto Blue Jays",
@@ -22580,109 +22674,6 @@
         "contactDamageScore": 25.2,
         "launchPowerScore": 24.6,
         "strikeoutRate": 10.9,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Rhys Hoskins",
-      "team": "Cleveland Guardians",
-      "opponent": "Pittsburgh Pirates",
-      "game": "Pittsburgh Pirates at Cleveland Guardians",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "No supporting signal crossed the current explanation threshold.",
-      "probability": 5.5,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "No supporting signal crossed the current explanation threshold."
-      ],
-      "riskFactors": [
-        "5.5% tracked HR probability (LOW).",
-        "24 HR Power Index (LOW POWER).",
-        "32% strikeout rate can reduce damage opportunities.",
-        "19.4 contact-damage score limits the supporting power case.",
-        "31.1 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "5.5% tracked HR probability (LOW).",
-          "value": 5.5,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "24 HR Power Index (LOW POWER).",
-          "value": 24,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "contact_risk",
-          "label": "Contact risk",
-          "detail": "32% strikeout rate can reduce damage opportunities.",
-          "value": 32,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "19.4 contact-damage score limits the supporting power case.",
-          "value": 19.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "31.1 launch-power score is below the stronger home-run profiles.",
-          "value": 31.1,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 24,
-        "truePowerScore": 21.5,
-        "contactDamageScore": 19.4,
-        "launchPowerScore": 31.1,
-        "strikeoutRate": 32,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -37697,100 +37688,6 @@
       }
     },
     {
-      "player": "Jo Adell",
-      "team": "Los Angeles Angels",
-      "opponent": "Detroit Tigers",
-      "game": "Detroit Tigers at Los Angeles Angels",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "No supporting signal crossed the current explanation threshold.",
-      "probability": 9,
-      "confidence": 55,
-      "stars": 1,
-      "whyToday": [
-        "No supporting signal crossed the current explanation threshold."
-      ],
-      "riskFactors": [
-        "9% tracked HR probability (LONGSHOT).",
-        "23.7 HR Power Index (LOW POWER).",
-        "23.9 contact-damage score limits the supporting power case.",
-        "34.1 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "9% tracked HR probability (LONGSHOT).",
-          "value": 9,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "23.7 HR Power Index (LOW POWER).",
-          "value": 23.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "23.9 contact-damage score limits the supporting power case.",
-          "value": 23.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "34.1 launch-power score is below the stronger home-run profiles.",
-          "value": 34.1,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 55,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 23.7,
-        "truePowerScore": 26.4,
-        "contactDamageScore": 23.9,
-        "launchPowerScore": 34.1,
-        "strikeoutRate": 22.4,
-        "powerTier": "LOW_POWER",
-        "recentForm": 0
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "George Springer",
       "team": "Toronto Blue Jays",
       "opponent": "Chicago White Sox",
@@ -38419,6 +38316,109 @@
         "contactDamageScore": 14,
         "launchPowerScore": 27.2,
         "strikeoutRate": 20.4,
+        "powerTier": "LOW_POWER",
+        "recentForm": 0
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Rhys Hoskins",
+      "team": "Cleveland Guardians",
+      "opponent": "Pittsburgh Pirates",
+      "game": "Pittsburgh Pirates at Cleveland Guardians",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "No supporting signal crossed the current explanation threshold.",
+      "probability": 5.5,
+      "confidence": 55,
+      "stars": 1,
+      "whyToday": [
+        "No supporting signal crossed the current explanation threshold."
+      ],
+      "riskFactors": [
+        "5.5% tracked HR probability (LOW).",
+        "24 HR Power Index (LOW POWER).",
+        "32% strikeout rate can reduce damage opportunities.",
+        "19.4 contact-damage score limits the supporting power case.",
+        "31.1 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "5.5% tracked HR probability (LOW).",
+          "value": 5.5,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "24 HR Power Index (LOW POWER).",
+          "value": 24,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "contact_risk",
+          "label": "Contact risk",
+          "detail": "32% strikeout rate can reduce damage opportunities.",
+          "value": 32,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "19.4 contact-damage score limits the supporting power case.",
+          "value": 19.4,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "31.1 launch-power score is below the stronger home-run profiles.",
+          "value": 31.1,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 55,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 0,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 24,
+        "truePowerScore": 21.5,
+        "contactDamageScore": 19.4,
+        "launchPowerScore": 31.1,
+        "strikeoutRate": 32,
         "powerTier": "LOW_POWER",
         "recentForm": 0
       },
