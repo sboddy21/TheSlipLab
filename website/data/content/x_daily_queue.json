@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-07-20T09:42:15.848Z",
-  "date": "2026-07-20",
-  "slot": "closed",
+  "updatedAt": "2026-07-21T05:45:56.783Z",
+  "date": "2026-07-21",
+  "slot": "evening",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "evening",
+    "selected": "evening",
     "available": [
       "morning",
       "midday",
@@ -19,17 +19,63 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-20T09:42:15.848Z",
+    "checkedAt": "2026-07-21T05:45:56.783Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-20T09:42:15.632Z",
+        "timestamp": "2026-07-21T05:45:56.553Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "hr_decision_center.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-21T05:44:44.871Z",
+        "ageSeconds": 71
+      },
+      {
+        "file": "mlb_weather.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-21T05:37:37.950Z",
+        "ageSeconds": 498
+      },
+      {
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-21T05:45:56.254Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-07-21T05:45:54.744Z",
+        "ageSeconds": 2
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-07-21_EVENING_PROCESS_QUESTION",
+      "date": "2026-07-21",
+      "type": "process_question",
+      "slot": "evening",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-07-21T05:45:56.783Z",
+      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "posted": true,
+      "posted_at": "2026-07-21T05:45:57.239Z",
+      "x_post_id": "2079442735996817493",
+      "created_at": "2026-07-21T05:45:56.553Z",
+      "error": null
+    }
+  ]
 }
