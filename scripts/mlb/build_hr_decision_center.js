@@ -317,9 +317,11 @@ function cellsFromArray(values) {
   }));
 }
 
-function statcastZoneProfile(player) {
-  const row = statcastMap.get(norm(player));
-  const zones = row?.zones || {};
+function statcastZoneProfile(row) {
+  const player = playerName(row);
+  const playerId = text(pick(row, ["playerId", "mlbId", "id"]));
+  const statcastRow = statcastMap.get(playerId) || statcastMap.get(norm(player));
+  const zones = statcastRow?.zones || {};
 
   return {
     avgZones: cellsFromArray(zones.avg),
@@ -332,9 +334,11 @@ function statcastZoneProfile(player) {
   };
 }
 
-function zoneProfile(player) {
-  const row = attackMap.get(norm(player));
-  const zones = row?.zones || {};
+function zoneProfile(row) {
+  const player = playerName(row);
+  const playerId = text(pick(row, ["playerId", "mlbId", "id"]));
+  const attackRow = attackMap.get(playerId) || attackMap.get(norm(player));
+  const zones = attackRow?.zones || {};
   const zoneRows = Array.isArray(zones.zones) ? zones.zones : [];
 
   const hitterPower = zones.hitterPower === null || zones.hitterPower === undefined ? null : num(zones.hitterPower);
@@ -614,8 +618,8 @@ function buildCard(row) {
     pitchMap.get(norm(player)) ||
     {}
   );
-  const zone = zoneProfile(player);
-  const statcast = statcastZoneProfile(player);
+  const zone = zoneProfile(row);
+  const statcast = statcastZoneProfile(row);
 
   const powerScore = round(num(pick(row, ["score", "hr_score", "modelScore", "final_score"])) || 50);
   const hardHit = round(num(pick(row, ["hard_hit", "hardHit", "hard_hit_rate"])));

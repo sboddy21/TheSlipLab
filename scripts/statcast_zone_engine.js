@@ -453,9 +453,11 @@ async function main() {
   const uncached = [];
 
   for (const player of players) {
-    const cached = canReusePrevious ? previous.players?.[player.player] : null;
+    const cached = canReusePrevious
+      ? previous.players?.[String(player.playerId)] || previous.players?.[player.player]
+      : null;
     if (validZoneCard(cached, player.playerId)) {
-      output.players[player.player] = cached;
+      output.players[String(player.playerId)] = cached;
       done++;
       console.log(`[${done}/${totalProfiles}] CACHE BATTER: ${player.player} ${player.playerId}`);
       continue;
@@ -520,7 +522,7 @@ async function main() {
           opponent: item.profile.opponent
         };
       } else {
-        output.players[item.profile.player] = {
+        output.players[String(item.id)] = {
           ...common,
           player: item.profile.player,
           team: item.profile.team,

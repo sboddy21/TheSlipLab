@@ -190,12 +190,13 @@ function main() {
     const matchup = matchupMap.get(`id:${row.playerId}`) || matchupMap.get(`name:${norm(row.player)}`);
     if (!matchup) throw new Error(`No current opposing pitcher mapping for ${row.player}`);
 
-    const hitterCard = statcast.players?.[row.player];
+    const hitterCard = statcast.players?.[String(row.playerId)] || statcast.players?.[row.player];
     const pitcherCard = statcast.pitchers?.[matchup.pitcherId];
     if (!hitterCard) throw new Error(`No current Statcast hitter zones for ${row.player}`);
     if (!pitcherCard) throw new Error(`No current Statcast pitcher zones for ${matchup.pitcher}`);
 
-    output.players[row.player] = {
+    output.players[String(row.playerId)] = {
+      player: row.player,
       playerId: row.playerId,
       team: row.team || null,
       opposingPitcher: matchup.pitcher,

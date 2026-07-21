@@ -363,7 +363,7 @@ function validateRealStatcastZones(expectedDate) {
   }
 
   for (const player of players) {
-    const row = statcast.players[player.player];
+    const row = statcast.players[String(player.playerId || player.mlbId || player.id)] || statcast.players[player.player];
     if (!row || String(row.playerId || row.mlbId || "") !== String(player.playerId || player.mlbId || player.id)) {
       throw new Error(`statcast_zones.json is missing the current row for ${player.player}`);
     }
@@ -451,9 +451,9 @@ function validateRealPitcherAttackZones(expectedDate) {
   };
 
   for (const player of hr) {
-    const row = attack.players[player.player];
+    const row = attack.players[String(player.playerId)] || attack.players[player.player];
     const pitcherId = matchupByPlayerId.get(String(player.playerId));
-    const hitterCard = statcast.players?.[player.player];
+    const hitterCard = statcast.players?.[String(player.playerId)] || statcast.players?.[player.player];
     const pitcherCard = statcast.pitchers?.[pitcherId];
     if (!row || !pitcherId || !hitterCard || !pitcherCard) {
       throw new Error(`Real attack-zone dependency is missing for ${player.player}`);

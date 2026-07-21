@@ -58,9 +58,13 @@ function laneName(index, batSide) {
   return "Right Lane";
 }
 
+function playerEntry(store, row) {
+  return store.players?.[String(row.playerId || "")] || store.players?.[row.player] || null;
+}
+
 function buildRegions(row, statcast, attack) {
-  const playerZones = statcast.players?.[row.player]?.zones || {};
-  const attackZones = attack.players?.[row.player]?.zones?.zones || [];
+  const playerZones = playerEntry(statcast, row)?.zones || {};
+  const attackZones = playerEntry(attack, row)?.zones?.zones || [];
 
   const iso = playerZones.iso || [];
   const hr = playerZones.hr || [];
@@ -136,7 +140,8 @@ function main() {
   for (const row of rows) {
     if (!row.player) continue;
 
-    output.players[row.player] = {
+    output.players[String(row.playerId || row.player)] = {
+      player: row.player,
       playerId: row.playerId || null,
       team: row.team || null,
       regions: buildRegions(row, statcast, attack)
