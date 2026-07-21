@@ -347,16 +347,28 @@ if (probablePitcherIds.length !== slateGames.length * 2) {
 }
 
 const pitcherStatsById = new Map();
+const unavailablePitcherIds = new Set();
 for (const id of probablePitcherIds) {
   const stats = await getPitcherStats(id);
-  if (!stats) throw new Error(`Missing live MLB season stats for probable pitcher ${id}`);
-  pitcherStatsById.set(id, stats);
+  if (stats) pitcherStatsById.set(id, stats);
+  else unavailablePitcherIds.add(id);
 }
 
 const liveSlateMedian = median([...pitcherStatsById.values()].map(rawPitcherVulnerability));
 const pitcherCache = new Map([...pitcherStatsById.entries()].map(([id, stats]) => {
-  return [id, { ...pitcherVulnerability(stats, liveSlateMedian), stats }];
+  return [id, { ...pitcherVulnerability(stats, liveSlateMedian), stats, available: true, status: "available" }];
 }));
+for (const id of unavailablePitcherIds) {
+  pitcherCache.set(id, {
+    score: null,
+    rawScore: null,
+    sampleWeight: null,
+    trueInnings: null,
+    stats: null,
+    available: false,
+    status: "updating"
+  });
+}
 
 async function getVulnerability(id) {
   const key = String(id || "");
@@ -393,7 +405,8 @@ for (const slateGame of slateGames) {
       opposingPitcher: clean(slateGame.homeProbablePitcher, "TBD"),
       opposingPitcherId: homePitcherId,
       pitcherRisk: homeVuln.score,
-      pitcherVulnerability: homeVuln.score
+      pitcherVulnerability: homeVuln.score,
+      pitcherRiskAvailable: homeVuln.available
     }))
     .sort((a, b) => scoreOf(b) - scoreOf(a));
 
@@ -405,7 +418,8 @@ for (const slateGame of slateGames) {
       opposingPitcher: clean(slateGame.awayProbablePitcher, "TBD"),
       opposingPitcherId: awayPitcherId,
       pitcherRisk: awayVuln.score,
-      pitcherVulnerability: awayVuln.score
+      pitcherVulnerability: awayVuln.score,
+      pitcherRiskAvailable: awayVuln.available
     }))
     .sort((a, b) => scoreOf(b) - scoreOf(a));
 
@@ -420,7 +434,9 @@ for (const slateGame of slateGames) {
     vulnerabilityRaw: awayVuln.rawScore,
     vulnerabilitySampleWeight: awayVuln.sampleWeight,
     vulnerabilityTrueInnings: awayVuln.trueInnings,
-    stats: awayVuln.stats
+    stats: awayVuln.stats,
+    available: awayVuln.available,
+    status: awayVuln.status
   };
 
   const homePitcher = {
@@ -434,7 +450,9 @@ for (const slateGame of slateGames) {
     vulnerabilityRaw: homeVuln.rawScore,
     vulnerabilitySampleWeight: homeVuln.sampleWeight,
     vulnerabilityTrueInnings: homeVuln.trueInnings,
-    stats: homeVuln.stats
+    stats: homeVuln.stats,
+    available: homeVuln.available,
+    status: homeVuln.status
   };
 
   pitcherRows.push(awayPitcher, homePitcher);
