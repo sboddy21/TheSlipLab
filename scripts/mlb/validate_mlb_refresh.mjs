@@ -344,10 +344,18 @@ function validatePitchDamageCache(expectedDate) {
     fail("pitch_type_damage.json has an invalid players object");
   }
 
+  const playerIdsByName = new Map();
+
   for (const player of players) {
     const playerId = String(player.playerId || player.mlbId || player.id || "").trim();
     const playerName = String(player.player || "").trim();
     if (!playerId || !playerName) fail("Current player pool contains a player without a name or MLB ID");
+
+    const existingId = playerIdsByName.get(playerName);
+    if (existingId && existingId !== playerId) {
+      fail(`Current player pool has multiple MLB IDs for ${playerName}: ${existingId}, ${playerId}`);
+    }
+    playerIdsByName.set(playerName, playerId);
 
     const cached = cache.players[`${playerId}|${expectedDate.slice(0, 4)}`];
     if (!cached || easternDate(cached.cached_at) !== expectedDate) {
@@ -359,8 +367,8 @@ function validatePitchDamageCache(expectedDate) {
     }
   }
 
-  if (Object.keys(damage.players).length !== players.length) {
-    fail(`pitch_type_damage.json has ${Object.keys(damage.players).length} players; expected ${players.length}`);
+  if (Object.keys(damage.players).length !== playerIdsByName.size) {
+    fail(`pitch_type_damage.json has ${Object.keys(damage.players).length} players; expected ${playerIdsByName.size}`);
   }
 }
 

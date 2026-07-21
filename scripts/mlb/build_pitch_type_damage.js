@@ -406,6 +406,18 @@ async function main() {
     return { index, row, player, playerId };
   });
 
+  const playerIdsByName = new Map();
+  for (const { player, playerId } of preparedPlayers) {
+    const existingId = playerIdsByName.get(player);
+    if (existingId && existingId !== playerId) {
+      throw new Error(
+        `Pitch type damage cannot key two MLB player IDs by the same name ${player}: ${existingId}, ${playerId}`
+      );
+    }
+    playerIdsByName.set(player, playerId);
+  }
+  const expectedPlayerCount = playerIdsByName.size;
+
   const results = new Array(preparedPlayers.length);
   const uncached = [];
 
@@ -507,9 +519,10 @@ async function main() {
    * Cache and output writes intentionally remain below the complete-player check.
    * A failed live request therefore cannot replace production data with a partial file.
    */
-  if (Object.keys(output.players).length !== players.length) {
+  if (Object.keys(output.players).length !== expectedPlayerCount) {
     throw new Error(
-      `Pitch type damage produced ${Object.keys(output.players).length} players for a ${players.length}-player pool`
+      `Pitch type damage produced ${Object.keys(output.players).length} players for ` +
+      `${expectedPlayerCount} unique players in a ${players.length}-row pool`
     );
   }
 
