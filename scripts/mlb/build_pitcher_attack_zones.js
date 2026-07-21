@@ -96,7 +96,7 @@ function attackLabel(danger) {
 
 function buildZoneGrid(row, hitterCard, pitcherCard) {
   const hitter = xwobaProfile(hitterCard.zones, { requireSamples: false });
-  const pitcher = xwobaProfile(pitcherCard.zones);
+  const pitcher = xwobaProfile(pitcherCard.zones, { requireSamples: false });
 
   const zones = Array.from({ length: 25 }, (_, index) => {
     const hitterSamples = n(hitter.raw[index]?.xwobaCount);
@@ -125,9 +125,9 @@ function buildZoneGrid(row, hitterCard, pitcherCard) {
   return {
     side: String(row.batSide || hitterCard.batSide || "B").toUpperCase(),
     hitterPower: hitter.xwoba === null ? null : round(clamp(hitter.xwoba * 100, 0, 100), 2),
-    pitcherLeak: round(clamp(pitcher.xwoba * 100, 0, 100), 2),
+    pitcherLeak: pitcher.xwoba === null ? null : round(clamp(pitcher.xwoba * 100, 0, 100), 2),
     hitterXwoba: hitter.xwoba === null ? null : round(hitter.xwoba),
-    pitcherXwobaAllowed: round(pitcher.xwoba),
+    pitcherXwobaAllowed: pitcher.xwoba === null ? null : round(pitcher.xwoba),
     hitterSamples: hitter.samples,
     pitcherSamples: pitcher.samples,
     qualified: hitter.samples > 0,
