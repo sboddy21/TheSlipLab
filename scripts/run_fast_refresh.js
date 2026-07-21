@@ -289,11 +289,19 @@ function validatePitcherVulnerability(expectedDate) {
   const byId = new Map();
   for (const row of rows) {
     const id = String(row.id || "");
+    const available = row.available !== false;
     const score = Number(row.vulnerability);
     const raw = Number(row.vulnerabilityRaw);
     const weight = Number(row.vulnerabilitySampleWeight);
     const innings = Number(row.vulnerabilityTrueInnings);
     if (!id || byId.has(id)) throw new Error(`pitcher_vulnerability.json has a missing or duplicate pitcher ID ${id || "unknown"}`);
+    if (!available) {
+      if (row.status !== "updating" || row.vulnerability !== null || row.stats !== null) {
+        throw new Error(`Unavailable pitcher ${row.pitcher || id} must be marked updating without invented stats or risk`);
+      }
+      byId.set(id, null);
+      continue;
+    }
     if (!Number.isFinite(score) || score < 12 || score > 98) throw new Error(`Invalid risk index for ${row.pitcher || id}`);
     if (!Number.isFinite(raw) || raw < 0 || raw > 100) throw new Error(`Invalid raw risk index for ${row.pitcher || id}`);
     if (!Number.isFinite(weight) || weight <= 0 || weight > 1) throw new Error(`Invalid sample weight for ${row.pitcher || id}`);
@@ -307,7 +315,10 @@ function validatePitcherVulnerability(expectedDate) {
     for (const side of ["away", "home"]) {
       const pitcher = game[`${side}Pitcher`] || {};
       const id = String(pitcher.id || "");
-      if (!byId.has(id) || Number(pitcher.vulnerability) !== byId.get(id)) {
+      const expected = byId.get(id);
+      if (!byId.has(id) || (expected === null
+        ? pitcher.available !== false || pitcher.status !== "updating" || pitcher.vulnerability !== null
+        : Number(pitcher.vulnerability) !== expected)) {
         throw new Error(`${game.matchup || game.game} has a non-canonical ${side} pitcher risk index`);
       }
     }
