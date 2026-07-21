@@ -648,7 +648,11 @@ function validateRealPitcherAttackZones(expectedDate) {
     fail(`pitcher_attack_zones.json does not contain exactly ${hr.length} players`);
   }
 
-  const decisionByPlayer = new Map((decision.allPlayers || []).map(row => [row.player, row]));
+  const decisionByPlayer = new Map();
+  for (const row of decision.allPlayers || []) {
+    if (row.playerId) decisionByPlayer.set(String(row.playerId), row);
+    if (row.player) decisionByPlayer.set(row.player, row);
+  }
   const roundTo = (value, places = 2) => {
     const mult = 10 ** places;
     return Math.round(Number(value) * mult) / mult;
@@ -721,7 +725,7 @@ function validateRealPitcherAttackZones(expectedDate) {
       roundTo(hitterOverall) * 0.34 + roundTo(pitcherOverall) * 0.34 +
       (overlapTotal / qualifiedCount) * 0.22 + hotCount * 1.8
     ))) : null;
-    const decisionRow = decisionByPlayer.get(player.player);
+    const decisionRow = decisionByPlayer.get(String(player.playerId)) || decisionByPlayer.get(player.player);
     if (!decisionRow || (expectedScore === null
       ? decisionRow.zoneOverlap !== null || decisionRow.zoneSignalAvailable !== false
       : Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01)) {
