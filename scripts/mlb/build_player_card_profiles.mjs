@@ -27,6 +27,7 @@ function rows(data) {
   if (Array.isArray(data.players)) return data.players;
   if (Array.isArray(data.rows)) return data.rows;
   if (Array.isArray(data.data)) return data.data;
+  if (data.players && typeof data.players === "object") return Object.values(data.players);
 
   return [];
 }

@@ -344,31 +344,32 @@ function validatePitchDamageCache(expectedDate) {
     fail("pitch_type_damage.json has an invalid players object");
   }
 
-  const playerIdsByName = new Map();
+  const playerNamesById = new Map();
 
   for (const player of players) {
     const playerId = String(player.playerId || player.mlbId || player.id || "").trim();
     const playerName = String(player.player || "").trim();
     if (!playerId || !playerName) fail("Current player pool contains a player without a name or MLB ID");
 
-    const existingId = playerIdsByName.get(playerName);
-    if (existingId && existingId !== playerId) {
-      fail(`Current player pool has multiple MLB IDs for ${playerName}: ${existingId}, ${playerId}`);
+    const existingName = playerNamesById.get(playerId);
+    if (existingName && existingName !== playerName) {
+      fail(`Current player pool has conflicting names for MLB ID ${playerId}: ${existingName}, ${playerName}`);
     }
-    playerIdsByName.set(playerName, playerId);
+    playerNamesById.set(playerId, playerName);
 
     const cached = cache.players[`${playerId}|${expectedDate.slice(0, 4)}`];
     if (!cached || easternDate(cached.cached_at) !== expectedDate) {
       fail(`Pitch damage cache is not current for ${playerName}`);
     }
 
-    if (!Object.prototype.hasOwnProperty.call(damage.players, playerName)) {
-      fail(`pitch_type_damage.json is missing ${playerName}`);
+    const damageRow = damage.players[playerId];
+    if (!damageRow || String(damageRow.playerId || "") !== playerId || String(damageRow.player || "") !== playerName) {
+      fail(`pitch_type_damage.json is missing the ID-keyed record for ${playerName} (${playerId})`);
     }
   }
 
-  if (Object.keys(damage.players).length !== playerIdsByName.size) {
-    fail(`pitch_type_damage.json has ${Object.keys(damage.players).length} players; expected ${playerIdsByName.size}`);
+  if (Object.keys(damage.players).length !== playerNamesById.size) {
+    fail(`pitch_type_damage.json has ${Object.keys(damage.players).length} players; expected ${playerNamesById.size}`);
   }
 }
 

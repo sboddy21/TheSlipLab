@@ -406,17 +406,17 @@ async function main() {
     return { index, row, player, playerId };
   });
 
-  const playerIdsByName = new Map();
+  const playerNamesById = new Map();
   for (const { player, playerId } of preparedPlayers) {
-    const existingId = playerIdsByName.get(player);
-    if (existingId && existingId !== playerId) {
+    const existingName = playerNamesById.get(playerId);
+    if (existingName && existingName !== player) {
       throw new Error(
-        `Pitch type damage cannot key two MLB player IDs by the same name ${player}: ${existingId}, ${playerId}`
+        `MLB player ID ${playerId} has conflicting names in the current pool: ${existingName}, ${player}`
       );
     }
-    playerIdsByName.set(player, playerId);
+    playerNamesById.set(playerId, player);
   }
-  const expectedPlayerCount = playerIdsByName.size;
+  const expectedPlayerCount = playerNamesById.size;
 
   const results = new Array(preparedPlayers.length);
   const uncached = [];
@@ -504,7 +504,10 @@ async function main() {
       throw new Error("Pitch type damage did not complete every current player; existing outputs were not replaced");
     }
 
-    output.players[result.player] = result.value;
+    output.players[result.value.playerId] = {
+      player: result.player,
+      ...result.value
+    };
 
     if (result.cacheKey) {
       cache.players[result.cacheKey] = result.cacheValue;
