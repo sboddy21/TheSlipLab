@@ -501,19 +501,12 @@ async function main() {
       const zones = buildMetricZones(statcastRows);
       const zonePitchCount = zones.raw.reduce((sum, cell) => sum + cell.pitches, 0);
 
-      if (item.kind === "pitcher" && (!statcastRows.length || !zonePitchCount)) {
-        failure = new Error(
-          `Statcast returned no real pitcher-zone sample for ${item.name}; existing output was not replaced`
-        );
-        return;
-      }
-
       const common = {
         mlbId: item.id,
         playerId: item.id,
         rows: statcastRows.length,
         zonePitchCount,
-        source: statcastRows.length ? SOURCE : "no_real_statcast_sample",
+        source: zonePitchCount ? SOURCE : "no_real_statcast_sample",
         cached_at: new Date().toISOString(),
         zones
       };

@@ -607,11 +607,13 @@ function validateRealStatcastZones(expectedDate) {
     if (rawPitchCount !== Number(row.zonePitchCount || 0)) {
       fail(`Statcast pitcher raw pitch count does not match for ${row.pitcher || pitcherId}`);
     }
-    if (Number(row.rows) <= 0 || Number(row.zonePitchCount) <= 0) {
+    const hasRealSample = Number(row.rows) > 0 && Number(row.zonePitchCount) > 0;
+    const markedNoSample = row.source === "no_real_statcast_sample" && Number(row.zonePitchCount) === 0;
+    if (!hasRealSample && !markedNoSample) {
       fail(`Statcast pitcher zones have no real sample for ${row.pitcher || pitcherId}`);
     }
-    pitchersWithRows++;
-    pitchersWithZones++;
+    if (Number(row.rows) > 0) pitchersWithRows++;
+    if (Number(row.zonePitchCount) > 0) pitchersWithZones++;
   }
 
   if (Number(statcast.pitcherCount) !== pitcherIds.size) fail("Statcast pitcherCount is incorrect");
@@ -672,14 +674,15 @@ function validateRealPitcherAttackZones(expectedDate) {
 
     const hitterXwoba = overallXwoba(hitterCard.zones.raw, false);
     const hitterOverall = hitterXwoba === null ? null : Math.min(100, hitterXwoba * 100);
-    const pitcherOverall = Math.min(100, overallXwoba(pitcherCard.zones.raw) * 100);
+    const pitcherXwoba = overallXwoba(pitcherCard.zones.raw, false);
+    const pitcherOverall = pitcherXwoba === null ? null : Math.min(100, pitcherXwoba * 100);
     if (hitterOverall === null ? row.zones?.hitterPower !== null : Math.abs(Number(row.zones?.hitterPower) - roundTo(hitterOverall)) > 0.01) {
       fail(`Attack-zone hitter power is incorrect for ${player.player}`);
     }
     if (row.zones?.qualified !== (hitterOverall !== null)) {
       fail(`Attack-zone qualification is incorrect for ${player.player}`);
     }
-    if (Math.abs(Number(row.zones?.pitcherLeak) - roundTo(pitcherOverall)) > 0.01) {
+    if (pitcherOverall === null ? row.zones?.pitcherLeak !== null : Math.abs(Number(row.zones?.pitcherLeak) - roundTo(pitcherOverall)) > 0.01) {
       fail(`Attack-zone pitcher leak is incorrect for ${player.player}`);
     }
 
@@ -724,7 +727,7 @@ function validateRealPitcherAttackZones(expectedDate) {
       : Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01)) {
       fail(`Decision Center zone overlap is incorrect for ${player.player}`);
     }
-    const expectedPitcherRisk = expectedScore === null ? roundTo(pitcherOverall) : expectedScore;
+    const expectedPitcherRisk = expectedScore === null ? (pitcherOverall === null ? 0 : roundTo(pitcherOverall)) : expectedScore;
     if (Math.abs(Number(decisionRow.pitcherRisk) - expectedPitcherRisk) > 0.01) {
       fail(`Decision Center pitcher risk is incorrect for ${player.player}`);
     }
