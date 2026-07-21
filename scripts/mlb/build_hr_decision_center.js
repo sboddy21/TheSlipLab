@@ -213,6 +213,8 @@ function makePlayerMap(rows) {
     const player = playerName(row);
     if (!player) continue;
     map.set(norm(player), row);
+    const playerId = text(pick(row, ["playerId", "mlbId", "id"]));
+    if (playerId) map.set(playerId, row);
   }
 
   return map;
@@ -607,7 +609,11 @@ function buildCard(row) {
   const opponent = text(pick(row, ["opponent", "opp", "opposing_team"]));
   const game = gameName(row);
 
-  const pitchProfile = bestPitchProfile(pitchMap.get(norm(player)) || {});
+  const pitchProfile = bestPitchProfile(
+    pitchMap.get(text(pick(row, ["playerId", "mlbId", "id"]))) ||
+    pitchMap.get(norm(player)) ||
+    {}
+  );
   const zone = zoneProfile(player);
   const statcast = statcastZoneProfile(player);
 

@@ -83,9 +83,10 @@ function buildPlayerIdMap() {
     const json = readJson(file, {});
     const players = json.players || {};
 
-    for (const [name, row] of Object.entries(players)) {
+    for (const [key, row] of Object.entries(players)) {
       const playerId = row.playerId || row.mlbId || row.id;
-      if (playerId) map.set(norm(name), playerId);
+      const playerName = row.player || row.name || key;
+      if (playerId) map.set(norm(playerName), playerId);
     }
   }
 
