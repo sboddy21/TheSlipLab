@@ -235,7 +235,10 @@ async function main() {
 
   const players = (decision.allPlayers || [])
     .filter(p => p.player)
-    .filter((p, i, arr) => arr.findIndex(x => x.player === p.player) === i)
+    .filter((p, i, arr) => {
+      const key = p.playerId ? String(p.playerId) : p.player;
+      return arr.findIndex(x => (x.playerId ? String(x.playerId) : x.player) === key) === i;
+    })
     .slice(0, 120);
 
   const out = {
@@ -251,13 +254,14 @@ async function main() {
   console.log("Player ID map:", idMap.size);
 
   for (const player of players) {
+    const playerKey = String(player.playerId || player.player);
     try {
       const data = await fetchPlayer(player, idMap);
-      out.players[player.player] = data;
+      out.players[playerKey] = data;
       console.log("OK", player.player, "id", data.playerId, "points", data.points.length, data.error || "");
       await sleep(350);
     } catch (err) {
-      out.players[player.player] = {
+      out.players[playerKey] = {
         player: player.player,
         playerId: player.playerId || idMap.get(norm(player.player)) || null,
         team: player.team,

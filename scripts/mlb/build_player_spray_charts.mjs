@@ -216,7 +216,7 @@ for (const player of players) {
   try {
     const chart = await fetchPlayerSpray(player);
 
-    output.players[player.player] = chart;
+    output.players[String(player.playerId || player.player)] = chart;
     output.byPlayerId[String(player.playerId)] = chart;
 
     ok++;
@@ -227,8 +227,9 @@ for (const player of players) {
     failed++;
     console.log("FAIL", player.player, error.message);
 
-    if (!output.players[player.player]) {
-      output.players[player.player] = {
+    const playerKey = String(player.playerId || player.player);
+    if (!output.players[playerKey]) {
+      output.players[playerKey] = {
         player: player.player,
         playerId: player.playerId,
         team: player.team,

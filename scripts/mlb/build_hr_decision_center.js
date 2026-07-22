@@ -258,7 +258,8 @@ function uniqueRows(rows) {
     const player = playerName(row);
     if (!player) continue;
 
-    const key = `${norm(player)}|${norm(teamName(row))}|${norm(gameName(row))}`;
+    const playerId = text(pick(row, ["playerId", "mlbId", "id"]));
+    const key = playerId || `${norm(player)}|${norm(teamName(row))}|${norm(gameName(row))}`;
     map.set(key, { ...(map.get(key) || {}), ...row });
   }
 
@@ -609,6 +610,7 @@ function enrichPitcher(card, opponentMap) {
 
 function buildCard(row) {
   const player = playerName(row);
+  const playerId = text(pick(row, ["playerId", "mlbId", "id"]));
   const team = teamName(row);
   const opponent = text(pick(row, ["opponent", "opp", "opposing_team"]));
   const game = gameName(row);
@@ -636,8 +638,8 @@ function buildCard(row) {
 
   const compactPlayerKey = String(player || "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const liveLineup =
-    playerPoolLineupMap.get(norm(player)) ||
     playerPoolLineupMap.get(String(row.playerId || "")) ||
+    playerPoolLineupMap.get(norm(player)) ||
     playerPoolLineupMap.get(compactPlayerKey) ||
     {};
 
@@ -681,6 +683,8 @@ function buildCard(row) {
 
   const card = {
     player,
+    playerId: playerId ? Number(playerId) : null,
+    mlbId: playerId ? Number(playerId) : null,
     team,
     opponent,
     game,
@@ -760,7 +764,7 @@ function topUnique(rows, scoreKey, limit = 12) {
   return [...rows]
     .sort((a, b) => num(b[scoreKey]) - num(a[scoreKey]))
     .filter(row => {
-      const key = norm(row.player);
+      const key = row.playerId ? String(row.playerId) : norm(row.player);
       if (used.has(key)) return false;
       used.add(key);
       return true;

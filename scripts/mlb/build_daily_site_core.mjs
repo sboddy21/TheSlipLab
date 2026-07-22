@@ -91,7 +91,7 @@ function uniqueAndSort(list) {
   return list
     .sort((a, b) => (a.sourceRank || 99) - (b.sourceRank || 99))
     .filter(row => {
-      const key = norm(row.player);
+      const key = row.playerId ? String(row.playerId) : norm(row.player);
       if (!key || seen.has(key)) return false;
       seen.add(key);
       return true;

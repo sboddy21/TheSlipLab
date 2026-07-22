@@ -648,10 +648,17 @@ function validateRealPitcherAttackZones(expectedDate) {
     fail(`pitcher_attack_zones.json does not contain exactly ${hr.length} players`);
   }
 
+  if (!Array.isArray(decision.allPlayers)) fail("Decision Center is missing allPlayers rows");
+
   const decisionByPlayer = new Map();
   for (const row of decision.allPlayers || []) {
     if (row.playerId) decisionByPlayer.set(String(row.playerId), row);
     if (row.player) decisionByPlayer.set(row.player, row);
+  }
+  for (const player of hr) {
+    if (!decisionByPlayer.has(String(player.playerId))) {
+      fail(`Decision Center is missing current player ID for ${player.player}`);
+    }
   }
   const roundTo = (value, places = 2) => {
     const mult = 10 ** places;
@@ -726,6 +733,9 @@ function validateRealPitcherAttackZones(expectedDate) {
       (overlapTotal / qualifiedCount) * 0.22 + hotCount * 1.8
     ))) : null;
     const decisionRow = decisionByPlayer.get(String(player.playerId)) || decisionByPlayer.get(player.player);
+    if (!decisionRow || String(decisionRow.playerId || decisionRow.mlbId || "") !== String(player.playerId)) {
+      fail(`Decision Center is missing current player ID for ${player.player}`);
+    }
     if (!decisionRow || (expectedScore === null
       ? decisionRow.zoneOverlap !== null || decisionRow.zoneSignalAvailable !== false
       : Math.abs(Number(decisionRow.zoneOverlap) - expectedScore) > 0.01)) {
