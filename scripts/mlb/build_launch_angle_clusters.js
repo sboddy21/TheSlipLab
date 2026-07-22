@@ -96,7 +96,8 @@ function main() {
   for (const row of rows) {
     if (!row.player) continue;
 
-    output.players[row.player] = {
+    output.players[String(row.playerId || row.player)] = {
+      player: row.player,
       playerId: row.playerId || null,
       team: row.team || null,
       launchProfile: buildClusters(row)

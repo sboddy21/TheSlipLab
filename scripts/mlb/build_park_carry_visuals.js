@@ -146,7 +146,8 @@ function main() {
     const weather = findByVenue(weatherRows, row.venue) || {};
     const park = findByVenue(parkRows, row.venue) || {};
 
-    output.players[row.player] = {
+    output.players[String(row.playerId || row.player)] = {
+      player: row.player,
       playerId: row.playerId || null,
       team: row.team || null,
       carry: buildCarry(row, weather, park)
