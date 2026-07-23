@@ -1,16 +1,17 @@
 {
-  "updatedAt": "2026-07-23T09:07:43.883Z",
+  "updatedAt": "2026-07-23T15:34:48.603Z",
   "date": "2026-07-23",
-  "slot": "closed",
+  "slot": "morning",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "morning",
+    "selected": "morning",
     "available": [
       "morning",
+      "midday",
       "afternoon",
       "pregame",
       "evening"
@@ -18,17 +19,67 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-23T09:07:43.883Z",
+    "checkedAt": "2026-07-23T15:34:48.603Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-23T09:07:43.668Z",
+        "timestamp": "2026-07-23T15:34:48.395Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "hr_decision_center.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-23T15:34:28.837Z",
+        "ageSeconds": 19
+      },
+      {
+        "file": "mlb_weather.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-23T15:34:19.827Z",
+        "ageSeconds": 28
+      },
+      {
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-23T15:34:48.146Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-07-23T15:34:47.091Z",
+        "ageSeconds": 1
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-07-23_MORNING_SLATE_READ",
+      "date": "2026-07-23",
+      "type": "slate_read",
+      "slot": "morning",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-07-23T15:34:48.603Z",
+      "text": "I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:\n\n1. Kody Clemens — 58.8 HR confidence | Curveball matchup 76.0 | confirmed batting 5\n2. Byron Buxton — 58.4 HR confidence | 4 Seam matchup 53.3 | confirmed batting 2\n3. Junior Caminero — 53.8 HR confidence | 4 Seam matchup 49.7\n\nThe important part: Strong power profile, crushes this pitch mix and Lineup role: Power Runway.\n\nWho is your favorite HR look today?",
+      "players": [
+        "Kody Clemens",
+        "Byron Buxton",
+        "Junior Caminero"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "posted": true,
+      "posted_at": "2026-07-23T15:34:49.126Z",
+      "x_post_id": "2080315704109150264",
+      "created_at": "2026-07-23T15:34:48.395Z",
+      "error": null
+    }
+  ]
 }
