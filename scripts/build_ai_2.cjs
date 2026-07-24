@@ -145,6 +145,7 @@ function takeFor(tag, player, card) {
     "MODEL'S BEST": "This is the AI priority bucket. The player is being pulled forward by board rank, confidence, and supporting model signals.",
     "+EV VALUE": "This is a price-sensitive read. The player is not only live, but the signal mix suggests the market may not be fully respecting the profile.",
     "HOMER AI": "This is the AI's home-run callout bucket, built from matchup watch, profile watch, model strength, and current power-form signals.",
+    "TOP 5": "This player sits inside the tightest board tier, so the AI is treating him as one of the slate's clearest priority HR candidates.",
     "TOP 10": "This player sits inside the highest board tier, so the AI is treating him as one of the slate's strongest overall HR candidates.",
     "TOP 30": "This player is inside the main playable board range, meaning the profile is strong enough to stay in the daily HR conversation.",
     "ZONE 5+": "This is a damage-zone read. The player has a zone-based power signal that matters for HR upside when the pitch path lines up."
