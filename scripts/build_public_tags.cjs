@@ -213,6 +213,14 @@ const publicTags = [
   ),
 
   make(
+    "TOP 5",
+    "rank",
+    topBoard(5),
+    ["player_card_data.json"],
+    "Top 5 players by today's available board scoring."
+  ),
+
+  make(
     "TOP 10",
     "rank",
     topBoard(10),
