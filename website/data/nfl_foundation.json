@@ -1,0 +1,99 @@
+{
+  "sport": "NFL",
+  "version": "0.1.0",
+  "status": "foundation",
+  "season": "2026",
+  "date": "2026-07-24",
+  "updatedAt": "2026-07-24T23:05:49.271Z",
+  "headline": "NFL Lab foundation is underway.",
+  "summary": "Phase one establishes the data contracts, market priorities, and page shell before live projections are released.",
+  "currentPhase": {
+    "id": "foundation",
+    "label": "Foundation",
+    "window": "July 24 – July 31",
+    "objective": "Create the NFL data structure, supported markets, and launch surface without publishing fake predictions."
+  },
+  "phases": [
+    {
+      "id": "foundation",
+      "label": "Foundation",
+      "window": "July 24 – July 31",
+      "status": "active",
+      "tasks": [
+        "Define launch markets",
+        "Create starter JSON contracts",
+        "Build NFL hub page",
+        "Prepare refresh script shape"
+      ]
+    },
+    {
+      "id": "camp",
+      "label": "Training Camp Inputs",
+      "window": "Early August",
+      "status": "queued",
+      "tasks": [
+        "Depth charts",
+        "Injury reports",
+        "Position battles",
+        "Beat-writer role notes",
+        "Preseason snap counts"
+      ]
+    },
+    {
+      "id": "preseason_model",
+      "label": "Preseason Model Shape",
+      "window": "Mid/Late August",
+      "status": "queued",
+      "tasks": [
+        "Expected usage",
+        "Target share",
+        "Red-zone opportunities",
+        "Pace of play",
+        "Defensive matchup context",
+        "Weather and sportsbook lines"
+      ]
+    },
+    {
+      "id": "dress_rehearsal",
+      "label": "Dress Rehearsal",
+      "window": "Labor Day Week",
+      "status": "queued",
+      "tasks": [
+        "Automated updates",
+        "Test picks",
+        "Results framework",
+        "Bug sweep before Week 1"
+      ]
+    }
+  ],
+  "dataContracts": [
+    {
+      "file": "nfl_games_today.json",
+      "purpose": "Daily NFL slate shell with kickoff, teams, venue, weather, and game environment."
+    },
+    {
+      "file": "nfl_player_pool.json",
+      "purpose": "Eligible players by market with team, opponent, position, depth role, and availability."
+    },
+    {
+      "file": "nfl_markets.json",
+      "purpose": "Supported and deferred prop markets with required model inputs."
+    },
+    {
+      "file": "nfl_decision_center.json",
+      "purpose": "Future ranked recommendations once role, market, and line data are live."
+    }
+  ],
+  "integrityRules": [
+    "No fake player projections before data sources exist.",
+    "Separate preseason usage signals from regular-season model confidence.",
+    "Mark missing depth-chart, injury, line, or weather inputs as pending instead of inventing values.",
+    "Every market must eventually connect to a result-tracking path."
+  ],
+  "nextBuildSteps": [
+    "Add nfl_games_today.json from the NFL schedule source.",
+    "Add nfl_player_pool.json with teams, positions, roles, and launch-market eligibility.",
+    "Create the first role engine for RB/WR/TE/QB usage.",
+    "Add injury/depth-chart placeholders before training camp data arrives."
+  ]
+}
