@@ -340,10 +340,16 @@ const probablePitcherIds = [...new Set(slateGames.flatMap(game => [
   game.homeProbablePitcherId
 ]).filter(Boolean).map(String))];
 
-if (probablePitcherIds.length !== slateGames.length * 2) {
-  throw new Error(
-    `Current analysis slate has ${probablePitcherIds.length} probable pitcher IDs for ${slateGames.length} games`
-  );
+function unavailableVulnerability(status = "pending") {
+  return {
+    score: null,
+    rawScore: null,
+    sampleWeight: null,
+    trueInnings: null,
+    stats: null,
+    available: false,
+    status
+  };
 }
 
 const pitcherStatsById = new Map();
@@ -354,27 +360,20 @@ for (const id of probablePitcherIds) {
   else unavailablePitcherIds.add(id);
 }
 
-const liveSlateMedian = median([...pitcherStatsById.values()].map(rawPitcherVulnerability));
+const liveSlateMedian = pitcherStatsById.size
+  ? median([...pitcherStatsById.values()].map(rawPitcherVulnerability))
+  : null;
 const pitcherCache = new Map([...pitcherStatsById.entries()].map(([id, stats]) => {
   return [id, { ...pitcherVulnerability(stats, liveSlateMedian), stats, available: true, status: "available" }];
 }));
 for (const id of unavailablePitcherIds) {
-  pitcherCache.set(id, {
-    score: null,
-    rawScore: null,
-    sampleWeight: null,
-    trueInnings: null,
-    stats: null,
-    available: false,
-    status: "updating"
-  });
+  pitcherCache.set(id, unavailableVulnerability("updating"));
 }
 
 async function getVulnerability(id) {
   const key = String(id || "");
-  if (!key || !pitcherCache.has(key)) {
-    throw new Error(`Missing live vulnerability inputs for probable pitcher ${key || "TBD"}`);
-  }
+  if (!key) return unavailableVulnerability("pending");
+  if (!pitcherCache.has(key)) return unavailableVulnerability("updating");
   return pitcherCache.get(key);
 }
 
@@ -491,7 +490,7 @@ writeJSON("game_pitcher_matchups.json", {
   vulnerabilityModel: {
     source: "MLB Stats API live season pitching",
     scale: "0-100 risk index; not a probability",
-    liveSlateMedian: Number(liveSlateMedian.toFixed(2)),
+    liveSlateMedian: liveSlateMedian === null ? null : Number(liveSlateMedian.toFixed(2)),
     fullSampleInnings: 60
   },
   count: finalGames.length,
@@ -503,7 +502,7 @@ writeJSON("pitcher_vulnerability.json", {
   date: slatePayload.date || "",
   source: "MLB Stats API live season pitching",
   scale: "0-100 risk index; not a probability",
-  liveSlateMedian: Number(liveSlateMedian.toFixed(2)),
+  liveSlateMedian: liveSlateMedian === null ? null : Number(liveSlateMedian.toFixed(2)),
   fullSampleInnings: 60,
   count: pitcherRows.length,
   pitchers: pitcherRows

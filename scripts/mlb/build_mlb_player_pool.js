@@ -97,13 +97,8 @@ function matchupKey(game) {
   return [String(game.awayTeamId), String(game.homeTeamId)].sort().join("|");
 }
 
-function isAnalysisReady(game) {
-  return Boolean(game?.awayProbablePitcherId && game?.homeProbablePitcherId);
-}
-
 function selectRelevantGame(games) {
   const ordered = games
-    .filter(isAnalysisReady)
     .sort((a, b) => Date.parse(a.gameDate) - Date.parse(b.gameDate));
 
   if (!ordered.length) return null;
@@ -134,12 +129,6 @@ function selectAnalysisGames(games) {
     const selected = selectRelevantGame(matchupGames);
 
     if (!selected) {
-      for (const game of matchupGames) {
-        console.log(
-          `Skipping analysis until both probable pitchers are announced: ${game.matchup} ` +
-          `gamePk ${game.gamePk}`
-        );
-      }
       continue;
     }
 
@@ -153,9 +142,10 @@ function selectAnalysisGames(games) {
     }
 
     for (const game of matchupGames) {
-      if (!isAnalysisReady(game)) {
+      if (String(game.gamePk) !== String(selected.gamePk)) continue;
+      if (!game.awayProbablePitcherId || !game.homeProbablePitcherId) {
         console.log(
-          `Skipping analysis until both probable pitchers are announced: ${game.matchup} ` +
+          `Including analysis game with pending probable pitcher: ${game.matchup} ` +
           `gamePk ${game.gamePk}`
         );
       }
@@ -278,7 +268,7 @@ async function main() {
   }
 
   if (!analysisGames.length) {
-    throw new Error("No MLB games currently have both probable pitchers announced");
+    throw new Error("No MLB games are available for player-pool analysis");
   }
 
   const pool = [];
