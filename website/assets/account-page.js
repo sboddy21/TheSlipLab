@@ -25,6 +25,9 @@ const elements = {
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
   summary: document.getElementById("favoritesSummary"),
+  dashboardSummary: document.getElementById("accountDashboardSummary"),
+  topSavedLook: document.getElementById("accountTopSavedLook"),
+  nextActions: document.getElementById("accountNextActions"),
   dailyLabSummary: document.getElementById("dailyLabSummary"),
   dailyLabList: document.getElementById("dailyLabList"),
   dailyLabFreshness: document.getElementById("dailyLabFreshness"),
@@ -182,23 +185,66 @@ function favoriteKey(item) {
   return `${item.entity_type || item.entityType}:${item.external_id || item.externalId}`;
 }
 
+function catalogItemForPlayer(row) {
+  const playerId = row?.playerId || row?.mlbId || row?.batterId;
+  const existing = catalog.find(item => item.entityType === "player" && String(item.externalId) === String(playerId));
+  if (existing) return existing;
+  if (!row?.player || !playerId) return null;
+  return {
+    sport: "MLB",
+    entityType: "player",
+    externalId: playerId,
+    displayName: row.player,
+    teamName: row.team,
+    context: `${row.game || [row.team, row.opponent].filter(Boolean).join(" vs ")}${row.opposingPitcher ? ` · vs ${row.opposingPitcher}` : ""}`
+  };
+}
+
+function suggestedSaveItems(saved) {
+  const boardRows = [
+    ...detailData.decisionPlayers
+      .filter(row => row?.promotionEligible !== false && row?.availabilityOverride?.status !== "out")
+      .map(row => ({ row, score: Number(row.hrConfidence ?? row.ceilingScore ?? row.powerScore ?? 0) })),
+    ...detailData.homeRunBoard
+      .map(row => ({ row, score: Number(row.hrConfidence ?? row.finalHrScore ?? row.score ?? 0) }))
+  ].sort((a, b) => b.score - a.score);
+  const seen = new Set();
+  return boardRows
+    .map(({ row }) => catalogItemForPlayer(row))
+    .filter(Boolean)
+    .filter(item => {
+      const key = favoriteKey(item);
+      if (saved.has(key) || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 6);
+}
+
+function renderSaveOption(item, label = "Save") {
+  const saved = new Set(favorites.map(favoriteKey));
+  const disabled = saved.has(favoriteKey(item));
+  return `<div class="favorite-option"><div><strong>${escapeHtml(item.displayName)}</strong><span>${escapeHtml(item.teamName)} · ${escapeHtml(item.context)}</span></div><button class="account-button secondary" type="button" data-save-favorite="${escapeHtml(item.entityType)}:${escapeHtml(item.externalId)}" ${disabled ? "disabled" : ""}>${disabled ? "Saved" : label}</button></div>`;
+}
+
 function renderSearchResults() {
   const query = elements.search.value.trim().toLowerCase();
+  const saved = new Set(favorites.map(favoriteKey));
   if (query.length < 2) {
-    elements.results.innerHTML = '<div class="empty-state">Enter at least two letters to search today’s live MLB pool.</div>';
+    const suggestions = suggestedSaveItems(saved);
+    elements.results.innerHTML = suggestions.length
+      ? `<div class="favorite-suggestion-heading"><strong>Suggested saves from today’s board</strong><span>Start here, or type two letters to search everyone.</span></div>${suggestions.map(item => renderSaveOption(item, "Save")).join("")}`
+      : '<div class="empty-state">Enter at least two letters to search today’s live MLB pool.</div>';
     return;
   }
-  const saved = new Set(favorites.map(favoriteKey));
   const matches = catalog.filter(item => [item.displayName, item.teamName].some(value => String(value || "").toLowerCase().includes(query))).slice(0, 12);
-  elements.results.innerHTML = matches.length ? matches.map(item => {
-    const disabled = saved.has(favoriteKey(item));
-    return `<div class="favorite-option"><div><strong>${escapeHtml(item.displayName)}</strong><span>${escapeHtml(item.teamName)} · ${escapeHtml(item.context)}</span></div><button class="account-button secondary" type="button" data-save-favorite="${escapeHtml(item.entityType)}:${escapeHtml(item.externalId)}" ${disabled ? "disabled" : ""}>${disabled ? "Saved" : "Save"}</button></div>`;
-  }).join("") : '<div class="empty-state">No current MLB player or probable pitcher matched that search.</div>';
+  elements.results.innerHTML = matches.length ? matches.map(item => renderSaveOption(item, "Save")).join("") : '<div class="empty-state">No current MLB player or probable pitcher matched that search.</div>';
 }
 
 function renderFavorites() {
   elements.summary.textContent = favorites.length === 1 ? "1 saved favorite" : `${favorites.length} saved favorites`;
   elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
+  renderAccountDashboard();
   renderDailyLab();
   renderLiveAlerts();
   renderSearchResults();
@@ -348,6 +394,84 @@ function renderLiveAlerts() {
     const sources = Array.isArray(alert.sourceFiles) ? alert.sourceFiles.join(" · ") : "Verified production data";
     return `<article class="live-alert-card ${escapeHtml(alert.severity || "info")}"><div class="live-alert-card-head"><span>${escapeHtml(alertKindLabel(alert.kind))}</span><time>${escapeHtml(time)}</time></div><h4>${escapeHtml(alert.title || alert.entityName)}</h4><p>${escapeHtml(alert.message || "A verified live change was detected.")}</p><small>Source: ${escapeHtml(sources)}</small></article>`;
   }).join("") : '<div class="empty-state">No verified changes have been detected for your saved players or pitchers yet today.</div>';
+}
+
+function matchingLiveAlerts() {
+  const allAlerts = Array.isArray(detailData.liveAlerts?.alerts) ? detailData.liveAlerts.alerts : [];
+  return allAlerts.filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
+}
+
+function modelScore(model) {
+  if (model.favorite.entity_type === "pitcher") {
+    return Number(model.pitcher?.vulnerability ?? 0);
+  }
+  return Math.max(
+    Number(model.decision?.hrConfidence ?? 0),
+    Number(model.board?.hrConfidence ?? model.board?.finalHrScore ?? model.board?.score ?? 0),
+    Number(model.playerCard?.model?.score ?? 0)
+  );
+}
+
+function dashboardStat(label, value, note) {
+  return `<div><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span>${note ? `<small>${escapeHtml(note)}</small>` : ""}</div>`;
+}
+
+function renderAccountDashboard() {
+  if (!elements.dashboardSummary || !elements.topSavedLook || !elements.nextActions) return;
+  const models = favorites.map(favoriteDailyModel);
+  const players = favorites.filter(favorite => favorite.entity_type === "player").length;
+  const pitchers = favorites.filter(favorite => favorite.entity_type === "pitcher").length;
+  const onSlate = models.filter(model => model.onSlate).length;
+  const alerts = matchingLiveAlerts();
+  elements.dashboardSummary.innerHTML = `
+    <span class="account-command-card-kicker">Saved board</span>
+    <div class="account-command-stats-grid">
+      ${dashboardStat("Saved", favorites.length, "Total")}
+      ${dashboardStat("On slate", onSlate, "Today")}
+      ${dashboardStat("Hitters", players, "Saved")}
+      ${dashboardStat("Pitchers", pitchers, "Saved")}
+      ${dashboardStat("Alerts", alerts.length, "Verified")}
+    </div>`;
+
+  const best = models
+    .filter(model => model.onSlate && model.favorite.entity_type === "player")
+    .sort((a, b) => modelScore(b) - modelScore(a))[0];
+  if (best) {
+    const score = modelScore(best);
+    const opponent = best.playerCard?.opponent || best.decision?.opponent || best.board?.opponent;
+    const pitcher = best.playerCard?.opposingPitcher || best.decision?.opposingPitcher || best.board?.opposingPitcher;
+    const reasons = dailyReasons(best);
+    elements.topSavedLook.innerHTML = `
+      <span class="account-command-card-kicker">Best saved look today</span>
+      <h4>${escapeHtml(best.favorite.display_name)}</h4>
+      <p>${escapeHtml(best.favorite.team_name || best.playerCard?.team || "Team unavailable")}${opponent ? ` vs ${escapeHtml(opponent)}` : ""}</p>
+      <div class="account-command-score">${escapeHtml(valueOrDash(score, "%"))}</div>
+      <div class="account-command-note">${pitcher ? `Opposing pitcher: ${escapeHtml(pitcher)}` : "Opponent pitcher pending"}</div>
+      ${reasons.length ? `<ul>${reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join("")}</ul>` : ""}
+      <button class="account-button" type="button" data-open-dashboard-favorite="${escapeHtml(best.favorite.id)}">Open saved card</button>`;
+  } else {
+    elements.topSavedLook.innerHTML = `
+      <span class="account-command-card-kicker">Best saved look today</span>
+      <h4>${favorites.length ? "No saved hitter is active yet" : "Build your first board"}</h4>
+      <p>${favorites.length ? "Saved off-slate players stay here for future slates. Add hitters from today’s suggestions to unlock this card." : "Save a few hitters or pitchers and this turns into a personalized daily read."}</p>
+      <a class="account-button" href="./hr-decision-center.html">Browse today’s board</a>`;
+  }
+
+  const actionItems = favorites.length
+    ? [
+      `${onSlate} of ${favorites.length} saved favorites are active on today’s MLB slate.`,
+      alerts.length ? `${alerts.length} verified change${alerts.length === 1 ? "" : "s"} need a look.` : "No verified changes have hit your saved board yet.",
+      pitchers ? "You have probable pitchers saved for matchup monitoring." : "Add probable pitchers to monitor vulnerability and pitcher-change alerts."
+    ]
+    : [
+      "Save 3–5 hitters from the suggestions below.",
+      "Add today’s probable pitchers for matchup alerts.",
+      "Come back after lineup refreshes and your Daily Lab will tighten automatically."
+    ];
+  elements.nextActions.innerHTML = `
+    <span class="account-command-card-kicker">Next best action</span>
+    <h4>${favorites.length ? "Review the saved-board read" : "Start with suggested saves"}</h4>
+    <ol>${actionItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`;
 }
 
 function dailyOutcome(events, isPitcher) {
@@ -674,6 +798,13 @@ elements.dailyLabList.addEventListener("click", event => {
   const openButton = event.target.closest("[data-open-daily-favorite]");
   if (!openButton) return;
   const favorite = favorites.find(item => String(item.id) === String(openButton.dataset.openDailyFavorite));
+  if (favorite) openFavoriteDetails(favorite);
+});
+
+elements.topSavedLook?.addEventListener("click", event => {
+  const openButton = event.target.closest("[data-open-dashboard-favorite]");
+  if (!openButton) return;
+  const favorite = favorites.find(item => String(item.id) === String(openButton.dataset.openDashboardFavorite));
   if (favorite) openFavoriteDetails(favorite);
 });
 
