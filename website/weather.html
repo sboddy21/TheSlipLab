@@ -674,7 +674,7 @@
   overflow:hidden;
   border:1px solid rgba(255,255,255,.10);
   border-radius:22px;
-  background:linear-gradient(180deg, rgba(14,21,27,.98), rgba(8,12,16,.98));
+  background:linear-gradient(180deg, #0d151c 0%, #080d12 100%);
   box-shadow:0 18px 45px rgba(0,0,0,.26);
   cursor:pointer;
   transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
@@ -705,19 +705,23 @@
   gap:14px;
   align-items:flex-start;
   padding:17px 17px 12px;
+  background:linear-gradient(180deg, #101922 0%, #0b1219 100%);
+  border-bottom:1px solid rgba(229,239,246,.10);
 }
 
 .weather-card-head h2{
   margin:0;
+  color:#f4f8fb;
   font-size:19px;
   line-height:1.08;
   letter-spacing:-.025em;
+  text-shadow:none;
 }
 
 .weather-card-head span{
   display:block;
   margin-top:7px;
-  color:#9aa6ad;
+  color:#9eabb6;
   font-size:12px;
   font-weight:800;
 }
@@ -733,10 +737,10 @@
   display:inline-flex;
   align-items:center;
   gap:6px;
-  border:1px solid rgba(255,255,255,.10);
+  border:1px solid rgba(229,239,246,.12);
   border-radius:999px;
-  background:rgba(255,255,255,.045);
-  color:#cdd6de;
+  background:#101820;
+  color:#c8d3dc;
   padding:6px 9px;
   font-size:10px;
   font-weight:950;
@@ -745,9 +749,9 @@
 }
 
 .weather-chip.live{
-  border-color:rgba(147,255,45,.26);
-  color:#93ff2d;
-  background:rgba(147,255,45,.08);
+  border-color:rgba(215,249,165,.22);
+  color:#d7f9a5;
+  background:rgba(215,249,165,.08);
 }
 
 .weather-chip.dome{
@@ -834,7 +838,6 @@ body.tsl-weather-page{
 }
 
 body.tsl-weather-page .weather-hero,
-body.tsl-weather-page .weather-card,
 body.tsl-weather-page .weather-summary-card,
 body.tsl-weather-page .wind-panel,
 body.tsl-weather-page .weather-stat,
@@ -846,11 +849,26 @@ body.tsl-weather-page .park-lane-chip{
   border-color:rgba(229,239,246,.10) !important;
 }
 
+body.tsl-weather-page .weather-card{
+  background:linear-gradient(180deg, #0d151c 0%, #080d12 100%) !important;
+  border-color:rgba(229,239,246,.12) !important;
+}
+
+body.tsl-weather-page .weather-card-head{
+  background:linear-gradient(180deg, #101922 0%, #0b1219 100%) !important;
+  border-bottom:1px solid rgba(229,239,246,.10) !important;
+}
+
+body.tsl-weather-page .weather-card-head > div:first-child{
+  min-width:0 !important;
+}
+
 body.tsl-weather-page .title,
 body.tsl-weather-page .weather-card-head h2,
 body.tsl-weather-page .weather-summary-card strong,
 body.tsl-weather-page .weather-stat strong{
   color:#f4f8fb !important;
+  text-shadow:none !important;
 }
 
 body.tsl-weather-page .sub,
@@ -876,6 +894,42 @@ body.tsl-weather-page .park-attack-copy{
   color:#d8e2e9 !important;
 }
 
+body.tsl-weather-page .weather-chip{
+  background:#101820 !important;
+  border-color:rgba(229,239,246,.12) !important;
+  color:#c8d3dc !important;
+}
+
+body.tsl-weather-page .weather-chip.live{
+  background:rgba(215,249,165,.08) !important;
+  border-color:rgba(215,249,165,.22) !important;
+  color:#d7f9a5 !important;
+}
+
+body.tsl-weather-page .carry-box{
+  background:rgba(7,12,16,.84) !important;
+  border:1px solid rgba(229,239,246,.14) !important;
+  border-radius:14px !important;
+  box-shadow:none !important;
+}
+
+body.tsl-weather-page .carry-box small{
+  color:#aab6bf !important;
+}
+
+body.tsl-weather-page .carry-box em{
+  background:#d7f9a5 !important;
+  border-color:#d7f9a5 !important;
+  color:#071007 !important;
+}
+
+body.tsl-weather-page .carry-box em.pitcher,
+body.tsl-weather-page .carry-box em.data-gap{
+  background:#16212b !important;
+  border-color:rgba(229,239,246,.16) !important;
+  color:#c8d3dc !important;
+}
+
 body.tsl-weather-page .wind-panel span{
   color:#9fd6f5 !important;
 }
@@ -888,10 +942,10 @@ body.tsl-weather-page .realistic-park-svg .dim{
 }
 
 body.tsl-weather-page .field-wind-arrow line{
-  stroke:#d7edf7 !important;
-  stroke-width:5 !important;
+  stroke:#9fd6f5 !important;
+  stroke-width:4 !important;
   stroke-linecap:round !important;
-  filter:drop-shadow(0 0 8px rgba(112,190,235,.45));
+  filter:drop-shadow(0 0 6px rgba(112,190,235,.34));
 }
 
 body.tsl-weather-page .field-wind-arrow circle{
@@ -2517,11 +2571,26 @@ body.tsl-weather-page .park-lane-chip{
   border-color:rgba(229,239,246,.10) !important;
 }
 
+body.tsl-weather-page .weather-card{
+  background:linear-gradient(180deg, #0d151c 0%, #080d12 100%) !important;
+  border-color:rgba(229,239,246,.12) !important;
+}
+
+body.tsl-weather-page .weather-card-head{
+  background:linear-gradient(180deg, #101922 0%, #0b1219 100%) !important;
+  border-bottom:1px solid rgba(229,239,246,.10) !important;
+}
+
+body.tsl-weather-page .weather-card-head > div:first-child{
+  min-width:0 !important;
+}
+
 body.tsl-weather-page .title,
 body.tsl-weather-page .weather-card-head h2,
 body.tsl-weather-page .weather-summary-card strong,
 body.tsl-weather-page .weather-stat strong{
   color:#f4f8fb !important;
+  text-shadow:none !important;
 }
 
 body.tsl-weather-page .sub,
@@ -2547,6 +2616,42 @@ body.tsl-weather-page .park-attack-copy{
   color:#d8e2e9 !important;
 }
 
+body.tsl-weather-page .weather-chip{
+  background:#101820 !important;
+  border-color:rgba(229,239,246,.12) !important;
+  color:#c8d3dc !important;
+}
+
+body.tsl-weather-page .weather-chip.live{
+  background:rgba(215,249,165,.08) !important;
+  border-color:rgba(215,249,165,.22) !important;
+  color:#d7f9a5 !important;
+}
+
+body.tsl-weather-page .carry-box{
+  background:rgba(7,12,16,.84) !important;
+  border:1px solid rgba(229,239,246,.14) !important;
+  border-radius:14px !important;
+  box-shadow:none !important;
+}
+
+body.tsl-weather-page .carry-box small{
+  color:#aab6bf !important;
+}
+
+body.tsl-weather-page .carry-box em{
+  background:#d7f9a5 !important;
+  border-color:#d7f9a5 !important;
+  color:#071007 !important;
+}
+
+body.tsl-weather-page .carry-box em.pitcher,
+body.tsl-weather-page .carry-box em.data-gap{
+  background:#16212b !important;
+  border-color:rgba(229,239,246,.16) !important;
+  color:#c8d3dc !important;
+}
+
 body.tsl-weather-page .wind-panel span{
   color:#9fd6f5 !important;
 }
@@ -2559,10 +2664,10 @@ body.tsl-weather-page .realistic-park-svg .dim{
 }
 
 body.tsl-weather-page .field-wind-arrow line{
-  stroke:#d7edf7 !important;
-  stroke-width:5 !important;
+  stroke:#9fd6f5 !important;
+  stroke-width:4 !important;
   stroke-linecap:round !important;
-  filter:drop-shadow(0 0 8px rgba(112,190,235,.45));
+  filter:drop-shadow(0 0 6px rgba(112,190,235,.34));
 }
 
 body.tsl-weather-page .field-wind-arrow circle{
