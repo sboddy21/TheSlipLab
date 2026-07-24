@@ -272,11 +272,102 @@ const pitchRows = readRows("pitch_type_damage.json");
 const attackRows = readRows("pitcher_attack_zones.json");
 const statcastRows = readRows("statcast_zones.json");
 const bullpenRows = readRows("bullpen_relievers.json");
+const marketOddsPayload = readRawJson("mlb_market_odds.json") || {};
+const marketOddsRows = Array.isArray(marketOddsPayload.prices) ? marketOddsPayload.prices : [];
+const manualAvailabilityPayload = readRawJson("manual_player_availability.json") || {};
 
 const pitchMap = makePlayerMap(pitchRows);
 const attackMap = makePlayerMap(attackRows);
 const statcastMap = makePlayerMap(statcastRows);
 const bullpenMap = makeBullpenRiskMap(bullpenRows);
+
+function playerKey(row) {
+  const id = text(pick(row || {}, ["playerId", "mlbId", "id"]));
+  if (id) return id;
+  return `${norm(playerName(row || {}) || row?.player)}|${normTeam(teamName(row || {}) || row?.team)}`;
+}
+
+function makeMarketOddsMap(rows) {
+  const map = new Map();
+
+  for (const row of rows) {
+    const key = playerKey(row);
+    if (!key) continue;
+    const current = map.get(key) || {
+      playerId: row.playerId || null,
+      player: row.player || "",
+      books: new Set(),
+      bestOverPrice: null,
+      quoteCount: 0
+    };
+
+    if (row.bookmakerTitle || row.bookmakerKey) {
+      current.books.add(row.bookmakerTitle || row.bookmakerKey);
+    }
+
+    const price = Number(row.overPriceAmerican);
+    if (Number.isFinite(price)) {
+      current.bestOverPrice = current.bestOverPrice === null
+        ? price
+        : Math.max(current.bestOverPrice, price);
+    }
+
+    current.quoteCount += 1;
+    map.set(key, current);
+  }
+
+  return map;
+}
+
+const marketOddsMap = makeMarketOddsMap(marketOddsRows);
+const hasVerifiedMarketOdds = ["available", "partial"].includes(marketOddsPayload.availability) && marketOddsMap.size > 0;
+let manualUnavailableMap = new Map();
+
+function makeManualUnavailableMap(payload, date) {
+  const map = new Map();
+  const entries = Array.isArray(payload?.unavailable) ? payload.unavailable : [];
+
+  for (const entry of entries) {
+    const appliesToDate = !entry.date || entry.date === date;
+    const expiresAfterDate = !entry.expiresAfter || entry.expiresAfter >= date;
+    if (!appliesToDate || !expiresAfterDate) continue;
+
+    const key = playerKey(entry);
+    if (!key) continue;
+    map.set(key, {
+      reason: entry.reason || "manual_availability_override",
+      source: entry.source || "manual_player_availability.json"
+    });
+  }
+
+  return map;
+}
+
+function enrichMarket(card) {
+  const market = marketOddsMap.get(playerKey(card));
+  const manualUnavailable = manualUnavailableMap.get(playerKey(card));
+
+  return {
+    ...card,
+    marketAvailable: Boolean(market),
+    marketQuoteCount: market?.quoteCount || 0,
+    marketBooks: market ? Array.from(market.books).sort() : [],
+    bestOverPrice: market?.bestOverPrice ?? null,
+    promotionEligible: !manualUnavailable && (!hasVerifiedMarketOdds || Boolean(market)),
+    availabilityOverride: manualUnavailable || null
+  };
+}
+
+function promotionPool(cards) {
+  return cards.filter(card => card.promotionEligible !== false);
+}
+
+function topPickExcluding(rows, type, usedPlayers) {
+  return rows
+    .slice()
+    .filter(row => !usedPlayers.has(playerKey(row)))
+    .sort((a, b) => pickOneScore(b, type) - pickOneScore(a, type))[0] || null;
+}
 
 function bestPitchProfile(row) {
   const pitchDamage = row?.pitchDamage;
@@ -293,7 +384,7 @@ function bestPitchProfile(row) {
     const hardHit = num(profile.hardHit) * 100;
     const slg = num(profile.slg) * 100;
 
-    const score = round(crush * 0.45 + barrel * 0.22 + hardHit * 0.18 + slg * 0.15);
+    const score = round(clamp(crush * 0.45 + barrel * 0.22 + hardHit * 0.18 + slg * 0.15, 0, 100));
 
     if (score > best.score) {
       best = {
@@ -479,6 +570,12 @@ function shortPlayerCard(row, type, label, description) {
     hotZoneCount: row.hotZoneCount,
     seasonHr: row.seasonHr,
     bestPitch: row.bestPitch,
+    marketAvailable: row.marketAvailable,
+    marketQuoteCount: row.marketQuoteCount,
+    marketBooks: row.marketBooks || [],
+    bestOverPrice: row.bestOverPrice,
+    promotionEligible: row.promotionEligible,
+    availabilityOverride: row.availabilityOverride || null,
     tier: row.tier,
     reasons: row.reasons || [],
     pickOneScore: round(pickOneScore(row, type))
@@ -493,43 +590,52 @@ function topPick(rows, type) {
 
 function buildIfOnlyOne(rows) {
   const usable = rows.filter(row => row && row.player);
+  const used = new Set();
+  const take = type => {
+    const selected = topPickExcluding(usable, type, used) || topPick(usable, type);
+    if (selected) used.add(playerKey(selected));
+    return selected;
+  };
 
   return {
     title: "If I Can Only Pick One",
     updatedAt: new Date().toISOString(),
+    eligibility: hasVerifiedMarketOdds ? "verified_market_quotes" : "model_pool_market_unavailable",
     picks: {
       bestOverall: shortPlayerCard(
-        topPick(usable, "overall"),
+        take("overall"),
         "overall",
         "Best Overall HR Pick",
         "Best blend of power, matchup, zone overlap, pitcher risk, and environment."
       ),
       safestPlay: shortPlayerCard(
-        topPick(usable, "safe"),
+        take("safe"),
         "safe",
         "Safest HR Look",
         "Strongest profile when confidence, zones, and matchup stability are weighted heavier."
       ),
       highestCeiling: shortPlayerCard(
-        topPick(usable, "ceiling"),
+        take("ceiling"),
         "ceiling",
         "Highest Ceiling",
         "Biggest raw upside profile when power, pitcher vulnerability, and ceiling traits line up."
       ),
       bestWeatherPlay: shortPlayerCard(
-        topPick(usable, "weather"),
+        take("weather"),
         "weather",
         "Best Weather Play",
         "Best HR profile with weather and park carry weighted heavily."
       ),
       bestPitchMatchup: shortPlayerCard(
-        topPick(usable, "pitch"),
+        take("pitch"),
         "pitch",
         "Best Pitch Matchup",
         "Best hitter versus the projected pitch mix and pitcher attack profile."
       ),
       bestLongshot: shortPlayerCard(
-        topPick(usable.filter(row => num(row.hrConfidence) < 17), "longshot") || topPick(usable, "longshot"),
+        topPickExcluding(usable.filter(row => num(row.hrConfidence) < 17), "longshot", used) ||
+          topPickExcluding(usable, "longshot", used) ||
+          topPick(usable, "longshot"),
         "longshot",
         "Best Longshot",
         "Lower confidence bat with enough power, pitch edge, zones, or weather to stay live."
@@ -774,6 +880,7 @@ function topUnique(rows, scoreKey, limit = 12) {
 
 async function main() {
   const pitcherDate = todayEastern();
+  manualUnavailableMap = makeManualUnavailableMap(manualAvailabilityPayload, pitcherDate);
 
   if (
     playerPoolPayload?.availability === "no_games_scheduled" &&
@@ -821,25 +928,39 @@ async function main() {
   const cards = uniqueRows(hrRows)
     .map(buildCard)
     .filter(row => row.player)
-    .map(card => enrichPitcher(card, opponentMap));
+    .map(card => enrichPitcher(card, opponentMap))
+    .map(enrichMarket);
+
+  const promotedCards = promotionPool(cards);
 
   const output = {
     updatedAt: new Date().toISOString(),
     totalPlayers: cards.length,
+    promotionPlayers: promotedCards.length,
     pitcherSource: "MLB Stats API probablePitcher",
     pitcherDate,
+    marketEligibility: {
+      source: "mlb_market_odds.json",
+      availability: marketOddsPayload.availability || "unavailable",
+      reasonCode: marketOddsPayload.reasonCode || null,
+      verifiedQuotes: marketOddsRows.length,
+      verifiedPlayers: marketOddsMap.size,
+      manualUnavailablePlayers: manualUnavailableMap.size,
+      enforcedForPromotions: hasVerifiedMarketOdds
+    },
     pitcherDebug: {
       scheduleGames: games.length,
       pitcherPairs: opponentMap.size,
       players: cards.length,
+      promotionPlayers: promotedCards.length,
       withPitchers: cards.filter(x => x.pitcher && x.pitcher !== "TBD").length,
       tbd: cards.filter(x => !x.pitcher || x.pitcher === "TBD").length
     },
     sections: {
-      ifOnlyOne: buildIfOnlyOne(cards),
+      ifOnlyOne: buildIfOnlyOne(promotedCards),
 
       bestPicks: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           decisionScore: weightedScore([
             [card.hrConfidence, 0.30], [card.powerScore, 0.18], [card.pitchEdge, 0.16],
@@ -851,7 +972,7 @@ async function main() {
       ),
 
       safestPlays: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           safetyScore: weightedScore([
             [card.hrConfidence, 0.36], [card.powerScore, 0.22], [card.zoneOverlap, 0.18],
@@ -862,7 +983,7 @@ async function main() {
       ),
 
       bestValue: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           valueScore: weightedScore([
             [card.pitchEdge, 0.28], [card.pitcherRisk, 0.22], [card.zoneOverlap, 0.18],
@@ -883,7 +1004,7 @@ async function main() {
       ),
 
       lottoBombs: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           lottoScore:
             num(card.ceilingScore) * 0.32 +
@@ -897,7 +1018,7 @@ async function main() {
       ),
 
       pitchTypeEdges: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           pitchTypeScore: weightedScore([
             [card.pitchEdge, 0.38], [card.pitcherRisk, 0.24], [card.zoneOverlap, 0.18],
@@ -908,7 +1029,7 @@ async function main() {
       ),
 
       weatherCarry: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           weatherCarryScore: weightedScore([
             [card.weather, 0.40], [card.powerScore, 0.20], [card.zoneOverlap, 0.14],
@@ -919,7 +1040,7 @@ async function main() {
       ),
 
       bullpenBoosts: topUnique(
-        cards.map(card => ({
+        promotedCards.map(card => ({
           ...card,
           bullpenBoostScore: weightedScore([
             [card.bullpen, 0.40], [card.powerScore, 0.18], [card.pitchEdge, 0.16],
@@ -933,12 +1054,12 @@ async function main() {
   };
 
   if (!output.sections.ifOnlyOne) {
-    output.sections.ifOnlyOne = buildIfOnlyOne(cards);
+    output.sections.ifOnlyOne = buildIfOnlyOne(promotedCards);
   }
 
   if (!Array.isArray(output.sections.bestValue) || output.sections.bestValue.length === 0) {
     output.sections.bestValue = topUnique(
-      cards.map(card => ({
+      promotedCards.map(card => ({
         ...card,
         valueScore: weightedScore([
           [card.pitchEdge, 0.30], [card.pitcherRisk, 0.24], [card.zoneOverlap, 0.18],
