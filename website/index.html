@@ -271,6 +271,35 @@
     .sport-description{max-width:400px;margin:0;color:rgba(255,255,255,.7);font-size:13px;line-height:1.55}
     .sport-features{margin:20px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:7px;list-style:none}
     .sport-features li{padding:6px 8px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.1);font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+    .countdown{
+      margin:20px 0 0;
+      padding:12px 13px;
+      display:grid;
+      gap:5px;
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(0,0,0,.14);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .countdown-label{
+      color:rgba(255,255,255,.66);
+      font-size:8px;
+      font-weight:900;
+      letter-spacing:.15em;
+      text-transform:uppercase;
+    }
+    .countdown-value{
+      color:var(--sport-accent);
+      font-family:Georgia,"Times New Roman",serif;
+      font-size:clamp(26px,3.2vw,36px);
+      line-height:.96;
+      letter-spacing:-.055em;
+    }
+    .countdown-sub{
+      color:rgba(255,255,255,.62);
+      font-size:10px;
+      font-weight:800;
+      line-height:1.35;
+    }
     .card-action{
       margin-top:auto;padding-top:25px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid rgba(255,255,255,.28);
       color:var(--sport-accent);font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
@@ -285,6 +314,8 @@
     .nhl .sport-description{color:#38586b}
     .nhl .status{color:#496778}
     .nhl .sport-features li{border-color:rgba(7,29,54,.18);background:rgba(255,255,255,.24)}
+    .nhl .countdown{border-color:rgba(7,29,54,.2);background:rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+    .nhl .countdown-label,.nhl .countdown-sub{color:#496778}
     .nhl .card-action{border-color:rgba(7,29,54,.24);color:#496778}
     .sport-cue{
       position:absolute;right:22px;bottom:78px;color:rgba(255,255,255,.14);font-family:Georgia,"Times New Roman",serif;
@@ -361,7 +392,7 @@
           <div class="section-kicker">League access</div>
           <h2 id="leagueTitle">Choose your field.</h2>
         </div>
-        <span class="active-count">02 active labs</span>
+        <span class="active-count">01 live lab · 03 countdowns</span>
       </div>
 
       <div class="sports-grid">
@@ -386,20 +417,30 @@
           <div class="card-top"><span class="sport-number">02 / Court</span><span class="status"><i></i> Offseason</span></div>
           <h3 class="sport-name">NBA</h3>
           <p class="sport-description">Player props, usage, pace, defense, and matchup intelligence.</p>
+          <div class="countdown" data-countdown-target="2026-10-20T19:00:00-04:00" aria-label="Countdown to NBA target opening night">
+            <span class="countdown-label">Target opening night</span>
+            <strong class="countdown-value">—</strong>
+            <small class="countdown-sub">NBA target date · adjusts when official schedule lands</small>
+          </div>
           <div class="card-action"><span>Coming later</span><span class="arrow" aria-hidden="true">×</span></div>
         </article>
 
-        <a class="sport-card sport-link nfl" href="./nfl.html" aria-label="Open The Slip Lab NFL foundation">
+        <article class="sport-card nfl disabled" aria-disabled="true">
           <span class="field-mark" aria-hidden="true"></span>
           <span class="sport-cue" aria-hidden="true">4TH</span>
-          <div class="card-top"><span class="sport-number">03 / Gridiron</span><span class="status"><i></i> Foundation</span></div>
+          <div class="card-top"><span class="sport-number">03 / Gridiron</span><span class="status"><i></i> Building soon</span></div>
           <h3 class="sport-name">NFL</h3>
-          <p class="sport-description">Market plan, data contracts, training-camp inputs, usage runway, and Week 1 build sequence.</p>
-          <ul class="sport-features" aria-label="NFL foundation features">
+          <p class="sport-description">Market plan, training-camp inputs, usage runway, and Week 1 build sequence are being staged quietly.</p>
+          <ul class="sport-features" aria-label="NFL planned features">
             <li>Markets</li><li>Roles</li><li>Pipeline</li><li>Roadmap</li>
           </ul>
-          <div class="card-action"><span>Open NFL Build</span><span class="arrow" aria-hidden="true">→</span></div>
-        </a>
+          <div class="countdown" data-countdown-target="2026-09-10T20:20:00-04:00" aria-label="Countdown to NFL target kickoff">
+            <span class="countdown-label">Target kickoff</span>
+            <strong class="countdown-value">—</strong>
+            <small class="countdown-sub">NFL target date · public board opens closer to season</small>
+          </div>
+          <div class="card-action"><span>Locked for now</span><span class="arrow" aria-hidden="true">×</span></div>
+        </article>
 
         <article class="sport-card nhl disabled" aria-disabled="true">
           <span class="field-mark" aria-hidden="true"></span>
@@ -407,6 +448,11 @@
           <div class="card-top"><span class="sport-number">04 / Ice</span><span class="status"><i></i> In development</span></div>
           <h3 class="sport-name">NHL</h3>
           <p class="sport-description">Goalie form, shot quality, special teams, and matchup leverage.</p>
+          <div class="countdown" data-countdown-target="2026-10-06T19:00:00-04:00" aria-label="Countdown to NHL target opening night">
+            <span class="countdown-label">Target opening night</span>
+            <strong class="countdown-value">—</strong>
+            <small class="countdown-sub">NHL target date · adjusts when official schedule lands</small>
+          </div>
           <div class="card-action"><span>Coming later</span><span class="arrow" aria-hidden="true">×</span></div>
         </article>
       </div>
@@ -426,6 +472,31 @@
       day: "numeric"
     }).format(new Date());
     document.getElementById("todayLabel").textContent = dateLabel;
+
+    function formatCountdown(targetDate){
+      const remaining = targetDate.getTime() - Date.now();
+      if (!Number.isFinite(remaining)) return "TBD";
+      if (remaining <= 0) return "Live window";
+
+      const totalHours = Math.max(0,Math.floor(remaining / 3600000));
+      const days = Math.floor(totalHours / 24);
+      const hours = totalHours % 24;
+
+      if (days >= 14) return `${days} days`;
+      if (days > 0) return `${days}d ${hours}h`;
+      return `${totalHours}h`;
+    }
+
+    function updateCountdowns(){
+      document.querySelectorAll("[data-countdown-target]").forEach(card => {
+        const value = card.querySelector(".countdown-value");
+        if (!value) return;
+        value.textContent = formatCountdown(new Date(card.dataset.countdownTarget));
+      });
+    }
+
+    updateCountdowns();
+    window.setInterval(updateCountdowns,60000);
 
     fetch("./data/mlb_games_today.json?v=" + Date.now())
       .then(response => {
