@@ -546,7 +546,287 @@
   color:#8cff32;
 }
 
+.weather-hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(147,255,45,.16);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(147,255,45,.16), transparent 28%),
+    radial-gradient(circle at 88% 15%, rgba(0,224,255,.12), transparent 30%),
+    linear-gradient(135deg, rgba(10,16,20,.96), rgba(5,7,11,.96));
+  padding:24px;
+  margin-bottom:18px;
+  box-shadow:0 24px 70px rgba(0,0,0,.34);
+}
+
+.weather-hero-top{
+  display:flex;
+  justify-content:space-between;
+  gap:22px;
+  align-items:flex-start;
+}
+
+.weather-hero .title{
+  font-size:clamp(34px,5vw,64px);
+  line-height:.95;
+  margin:8px 0 10px;
+  letter-spacing:-.055em;
+}
+
+.weather-hero .sub{
+  max-width:760px;
+  margin:0;
+  color:#b5c0c9;
+  font-size:15px;
+  line-height:1.55;
+}
+
+.weather-hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid rgba(147,255,45,.25);
+  border-radius:999px;
+  background:rgba(147,255,45,.09);
+  color:#93ff2d;
+  padding:8px 11px;
+  font-size:11px;
+  font-weight:950;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+
+.weather-hero-badge::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#93ff2d;
+  box-shadow:0 0 16px rgba(147,255,45,.8);
+}
+
+.weather-summary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-top:22px;
+}
+
+.weather-summary-card{
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:18px;
+  background:rgba(255,255,255,.045);
+  padding:14px;
+  min-width:0;
+}
+
+.weather-summary-card span{
+  display:block;
+  color:#8e98a3;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.weather-summary-card strong{
+  display:block;
+  margin-top:7px;
+  color:#fff;
+  font-size:24px;
+  line-height:1;
+}
+
+.weather-summary-card small{
+  display:block;
+  margin-top:7px;
+  color:#aab4be;
+  font-size:11px;
+  line-height:1.35;
+}
+
+.weather-controls{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  margin:16px 0;
+}
+
+.weather-section-title{
+  color:#dfe8ef;
+  font-size:13px;
+  font-weight:950;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+
+.weather-page-note{
+  color:#8e98a3;
+  font-size:12px;
+  font-weight:800;
+}
+
+.weather-card{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:22px;
+  background:linear-gradient(180deg, rgba(14,21,27,.98), rgba(8,12,16,.98));
+  box-shadow:0 18px 45px rgba(0,0,0,.26);
+  cursor:pointer;
+  transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+
+.weather-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(147,255,45,.34);
+  box-shadow:0 24px 58px rgba(0,0,0,.34),0 0 28px rgba(147,255,45,.07);
+}
+
+.weather-card.is-boost{
+  border-color:rgba(147,255,45,.22);
+}
+
+.weather-card.is-pitcher{
+  border-color:rgba(115,183,255,.18);
+}
+
+.weather-card.is-data-gap{
+  border-color:rgba(255,255,255,.08);
+  background:linear-gradient(180deg, rgba(16,18,20,.96), rgba(8,10,12,.98));
+}
+
+.weather-card-head{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:flex-start;
+  padding:17px 17px 12px;
+}
+
+.weather-card-head h2{
+  margin:0;
+  font-size:19px;
+  line-height:1.08;
+  letter-spacing:-.025em;
+}
+
+.weather-card-head span{
+  display:block;
+  margin-top:7px;
+  color:#9aa6ad;
+  font-size:12px;
+  font-weight:800;
+}
+
+.weather-card-meta{
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+  margin-top:10px;
+}
+
+.weather-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:999px;
+  background:rgba(255,255,255,.045);
+  color:#cdd6de;
+  padding:6px 9px;
+  font-size:10px;
+  font-weight:950;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+
+.weather-chip.live{
+  border-color:rgba(147,255,45,.26);
+  color:#93ff2d;
+  background:rgba(147,255,45,.08);
+}
+
+.weather-chip.dome{
+  border-color:rgba(190,120,255,.26);
+  color:#c997ff;
+  background:rgba(190,120,255,.08);
+}
+
+.weather-chip.gap{
+  color:#ffd15a;
+  border-color:rgba(255,209,90,.24);
+  background:rgba(255,209,90,.07);
+}
+
+.wind-panel{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin:0 17px 12px;
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  background:rgba(0,0,0,.18);
+  padding:10px 12px;
+}
+
+.wind-panel strong{
+  display:block;
+  color:#fff;
+  font-size:13px;
+}
+
+.wind-panel span{
+  color:#93ff2d;
+  font-size:11px;
+  font-weight:950;
+  text-transform:uppercase;
+}
+
+.weather-stat.carry strong{
+  color:#93ff2d;
+}
+
+.empty-weather{
+  border:1px dashed rgba(255,255,255,.16);
+  border-radius:18px;
+  color:#9aa6ad;
+  padding:24px;
+  background:rgba(255,255,255,.035);
+}
+
+@media(max-width:980px){
+  .weather-hero-top{
+    flex-direction:column;
+  }
+
+  .weather-summary-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  .weather-controls{
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+@media(max-width:760px){
+  .wrap{
+    padding:18px 12px;
+  }
+
+  .weather-summary-grid,
+  .weather-stat-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
 </style>
+
   <link rel="stylesheet" href="./assets/site-header.css">
   <script defer src="./assets/site-header.js"></script>
 </head>
@@ -572,10 +852,29 @@
 </div>
 
 <main class="wrap">
-  <div class="report-line"><span>Ballpark weather desk</span><span>Live carry conditions</span></div>
-  <div class="eyebrow">The game environment</div>
-  <h1 class="title">Weather</h1>
-  <p class="sub">Ballpark layout, live wind direction, temperature, and HR carry conditions.</p>
+  <section class="weather-hero">
+    <div class="weather-hero-top">
+      <div>
+        <div class="report-line"><span>Ballpark weather desk</span><span>Live carry conditions</span></div>
+        <div class="eyebrow">The game environment</div>
+        <h1 class="title">Weather</h1>
+        <p class="sub">A cleaner read on today’s park conditions: carry score, wind lane, temperature, roof/data status, and the best hitter fit notes around the ballpark visuals.</p>
+      </div>
+      <div class="weather-hero-badge" id="weatherFreshness">Loading live weather</div>
+    </div>
+
+    <div class="weather-summary-grid" id="weatherSummary">
+      <div class="weather-summary-card"><span>Games tracked</span><strong>—</strong><small>Loading slate</small></div>
+      <div class="weather-summary-card"><span>Best carry</span><strong>—</strong><small>Finding boost park</small></div>
+      <div class="weather-summary-card"><span>Wind watch</span><strong>—</strong><small>Checking outfield lanes</small></div>
+      <div class="weather-summary-card"><span>Data status</span><strong>—</strong><small>Weather feed loading</small></div>
+    </div>
+  </section>
+
+  <div class="weather-controls">
+    <div class="weather-section-title">Today’s ballparks</div>
+    <div class="weather-page-note">Tap a card for the detailed park read and best field fits.</div>
+  </div>
   <section class="grid" id="grid"></section>
 </main>
 
@@ -641,8 +940,8 @@ function parkShape(venue){
 }
 
 
-function clean(v){
-  if(v === null || v === undefined || v === "") return "N/A";
+function clean(v, fallback = "N/A"){
+  if(v === null || v === undefined || v === "") return fallback;
   return String(v);
 }
 
@@ -1188,6 +1487,106 @@ function weatherInsight(row){
   return `${venue} is playing closer to neutral unless the hitter has strong raw power.`;
 }
 
+function hasWeatherData(row){
+  return Number.isFinite(Number(row.temp || row.temperature)) ||
+    Number.isFinite(Number(row.windSpeed || row.wind_speed));
+}
+
+function statusInfo(row){
+  const raw = clean(row.status, "").toLowerCase();
+  const roof = clean(row.roof || row.roofStatus || row.dome, "").toLowerCase();
+
+  if (raw.includes("missing") || raw.includes("unknown") || !hasWeatherData(row)) {
+    return { label:"Data pending", cls:"gap", helper:"Weather station or park coordinates still updating." };
+  }
+
+  if (raw.includes("dome") || roof.includes("dome") || roof.includes("closed")) {
+    return { label:"Controlled", cls:"dome", helper:"Roof/indoor conditions reduce weather edge." };
+  }
+
+  return { label:"Live", cls:"live", helper:"Fresh outdoor conditions are loaded." };
+}
+
+function carryGrade(row){
+  const status = statusInfo(row);
+  const carry = carryScore(row);
+
+  if (status.cls === "gap") return { label:"Pending", cls:"data-gap" };
+  if (carry >= 22) return { label:"HR Boost", cls:"boost" };
+  if (carry >= 10) return { label:"Neutral Plus", cls:"neutral" };
+  return { label:"Pitcher Lean", cls:"pitcher" };
+}
+
+function displayStat(value, suffix = ""){
+  const n = Number(value);
+  if (!Number.isFinite(n)) return "—";
+  return `${Math.round(n)}${suffix}`;
+}
+
+function displayWind(row){
+  const wind = Number(row.windSpeed || row.wind_speed);
+  if (!Number.isFinite(wind)) return "Weather pending";
+  if (wind < 1) return "Calm";
+  return `${wind.toFixed(1)} MPH`;
+}
+
+function displayDirection(row){
+  const direction = clean(row.windDirectionText || row.windCompass || row.windDirection || row.direction, "");
+  return direction && direction !== "N/A" ? direction : "Unknown";
+}
+
+function formatFreshness(rows){
+  const latest = rows
+    .map(row => new Date(row.updatedAt || row.lastUpdated || 0).getTime())
+    .filter(time => Number.isFinite(time) && time > 0)
+    .sort((a, b) => b - a)[0];
+
+  if (!latest) return "Weather feed loaded";
+
+  return `Updated ${new Date(latest).toLocaleTimeString([], { hour:"numeric", minute:"2-digit" })}`;
+}
+
+function renderWeatherSummary(rows){
+  const summary = document.getElementById("weatherSummary");
+  const freshness = document.getElementById("weatherFreshness");
+  const live = rows.filter(row => statusInfo(row).cls === "live");
+  const pending = rows.filter(row => statusInfo(row).cls === "gap");
+  const best = rows
+    .filter(row => statusInfo(row).cls !== "gap")
+    .slice()
+    .sort((a, b) => carryScore(b) - carryScore(a))[0];
+  const windWatch = rows
+    .filter(row => Number.isFinite(Number(row.windSpeed || row.wind_speed)))
+    .slice()
+    .sort((a, b) => num(b.windSpeed || b.wind_speed) - num(a.windSpeed || a.wind_speed))[0];
+
+  if (freshness) freshness.textContent = formatFreshness(rows);
+  if (!summary) return;
+
+  summary.innerHTML = `
+    <div class="weather-summary-card">
+      <span>Games tracked</span>
+      <strong>${rows.length}</strong>
+      <small>${live.length} live weather reads</small>
+    </div>
+    <div class="weather-summary-card">
+      <span>Best carry</span>
+      <strong>${best ? clean(best.venue) : "—"}</strong>
+      <small>${best ? `${carryScore(best).toFixed(1)} carry score` : "Waiting on outdoor data"}</small>
+    </div>
+    <div class="weather-summary-card">
+      <span>Wind watch</span>
+      <strong>${windWatch ? clean(windWatch.venue) : "—"}</strong>
+      <small>${windWatch ? `${displayWind(windWatch)} ${displayDirection(windWatch)}` : "No wind reads yet"}</small>
+    </div>
+    <div class="weather-summary-card">
+      <span>Data status</span>
+      <strong>${pending.length ? `${pending.length} pending` : "All set"}</strong>
+      <small>${pending.length ? "Pending parks are labeled clearly." : "Every park has a usable read."}</small>
+    </div>
+  `;
+}
+
 async function load(){
   try {
     const shapeRes = await fetch("./data/mlb_park_shapes.json?v=" + Date.now());
@@ -1216,31 +1615,46 @@ async function load(){
     .map(row => ({...row, carry:carryScore(row)}))
     .sort((a,b) => b.carry - a.carry);
 
+  renderWeatherSummary(sorted);
+
+  if (!sorted.length) {
+    document.getElementById("grid").innerHTML = `<div class="empty-weather">No weather rows are available yet. The board will populate when the MLB refresh writes today’s slate.</div>`;
+    return;
+  }
+
   document.getElementById("grid").innerHTML = sorted.map(row => {
     const venue = clean(row.venue);
-    const city = clean(row.city || row.location || "");
+    const city = clean(row.city || row.location || "Ballpark weather");
     const carry = carryScore(row);
-    const temp = num(row.temp || row.temperature);
-    const wind = num(row.windSpeed || row.wind_speed);
-    const direction = clean(row.windDirectionText || row.windDirection || row.direction);
+    const temp = Number(row.temp || row.temperature);
+    const wind = Number(row.windSpeed || row.wind_speed);
+    const direction = displayDirection(row);
     const impact = windImpactLabel(row);
-    const boostLabel = carry >= 22 ? "HR BOOST" : "NEUTRAL PLUS";
+    const status = statusInfo(row);
+    const grade = carryGrade(row);
 
     return `
-      <article class="weather-card" data-venue="${venue.replace(/&/g, "&amp;").replace(/\"/g, "&quot;").replace(/</g, "&lt;")}">
+      <article class="weather-card is-${grade.cls}" data-venue="${venue.replace(/&/g, "&amp;").replace(/\"/g, "&quot;").replace(/</g, "&lt;")}">
         <div class="weather-card-head">
           <div>
             <h2>${venue}</h2>
             <span>${city}</span>
+            <div class="weather-card-meta">
+              <div class="weather-chip ${status.cls}">${status.label}</div>
+              <div class="weather-chip">${clean(row.game || row.matchup || "Slate park")}</div>
+            </div>
           </div>
           <div class="carry-box">
             <small>HR Carry</small>
-            <strong>${carry.toFixed(1)}</strong>
-            <em>${boostLabel}</em>
+            <strong>${status.cls === "gap" ? "—" : carry.toFixed(1)}</strong>
+            <em class="${grade.cls}">${grade.label}</em>
           </div>
         </div>
 
-        <div class="wind-pill">${wind ? wind + " MPH" : "Calm"} ${direction} • ${impact}</div>
+        <div class="wind-panel">
+          <strong>${displayWind(row)} ${direction !== "Unknown" ? direction : ""}</strong>
+          <span>${status.cls === "gap" ? status.helper : impact}</span>
+        </div>
 
         <div class="weather-field-wrap">
           ${fieldSvg(venue, row)}
@@ -1253,19 +1667,19 @@ async function load(){
         <div class="weather-stat-grid">
           <div class="weather-stat">
             <span>Temp</span>
-            <strong>${temp ? temp + "°" : "—"}</strong>
+            <strong>${displayStat(temp, "°")}</strong>
           </div>
           <div class="weather-stat">
             <span>Wind</span>
-            <strong>${wind ? wind + " MPH" : "Calm"}</strong>
+            <strong>${displayWind(row)}</strong>
           </div>
           <div class="weather-stat">
             <span>Direction</span>
             <strong>${direction || "—"}</strong>
           </div>
-          <div class="weather-stat">
+          <div class="weather-stat carry">
             <span>Carry</span>
-            <strong>${carry.toFixed(1)}</strong>
+            <strong>${status.cls === "gap" ? "—" : carry.toFixed(1)}</strong>
           </div>
         </div>
 
@@ -1551,6 +1965,66 @@ load();
 
 </style>
 
+<style id="weather-page-cleanup-final-overrides">
+body.tsl-weather-page{
+  background:
+    radial-gradient(circle at 18% 0%, rgba(147,255,45,.09), transparent 26%),
+    radial-gradient(circle at 92% 10%, rgba(0,224,255,.07), transparent 28%),
+    #05070b !important;
+}
+
+body.tsl-weather-page .wrap{
+  max-width:1600px !important;
+  padding:24px 22px 42px !important;
+}
+
+body.tsl-weather-page #grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr)) !important;
+  gap:16px !important;
+  padding:0 !important;
+}
+
+body.tsl-weather-page .weather-card{
+  border-radius:22px !important;
+  background:linear-gradient(180deg, rgba(14,21,27,.98), rgba(8,12,16,.98)) !important;
+}
+
+body.tsl-weather-page .weather-card-head{
+  padding:17px 17px 12px !important;
+}
+
+body.tsl-weather-page .weather-card-head h2{
+  font-size:19px !important;
+}
+
+body.tsl-weather-page .carry-box strong{
+  font-size:34px !important;
+}
+
+body.tsl-weather-page .weather-field-wrap{
+  padding:0 12px !important;
+}
+
+body.tsl-weather-page .weather-stat-grid{
+  padding:12px 12px 0 !important;
+}
+
+body.tsl-weather-page .weather-insight{
+  margin:12px !important;
+}
+
+@media(max-width:760px){
+  body.tsl-weather-page .wrap{
+    padding:18px 12px 34px !important;
+  }
+
+  body.tsl-weather-page #grid{
+    grid-template-columns:1fr !important;
+  }
+}
+</style>
+
 <style id="attack-zone-pill-final">
 .realistic-park-svg .attack-zone-label rect{
   fill:rgba(5,10,14,.72);
@@ -1696,4 +2170,32 @@ load();
   color:#8cff32;
 }
 
+</style>
+
+<style id="weather-page-last-word">
+body.tsl-weather-page #grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit,minmax(360px,1fr)) !important;
+  gap:16px !important;
+  padding:0 !important;
+}
+
+body.tsl-weather-page .weather-card{
+  border-radius:22px !important;
+  background:linear-gradient(180deg, rgba(14,21,27,.98), rgba(8,12,16,.98)) !important;
+}
+
+body.tsl-weather-page .weather-card-head{
+  padding:17px 17px 12px !important;
+}
+
+body.tsl-weather-page .weather-insight{
+  margin:12px !important;
+}
+
+@media(max-width:760px){
+  body.tsl-weather-page #grid{
+    grid-template-columns:1fr !important;
+  }
+}
 </style>
