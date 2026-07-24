@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-07-24T05:30:46.402Z",
+  "updatedAt": "2026-07-24T05:44:03.753Z",
   "date": "2026-07-24",
-  "slot": "overnight",
+  "slot": "evening",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "evening",
+    "selected": "evening",
     "available": [
       "morning",
       "midday",
@@ -20,66 +20,62 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-24T05:30:46.402Z",
+    "checkedAt": "2026-07-24T05:44:03.753Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T05:30:46.154Z",
+        "timestamp": "2026-07-24T05:44:03.513Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T05:25:45.057Z",
-        "ageSeconds": 301,
-        "scheduledGames": 5,
-        "finalGames": 5
+        "timestamp": "2026-07-24T05:42:55.060Z",
+        "ageSeconds": 68
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T03:41:55.582Z",
-        "players": 502,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-07-24T05:37:00.534Z",
+        "ageSeconds": 423
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-24T05:44:03.237Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-07-24T05:30:45.481Z",
-        "ageSeconds": 0,
-        "reportDate": "2026-07-23",
-        "archivedPlayers": 131,
-        "mode": "verified daily model report"
+        "timestamp": "2026-07-24T05:44:01.186Z",
+        "ageSeconds": 2
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-07-24_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "id": "2026-07-24_EVENING_PROCESS_QUESTION",
       "date": "2026-07-24",
-      "type": "verified_daily_recap",
-      "slot": "overnight",
+      "type": "process_question",
+      "slot": "evening",
       "status": "queued",
-      "scheduled_for_eastern": "2026-07-24T05:30:46.402Z",
-      "text": "The verified MLB model report for 2026-07-23 is in.\n\n9 home runs landed against 11.3 expected (-2.3).\nTop 10: 1 hits from 10 archived players.\n\n• Ty France: pregame rank #7 | 24.0% model probability | 395 ft\n• Drake Baldwin: pregame rank #14 | 22.7% model probability | 370 ft\n• Michael Harris II: pregame rank #15 | 22.3% model probability | 420 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
-      "players": [
-        "Ty France",
-        "Drake Baldwin",
-        "Michael Harris II"
-      ],
-      "graphic": "exports/content/graphics/2026-07-24_VERIFIED_MODEL_REPORT.png",
-      "graphicType": "verified_model_report",
-      "reportDate": "2026-07-23",
-      "resultsDate": "2026-07-23",
-      "verifiedPregame": true,
-      "verifiedResults": true,
+      "scheduled_for_eastern": "2026-07-24T05:44:03.753Z",
+      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-07-24T05:30:46.154Z"
+      "created_at": "2026-07-24T05:44:03.513Z"
     }
   ]
 }
