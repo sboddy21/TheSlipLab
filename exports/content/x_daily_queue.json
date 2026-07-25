@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-07-24T23:07:30.073Z",
-  "date": "2026-07-24",
-  "slot": "pregame",
+  "updatedAt": "2026-07-25T07:33:39.375Z",
+  "date": "2026-07-25",
+  "slot": "overnight",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "pregame",
-    "selected": "pregame",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
       "morning",
       "midday",
@@ -20,64 +20,66 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-24T23:07:30.073Z",
+    "checkedAt": "2026-07-25T07:33:39.375Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T23:07:29.808Z",
+        "timestamp": "2026-07-25T07:33:39.141Z",
         "ageSeconds": 0
       },
       {
-        "file": "hr_decision_center.json",
+        "file": "mlb_results_previous.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T23:06:34.858Z",
-        "ageSeconds": 55
+        "timestamp": "2026-07-25T07:31:11.289Z",
+        "ageSeconds": 148,
+        "scheduledGames": 15,
+        "finalGames": 15
       },
       {
-        "file": "mlb_weather.json",
+        "file": "hr_ai_history.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T23:06:15.396Z",
-        "ageSeconds": 74
+        "timestamp": "2026-07-25T01:04:10.173Z",
+        "players": 505,
+        "mode": "historical pregame archive"
       },
       {
-        "file": "mlb_results.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-07-24T23:07:29.572Z",
-        "ageSeconds": 0
-      },
-      {
-        "file": "health_status.json",
+        "file": "hr_calibration_report.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-07-24T23:07:27.915Z",
-        "ageSeconds": 2
+        "timestamp": "2026-07-25T07:33:38.711Z",
+        "ageSeconds": 0,
+        "reportDate": "2026-07-24",
+        "archivedPlayers": 393,
+        "mode": "verified daily model report"
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-07-24_PREGAME_FINAL_READ",
-      "date": "2026-07-24",
-      "type": "final_read",
-      "slot": "pregame",
+      "id": "2026-07-25_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "date": "2026-07-25",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
       "status": "queued",
-      "scheduled_for_eastern": "2026-07-24T23:07:30.073Z",
-      "text": "Final HR board check: if I had to narrow the entire slate to one profile, I keep coming back to Jordan Walker.\n\nStrong power profile, crushes this pitch mix and good HR weather conditions.\n\nHR confidence 63.7\nPower 71.4\nPitch edge 90.6\nBullpen context 92.1\n\nFull player breakdown: https://thesliplab.com/mlb.html\n\nOne lean—not a guarantee.",
+      "scheduled_for_eastern": "2026-07-25T07:33:39.375Z",
+      "text": "The verified MLB model report for 2026-07-24 is in.\n\n27 home runs landed against 38.0 expected (-11.0).\nTop 10: 0 hits from 10 archived players.\n\n• Matt Olson: pregame rank #15 | 24.0% model probability | 416 ft\n• Pete Crow-Armstrong: pregame rank #19 | 24.0% model probability | 375 ft\n• Rafael Devers: pregame rank #28 | 24.0% model probability | 362 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
       "players": [
-        "Jordan Walker"
+        "Matt Olson",
+        "Pete Crow-Armstrong",
+        "Rafael Devers"
       ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
+      "graphic": "exports/content/graphics/2026-07-25_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-07-24",
+      "resultsDate": "2026-07-24",
+      "verifiedPregame": true,
+      "verifiedResults": true,
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-07-24T23:07:29.808Z"
+      "created_at": "2026-07-25T07:33:39.141Z"
     }
   ]
 }
