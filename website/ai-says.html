@@ -74,7 +74,7 @@
     .balance span{padding:6px 8px;border-radius:999px;font-size:10px;font-weight:1000;text-transform:uppercase;letter-spacing:.04em}
     .balance .support{background:rgba(105,240,174,.12);border:1px solid rgba(105,240,174,.3);color:#dffff0}
     .balance .caution{background:rgba(255,174,75,.13);border:1px solid rgba(255,174,75,.34);color:#ffe1b5}
-    .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:11px}
+    .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:11px}
     .mini div{padding:8px;border-radius:12px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07)}
     .mini small{display:block;color:rgba(255,255,255,.48);font-size:9px;font-weight:1000;text-transform:uppercase}
     .mini b{display:block;margin-top:3px;font-size:14px}
@@ -227,6 +227,7 @@
             <div><small>AI</small><b>${pct(p.aiScore || p.confidence)}%</b></div>
             <div><small>HR</small><b>${esc(val(c.hrScore))}</b></div>
             <div><small>Power</small><b>${esc(val(c.powerScore))}</b></div>
+            <div><small>Odds</small><b>${esc(val(c.odds))}</b></div>
           </div>
         </article>
       `;
@@ -302,6 +303,7 @@
           <div><small>AI Score</small><b>${pct(p.aiScore || p.confidence)}%</b></div>
           <div><small>AI Trust</small><b>${reasoning ? `${pct(reasoning.confidence)}%` : "—"}</b></div>
           <div><small>HR Probability</small><b>${reasoning?.probability !== null && reasoning?.probability !== undefined ? `${esc(reasoning.probability)}%` : "—"}</b></div>
+          <div><small>Odds</small><b>${esc(val(c.odds))}</b></div>
         </div>
         ${reasoning ? `
           <section class="signal-panel support">

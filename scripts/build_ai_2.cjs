@@ -7,6 +7,7 @@ const DATA = path.join(ROOT, "website", "data");
 const PUBLIC_TAGS = path.join(DATA, "public_tags.json");
 const PLAYER_CARDS = path.join(DATA, "player_card_data.json");
 const MATCHUPS = path.join(DATA, "game_pitcher_matchups.json");
+const MARKET_ODDS = path.join(DATA, "mlb_market_odds.json");
 const OUT = path.join(DATA, "ai_2.json");
 
 function readJson(file, fallback = null) {
@@ -110,6 +111,31 @@ function cleanNumber(v) {
   return n > 1 ? Math.round(n) : Math.round(n * 100);
 }
 
+function americanOddsValue(value) {
+  if (value === undefined || value === null || value === "" || value === "N/A") return "";
+  const cleaned = String(value).replace(/[^+\-\d.]/g, "");
+  const n = Number(cleaned);
+  if (!Number.isFinite(n)) return "";
+  return n > 0 ? `+${n}` : String(n);
+}
+
+function marketOddsIndex(payload) {
+  const index = new Map();
+  for (const price of rows(payload)) {
+    const odds = americanOddsValue(price.overPriceAmerican || price.odds || price.hrOdds || price.bestOdds);
+    if (!odds) continue;
+    const row = {
+      odds,
+      bookmaker: price.bookmakerTitle || price.bookmakerKey || "",
+      playerId: price.playerId || "",
+      player: price.player || price.playerName || price.name || ""
+    };
+    if (row.playerId) index.set(String(row.playerId), row);
+    if (row.player) index.set("|" + norm(row.player), row);
+  }
+  return index;
+}
+
 function takeFor(tag, player, card) {
   const name = player.name;
   const team = firstValue(card, ["team", "Team"], "");
@@ -145,6 +171,7 @@ function takeFor(tag, player, card) {
     "MODEL'S BEST": "This is the AI priority bucket. The player is being pulled forward by board rank, confidence, and supporting model signals.",
     "+EV VALUE": "This is a price-sensitive read. The player is not only live, but the signal mix suggests the market may not be fully respecting the profile.",
     "HOMER AI": "This is the AI's home-run callout bucket, built from matchup watch, profile watch, model strength, and current power-form signals.",
+    "LIVE LONGSHOTS": "This is the volatile longshot lane: the player is not a core model priority, but the profile has enough power-trend, matchup, bullpen, or market availability to keep him visible.",
     "TOP 5": "This player sits inside the tightest board tier, so the AI is treating him as one of the slate's clearest priority HR candidates.",
     "TOP 10": "This player sits inside the highest board tier, so the AI is treating him as one of the slate's strongest overall HR candidates.",
     "TOP 30": "This player is inside the main playable board range, meaning the profile is strong enough to stay in the daily HR conversation.",
@@ -159,6 +186,7 @@ function takeFor(tag, player, card) {
 const publicTags = readJson(PUBLIC_TAGS);
 const playerCardsRaw = readJson(PLAYER_CARDS, {});
 const matchups = readJson(MATCHUPS, {});
+const marketOdds = readJson(MARKET_ODDS, {});
 
 if (!publicTags || !Array.isArray(publicTags.tags)) {
   throw new Error("Missing canonical public_tags.json");
@@ -166,6 +194,7 @@ if (!publicTags || !Array.isArray(publicTags.tags)) {
 
 const cards = rows(playerCardsRaw);
 const cardMap = new Map();
+const oddsMap = marketOddsIndex(marketOdds);
 
 for (const row of cards) {
   const id = playerId(row);
@@ -178,12 +207,20 @@ function findCard(player) {
   return cardMap.get(key(player.playerId, player.name)) || cardMap.get("|" + norm(player.name)) || null;
 }
 
+function oddsFor(player, card) {
+  const direct = americanOddsValue(card?.odds || card?.hrOdds || card?.bestOdds || card?.overPriceAmerican);
+  if (direct) return direct;
+  return oddsMap.get(String(player.playerId || ""))?.odds || oddsMap.get("|" + norm(player.name))?.odds || "";
+}
+
 const sections = publicTags.tags.map(tag => {
   const players = (tag.players || []).map(p => {
     const card = findCard(p);
     const rawScore = scoreOf(card || {});
     const confidence = Number(p.confidence || 0);
     const aiScore = rawScore > 1 ? rawScore / 100 : Math.max(rawScore, confidence);
+    const odds = oddsFor(p, card);
+    const cardWithOdds = card ? { ...card, odds } : { odds };
 
     return {
       playerId: p.playerId || "",
@@ -197,7 +234,7 @@ const sections = publicTags.tags.map(tag => {
         name: p.name || "Unknown Player",
         confidence,
         aiScore
-      }, card),
+      }, cardWithOdds),
       card: {
         team: card?.team || card?.Team || "",
         opponent: card?.opponent || card?.Opp || "",
@@ -205,7 +242,7 @@ const sections = publicTags.tags.map(tag => {
         hrScore: hrDisplay(card || {}, Math.round((aiScore || confidence || 0.65) * 100)),
         powerScore: powerDisplay(card || {}, Math.round((aiScore || confidence || 0.65) * 100)),
         recentForm: card?.recentForm || card?.formScore || card?.recentScore || "",
-        odds: card?.odds || card?.hrOdds || card?.bestOdds || ""
+        odds
       }
     };
   }).sort((a, b) => b.aiScore - a.aiScore || b.confidence - a.confidence);
@@ -228,7 +265,8 @@ const output = {
   dependsOn: [
     "public_tags.json",
     "player_card_data.json",
-    "game_pitcher_matchups.json"
+    "game_pitcher_matchups.json",
+    "mlb_market_odds.json"
   ],
   summary: {
     sections: sections.length,
