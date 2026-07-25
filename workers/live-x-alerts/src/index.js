@@ -10,7 +10,7 @@ const SECTION_PRIORITY = [
   "LIVE LONGSHOTS"
 ];
 
-const LIVE_GAME_STATES = new Set(["Live"]);
+const SCANNABLE_GAME_STATES = new Set(["Live", "Final"]);
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -30,8 +30,9 @@ export default {
         service: "slip-lab-live-x-alerts",
         livePostingEnabled: livePostingEnabled(env),
         eligibleSections: eligibleSections(env),
-        cadence: "one live-game scan per scheduled run",
-        maxEventAgeSeconds: maxEventAgeSeconds(env)
+        cadence: "one live/recent-final game scan per scheduled run",
+        maxEventAgeSeconds: maxEventAgeSeconds(env),
+        finalGameHandling: "final games are scanned; individual HR timestamps still must be inside maxEventAgeSeconds"
       });
     }
 
@@ -72,11 +73,21 @@ async function runWatcher(env, meta = {}) {
     dryRunEvents: 0,
     skippedEvents: 0,
     failedEvents: 0,
+    scanNotes: [],
     errors: []
   };
 
   const ai = await fetchAiBoard(env);
   const aiIndex = buildAiIndex(ai, eligibleSections(env));
+  console.log(JSON.stringify({
+    type: "live_x_scan_start",
+    trigger: summary.trigger,
+    startedAt,
+    livePostingEnabled: summary.livePostingEnabled,
+    eligibleSections: eligibleSections(env),
+    maxEventAgeSeconds: maxEventAgeSeconds(env),
+    finalGameHandling: "scan_final_games_with_event_age_filter"
+  }));
 
   summary.loops += 1;
   try {
@@ -88,6 +99,10 @@ async function runWatcher(env, meta = {}) {
   }
 
   summary.finishedAt = new Date().toISOString();
+  console.log(JSON.stringify({
+    type: "live_x_scan_finish",
+    ...summary
+  }));
   return summary;
 }
 
@@ -102,18 +117,45 @@ async function checkOnce(env, aiIndex) {
     postedEvents: 0,
     dryRunEvents: 0,
     skippedEvents: 0,
-    failedEvents: 0
+    failedEvents: 0,
+    scanNotes: []
   };
 
   for (const game of games) {
     const feed = await getJson(`${MLB_LIVE_FEED_BASE}/${game.gamePk}/feed/live`);
     const events = homeRunEvents({ date, game, feed, maxAgeSeconds: maxEventAgeSeconds(env) });
     result.homeRunsScanned += events.length;
+    result.scanNotes.push({
+      gamePk: game.gamePk,
+      state: game?.status?.abstractGameState || "",
+      detailedState: game?.status?.detailedState || "",
+      homeRunsInWindow: events.length
+    });
 
     for (const event of events) {
       const match = matchAi(event, aiIndex);
-      if (!match) continue;
+      if (!match) {
+        console.log(JSON.stringify({
+          type: "live_x_hr_unmatched",
+          player: event.player,
+          playerId: event.playerId,
+          gamePk: event.gamePk,
+          eventKey: event.eventKey,
+          endTime: event.endTime
+        }));
+        continue;
+      }
       result.matchedEvents += 1;
+      console.log(JSON.stringify({
+        type: "live_x_hr_matched",
+        player: event.player,
+        playerId: event.playerId,
+        gamePk: event.gamePk,
+        eventKey: event.eventKey,
+        section: match.primary.section,
+        rank: match.primary.rank,
+        endTime: event.endTime
+      }));
 
       const text = fitTweet(buildTweet(event, match));
       const baseRow = {
@@ -133,6 +175,12 @@ async function checkOnce(env, aiIndex) {
       const existing = await supabaseGetEvent(env, event.eventKey);
       if (existing) {
         result.skippedEvents += 1;
+        console.log(JSON.stringify({
+          type: "live_x_hr_duplicate",
+          eventKey: event.eventKey,
+          status: existing.status,
+          xPostId: existing.x_post_id || null
+        }));
         continue;
       }
 
@@ -196,7 +244,7 @@ function livePostingEnabled(env) {
 }
 
 function maxEventAgeSeconds(env) {
-  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 180), 30, 600);
+  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 900), 30, 1800);
 }
 
 function maxPostsPerRun(env) {
@@ -240,7 +288,7 @@ function easternDate() {
 async function fetchActiveGames(date) {
   const schedule = await getJson(`${MLB_SCHEDULE_URL}&date=${date}`);
   return (schedule?.dates?.[0]?.games || [])
-    .filter(game => LIVE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
+    .filter(game => SCANNABLE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
 }
 
 async function fetchAiBoard(env) {
