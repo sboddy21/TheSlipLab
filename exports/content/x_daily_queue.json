@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-07-25T08:30:33.067Z",
+  "updatedAt": "2026-07-25T17:13:16.647Z",
   "date": "2026-07-25",
-  "slot": "closed",
+  "slot": "midday",
   "cadence": "one current story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "automatic",
+    "selected": "midday",
     "available": [
       "morning",
       "midday",
@@ -20,17 +20,64 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-25T08:30:33.067Z",
+    "checkedAt": "2026-07-25T17:13:16.647Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-25T08:30:32.810Z",
+        "timestamp": "2026-07-25T17:13:16.408Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "hr_decision_center.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-25T17:12:01.881Z",
+        "ageSeconds": 74
+      },
+      {
+        "file": "mlb_weather.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-25T17:09:53.865Z",
+        "ageSeconds": 202
+      },
+      {
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-25T17:13:16.136Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-07-25T17:13:14.279Z",
+        "ageSeconds": 2
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-07-25_MIDDAY_LINEUP_SPOTLIGHT",
+      "date": "2026-07-25",
+      "type": "lineup_spotlight",
+      "slot": "midday",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-07-25T17:13:16.647Z",
+      "text": "The confirmed lineups gave me one profile worth revisiting: James Wood.\n\nBatting 1 for Washington Nationals against Mitch Bratt.\n\nStrong power profile, good HR weather conditions and Lineup role: Leadoff Volume. Projected plate appearances: 4.8.\n\nThat is the kind of lineup context that can turn an interesting profile into a playable one.",
+      "players": [
+        "James Wood"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-07-25T17:13:16.408Z"
+    }
+  ]
 }
