@@ -309,8 +309,8 @@ function validatePitcherVulnerability(expectedDate) {
     const innings = Number(row.vulnerabilityTrueInnings);
     if (!id || byId.has(id)) throw new Error(`pitcher_vulnerability.json has a missing or duplicate pitcher ID ${id || "unknown"}`);
     if (!available) {
-      if (row.status !== "updating" || row.vulnerability !== null || row.stats !== null) {
-        throw new Error(`Unavailable pitcher ${row.pitcher || id} must be marked updating without invented stats or risk`);
+      if (!["pending", "updating"].includes(row.status) || row.vulnerability !== null || row.stats !== null) {
+        throw new Error(`Unavailable pitcher ${row.pitcher || id} must be marked pending/updating without invented stats or risk`);
       }
       byId.set(id, null);
       continue;
@@ -330,7 +330,7 @@ function validatePitcherVulnerability(expectedDate) {
       const id = String(pitcher.id || "");
       const expected = byId.get(id);
       if (!byId.has(id) || (expected === null
-        ? pitcher.available !== false || pitcher.status !== "updating" || pitcher.vulnerability !== null
+        ? pitcher.available !== false || !["pending", "updating"].includes(pitcher.status) || pitcher.vulnerability !== null
         : Number(pitcher.vulnerability) !== expected)) {
         throw new Error(`${game.matchup || game.game} has a non-canonical ${side} pitcher risk index`);
       }

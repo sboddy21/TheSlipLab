@@ -106,7 +106,7 @@ function collectPitchers() {
         profile.name || profile.pitcher || game[`${side}ProbablePitcher`] || ""
       );
 
-      if (!pitcherId || !pitcher || pitcher === "TBD") {
+      if (profile.available === false || !pitcherId || !pitcher || pitcher === "TBD") {
         pending.push(`${game.matchup || game.game || "current game"} ${side}`);
         continue;
       }

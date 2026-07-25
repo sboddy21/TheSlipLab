@@ -29,6 +29,11 @@ function norm(v = "") {
   return clean(v).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function pendingPitcherSlotId(game, side) {
+  const gameId = clean(game.gamePk || game.id || game.matchup || `${game.awayTeam || game.away || "away"}-${game.homeTeam || game.home || "home"}`);
+  return `pending:${norm(gameId) || "game"}:${side}`;
+}
+
 function num(v, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
@@ -386,11 +391,13 @@ for (const slateGame of slateGames) {
   const awayTeam = slateGame.awayTeam || slateGame.away || "";
   const homeTeam = slateGame.homeTeam || slateGame.home || "";
 
-  const awayPitcherId = slateGame.awayProbablePitcherId || null;
-  const homePitcherId = slateGame.homeProbablePitcherId || null;
+  const awayPitcherId = slateGame.awayProbablePitcherId || pendingPitcherSlotId(slateGame, "away");
+  const homePitcherId = slateGame.homeProbablePitcherId || pendingPitcherSlotId(slateGame, "home");
+  const awayPitcherMlbId = slateGame.awayProbablePitcherId || null;
+  const homePitcherMlbId = slateGame.homeProbablePitcherId || null;
 
-  const awayVuln = await getVulnerability(awayPitcherId);
-  const homeVuln = await getVulnerability(homePitcherId);
+  const awayVuln = await getVulnerability(awayPitcherMlbId);
+  const homeVuln = await getVulnerability(homePitcherMlbId);
 
   const awayLineupMap = buildLineupMap(slateGame.awayBattingOrder);
   const homeLineupMap = buildLineupMap(slateGame.homeBattingOrder);
@@ -402,6 +409,7 @@ for (const slateGame of slateGames) {
       opponent: homeTeam,
       opposingPitcher: clean(slateGame.homeProbablePitcher, "TBD"),
       opposingPitcherId: homePitcherId,
+      opposingPitcherMlbId: homePitcherMlbId,
       pitcherRisk: homeVuln.score,
       pitcherVulnerability: homeVuln.score,
       pitcherRiskAvailable: homeVuln.available
@@ -415,6 +423,7 @@ for (const slateGame of slateGames) {
       opponent: awayTeam,
       opposingPitcher: clean(slateGame.awayProbablePitcher, "TBD"),
       opposingPitcherId: awayPitcherId,
+      opposingPitcherMlbId: awayPitcherMlbId,
       pitcherRisk: awayVuln.score,
       pitcherVulnerability: awayVuln.score,
       pitcherRiskAvailable: awayVuln.available
@@ -425,6 +434,8 @@ for (const slateGame of slateGames) {
     name: clean(slateGame.awayProbablePitcher, "TBD"),
     pitcher: clean(slateGame.awayProbablePitcher, "TBD"),
     id: awayPitcherId,
+    mlbId: awayPitcherMlbId,
+    pendingSlot: !awayPitcherMlbId,
     side: clean(slateGame.awayPitcherHand || slateGame.awayProbablePitcherHand),
     team: awayTeam,
     opponent: homeTeam,
@@ -441,6 +452,8 @@ for (const slateGame of slateGames) {
     name: clean(slateGame.homeProbablePitcher, "TBD"),
     pitcher: clean(slateGame.homeProbablePitcher, "TBD"),
     id: homePitcherId,
+    mlbId: homePitcherMlbId,
+    pendingSlot: !homePitcherMlbId,
     side: clean(slateGame.homePitcherHand || slateGame.homeProbablePitcherHand),
     team: homeTeam,
     opponent: awayTeam,
