@@ -1,0 +1,57 @@
+name: The Slip Lab Called It X Dry Run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: called-it-dry-run
+  cancel-in-progress: false
+
+jobs:
+  build-called-it-queue:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync selected branch
+        run: git pull origin "${GITHUB_REF_NAME}" --rebase
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build current HR results
+        run: node scripts/mlb/build_hr_results.js
+
+      - name: Build Called It dry-run queue
+        run: node scripts/content/build_x_called_it_queue.js
+
+      - name: Commit updated dry-run queue
+        if: success()
+        run: |
+          git config --global user.name "TheSlipLabBot"
+          git config --global user.email "bot@thesliplab.com"
+          git add website/data/mlb_results.json website/data/content/x_called_it_queue.json exports/content/x_called_it_queue.json || true
+          git diff --cached --quiet || git commit -m "Build Called It X dry-run queue"
+
+      - name: Push updates
+        if: success()
+        run: |
+          for i in 1 2 3; do
+            git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0
+            echo "Push failed. Syncing and retrying..."
+            git pull origin "${GITHUB_REF_NAME}" --rebase --autostash || true
+            sleep 10
+          done
+
+          echo "Push failed after retries"
+          exit 1
