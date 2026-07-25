@@ -168,6 +168,57 @@ function topBoard(limit) {
   return uniqPlayers(ranked.sort((a, b) => b.score - a.score).slice(0, limit));
 }
 
+function playerScores() {
+  const map = new Map();
+  for (const row of cards) {
+    const name = playerName(row);
+    const id = playerId(row);
+    const score = scoreOf(row);
+    const keys = [
+      String(id || "") + "|" + norm(name),
+      String(id || ""),
+      "|" + norm(name)
+    ];
+
+    for (const key of keys) {
+      if (!key || key === "|") continue;
+      const current = map.get(key);
+      if (!current || score > current.score) {
+        map.set(key, { score, source: "player_card_data.json" });
+      }
+    }
+  }
+  return map;
+}
+
+const boardScores = playerScores();
+
+function boardScoreFor(player) {
+  const keys = [
+    String(player?.playerId || "") + "|" + norm(player?.name || ""),
+    String(player?.playerId || ""),
+    "|" + norm(player?.name || "")
+  ];
+
+  for (const key of keys) {
+    if (!key || key === "|") continue;
+    const found = boardScores.get(key);
+    if (found) return found.score;
+  }
+
+  return Number(player?.confidence || 0);
+}
+
+function capByBoard(players, limit) {
+  return uniqPlayers(players)
+    .map(player => ({
+      ...player,
+      confidence: Math.max(Number(player.confidence || 0), boardScoreFor(player) > 1 ? boardScoreFor(player) / 100 : boardScoreFor(player))
+    }))
+    .sort((a, b) => boardScoreFor(b) - boardScoreFor(a) || a.name.localeCompare(b.name))
+    .slice(0, limit);
+}
+
 function liveLongshots(limit = 36) {
   const ranked = cards.map(row => {
     const name = playerName(row);
@@ -241,12 +292,12 @@ const publicTags = [
   make(
     "SMASH SPOT",
     "ai",
-    uniqPlayers([
+    capByBoard([
       ...intersect(["POWER FORM", "PITCHER TARGET"]),
       ...intersect(["POWER BAT", "HR LEAK"]),
       ...intersect(["PITCHER POWER RISK", "POWER FORM"]),
       ...playersFor("MATCHUP WATCH")
-    ]),
+    ], 25),
     ["tag_registry.json"],
     "Strong power profile with matchup or pitcher vulnerability support."
   ),
@@ -254,11 +305,11 @@ const publicTags = [
   make(
     "ELITE SMASH",
     "ai",
-    uniqPlayers([
+    capByBoard([
       ...intersect(["ELITE MODEL", "POWER BAT"]),
       ...intersect(["NUCLEAR", "PITCHER POWER RISK"]),
       ...topBoard(10)
-    ]),
+    ], 15),
     ["tag_registry.json", "player_card_data.json"],
     "Highest-confidence home run profile from the model and board ranking."
   ),
@@ -278,7 +329,7 @@ const publicTags = [
   make(
     "HOMER AI",
     "ai",
-    union(["ELITE MODEL", "MATCHUP WATCH", "PROFILE WATCH", "POWER FORM"]),
+    capByBoard(union(["ELITE MODEL", "MATCHUP WATCH", "PROFILE WATCH", "POWER FORM"]), 30),
     ["tag_registry.json"],
     "AI-selected home run profile built from model and matchup signals."
   ),
