@@ -17,19 +17,19 @@ It ignores older home runs by default. `MAX_EVENT_AGE_SECONDS=180` means the Wor
 
 ## Runtime model
 
-Cloudflare Cron wakes the Worker every minute. Each scheduled run keeps polling inside that minute:
+Cloudflare Cron wakes the Worker every minute. Each scheduled run performs one focused live-game scan:
 
 ```text
 Cloudflare scheduled trigger
 ↓
-poll MLB live feed every 10 seconds for ~50 seconds
+scan active MLB live games
 ↓
 match new HR plays against AI Says
 ↓
 write dry-run or posted event to Supabase
 ```
 
-This is much closer to “when it happens” than a five-minute refresh, while still being simpler than running a VPS.
+This is much closer to “when it happens” than a five-minute refresh, while staying inside Cloudflare Worker CPU limits.
 
 ## Required Supabase setup
 

@@ -10,7 +10,7 @@ const SECTION_PRIORITY = [
   "LIVE LONGSHOTS"
 ];
 
-const PLAYABLE_GAME_STATES = new Set(["Live", "Final", "Game Over", "Completed Early"]);
+const LIVE_GAME_STATES = new Set(["Live"]);
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -30,8 +30,8 @@ export default {
         service: "slip-lab-live-x-alerts",
         livePostingEnabled: livePostingEnabled(env),
         eligibleSections: eligibleSections(env),
-        pollSeconds: pollSeconds(env),
-        runSeconds: runSeconds(env)
+        cadence: "one live-game scan per scheduled run",
+        maxEventAgeSeconds: maxEventAgeSeconds(env)
       });
     }
 
@@ -57,8 +57,6 @@ async function runWatcher(env, meta = {}) {
   validateEnv(env);
 
   const startedAt = new Date().toISOString();
-  const stopAt = Date.now() + (meta.once ? 1 : runSeconds(env)) * 1000;
-  const pollMs = pollSeconds(env) * 1000;
   const summary = {
     ok: true,
     trigger: meta.trigger || "unknown",
@@ -80,19 +78,14 @@ async function runWatcher(env, meta = {}) {
   const ai = await fetchAiBoard(env);
   const aiIndex = buildAiIndex(ai, eligibleSections(env));
 
-  do {
-    summary.loops += 1;
-    try {
-      const result = await checkOnce(env, aiIndex);
-      mergeSummary(summary, result);
-    } catch (error) {
-      summary.errors.push(error.message);
-      summary.failedEvents += 1;
-    }
-
-    if (meta.once || Date.now() + pollMs >= stopAt) break;
-    await sleep(pollMs);
-  } while (Date.now() < stopAt);
+  summary.loops += 1;
+  try {
+    const result = await checkOnce(env, aiIndex);
+    mergeSummary(summary, result);
+  } catch (error) {
+    summary.errors.push(error.message);
+    summary.failedEvents += 1;
+  }
 
   summary.finishedAt = new Date().toISOString();
   return summary;
@@ -202,14 +195,6 @@ function livePostingEnabled(env) {
   return String(env.X_CALLED_IT_LIVE || "false").toLowerCase() === "true";
 }
 
-function pollSeconds(env) {
-  return clamp(Number(env.MLB_POLL_SECONDS || 10), 5, 30);
-}
-
-function runSeconds(env) {
-  return clamp(Number(env.MLB_RUN_SECONDS || 50), 10, 55);
-}
-
 function maxEventAgeSeconds(env) {
   return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 180), 30, 600);
 }
@@ -226,10 +211,6 @@ function eligibleSections(env) {
 function clamp(value, min, max) {
   if (!Number.isFinite(value)) return min;
   return Math.max(min, Math.min(max, value));
-}
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function json(payload, status = 200) {
@@ -259,7 +240,7 @@ function easternDate() {
 async function fetchActiveGames(date) {
   const schedule = await getJson(`${MLB_SCHEDULE_URL}&date=${date}`);
   return (schedule?.dates?.[0]?.games || [])
-    .filter(game => PLAYABLE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
+    .filter(game => LIVE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
 }
 
 async function fetchAiBoard(env) {
