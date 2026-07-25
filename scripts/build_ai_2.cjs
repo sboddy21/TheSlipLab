@@ -167,15 +167,11 @@ function takeFor(tag, player, card) {
     "SMASH SPOT": "This is the classic Slip Lab HR setup: power from the hitter side meeting enough matchup vulnerability to make the spot playable.",
     "ELITE SMASH": "This is the higher-confidence version of a smash profile, where the player is not just live but elevated by the model against the rest of the slate.",
     "SMASH + PARK": "This tag means the bat has help beyond the player profile, with park, weather, bullpen, or damage-zone support adding fuel to the HR case.",
-    "POWER PLAY": "This is a power-first read. The appeal is the hitter's raw damage ability, even if every secondary signal is not perfect.",
-    "MODEL'S BEST": "This is the AI priority bucket. The player is being pulled forward by board rank, confidence, and supporting model signals.",
-    "+EV VALUE": "This is a price-sensitive read. The player is not only live, but the signal mix suggests the market may not be fully respecting the profile.",
     "HOMER AI": "This is the AI's home-run callout bucket, built from matchup watch, profile watch, model strength, and current power-form signals.",
     "LIVE LONGSHOTS": "This is the volatile longshot lane: the player is not a core model priority, but the profile has enough power-trend, matchup, bullpen, or market availability to keep him visible.",
     "TOP 5": "This player sits inside the tightest board tier, so the AI is treating him as one of the slate's clearest priority HR candidates.",
     "TOP 10": "This player sits inside the highest board tier, so the AI is treating him as one of the slate's strongest overall HR candidates.",
-    "TOP 30": "This player is inside the main playable board range, meaning the profile is strong enough to stay in the daily HR conversation.",
-    "ZONE 5+": "This is a damage-zone read. The player has a zone-based power signal that matters for HR upside when the pitch path lines up."
+    "TOP 30": "This player is inside the main playable board range, meaning the profile is strong enough to stay in the daily HR conversation."
   }[tag] || "This player fits the active AI section because his public tag was derived from the canonical internal signal registry.";
 
   const riskLine = "The risk is still the normal HR volatility: one swing has to show up, lineup context can change, and a pitcher can avoid the damage area. But based on the live signal stack, this is why the AI is keeping him on the board.";

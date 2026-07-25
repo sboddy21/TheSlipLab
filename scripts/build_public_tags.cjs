@@ -276,33 +276,6 @@ const publicTags = [
   ),
 
   make(
-    "POWER PLAY",
-    "power",
-    union(["POWER BAT", "POWER FORM", "POWER TREND", "LONGSHOT POWER", "PITCHER POWER RISK"]),
-    ["tag_registry.json"],
-    "Power-first profile with meaningful home run upside."
-  ),
-
-  make(
-    "MODEL'S BEST",
-    "model",
-    uniqPlayers([
-      ...playersFor("ELITE MODEL"),
-      ...topBoard(30)
-    ]),
-    ["tag_registry.json", "player_card_data.json"],
-    "Players prioritized by the Slip Lab model across confidence and board score."
-  ),
-
-  make(
-    "+EV VALUE",
-    "market",
-    union(["LONGSHOT", "LONGSHOT POWER", "OPS EDGE", "TRAFFIC EDGE"]),
-    ["tag_registry.json"],
-    "Value-oriented profile with longshot, market, OPS, or traffic support."
-  ),
-
-  make(
     "HOMER AI",
     "ai",
     union(["ELITE MODEL", "MATCHUP WATCH", "PROFILE WATCH", "POWER FORM"]),
@@ -340,14 +313,6 @@ const publicTags = [
     topBoard(30),
     ["player_card_data.json"],
     "Top 30 players by today's available board scoring."
-  ),
-
-  make(
-    "ZONE 5+",
-    "zone",
-    playersFor("ZONE 5+"),
-    ["tag_registry.json"],
-    "Players carrying the Zone 5+ damage-zone signal."
   )
 ];
 
