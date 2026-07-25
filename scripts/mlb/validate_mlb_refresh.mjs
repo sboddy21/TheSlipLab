@@ -44,6 +44,10 @@ function num(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function clean(value = "") {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
 function filePath(file) {
   return path.join(DATA, file);
 }
@@ -523,6 +527,18 @@ function validatePitcherRateFields() {
   }
 }
 
+function confirmedPitcherIdForStatcast(game, side) {
+  const profile = game[`${side}Pitcher`] || {};
+  const pitcherId = profile.id || profile.playerId || game[`${side}ProbablePitcherId`];
+  const pitcher = clean(profile.name || profile.pitcher || game[`${side}ProbablePitcher`] || "");
+
+  if (profile.available === false || !pitcherId || !pitcher || pitcher === "TBD") {
+    return null;
+  }
+
+  return String(pitcherId);
+}
+
 function validateRealStatcastZones(expectedDate) {
   const pool = read("mlb_player_pool.json");
   const matchups = read("game_pitcher_matchups.json");
@@ -532,10 +548,8 @@ function validateRealStatcastZones(expectedDate) {
 
   for (const game of matchups.games || []) {
     for (const side of ["away", "home"]) {
-      const profile = game[`${side}Pitcher`] || {};
-      const pitcherId = profile.id || profile.playerId || game[`${side}ProbablePitcherId`];
-      if (!pitcherId) fail(`${game.matchup || game.game || "Current game"} is missing a ${side} pitcher ID`);
-      pitcherIds.add(String(pitcherId));
+      const pitcherId = confirmedPitcherIdForStatcast(game, side);
+      if (pitcherId) pitcherIds.add(pitcherId);
     }
   }
 
@@ -632,8 +646,16 @@ function validateRealPitcherAttackZones(expectedDate) {
   for (const game of matchups.games || []) {
     for (const side of ["away", "home"]) {
       const pitcher = side === "away" ? game.homePitcher : game.awayPitcher;
+      const pitcherId = pitcher?.id || pitcher?.playerId || "";
+      const pitcherName = clean(pitcher?.name || pitcher?.pitcher || "");
+      const pending = pitcher?.available === false || !pitcherId || !pitcherName || pitcherName === "TBD";
       for (const hitter of game.hitters?.[side] || []) {
-        if (hitter.playerId) matchupByPlayerId.set(String(hitter.playerId), String(pitcher?.id || pitcher?.playerId || ""));
+        if (hitter.playerId) {
+          matchupByPlayerId.set(String(hitter.playerId), {
+            pitcherId: pending ? "" : String(pitcherId),
+            pending
+          });
+        }
       }
     }
   }
@@ -673,9 +695,25 @@ function validateRealPitcherAttackZones(expectedDate) {
 
   for (const player of hr) {
     const row = attack.players[String(player.playerId)] || attack.players[player.player];
-    const pitcherId = matchupByPlayerId.get(String(player.playerId));
+    const matchup = matchupByPlayerId.get(String(player.playerId)) || {};
+    const pitcherId = matchup.pitcherId || "";
     const hitterCard = statcast.players?.[String(player.playerId)] || statcast.players?.[player.player];
     const pitcherCard = statcast.pitchers?.[pitcherId];
+    const decisionRow = decisionByPlayer.get(String(player.playerId)) || decisionByPlayer.get(player.player);
+
+    if (matchup.pending) {
+      if (!row || !hitterCard || row.opposingPitcherPending !== true || row.opposingPitcherId !== null) {
+        fail(`Pending attack-zone dependency is not marked for ${player.player}`);
+      }
+      if (row.zones?.zoneSignalAvailable !== false || row.zones?.pitcherLeak !== null || !Array.isArray(row.zones?.zones) || row.zones.zones.length !== 25) {
+        fail(`Pending attack-zone grid is invalid for ${player.player}`);
+      }
+      if (!decisionRow || decisionRow.zoneOverlap !== null || decisionRow.zoneSignalAvailable !== false || Number(decisionRow.pitcherRisk) !== 0) {
+        fail(`Decision Center pending zone fallback is incorrect for ${player.player}`);
+      }
+      continue;
+    }
+
     if (!row || !pitcherId || !hitterCard || !pitcherCard) {
       fail(`Real attack-zone dependency is missing for ${player.player}`);
     }
@@ -732,7 +770,6 @@ function validateRealPitcherAttackZones(expectedDate) {
       roundTo(hitterOverall) * 0.34 + roundTo(pitcherOverall) * 0.34 +
       (overlapTotal / qualifiedCount) * 0.22 + hotCount * 1.8
     ))) : null;
-    const decisionRow = decisionByPlayer.get(String(player.playerId)) || decisionByPlayer.get(player.player);
     if (!decisionRow || String(decisionRow.playerId || decisionRow.mlbId || "") !== String(player.playerId)) {
       fail(`Decision Center is missing current player ID for ${player.player}`);
     }
