@@ -6,6 +6,7 @@ const DATA = path.join(ROOT, "website", "data");
 
 const REGISTRY_FILE = path.join(DATA, "tag_registry.json");
 const PLAYER_CARD_FILE = path.join(DATA, "player_card_data.json");
+const MARKET_ODDS_FILE = path.join(DATA, "mlb_market_odds.json");
 const OUT = path.join(DATA, "public_tags.json");
 
 function readJson(file) {
@@ -47,6 +48,58 @@ function playerKey(p) {
   return String(p?.playerId || "") + "|" + norm(p?.name || "");
 }
 
+function nested(row, path, fallback = "") {
+  return path.split(".").reduce((obj, key) => obj && obj[key] !== undefined ? obj[key] : undefined, row) ?? fallback;
+}
+
+function scoreOf(row) {
+  const values = [
+    row?.hrScore,
+    row?.score,
+    row?.modelScore,
+    row?.aiScore,
+    row?.powerScore,
+    row?.confidence,
+    nested(row, "model.score"),
+    nested(row, "model.powerScore"),
+    nested(row, "model.pitchEdge"),
+    nested(row, "model.bullpen")
+  ].map(Number).filter(Number.isFinite);
+
+  return values.length ? Math.max(...values) : 0;
+}
+
+function americanOddsValue(value) {
+  if (value === undefined || value === null || value === "" || value === "N/A") return null;
+  const cleaned = String(value).replace(/[^+\-\d.]/g, "");
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
+function oddsIndex(payload) {
+  const index = new Map();
+  for (const price of rows(payload)) {
+    const odds = americanOddsValue(price.overPriceAmerican || price.odds || price.hrOdds || price.bestOdds);
+    if (odds === null) continue;
+    const key = String(price.playerId || "") || norm(price.player || price.playerName || price.name);
+    if (!key) continue;
+    const current = index.get(key);
+    if (!current || odds > current.odds) {
+      index.set(key, { odds, source: price.bookmakerTitle || price.bookmakerKey || "market odds" });
+    }
+  }
+  return index;
+}
+
+function oddsFor(row, index) {
+  const direct = americanOddsValue(row?.odds || row?.hrOdds || row?.bestOdds || row?.overPriceAmerican);
+  if (direct !== null) return direct;
+  const byId = index.get(String(playerId(row) || ""));
+  if (byId) return byId.odds;
+  const byName = index.get(norm(playerName(row)));
+  return byName ? byName.odds : null;
+}
+
 function uniqPlayers(players) {
   const map = new Map();
 
@@ -69,12 +122,14 @@ function uniqPlayers(players) {
 
 const registry = readJson(REGISTRY_FILE);
 const cardData = readJson(PLAYER_CARD_FILE);
+const marketOdds = readJson(MARKET_ODDS_FILE);
 
 if (!registry || !Array.isArray(registry.tags)) {
   throw new Error("Missing canonical tag_registry.json");
 }
 
 const cards = rows(cardData);
+const marketOddsIndex = oddsIndex(marketOdds);
 const allTags = registry.tags;
 const byTag = new Map(allTags.map(t => [norm(t.tag), t]));
 
@@ -99,15 +154,7 @@ function topBoard(limit) {
   const ranked = cards.map(row => {
     const name = playerName(row);
     const id = playerId(row);
-
-    const score = Math.max(
-      Number(row.hrScore || 0),
-      Number(row.score || 0),
-      Number(row.modelScore || 0),
-      Number(row.aiScore || 0),
-      Number(row.powerScore || 0),
-      Number(row.confidence || 0)
-    );
+    const score = scoreOf(row);
 
     return {
       playerId: id,
@@ -119,6 +166,57 @@ function topBoard(limit) {
   }).filter(p => p.name && p.name !== "Unknown Player");
 
   return uniqPlayers(ranked.sort((a, b) => b.score - a.score).slice(0, limit));
+}
+
+function liveLongshots(limit = 36) {
+  const ranked = cards.map(row => {
+    const name = playerName(row);
+    const id = playerId(row);
+    const score = Number(nested(row, "model.score", scoreOf(row)));
+    const power = Number(nested(row, "model.powerScore", 0));
+    const bullpen = Number(nested(row, "model.bullpen", 0));
+    const pitchEdge = Number(nested(row, "model.pitchEdge", 0));
+    const recentIso = Math.max(Number(nested(row, "last7.iso", 0)), Number(nested(row, "last15.iso", 0)));
+    const seasonHr = Number(nested(row, "season.hr", 0));
+    const last15Hr = Number(nested(row, "last15.hr", 0));
+    const odds = oddsFor(row, marketOddsIndex);
+    const tags = (row.tags || []).map(norm);
+
+    const hasOddsLongshot = odds !== null && odds >= 400;
+    const hasPowerTrend = tags.includes("RECENT HR") || tags.includes("POWER TREND") || recentIso >= 0.18 || last15Hr >= 2;
+    const hasEnoughUpside = power >= 35 || seasonHr >= 4 || bullpen >= 70 || pitchEdge >= 32;
+    const isTooCore = score >= 52;
+
+    if (!hasOddsLongshot && !(hasPowerTrend && hasEnoughUpside && !isTooCore)) return null;
+
+    const longshotBand = score < 38 ? 18 : score < 45 ? 15 : score < 50 ? 10 : 5;
+    const longshotScore =
+      (hasOddsLongshot ? 24 : 0) +
+      longshotBand +
+      Math.min(20, power * 0.25) +
+      Math.min(15, bullpen * 0.1) +
+      Math.min(12, pitchEdge * 0.18) +
+      Math.min(14, recentIso * 38) +
+      Math.min(10, last15Hr * 2) +
+      Math.min(8, seasonHr * 0.35);
+
+    return {
+      playerId: id,
+      name,
+      confidence: Math.max(0.38, Math.min(0.74, longshotScore / 100)),
+      source: odds === null ? "player_card_data.json" : "mlb_market_odds.json",
+      score: longshotScore,
+      odds
+    };
+  }).filter(Boolean);
+
+  const sorted = ranked.sort((a, b) => {
+    const aOdds = a.odds !== null ? 1 : 0;
+    const bOdds = b.odds !== null ? 1 : 0;
+    return bOdds - aOdds || b.score - a.score || a.name.localeCompare(b.name);
+  });
+
+  return uniqPlayers(sorted).slice(0, limit);
 }
 
 function make(tag, category, players, source, description) {
@@ -210,6 +308,14 @@ const publicTags = [
     union(["ELITE MODEL", "MATCHUP WATCH", "PROFILE WATCH", "POWER FORM"]),
     ["tag_registry.json"],
     "AI-selected home run profile built from model and matchup signals."
+  ),
+
+  make(
+    "LIVE LONGSHOTS",
+    "market",
+    liveLongshots(36),
+    ["player_card_data.json", "mlb_market_odds.json"],
+    "Volatile HR watchlist bats with longshot odds when available, or power-trend upside when books are unavailable."
   ),
 
   make(
