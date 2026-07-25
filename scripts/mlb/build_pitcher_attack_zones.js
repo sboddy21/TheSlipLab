@@ -46,14 +46,19 @@ function buildMatchupMap(matchups) {
       const opposingPitcher = side === "away" ? game.homePitcher : game.awayPitcher;
       const pitcherId = opposingPitcher?.id || opposingPitcher?.playerId;
       const pitcher = opposingPitcher?.name || opposingPitcher?.pitcher || "";
-
-      if (!pitcherId || !pitcher) {
-        throw new Error(`${game.matchup || game.game || "Current game"} is missing an opposing pitcher`);
-      }
+      const pending = !pitcherId || !pitcher || pitcher === "TBD" || opposingPitcher?.available === false;
+      const matchup = pending
+        ? {
+            pitcherId: null,
+            pitcher: pitcher || "TBD",
+            pending: true,
+            game: game.matchup || game.game || "Current game"
+          }
+        : { pitcherId: String(pitcherId), pitcher, pending: false };
 
       for (const hitter of hitters) {
-        if (hitter.playerId) map.set(`id:${hitter.playerId}`, { pitcherId: String(pitcherId), pitcher });
-        if (hitter.player) map.set(`name:${norm(hitter.player)}`, { pitcherId: String(pitcherId), pitcher });
+        if (hitter.playerId) map.set(`id:${hitter.playerId}`, matchup);
+        if (hitter.player) map.set(`name:${norm(hitter.player)}`, matchup);
       }
     }
   }
@@ -136,6 +141,36 @@ function buildZoneGrid(row, hitterCard, pitcherCard) {
   };
 }
 
+function buildPendingPitcherZoneGrid(row, hitterCard) {
+  const hitter = xwobaProfile(hitterCard.zones, { requireSamples: false });
+  const hitterPower = hitter.xwoba === null ? null : round(clamp(hitter.xwoba * 100, 0, 100), 2);
+
+  return {
+    side: String(row.batSide || hitterCard.batSide || "B").toUpperCase(),
+    hitterPower,
+    pitcherLeak: null,
+    hitterXwoba: hitter.xwoba === null ? null : round(hitter.xwoba),
+    pitcherXwobaAllowed: null,
+    hitterSamples: hitter.samples,
+    pitcherSamples: 0,
+    qualified: hitter.samples > 0,
+    qualifiedZones: 0,
+    zoneSignalAvailable: false,
+    pendingReason: "opposing_pitcher_not_confirmed",
+    zones: Array.from({ length: 25 }, (_, index) => ({
+      zone: index + 1,
+      danger: null,
+      attack: "Pending",
+      qualified: false,
+      hitterXwoba: null,
+      pitcherXwobaAllowed: null,
+      overlapXwoba: null,
+      hitterSamples: n(hitter.raw[index]?.xwobaCount),
+      pitcherSamples: 0
+    }))
+  };
+}
+
 function main() {
   const board = readJson(HR_FILE);
   const statcast = readJson(STATCAST_FILE);
@@ -191,8 +226,23 @@ function main() {
     if (!matchup) throw new Error(`No current opposing pitcher mapping for ${row.player}`);
 
     const hitterCard = statcast.players?.[String(row.playerId)] || statcast.players?.[row.player];
-    const pitcherCard = statcast.pitchers?.[matchup.pitcherId];
     if (!hitterCard) throw new Error(`No current Statcast hitter zones for ${row.player}`);
+
+    if (matchup.pending) {
+      output.players[String(row.playerId)] = {
+        player: row.player,
+        playerId: row.playerId,
+        team: row.team || null,
+        opposingPitcher: matchup.pitcher,
+        opposingPitcherId: null,
+        opposingPitcherPending: true,
+        pendingReason: "opposing_pitcher_not_confirmed",
+        zones: buildPendingPitcherZoneGrid(row, hitterCard)
+      };
+      continue;
+    }
+
+    const pitcherCard = statcast.pitchers?.[matchup.pitcherId];
     if (!pitcherCard) throw new Error(`No current Statcast pitcher zones for ${matchup.pitcher}`);
 
     output.players[String(row.playerId)] = {

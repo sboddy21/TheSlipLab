@@ -96,6 +96,7 @@ function collectPitchers() {
   if (!games.length) throw new Error("game_pitcher_matchups.json contains no current games");
 
   const seen = new Map();
+  const pending = [];
 
   for (const game of games) {
     for (const side of ["away", "home"]) {
@@ -106,7 +107,8 @@ function collectPitchers() {
       );
 
       if (!pitcherId || !pitcher || pitcher === "TBD") {
-        throw new Error(`${game.matchup || game.game || "current game"} is missing a confirmed ${side} pitcher`);
+        pending.push(`${game.matchup || game.game || "current game"} ${side}`);
+        continue;
       }
 
       seen.set(String(pitcherId), {
@@ -116,6 +118,10 @@ function collectPitchers() {
         opponent: side === "away" ? game.homeTeam : game.awayTeam
       });
     }
+  }
+
+  if (pending.length) {
+    console.warn(`Skipping ${pending.length} pending probable pitcher slot(s): ${pending.join("; ")}`);
   }
 
   return [...seen.values()].sort((a, b) => a.pitcher.localeCompare(b.pitcher));
