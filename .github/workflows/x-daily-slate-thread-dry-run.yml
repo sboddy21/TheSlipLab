@@ -1,8 +1,8 @@
-name: The Slip Lab Daily Slate Thread Dry Run
+name: The Slip Lab Daily Slate Thread
 
 on:
   schedule:
-    # 10:10 a.m. Eastern windows. The workflow is dry-run only.
+    # 10:10 a.m. Eastern windows. Posts live when X_DRY_RUN is false.
     - cron: "10 14 * * *"
     - cron: "10 15 * * *"
   workflow_dispatch:
@@ -51,16 +51,30 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: node scripts/run_fast_refresh.js
 
-      - name: Build daily slate thread dry run
+      - name: Build current game context
+        if: env.RUN_DAILY_SLATE_THREAD == 'true'
+        run: node scripts/mlb/build_context_factors.js
+
+      - name: Build daily slate thread
         if: env.RUN_DAILY_SLATE_THREAD == 'true'
         run: node scripts/content/build_x_daily_slate_thread.js
 
-      - name: Commit daily slate thread preview
+      - name: Post daily slate thread
+        if: env.RUN_DAILY_SLATE_THREAD == 'true'
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          X_DRY_RUN: ${{ secrets.X_DRY_RUN }}
+        run: node scripts/content/post_x_daily_slate_thread.js
+
+      - name: Commit daily slate thread outputs
         if: env.RUN_DAILY_SLATE_THREAD == 'true' && success()
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-          git add website/data/content/x_daily_slate_thread.json exports/content/x_daily_slate_thread.json exports/content/x_daily_slate_thread.txt || true
+          git add website/data/content/x_daily_slate_thread.json website/data/content/x_post_history.json exports/content/x_daily_slate_thread.json exports/content/x_daily_slate_thread.txt || true
           git diff --cached --quiet || git commit -m "Build daily slate X thread preview"
 
       - name: Push updates
