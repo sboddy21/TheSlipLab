@@ -36,6 +36,34 @@
 
   const primaryLabels = new Set(["Sign In", "Slate", "Results", "Weather", "AI Says"]);
   const primaryOrder = ["Sign In", "Slate", "Results", "Weather", "AI Says"];
+  const protectedPaths = new Set([
+    "/ai-hall-of-fame.html",
+    "/ai-says.html",
+    "/bullpen-collapse.html",
+    "/command-center.html",
+    "/full-board.html",
+    "/heat-check.html",
+    "/hr-decision-center.html",
+    "/decision-center.html",
+    "/live-game-center.html",
+    "/live-heatmap.html",
+    "/live-platform.html",
+    "/matchup-lab.html",
+    "/mlb.html",
+    "/model-report.html",
+    "/nba.html",
+    "/nba-assists.html",
+    "/nba-matchups.html",
+    "/nba-points.html",
+    "/nba-rebounds.html",
+    "/nba-threes.html",
+    "/nfl.html",
+    "/pitcher-vulnerability.html",
+    "/player-intelligence.html",
+    "/power-zones.html",
+    "/quick-target.html",
+    "/streak-lab.html"
+  ]);
 
   function itemIsActive(activePaths, path){
     return activePaths.includes(path);
@@ -155,6 +183,12 @@
       accountScript.src = "./assets/account-client.js";
       accountScript.dataset.tslAccountClient = "true";
       document.head.appendChild(accountScript);
+    }
+    if (protectedPaths.has(window.location.pathname) && !document.querySelector('script[data-tsl-access-gate]')) {
+      const gateScript = document.createElement("script");
+      gateScript.src = "./assets/access-gate.js";
+      gateScript.dataset.tslAccessGate = "true";
+      document.head.appendChild(gateScript);
     }
   }
 
