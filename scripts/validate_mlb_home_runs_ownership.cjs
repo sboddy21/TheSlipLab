@@ -42,7 +42,10 @@ const ownershipRules = [
   },
   {
     target: "x_post_history.json",
-    allowedWriters: new Set(["scripts/content/post_x_queue.js"])
+    allowedWriters: new Set([
+      "scripts/content/post_x_queue.js",
+      "scripts/content/post_x_daily_slate_thread.js"
+    ])
   }
 ];
 
