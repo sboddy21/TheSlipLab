@@ -1,8 +1,8 @@
-name: The Slip Lab Daily Edge Posts Dry Run
+name: The Slip Lab Daily Edge Posts
 
 on:
   schedule:
-    # 11:20 a.m. Eastern windows. Dry-run preview only.
+    # 11:20 a.m. Eastern window. Posts live when X_DRY_RUN is false.
     - cron: "20 15 * * *"
     - cron: "20 16 * * *"
   workflow_dispatch:
@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: daily-edge-posts-dry-run
+  group: daily-edge-posts
   cancel-in-progress: false
 
 jobs:
@@ -37,13 +37,13 @@ jobs:
         run: |
           EASTERN_HOUR=$(node -e "console.log(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(new Date()))")
           if [ "$EASTERN_HOUR" != "11" ]; then
-            echo "Not the 11 a.m. Eastern dry-run window. Hour=$EASTERN_HOUR"
+            echo "Not the 11 a.m. Eastern daily edge post window. Hour=$EASTERN_HOUR"
             echo "RUN_DAILY_EDGE_POSTS=false" >> "$GITHUB_ENV"
             exit 0
           fi
 
           echo "RUN_DAILY_EDGE_POSTS=true" >> "$GITHUB_ENV"
-          echo "Building daily edge post dry run. Hour=$EASTERN_HOUR"
+          echo "Building daily edge posts. Hour=$EASTERN_HOUR"
 
       - name: Refresh current MLB inputs
         if: env.RUN_DAILY_EDGE_POSTS == 'true'
@@ -59,13 +59,23 @@ jobs:
         if: env.RUN_DAILY_EDGE_POSTS == 'true'
         run: node scripts/content/build_x_daily_edge_posts.js
 
-      - name: Commit daily edge post preview
+      - name: Post daily edge posts
+        if: env.RUN_DAILY_EDGE_POSTS == 'true'
+        env:
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          X_DRY_RUN: ${{ secrets.X_DRY_RUN }}
+        run: node scripts/content/post_x_daily_edge_posts.js
+
+      - name: Commit daily edge post outputs
         if: env.RUN_DAILY_EDGE_POSTS == 'true' && success()
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-          git add website/data/content/x_daily_edge_posts.json exports/content/x_daily_edge_posts.json exports/content/x_daily_edge_posts.txt || true
-          git diff --cached --quiet || git commit -m "Build daily edge X post preview"
+          git add website/data/content/x_daily_edge_posts.json website/data/content/x_post_history.json exports/content/x_daily_edge_posts.json exports/content/x_daily_edge_posts.txt || true
+          git diff --cached --quiet || git commit -m "Build daily edge X post outputs"
 
       - name: Push updates
         if: env.RUN_DAILY_EDGE_POSTS == 'true' && success()
