@@ -1,0 +1,77 @@
+name: The Slip Lab Daily Slate Thread Dry Run
+
+on:
+  schedule:
+    # 10:10 a.m. Eastern windows. The workflow is dry-run only.
+    - cron: "10 14 * * *"
+    - cron: "10 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-slate-thread-dry-run
+  cancel-in-progress: false
+
+jobs:
+  build-daily-slate-thread:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync selected branch
+        run: git pull origin "${GITHUB_REF_NAME}" --rebase
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Guard 10 a.m. Eastern window
+        run: |
+          EASTERN_HOUR=$(node -e "console.log(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(new Date()))")
+          if [ "$EASTERN_HOUR" != "10" ]; then
+            echo "Not the 10 a.m. Eastern dry-run window. Hour=$EASTERN_HOUR"
+            echo "RUN_DAILY_SLATE_THREAD=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "RUN_DAILY_SLATE_THREAD=true" >> "$GITHUB_ENV"
+          echo "Building daily slate thread dry run. Hour=$EASTERN_HOUR"
+
+      - name: Refresh current MLB inputs
+        if: env.RUN_DAILY_SLATE_THREAD == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/run_fast_refresh.js
+
+      - name: Build daily slate thread dry run
+        if: env.RUN_DAILY_SLATE_THREAD == 'true'
+        run: node scripts/content/build_x_daily_slate_thread.js
+
+      - name: Commit daily slate thread preview
+        if: env.RUN_DAILY_SLATE_THREAD == 'true' && success()
+        run: |
+          git config --global user.name "TheSlipLabBot"
+          git config --global user.email "bot@thesliplab.com"
+          git add website/data/content/x_daily_slate_thread.json exports/content/x_daily_slate_thread.json exports/content/x_daily_slate_thread.txt || true
+          git diff --cached --quiet || git commit -m "Build daily slate X thread preview"
+
+      - name: Push updates
+        if: env.RUN_DAILY_SLATE_THREAD == 'true' && success()
+        run: |
+          for i in 1 2 3; do
+            git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0
+            echo "Push failed. Syncing and retrying..."
+            git pull origin "${GITHUB_REF_NAME}" --rebase --autostash || true
+            sleep 10
+          done
+
+          echo "Push failed after retries"
+          exit 1
