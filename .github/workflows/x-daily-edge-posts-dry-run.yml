@@ -1,0 +1,81 @@
+name: The Slip Lab Daily Edge Posts Dry Run
+
+on:
+  schedule:
+    # 11:20 a.m. Eastern windows. Dry-run preview only.
+    - cron: "20 15 * * *"
+    - cron: "20 16 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-edge-posts-dry-run
+  cancel-in-progress: false
+
+jobs:
+  build-daily-edge-posts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync selected branch
+        run: git pull origin "${GITHUB_REF_NAME}" --rebase
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Guard 11 a.m. Eastern window
+        run: |
+          EASTERN_HOUR=$(node -e "console.log(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hourCycle:'h23'}).format(new Date()))")
+          if [ "$EASTERN_HOUR" != "11" ]; then
+            echo "Not the 11 a.m. Eastern dry-run window. Hour=$EASTERN_HOUR"
+            echo "RUN_DAILY_EDGE_POSTS=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          echo "RUN_DAILY_EDGE_POSTS=true" >> "$GITHUB_ENV"
+          echo "Building daily edge post dry run. Hour=$EASTERN_HOUR"
+
+      - name: Refresh current MLB inputs
+        if: env.RUN_DAILY_EDGE_POSTS == 'true'
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: node scripts/run_fast_refresh.js
+
+      - name: Build current game context
+        if: env.RUN_DAILY_EDGE_POSTS == 'true'
+        run: node scripts/mlb/build_context_factors.js
+
+      - name: Build daily edge posts
+        if: env.RUN_DAILY_EDGE_POSTS == 'true'
+        run: node scripts/content/build_x_daily_edge_posts.js
+
+      - name: Commit daily edge post preview
+        if: env.RUN_DAILY_EDGE_POSTS == 'true' && success()
+        run: |
+          git config --global user.name "TheSlipLabBot"
+          git config --global user.email "bot@thesliplab.com"
+          git add website/data/content/x_daily_edge_posts.json exports/content/x_daily_edge_posts.json exports/content/x_daily_edge_posts.txt || true
+          git diff --cached --quiet || git commit -m "Build daily edge X post preview"
+
+      - name: Push updates
+        if: env.RUN_DAILY_EDGE_POSTS == 'true' && success()
+        run: |
+          for i in 1 2 3; do
+            git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0
+            echo "Push failed. Syncing and retrying..."
+            git pull origin "${GITHUB_REF_NAME}" --rebase --autostash || true
+            sleep 10
+          done
+
+          echo "Push failed after retries"
+          exit 1
