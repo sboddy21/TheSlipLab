@@ -6,17 +6,34 @@ const SUPABASE_TABLE = "x_live_events";
 const SECTION_PRIORITY = [
   "TOP 5",
   "TOP 10",
+  "HOMER AI",
   "ELITE SMASH",
-  "LIVE LONGSHOTS"
+  "SMASH + PARK",
+  "SMASH SPOT",
+  "LIVE LONGSHOTS",
+  "TOP 30"
 ];
 
-const SLIP_LAB_HIT_SECTIONS = new Set(["TOP 5", "TOP 10"]);
+const DEFAULT_BOARD_HIT_SECTIONS = [
+  "TOP 5",
+  "TOP 10",
+  "HOMER AI",
+  "ELITE SMASH",
+  "SMASH + PARK",
+  "SMASH SPOT",
+  "LIVE LONGSHOTS",
+  "TOP 30"
+];
+const PREMIUM_HIT_SECTIONS = new Set(["TOP 5", "TOP 10"]);
 const DEFAULT_LIVE_AI_UPDATE_SECTIONS = [
   "TOP 5",
   "TOP 10",
   "ELITE SMASH",
+  "SMASH + PARK",
+  "SMASH SPOT",
   "HOMER AI",
-  "LIVE LONGSHOTS"
+  "LIVE LONGSHOTS",
+  "TOP 30"
 ];
 const LIVE_GAME_STATES = new Set(["Live"]);
 const HARD_HIT_MPH = 95;
@@ -43,7 +60,8 @@ export default {
         eligibleSections: eligibleSections(env),
         liveAiUpdateSections: liveAiUpdateSections(env),
         cadence: "one live-game scan per scheduled run",
-        maxEventAgeSeconds: maxEventAgeSeconds(env)
+        maxEventAgeSeconds: maxEventAgeSeconds(env),
+        maxPostsPerRun: maxPostsPerRun(env)
       });
     }
 
@@ -132,7 +150,7 @@ async function checkOnce(env, aiIndexes) {
       if (!match) continue;
       result.matchedEvents += 1;
 
-      const eventType = slipLabHitEligible(match) ? "slip_lab_hit_home_run" : "called_it_home_run";
+      const eventType = "slip_lab_hit_home_run";
       const rowEventKey = eventKey(event, eventType);
       const text = fitTweet(buildHomeRunTweet(event, match, eventType));
       const baseRow = {
@@ -264,11 +282,11 @@ function minLiveAiConfidenceMove(env) {
 }
 
 function maxPostsPerRun(env) {
-  return clamp(Number(env.MAX_POSTS_PER_RUN || 5), 1, 10);
+  return clamp(Number(env.MAX_POSTS_PER_RUN || 10), 1, 15);
 }
 
 function eligibleSections(env) {
-  const raw = String(env.ELIGIBLE_SECTIONS || SECTION_PRIORITY.join(","));
+  const raw = String(env.ELIGIBLE_SECTIONS || DEFAULT_BOARD_HIT_SECTIONS.join(","));
   return raw.split(",").map(item => item.trim().toUpperCase()).filter(Boolean);
 }
 
@@ -388,10 +406,6 @@ function matchAi(event, index) {
 function sectionOrder(section) {
   const index = SECTION_PRIORITY.indexOf(section);
   return index === -1 ? SECTION_PRIORITY.length : index;
-}
-
-function slipLabHitEligible(match) {
-  return match?.memberships?.some(item => SLIP_LAB_HIT_SECTIONS.has(item.section));
 }
 
 function homeRunEvents({ date, game, feed, maxAgeSeconds }) {
@@ -586,7 +600,8 @@ function rounded(value, digits) {
 
 function buildHomeRunTweet(event, match, eventType) {
   if (eventType === "slip_lab_hit_home_run") {
-    const topHit = match.memberships.find(item => SLIP_LAB_HIT_SECTIONS.has(item.section)) || match.primary;
+    const topHit = match.memberships.find(item => PREMIUM_HIT_SECTIONS.has(item.section)) || match.primary;
+    const isPremiumHit = PREMIUM_HIT_SECTIONS.has(topHit.section);
     const stats = [
       event.distance ? `${event.distance} ft` : "",
       event.exitVelocity ? `${event.exitVelocity} mph EV` : "",
@@ -596,7 +611,9 @@ function buildHomeRunTweet(event, match, eventType) {
     return [
       "🚨 SLIP LAB HIT",
       "",
-      `Our ${topHit.section} #${topHit.rank} HR pick just left the yard.`,
+      isPremiumHit
+        ? `Our ${topHit.section} #${topHit.rank} HR pick just left the yard.`
+        : "A Slip Lab board pick just left the yard.",
       "",
       event.player,
       `${topHit.section} #${topHit.rank}`,
