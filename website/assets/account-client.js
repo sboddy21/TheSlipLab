@@ -161,4 +161,4 @@ window.TSLAccount = {
   removeFavorite
 };
 
-initialize();
+window.TSLAccount.ready = initialize();

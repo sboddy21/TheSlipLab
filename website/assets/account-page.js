@@ -67,6 +67,33 @@ function setMessage(message, isError = false) {
   elements.message.classList.toggle("error", isError);
 }
 
+function redirectTarget() {
+  const params = new URLSearchParams(window.location.search);
+  const rawTarget = params.get("redirect");
+  if (!rawTarget) return "";
+  try {
+    const decodedTarget = decodeURIComponent(rawTarget);
+    if (!decodedTarget.startsWith("/") || decodedTarget.startsWith("//") || decodedTarget.includes("://")) return "";
+    if (decodedTarget === "/account.html" || decodedTarget.startsWith("/account.html?")) return "";
+    return decodedTarget;
+  } catch {
+    return "";
+  }
+}
+
+function redirectAfterAuth(session) {
+  const target = redirectTarget();
+  if (!session?.user || !target || recoveryMode) return false;
+  window.location.replace(target);
+  return true;
+}
+
+function signInPrompt() {
+  return redirectTarget()
+    ? "Sign in to continue to the member page you requested."
+    : "Sign in with your email and password.";
+}
+
 function authErrorMessage(error) {
   const message = String(error?.message || "Account request failed");
   if (/invalid login credentials/i.test(message)) return "That email and password combination was not recognized.";
@@ -654,6 +681,7 @@ async function showSession(session) {
     return;
   }
   if (!signedIn) return;
+  if (redirectAfterAuth(session)) return;
   elements.emailDisplay.textContent = session.user.email || "Authenticated account";
   try {
     if (!catalog.length) await loadCatalog();
@@ -665,12 +693,12 @@ async function showSession(session) {
 
 elements.signInTab.addEventListener("click", () => {
   showAuthView("signin");
-  setMessage("Sign in with your email and password.");
+  setMessage(signInPrompt());
 });
 
 elements.signUpTab.addEventListener("click", () => {
   showAuthView("signup");
-  setMessage("Create a free account. You may be asked to confirm your email before signing in.");
+  setMessage("Create a Slip Lab account. You may be asked to confirm your email before signing in.");
 });
 
 elements.showReset.addEventListener("click", () => {
@@ -681,7 +709,7 @@ elements.showReset.addEventListener("click", () => {
 
 elements.cancelReset.addEventListener("click", () => {
   showAuthView("signin");
-  setMessage("Sign in with your email and password.");
+  setMessage(signInPrompt());
 });
 
 elements.signInForm.addEventListener("submit", async event => {
@@ -824,4 +852,5 @@ window.addEventListener("tsl-account-error", event => {
   setMessage(event.detail.message, true);
 });
 
+if (redirectTarget()) setMessage("Sign in or create an account to continue to the member page you requested.");
 if (window.TSLAccount) showSession(window.TSLAccount.session);
