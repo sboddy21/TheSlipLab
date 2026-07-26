@@ -74,6 +74,24 @@
     document.body.appendChild(gate);
   }
 
+  function updateGateCard({ eyebrow = "Member access", title = "Checking your Slip Lab login…", body = "The daily slate and model tools require a Slip Lab account while paid member access is being prepared.", action = "" } = {}){
+    const gate = document.querySelector(".tsl-access-gate");
+    if (!gate) return;
+    gate.innerHTML = `
+      <div class="tsl-access-card">
+        <span>${eyebrow}</span>
+        <h1>${title}</h1>
+        <p>${body}</p>
+        ${action}
+      </div>`;
+  }
+
+  function unlockPage(){
+    document.body.classList.remove("tsl-access-checking");
+    document.querySelector(".tsl-access-gate")?.remove();
+    window.dispatchEvent(new CustomEvent("tsl-access-granted"));
+  }
+
   function waitForAccountClient(){
     if (window.TSLAccount?.ready) return window.TSLAccount.ready;
     return new Promise(resolve => {
@@ -89,15 +107,57 @@
     showGateShell();
     await waitForAccountClient();
 
-    if (window.TSLAccount?.session?.user) {
-      document.body.classList.remove("tsl-access-checking");
-      document.querySelector(".tsl-access-gate")?.remove();
-      window.dispatchEvent(new CustomEvent("tsl-access-granted"));
+    if (!window.TSLAccount?.session?.user) {
+      window.location.replace(accountUrl());
       return;
     }
 
-    window.location.replace(accountUrl());
+    try {
+      updateGateCard({
+        eyebrow: "Member access",
+        title: "Checking your subscription…",
+        body: "One quick entitlement check, then the board opens."
+      });
+      const status = await window.TSLAccount.subscriptionStatus();
+      if (!status.required || status.active) {
+        unlockPage();
+        return;
+      }
+      updateGateCard({
+        eyebrow: "Premium access",
+        title: "Subscribe to unlock this board.",
+        body: "The premium MLB slate, AI boards, matchup tools, and live edge pages are now reserved for active Slip Lab members.",
+        action: `<button class="tsl-access-button" type="button" data-tsl-checkout>Start membership</button><a class="tsl-access-link" href="./account.html">Back to my account</a>`
+      });
+    } catch (error) {
+      updateGateCard({
+        eyebrow: "Access check",
+        title: "We could not verify access.",
+        body: error.message || "Please refresh or sign in again.",
+        action: `<a class="tsl-access-button" href="./account.html">Open account</a>`
+      });
+    }
   }
+
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("[data-tsl-checkout]");
+    if (!button) return;
+    button.disabled = true;
+    button.textContent = "Opening checkout…";
+    try {
+      const session = await window.TSLAccount.createCheckoutSession();
+      window.location.href = session.url;
+    } catch (error) {
+      button.disabled = false;
+      button.textContent = "Start membership";
+      updateGateCard({
+        eyebrow: "Checkout unavailable",
+        title: "Membership checkout is not ready yet.",
+        body: error.message || "Stripe checkout is still being configured.",
+        action: `<button class="tsl-access-button" type="button" data-tsl-checkout>Try again</button><a class="tsl-access-link" href="./account.html">Back to my account</a>`
+      });
+    }
+  });
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enforce);
   else enforce();
