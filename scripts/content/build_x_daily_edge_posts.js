@@ -263,6 +263,11 @@ function playerLine(row, metric) {
   return `${row.player} — ${metric}`;
 }
 
+function slashStat(value) {
+  const formatted = num(value).toFixed(3);
+  return formatted.startsWith("0.") ? formatted.slice(1) : formatted;
+}
+
 function buildPitcherPost(today, picks) {
   const lines = [
     `🧪 ${today.displayDate} Pitcher Matchup Edges`,
@@ -292,7 +297,7 @@ function buildHardSwingPost(today, picks) {
     `💥 ${today.displayDate} Hardest Swing Watch`,
     "",
     ...picks.map(item => {
-      const last7 = item.last7?.games ? `L7 .${String(Math.round(num(item.last7.slg) * 1000)).padStart(3, "0")} SLG` : "power form";
+      const last7 = item.last7?.games ? `L7 ${slashStat(item.last7.slg)} SLG` : "power form";
       return playerLine(item.row, `${one(item.power.hrPowerIndex || item.row.powerScore)} power · ${last7}`);
     }),
     "",
