@@ -11,7 +11,7 @@ Home-run posts are conservative:
 - `TOP 5` and `TOP 10` home runs post as `slip_lab_hit_home_run` with the branded “SLIP LAB HIT” copy.
 - `ELITE SMASH` and `LIVE LONGSHOTS` keep the existing called-it/longshot home-run path.
 
-It ignores older home runs by default. `MAX_EVENT_AGE_SECONDS=180` means the Worker only considers home runs from the last three minutes.
+It uses a review-safe lookback by default. `MAX_EVENT_AGE_SECONDS=1800` means the Worker considers home runs from the last 30 minutes, which gives MLB scoring/review delays enough time to settle while Supabase duplicate keys prevent reposts.
 
 `LIVE AI UPDATE` is intentionally dry-run only in this version. It stores a `live_ai_update` row in Supabase when:
 
@@ -38,6 +38,8 @@ store dry-run Live AI Update candidates for review
 ```
 
 This is much closer to “when it happens” than a five-minute refresh, while staying inside Cloudflare Worker CPU limits.
+
+`MAX_POSTS_PER_RUN=5` allows the Worker to catch clustered home runs in the same scan instead of posting one event and letting the rest age out.
 
 ## Required Supabase setup
 

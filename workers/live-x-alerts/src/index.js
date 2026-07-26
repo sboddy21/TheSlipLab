@@ -256,7 +256,7 @@ function liveAiUpdateDryRun(env) {
 }
 
 function maxEventAgeSeconds(env) {
-  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 180), 30, 600);
+  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 1800), 30, 1800);
 }
 
 function minLiveAiConfidenceMove(env) {
@@ -264,7 +264,7 @@ function minLiveAiConfidenceMove(env) {
 }
 
 function maxPostsPerRun(env) {
-  return clamp(Number(env.MAX_POSTS_PER_RUN || 1), 1, 5);
+  return clamp(Number(env.MAX_POSTS_PER_RUN || 5), 1, 10);
 }
 
 function eligibleSections(env) {
