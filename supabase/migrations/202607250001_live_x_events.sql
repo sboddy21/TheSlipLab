@@ -20,7 +20,7 @@ create table if not exists public.x_live_events (
   posted_at timestamptz,
   constraint x_live_events_event_key_unique unique (event_key),
   constraint x_live_events_status check (status in ('dry_run', 'pending', 'posted', 'failed', 'skipped')),
-  constraint x_live_events_event_type check (event_type in ('called_it_home_run')),
+  constraint x_live_events_event_type check (event_type in ('called_it_home_run', 'slip_lab_hit_home_run', 'live_ai_update')),
   constraint x_live_events_tweet_length check (char_length(tweet_text) between 1 and 280)
 );
 
