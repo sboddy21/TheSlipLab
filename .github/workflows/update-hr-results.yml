@@ -41,6 +41,9 @@ jobs:
       - name: Build HR results history
         run: node scripts/mlb/build_hr_results_history.js
 
+      - name: Build ball carry index
+        run: node scripts/mlb/build_ball_carry_index.js
+
       - name: Rebuild verified HR calibration
         run: node scripts/mlb/build_hr_calibration_report.js
 
@@ -53,7 +56,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add website/data/mlb_context_factors.json website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/hr_calibration_report.json website/data/hr_ai_hof.json || true
+          git add website/data/mlb_context_factors.json website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/mlb_ball_carry_index.json website/data/hr_calibration_report.json website/data/hr_ai_hof.json || true
           git commit -m "Update HR results" || echo "No changes to commit"
 
           for i in 1 2 3; do
