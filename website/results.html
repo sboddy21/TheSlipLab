@@ -311,6 +311,7 @@
     .tag.danger{background:rgba(151,95,255,.12);border:1px solid rgba(151,95,255,.40);color:#b38cff}
     .tag.moderate{background:rgba(255,193,7,.12);border:1px solid rgba(255,193,7,.40);color:#ffc400}
     .tag.power{background:rgba(0,213,255,.12);border:1px solid rgba(0,213,255,.40);color:#00d5ff}
+    .tag.barrel{background:rgba(255,111,0,.16);border:1px solid rgba(255,176,0,.60);color:#ffb000;box-shadow:0 0 14px rgba(255,176,0,.12)}
     .tag.zone{background:rgba(255,111,0,.12);border:1px solid rgba(255,111,0,.45);color:#ff8a00}
   
 .zone-mini{
@@ -1589,6 +1590,25 @@ function trajectoryBadge(row){
   return "HR FLIGHT";
 }
 
+function isBarrelContact(row){
+  if(row.isBarrel === true || String(row.isBarrel).toLowerCase() === "true") return true;
+
+  const ev = Number(row.exitVelocity);
+  const la = Number(row.launchAngle);
+  if(!Number.isFinite(ev) || !Number.isFinite(la) || ev < 98) return false;
+
+  const over98 = Math.min(ev - 98, 18);
+  const minLaunchAngle = 26 - over98;
+  const maxLaunchAngle = 30 + over98 * (20 / 18);
+  return la >= minLaunchAngle && la <= maxLaunchAngle;
+}
+
+function barrelBadge(row){
+  return isBarrelContact(row)
+    ? `<span class="tag barrel" title="Statcast barrel: ideal exit velocity and launch angle">BARREL</span>`
+    : "";
+}
+
 function hrDifficulty(row){
   const dist = n(row.distance);
   const ev = n(row.exitVelocity);
@@ -1616,17 +1636,20 @@ function hrDifficulty(row){
 
 function tagClass(tag){
   const t = String(tag || "").toLowerCase();
+  if(t === "barrel" || t.includes("barrel")) return "barrel";
   if(t.includes("strong") || t.includes("elite")) return "strong";
   if(t.includes("hot")) return "hot";
   if(t.includes("danger") || t.includes("leak")) return "danger";
   if(t.includes("mod") || t.includes("watch")) return "moderate";
-  if(t.includes("pitch") || t.includes("barrel") || t.includes("power")) return "power";
+  if(t.includes("pitch") || t.includes("power")) return "power";
   return "zone";
 }
 
 function buildTags(row, m, rank){
   if(window.SlipLabTags && typeof window.SlipLabTags.build === "function"){
-    return window.SlipLabTags.build(row, m, rank).slice(0, 10);
+    const tags = window.SlipLabTags.build(row, m, rank);
+    if(isBarrelContact(row) && !tags.includes("BARREL")) tags.unshift("BARREL");
+    return tags.slice(0, 10);
   }
 
   const tags = [];
@@ -1643,6 +1666,7 @@ function buildTags(row, m, rank){
   }
 
   if(tags.length === 0) tags.push("HR");
+  if(isBarrelContact(row) && !tags.includes("BARREL")) tags.unshift("BARREL");
 
   return tags.slice(0,6);
 }
@@ -1815,7 +1839,7 @@ function render(){
 
   document.getElementById("timelineList").innerHTML = latest.map(r => `
     <div class="timeline-item">
-      <div class="timeline-player">${clean(r.player)}</div>
+      <div class="timeline-player">${clean(r.player)} ${barrelBadge(r)}</div>
       <div class="timeline-meta">${clean(r.team)} • ${clean(r.inning)}</div>
       <div class="timeline-meta">${clean(r.exitVelocity)} EV • ${clean(r.distance)} FT • ${clean(r.pitchType)}</div>
     </div>
@@ -1833,7 +1857,7 @@ function render(){
     <tr class="result-row ${index === 0 ? "newest-row" : ""}" onclick="toggleDetail(${index})">
       <td class="rank">${index + 1}</td>
       <td>
-        <div class="batter">${clean(row.player)} <span class="traj-badge">${trajectoryBadge(row)}</span> <span class="spray-mini">${sprayDirection(row)}</span> ${zoneMini(row)} ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
+        <div class="batter">${clean(row.player)} ${barrelBadge(row)} <span class="traj-badge">${trajectoryBadge(row)}</span> <span class="spray-mini">${sprayDirection(row)}</span> ${zoneMini(row)} ${index === 0 ? `<span class="newest-pill">NEWEST</span>` : ""}</div>
         <div class="small">${clean(row.position)} • ${clean(row.seasonHr || row.hrSeason || "")} HR on season</div>
       </td>
       <td class="team">${clean(row.team)}</td>
@@ -1861,6 +1885,7 @@ function render(){
           <div class="detail-grid">
             <div class="detail-pill"><div class="detail-label">EV</div><div class="detail-value">${clean(row.exitVelocity)}</div></div>
             <div class="detail-pill"><div class="detail-label">Distance</div><div class="detail-value">${clean(row.distance)}</div></div>
+            <div class="detail-pill"><div class="detail-label">Barrel</div><div class="detail-value">${isBarrelContact(row) ? barrelBadge(row) : "No"}</div></div>
             <div class="detail-pill"><div class="detail-label">HR Difficulty</div><div class="detail-value">${hrDifficulty(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Model Result</div><div class="detail-value">${modelCalledBadge(row)}</div></div>
             <div class="detail-pill"><div class="detail-label">Launch Angle</div><div class="detail-value">${clean(row.launchAngle)}</div></div>

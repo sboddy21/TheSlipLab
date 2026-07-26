@@ -58,6 +58,17 @@ function num(v) {
   return Math.round(n * 10) / 10;
 }
 
+function isBarrelContact(exitVelocity, launchAngle) {
+  const ev = Number(exitVelocity);
+  const la = Number(launchAngle);
+  if (!Number.isFinite(ev) || !Number.isFinite(la) || ev < 98) return false;
+
+  const over98 = Math.min(ev - 98, 18);
+  const minLaunchAngle = 26 - over98;
+  const maxLaunchAngle = 30 + over98 * (20 / 18);
+  return la >= minLaunchAngle && la <= maxLaunchAngle;
+}
+
 function readJSON(file, fallback) {
   try {
     if (!fs.existsSync(file)) return fallback;
@@ -200,6 +211,8 @@ function buildEventRow({ date, game, feed, play, status, gameLabel, score, gameC
   const batter = safe(play?.matchup?.batter?.fullName);
   const category = airborneCategory(play);
   const distance = num(hitData?.totalDistance);
+  const exitVelocity = num(hitData?.launchSpeed);
+  const launchAngle = num(hitData?.launchAngle);
 
   return {
     date,
@@ -225,8 +238,9 @@ function buildEventRow({ date, game, feed, play, status, gameLabel, score, gameC
     playId: safe(play?.about?.atBatIndex),
     startTime: safe(play?.about?.startTime),
     endTime: safe(play?.about?.endTime),
-    exitVelocity: num(hitData?.launchSpeed),
-    launchAngle: num(hitData?.launchAngle),
+    exitVelocity,
+    launchAngle,
+    isBarrel: isBarrelContact(exitVelocity, launchAngle),
     distance,
     trajectory: safe(hitData?.trajectory),
     hardness: safe(hitData?.hardness),
