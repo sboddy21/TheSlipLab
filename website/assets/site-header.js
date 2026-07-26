@@ -34,6 +34,25 @@
     ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
+  const primaryLabels = new Set(["Sign In", "Slate", "Results", "Weather", "AI Says"]);
+  const primaryOrder = ["Sign In", "Slate", "Results", "Weather", "AI Says"];
+
+  function itemIsActive(activePaths, path){
+    return activePaths.includes(path);
+  }
+
+  function makeNavLink(label, href, activePaths, path){
+    const a = document.createElement("a");
+    a.href = href;
+    a.textContent = label;
+    if (href === "./account.html") {
+      a.dataset.tslAccountLink = "true";
+      a.classList.add("tsl-account-link");
+    }
+    if (itemIsActive(activePaths, path)) a.classList.add("active");
+    return a;
+  }
+
   function oldHeaderLooksLikeSiteNav(el){
     const t = (el.textContent || "").replace(/\s+/g," ").trim();
     return t.includes("The Slip Lab") || t.includes("THE SLIP LAB") || (
@@ -67,17 +86,58 @@
     const nav = document.createElement("nav");
     nav.className = "tsl-nav";
 
-    items.forEach(([label, href, activePaths]) => {
-      const a = document.createElement("a");
-      a.href = href;
-      a.textContent = label;
-      if (href === "./account.html") {
-        a.dataset.tslAccountLink = "true";
-        a.classList.add("tsl-account-link");
-      }
-      if (activePaths.includes(path)) a.classList.add("active");
-      nav.appendChild(a);
+    const primaryItems = primaryOrder
+      .map(label => items.find(([itemLabel]) => itemLabel === label))
+      .filter(Boolean);
+    const menuItems = items.filter(([label]) => !primaryLabels.has(label));
+    const menuHasActiveItem = menuItems.some(([, , activePaths]) => itemIsActive(activePaths, path));
+
+    primaryItems.forEach(([label, href, activePaths]) => {
+      nav.appendChild(makeNavLink(label, href, activePaths, path));
     });
+
+    const menu = document.createElement("div");
+    menu.className = "tsl-nav-menu";
+
+    const menuButton = document.createElement("button");
+    menuButton.type = "button";
+    menuButton.className = "tsl-nav-menu-button";
+    menuButton.setAttribute("aria-haspopup", "true");
+    menuButton.setAttribute("aria-expanded", "false");
+    menuButton.innerHTML = `More <span aria-hidden="true">▾</span>`;
+    if (menuHasActiveItem) menuButton.classList.add("active");
+
+    const panel = document.createElement("div");
+    panel.className = "tsl-nav-menu-panel";
+    panel.setAttribute("role", "menu");
+
+    menuItems.forEach(([label, href, activePaths]) => {
+      const a = makeNavLink(label, href, activePaths, path);
+      a.setAttribute("role", "menuitem");
+      panel.appendChild(a);
+    });
+
+    function setMenuOpen(open){
+      menu.classList.toggle("open", open);
+      menuButton.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    menuButton.addEventListener("click", event => {
+      event.stopPropagation();
+      setMenuOpen(!menu.classList.contains("open"));
+    });
+
+    document.addEventListener("click", event => {
+      if (!menu.contains(event.target)) setMenuOpen(false);
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") setMenuOpen(false);
+    });
+
+    menu.appendChild(menuButton);
+    menu.appendChild(panel);
+    nav.appendChild(menu);
 
     inner.appendChild(brand);
     inner.appendChild(nav);
