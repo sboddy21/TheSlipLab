@@ -10,7 +10,17 @@ const SECTION_PRIORITY = [
   "LIVE LONGSHOTS"
 ];
 
+const SLIP_LAB_HIT_SECTIONS = new Set(["TOP 5", "TOP 10"]);
+const DEFAULT_LIVE_AI_UPDATE_SECTIONS = [
+  "TOP 5",
+  "TOP 10",
+  "ELITE SMASH",
+  "HOMER AI",
+  "LIVE LONGSHOTS"
+];
 const LIVE_GAME_STATES = new Set(["Live"]);
+const HARD_HIT_MPH = 95;
+const PREMIUM_HARD_HIT_MPH = 100;
 
 export default {
   async scheduled(controller, env, ctx) {
@@ -29,7 +39,9 @@ export default {
         ok: true,
         service: "slip-lab-live-x-alerts",
         livePostingEnabled: livePostingEnabled(env),
+        liveAiUpdateDryRun: liveAiUpdateDryRun(env),
         eligibleSections: eligibleSections(env),
+        liveAiUpdateSections: liveAiUpdateSections(env),
         cadence: "one live-game scan per scheduled run",
         maxEventAgeSeconds: maxEventAgeSeconds(env)
       });
@@ -66,6 +78,7 @@ async function runWatcher(env, meta = {}) {
     loops: 0,
     gamesScanned: 0,
     homeRunsScanned: 0,
+    hardHitPlayersScanned: 0,
     matchedEvents: 0,
     insertedEvents: 0,
     postedEvents: 0,
@@ -76,11 +89,14 @@ async function runWatcher(env, meta = {}) {
   };
 
   const ai = await fetchAiBoard(env);
-  const aiIndex = buildAiIndex(ai, eligibleSections(env));
+  const aiIndexes = {
+    hitIndex: buildAiIndex(ai, eligibleSections(env)),
+    liveUpdateIndex: buildAiIndex(ai, liveAiUpdateSections(env))
+  };
 
   summary.loops += 1;
   try {
-    const result = await checkOnce(env, aiIndex);
+    const result = await checkOnce(env, aiIndexes);
     mergeSummary(summary, result);
   } catch (error) {
     summary.errors.push(error.message);
@@ -91,12 +107,13 @@ async function runWatcher(env, meta = {}) {
   return summary;
 }
 
-async function checkOnce(env, aiIndex) {
+async function checkOnce(env, aiIndexes) {
   const date = easternDate();
   const games = await fetchActiveGames(date);
   const result = {
     gamesScanned: games.length,
     homeRunsScanned: 0,
+    hardHitPlayersScanned: 0,
     matchedEvents: 0,
     insertedEvents: 0,
     postedEvents: 0,
@@ -111,15 +128,17 @@ async function checkOnce(env, aiIndex) {
     result.homeRunsScanned += events.length;
 
     for (const event of events) {
-      const match = matchAi(event, aiIndex);
+      const match = matchAi(event, aiIndexes.hitIndex);
       if (!match) continue;
       result.matchedEvents += 1;
 
-      const text = fitTweet(buildTweet(event, match));
+      const eventType = slipLabHitEligible(match) ? "slip_lab_hit_home_run" : "called_it_home_run";
+      const rowEventKey = eventKey(event, eventType);
+      const text = fitTweet(buildHomeRunTweet(event, match, eventType));
       const baseRow = {
-        event_key: event.eventKey,
+        event_key: rowEventKey,
         date: event.date,
-        event_type: "called_it_home_run",
+        event_type: eventType,
         player_id: event.playerId || null,
         player_name: event.player,
         game_pk: event.gamePk,
@@ -130,7 +149,7 @@ async function checkOnce(env, aiIndex) {
         payload: { event, ai: match.memberships }
       };
 
-      const existing = await supabaseGetEvent(env, event.eventKey);
+      const existing = await supabaseGetDuplicatePlay(env, event, ["called_it_home_run", "slip_lab_hit_home_run"]);
       if (existing) {
         result.skippedEvents += 1;
         continue;
@@ -155,7 +174,7 @@ async function checkOnce(env, aiIndex) {
 
       try {
         const xPostId = await postTweet(env, text);
-        await supabasePatchEvent(env, event.eventKey, {
+        await supabasePatchEvent(env, rowEventKey, {
           status: "posted",
           x_post_id: xPostId,
           posted_at: new Date().toISOString(),
@@ -163,7 +182,7 @@ async function checkOnce(env, aiIndex) {
         });
         result.postedEvents += 1;
       } catch (error) {
-        await supabasePatchEvent(env, event.eventKey, {
+        await supabasePatchEvent(env, rowEventKey, {
           status: "failed",
           error: error.message
         });
@@ -173,6 +192,43 @@ async function checkOnce(env, aiIndex) {
       if (result.postedEvents + result.dryRunEvents >= maxPostsPerRun(env)) {
         return result;
       }
+    }
+
+    const updateEvents = liveAiUpdateEvents({
+      date,
+      game,
+      feed,
+      aiIndex: aiIndexes.liveUpdateIndex,
+      maxAgeSeconds: maxEventAgeSeconds(env),
+      minConfidenceMove: minLiveAiConfidenceMove(env)
+    });
+    result.hardHitPlayersScanned += updateEvents.length;
+
+    for (const event of updateEvents) {
+      const rowEventKey = eventKey(event, "live_ai_update");
+      const existing = await supabaseGetEvent(env, rowEventKey);
+      if (existing) {
+        result.skippedEvents += 1;
+        continue;
+      }
+
+      const text = fitTweet(buildLiveAiUpdateTweet(event));
+      await supabaseInsertEvent(env, {
+        event_key: rowEventKey,
+        date: event.date,
+        event_type: "live_ai_update",
+        player_id: event.playerId || null,
+        player_name: event.player,
+        game_pk: event.gamePk,
+        play_id: event.latest?.playId === null || event.latest?.playId === undefined ? null : String(event.latest.playId),
+        ai_section: event.match.primary.section,
+        ai_rank: event.match.primary.rank,
+        status: "dry_run",
+        tweet_text: text,
+        payload: { event, ai: event.match.memberships, dryRunOnly: liveAiUpdateDryRun(env) }
+      });
+      result.insertedEvents += 1;
+      result.dryRunEvents += 1;
     }
   }
 
@@ -195,8 +251,16 @@ function livePostingEnabled(env) {
   return String(env.X_CALLED_IT_LIVE || "false").toLowerCase() === "true";
 }
 
+function liveAiUpdateDryRun(env) {
+  return String(env.X_LIVE_AI_UPDATE_DRY_RUN || "true").toLowerCase() !== "false";
+}
+
 function maxEventAgeSeconds(env) {
   return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 180), 30, 600);
+}
+
+function minLiveAiConfidenceMove(env) {
+  return clamp(Number(env.MIN_LIVE_AI_CONFIDENCE_MOVE || 10), 5, 30);
 }
 
 function maxPostsPerRun(env) {
@@ -205,6 +269,11 @@ function maxPostsPerRun(env) {
 
 function eligibleSections(env) {
   const raw = String(env.ELIGIBLE_SECTIONS || SECTION_PRIORITY.join(","));
+  return raw.split(",").map(item => item.trim().toUpperCase()).filter(Boolean);
+}
+
+function liveAiUpdateSections(env) {
+  const raw = String(env.LIVE_AI_UPDATE_SECTIONS || DEFAULT_LIVE_AI_UPDATE_SECTIONS.join(","));
   return raw.split(",").map(item => item.trim().toUpperCase()).filter(Boolean);
 }
 
@@ -273,7 +342,9 @@ function buildAiIndex(ai, allowedSections) {
         section: sectionName,
         rank: index + 1,
         playerId,
-        name
+        name,
+        confidence: confidencePercent(player),
+        aiScore: confidencePercent(player)
       };
       if (playerId) mapPush(byId, playerId, entry);
       if (name) mapPush(byName, normalizeName(name), entry);
@@ -281,6 +352,13 @@ function buildAiIndex(ai, allowedSections) {
   }
 
   return { byId, byName };
+}
+
+function confidencePercent(player) {
+  const raw = Number(player?.confidence ?? player?.aiScore ?? player?.score ?? player?.card?.score);
+  if (!Number.isFinite(raw)) return 50;
+  if (raw <= 1) return Math.round(raw * 100);
+  return Math.round(clamp(raw, 0, 100));
 }
 
 function mapPush(map, key, value) {
@@ -312,6 +390,10 @@ function sectionOrder(section) {
   return index === -1 ? SECTION_PRIORITY.length : index;
 }
 
+function slipLabHitEligible(match) {
+  return match?.memberships?.some(item => SLIP_LAB_HIT_SECTIONS.has(item.section));
+}
+
 function homeRunEvents({ date, game, feed, maxAgeSeconds }) {
   const allPlays = feed?.liveData?.plays?.allPlays || [];
   const now = Date.now();
@@ -330,7 +412,7 @@ function homeRunEvents({ date, game, feed, maxAgeSeconds }) {
     const pitcher = play?.matchup?.pitcher || {};
 
     rows.push({
-      eventKey: eventKey(game.gamePk, play, batter),
+      playKey: playKey(game.gamePk, play, batter),
       date,
       gamePk: game.gamePk,
       playId: play?.about?.atBatIndex ?? null,
@@ -359,18 +441,119 @@ function isHomeRun(play) {
   return event === "home run" || eventType === "home_run" || event.includes("home run");
 }
 
+function liveAiUpdateEvents({ date, game, feed, aiIndex, maxAgeSeconds, minConfidenceMove }) {
+  const allPlays = feed?.liveData?.plays?.allPlays || [];
+  const now = Date.now();
+  const byPlayer = new Map();
+
+  for (const play of allPlays) {
+    const pitch = lastPitch(play);
+    const hitData = pitch?.hitData || {};
+    const exitVelocity = rounded(hitData?.launchSpeed, 1);
+    if (!Number.isFinite(exitVelocity) || exitVelocity < HARD_HIT_MPH) continue;
+
+    const batter = play?.matchup?.batter || {};
+    const player = batter?.fullName || "";
+    const playerId = batter?.id ?? null;
+    const probe = { playerId, player };
+    const match = matchAi(probe, aiIndex);
+    if (!match) continue;
+
+    const endTime = play?.about?.endTime || play?.about?.startTime || "";
+    const endMs = Date.parse(endTime);
+    if (!Number.isFinite(endMs)) continue;
+
+    const row = {
+      date,
+      gamePk: game.gamePk,
+      playId: play?.about?.atBatIndex ?? null,
+      playerId,
+      player,
+      pitcherId: play?.matchup?.pitcher?.id ?? null,
+      pitcher: play?.matchup?.pitcher?.fullName || "",
+      game: gameLabel(feed, game),
+      inning: inningLabel(play),
+      exitVelocity,
+      launchAngle: rounded(hitData?.launchAngle, 0),
+      distance: rounded(hitData?.totalDistance, 0),
+      event: play?.result?.event || "",
+      eventType: play?.result?.eventType || "",
+      description: play?.result?.description || "",
+      endTime,
+      endMs,
+      match
+    };
+    const key = String(playerId || normalizeName(player));
+    if (!byPlayer.has(key)) byPlayer.set(key, []);
+    byPlayer.get(key).push(row);
+  }
+
+  const updates = [];
+  for (const hardHits of byPlayer.values()) {
+    hardHits.sort((a, b) => a.endMs - b.endMs);
+    const latest = hardHits[hardHits.length - 1];
+    if (!latest || now - latest.endMs < 0 || now - latest.endMs > maxAgeSeconds * 1000) continue;
+    if (hardHits.length < 2) continue;
+
+    const maxExitVelocity = Math.max(...hardHits.map(item => item.exitVelocity));
+    if (maxExitVelocity < PREMIUM_HARD_HIT_MPH) continue;
+
+    const baseConfidence = Math.max(...latest.match.memberships.map(item => item.confidence || 0), latest.match.primary.confidence || 0);
+    const liveConfidence = liveConfidenceAfterContact(baseConfidence, hardHits);
+    const confidenceMove = liveConfidence - baseConfidence;
+    if (confidenceMove < minConfidenceMove) continue;
+
+    updates.push({
+      ...latest,
+      eventType: "live_ai_update",
+      hardHitCount: hardHits.length,
+      maxExitVelocity: rounded(maxExitVelocity, 1),
+      baseConfidence,
+      liveConfidence,
+      confidenceMove,
+      hardHits: hardHits.map(item => ({
+        playId: item.playId,
+        inning: item.inning,
+        exitVelocity: item.exitVelocity,
+        launchAngle: item.launchAngle,
+        distance: item.distance,
+        event: item.event,
+        endTime: item.endTime
+      })),
+      latest
+    });
+  }
+
+  return updates.sort((a, b) => b.confidenceMove - a.confidenceMove || b.maxExitVelocity - a.maxExitVelocity);
+}
+
+function liveConfidenceAfterContact(baseConfidence, hardHits) {
+  const maxExitVelocity = Math.max(...hardHits.map(item => item.exitVelocity));
+  const bump =
+    Math.min(12, (hardHits.length - 1) * 6) +
+    (maxExitVelocity >= PREMIUM_HARD_HIT_MPH ? 4 : 0) +
+    Math.min(8, Math.max(0, maxExitVelocity - PREMIUM_HARD_HIT_MPH) * 0.7);
+  return Math.min(99, Math.round(baseConfidence + bump));
+}
+
 function lastPitch(play) {
   return [...(play?.playEvents || [])].reverse().find(event => event?.isPitch || event?.type === "pitch") || {};
 }
 
-function eventKey(gamePk, play, batter) {
+function playKey(gamePk, play, batter) {
   return [
     "mlb",
     gamePk,
     play?.about?.atBatIndex ?? play?.about?.endTime ?? "play",
-    batter?.id ?? normalizeName(batter?.fullName),
-    "home_run"
+    batter?.id ?? normalizeName(batter?.fullName)
   ].join(":");
+}
+
+function eventKey(event, eventType) {
+  if (eventType === "live_ai_update") {
+    return ["mlb", event.gamePk, event.playerId || normalizeName(event.player), eventType].join(":");
+  }
+  return [event.playKey, eventType].filter(Boolean).join(":");
 }
 
 function inningLabel(play) {
@@ -401,14 +584,32 @@ function rounded(value, digits) {
   return Math.round(number * factor) / factor;
 }
 
-function buildTweet(event, match) {
+function buildHomeRunTweet(event, match, eventType) {
+  if (eventType === "slip_lab_hit_home_run") {
+    const topHit = match.memberships.find(item => SLIP_LAB_HIT_SECTIONS.has(item.section)) || match.primary;
+    const stats = [
+      event.distance ? `${event.distance} ft` : "",
+      event.exitVelocity ? `${event.exitVelocity} mph EV` : "",
+      event.launchAngle ? `${event.launchAngle}° LA` : ""
+    ].filter(Boolean).join(" · ");
+
+    return [
+      "🚨 SLIP LAB HIT",
+      "",
+      `Our ${topHit.section} #${topHit.rank} HR pick just left the yard.`,
+      "",
+      event.player,
+      `${topHit.section} #${topHit.rank}`,
+      stats,
+      event.pitcher ? `Off ${event.pitcher}` : "",
+      "",
+      `Board: ${DEFAULT_BOARD_URL}`
+    ].filter(line => line !== "").join("\n").trim();
+  }
+
   const headline = match.primary.section === "LIVE LONGSHOTS"
     ? "🚨 SLIP LAB LONGSHOT HIT"
-    : match.primary.section === "TOP 5"
-      ? "🚨 TOP 5 HR HIT"
-      : match.primary.section === "TOP 10"
-        ? "🚨 TOP 10 HR HIT"
-        : "🚨 SLIP LAB CALLED IT";
+    : "🚨 SLIP LAB CALLED IT";
   const tags = match.memberships.map(item => `${item.section} #${item.rank}`).join(" · ");
   const stats = [
     event.distance ? `${event.distance} ft` : "",
@@ -428,6 +629,21 @@ function buildTweet(event, match) {
     event.pitcher ? `Off ${event.pitcher}` : "",
     "",
     `Board: ${DEFAULT_BOARD_URL}`
+  ].filter(line => line !== "").join("\n").trim();
+}
+
+function buildLiveAiUpdateTweet(event) {
+  return [
+    "📈 LIVE AI UPDATE",
+    "",
+    `${event.player} is heating up.`,
+    "",
+    `Confidence: ${event.baseConfidence} → ${event.liveConfidence}`,
+    `${event.hardHitCount} hard-hit balls tonight`,
+    `Latest: ${event.latest.exitVelocity} mph EV`,
+    event.latest.launchAngle ? `${event.latest.launchAngle}° LA` : "",
+    "",
+    `Watch list: ${DEFAULT_BOARD_URL}`
   ].filter(line => line !== "").join("\n").trim();
 }
 
@@ -467,6 +683,28 @@ async function supabaseGetEvent(env, eventKey) {
   const url = supabaseUrl(env, `${SUPABASE_TABLE}?event_key=eq.${encodeURIComponent(eventKey)}&select=id,status,x_post_id&limit=1`);
   const response = await fetch(url, { headers: supabaseHeaders(env) });
   if (!response.ok) throw new Error(`Supabase lookup failed ${response.status}: ${await response.text()}`);
+  const rows = await response.json();
+  return Array.isArray(rows) && rows.length ? rows[0] : null;
+}
+
+async function supabaseGetDuplicatePlay(env, event, eventTypes) {
+  const filters = [
+    `game_pk=eq.${encodeURIComponent(event.gamePk)}`,
+    `play_id=eq.${encodeURIComponent(String(event.playId))}`,
+    `event_type=in.(${eventTypes.map(type => encodeURIComponent(type)).join(",")})`,
+    "select=id,status,x_post_id,event_type",
+    "limit=1"
+  ];
+  if (event.playerId) {
+    filters.push(`player_id=eq.${encodeURIComponent(event.playerId)}`);
+  } else {
+    filters.push(`player_name=eq.${encodeURIComponent(event.player)}`);
+  }
+
+  const response = await fetch(supabaseUrl(env, `${SUPABASE_TABLE}?${filters.join("&")}`), {
+    headers: supabaseHeaders(env)
+  });
+  if (!response.ok) throw new Error(`Supabase duplicate lookup failed ${response.status}: ${await response.text()}`);
   const rows = await response.json();
   return Array.isArray(rows) && rows.length ? rows[0] : null;
 }
@@ -574,6 +812,7 @@ function mergeSummary(target, result) {
   for (const key of [
     "gamesScanned",
     "homeRunsScanned",
+    "hardHitPlayersScanned",
     "matchedEvents",
     "insertedEvents",
     "postedEvents",

@@ -6,14 +6,20 @@ It is intentionally separate from the website refresh jobs. The Worker watches a
 
 ## What it posts
 
-Version 1 is conservative:
+Home-run posts are conservative:
 
-- `TOP 5`
-- `TOP 10`
-- `ELITE SMASH`
-- `LIVE LONGSHOTS`
+- `TOP 5` and `TOP 10` home runs post as `slip_lab_hit_home_run` with the branded “SLIP LAB HIT” copy.
+- `ELITE SMASH` and `LIVE LONGSHOTS` keep the existing called-it/longshot home-run path.
 
 It ignores older home runs by default. `MAX_EVENT_AGE_SECONDS=180` means the Worker only considers home runs from the last three minutes.
+
+`LIVE AI UPDATE` is intentionally dry-run only in this version. It stores a `live_ai_update` row in Supabase when:
+
+- the player is already on the AI Says board
+- the player has 2+ same-game hard-hit batted balls
+- at least one hard-hit ball is 100+ mph EV
+- the live contact bump moves confidence by at least `MIN_LIVE_AI_CONFIDENCE_MOVE`
+- the player has not already received a live AI update in that game
 
 ## Runtime model
 
@@ -27,6 +33,8 @@ scan active MLB live games
 match new HR plays against AI Says
 ↓
 write dry-run or posted event to Supabase
+↓
+store dry-run Live AI Update candidates for review
 ```
 
 This is much closer to “when it happens” than a five-minute refresh, while staying inside Cloudflare Worker CPU limits.
@@ -40,6 +48,12 @@ supabase/migrations/202607250001_live_x_events.sql
 ```
 
 The table has RLS enabled and no public policies. The Worker should use the Supabase service-role key from Cloudflare secrets.
+
+If the table already exists from the first version, also apply:
+
+```text
+supabase/migrations/202607260002_live_x_alert_event_types.sql
+```
 
 ## Cloudflare secrets
 
@@ -75,6 +89,12 @@ X_CALLED_IT_LIVE = "false"
 ```
 
 In dry-run mode, matching events are inserted into Supabase with `status = 'dry_run'`.
+
+Live AI updates always stay in dry-run mode in this version:
+
+```toml
+X_LIVE_AI_UPDATE_DRY_RUN = "true"
+```
 
 ## Manual test
 
