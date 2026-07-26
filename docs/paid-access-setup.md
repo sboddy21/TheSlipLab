@@ -20,8 +20,12 @@ Required for checkout and subscription verification:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_PRICE_ID`
+- `STRIPE_PRICE_ID_WEEKLY`
+- `STRIPE_PRICE_ID_MONTHLY`
+- `STRIPE_PRICE_ID_ANNUAL`
 - `SITE_URL` set to `https://thesliplab.com`
+
+`STRIPE_PRICE_ID` is still supported as a fallback for the monthly plan, but the three explicit plan variables are preferred.
 
 Feature flag:
 
@@ -30,7 +34,11 @@ Feature flag:
 
 ## 3. Stripe
 
-Create one recurring subscription price in Stripe, then use that price ID as `STRIPE_PRICE_ID`.
+Create three recurring subscription prices in Stripe:
+
+- Weekly → `STRIPE_PRICE_ID_WEEKLY`
+- Monthly → `STRIPE_PRICE_ID_MONTHLY`
+- Annual → `STRIPE_PRICE_ID_ANNUAL`
 
 Add a webhook endpoint:
 

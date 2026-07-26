@@ -2,6 +2,22 @@ function firstAvailable(names) {
   return names.map(name => process.env[name]).find(Boolean) || "";
 }
 
+const PLAN_ENV_KEYS = {
+  weekly: ["STRIPE_PRICE_ID_WEEKLY", "TSL_STRIPE_PRICE_ID_WEEKLY"],
+  monthly: ["STRIPE_PRICE_ID_MONTHLY", "TSL_STRIPE_PRICE_ID_MONTHLY", "STRIPE_PRICE_ID", "TSL_STRIPE_PRICE_ID"],
+  annual: ["STRIPE_PRICE_ID_ANNUAL", "STRIPE_PRICE_ID_ANNUALLY", "TSL_STRIPE_PRICE_ID_ANNUAL", "TSL_STRIPE_PRICE_ID_ANNUALLY"]
+};
+
+function normalizePlan(value) {
+  const plan = String(value || "monthly").trim().toLowerCase();
+  if (plan === "yearly") return "annual";
+  return Object.hasOwn(PLAN_ENV_KEYS, plan) ? plan : "monthly";
+}
+
+function priceIdForPlan(plan) {
+  return firstAvailable(PLAN_ENV_KEYS[plan] || []);
+}
+
 function supabaseConfig() {
   return {
     url: firstAvailable(["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL"]),
@@ -62,9 +78,9 @@ async function authenticatedUser(request) {
   return userResponse.json();
 }
 
-async function createStripeCheckoutSession({ user, request, returnTo }) {
+async function createStripeCheckoutSession({ user, request, returnTo, plan }) {
   const secretKey = firstAvailable(["STRIPE_SECRET_KEY"]);
-  const priceId = firstAvailable(["STRIPE_PRICE_ID", "TSL_STRIPE_PRICE_ID"]);
+  const priceId = priceIdForPlan(plan);
   if (!secretKey || !priceId) throw new Error("Stripe checkout is not configured yet");
 
   const origin = siteOrigin(request);
@@ -78,7 +94,9 @@ async function createStripeCheckoutSession({ user, request, returnTo }) {
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
     "metadata[user_id]": user.id,
-    "subscription_data[metadata][user_id]": user.id
+    "metadata[plan]": plan,
+    "subscription_data[metadata][user_id]": user.id,
+    "subscription_data[metadata][plan]": plan
   });
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {
@@ -107,15 +125,18 @@ export default async function handler(request, response) {
     const user = await authenticatedUser(request);
     if (!user?.id) return json(response, 401, { error: "Sign in before subscribing" });
     const payload = await readJson(request).catch(() => ({}));
+    const plan = normalizePlan(payload.plan);
     const checkout = await createStripeCheckoutSession({
       user,
       request,
-      returnTo: payload.returnTo
+      returnTo: payload.returnTo,
+      plan
     });
 
     return json(response, 200, {
       id: checkout.id,
-      url: checkout.url
+      url: checkout.url,
+      plan
     });
   } catch (error) {
     return json(response, 503, { error: error.message || "Checkout unavailable" });

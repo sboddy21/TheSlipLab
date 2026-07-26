@@ -171,7 +171,7 @@ async function subscriptionStatus() {
   return data;
 }
 
-async function createCheckoutSession() {
+async function createCheckoutSession(plan = "monthly") {
   const token = await accessToken();
   if (!token) throw new Error("Sign in before subscribing");
   const response = await fetch("/api/create-checkout-session", {
@@ -181,7 +181,10 @@ async function createCheckoutSession() {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ returnTo: `${window.location.pathname}${window.location.search}${window.location.hash}` })
+    body: JSON.stringify({
+      plan,
+      returnTo: `${window.location.pathname}${window.location.search}${window.location.hash}`
+    })
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Unable to start checkout");

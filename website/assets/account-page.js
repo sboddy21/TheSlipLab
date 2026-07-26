@@ -23,7 +23,7 @@ const elements = {
   signOut: document.getElementById("signOutButton"),
   membership: document.querySelector(".account-membership"),
   membershipStatus: document.getElementById("accountMembershipStatus"),
-  subscribe: document.getElementById("accountSubscribeButton"),
+  subscribeOptions: document.getElementById("accountSubscribeOptions"),
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
@@ -674,9 +674,9 @@ async function refreshFavorites() {
 }
 
 async function renderMembership() {
-  if (!elements.membership || !elements.membershipStatus || !elements.subscribe) return;
+  if (!elements.membership || !elements.membershipStatus || !elements.subscribeOptions) return;
   elements.membership.classList.remove("active", "pending");
-  elements.subscribe.hidden = true;
+  elements.subscribeOptions.hidden = true;
   elements.membershipStatus.textContent = "Checking your membership status…";
   try {
     const status = await window.TSLAccount.subscriptionStatus();
@@ -694,8 +694,8 @@ async function renderMembership() {
       return;
     }
     elements.membership.classList.add("pending");
-    elements.membershipStatus.textContent = "No active subscription yet. Start membership to unlock the premium MLB boards and tools.";
-    elements.subscribe.hidden = false;
+    elements.membershipStatus.textContent = "No active subscription yet. Choose a membership plan to unlock the premium MLB boards and tools.";
+    elements.subscribeOptions.hidden = false;
   } catch (error) {
     elements.membership.classList.add("pending");
     elements.membershipStatus.textContent = error.message || "Membership status is temporarily unavailable.";
@@ -828,16 +828,20 @@ elements.signOut.addEventListener("click", async () => {
   finally { elements.signOut.disabled = false; }
 });
 
-elements.subscribe?.addEventListener("click", async () => {
-  elements.subscribe.disabled = true;
-  elements.subscribe.textContent = "Opening checkout…";
+elements.subscribeOptions?.addEventListener("click", async event => {
+  const button = event.target.closest("[data-account-checkout]");
+  if (!button) return;
+  const plan = button.dataset.accountCheckout || "monthly";
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = "Opening checkout…";
   try {
-    const checkout = await window.TSLAccount.createCheckoutSession();
+    const checkout = await window.TSLAccount.createCheckoutSession(plan);
     window.location.href = checkout.url;
   } catch (error) {
     setMessage(error.message || "Checkout is temporarily unavailable.", true);
-    elements.subscribe.disabled = false;
-    elements.subscribe.textContent = "Start membership";
+    button.disabled = false;
+    button.textContent = originalLabel;
   }
 });
 
