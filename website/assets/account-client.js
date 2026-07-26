@@ -148,6 +148,47 @@ async function removeFavorite(id) {
   if (error) throw error;
 }
 
+async function accessToken() {
+  const client = await getClient();
+  const { data, error } = await client.auth.getSession();
+  if (error) throw error;
+  session = data.session;
+  return session?.access_token || "";
+}
+
+async function subscriptionStatus() {
+  const token = await accessToken();
+  if (!token) return { authenticated: false, required: false, active: false, status: "signed_out" };
+  const response = await fetch("/api/subscription-status", {
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    cache: "no-store"
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Unable to check subscription status");
+  return data;
+}
+
+async function createCheckoutSession() {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in before subscribing");
+  const response = await fetch("/api/create-checkout-session", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ returnTo: `${window.location.pathname}${window.location.search}${window.location.hash}` })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Unable to start checkout");
+  if (!data.url) throw new Error("Checkout session did not return a Stripe URL");
+  return data;
+}
+
 window.TSLAccount = {
   get session() { return session; },
   getClient,
@@ -158,7 +199,10 @@ window.TSLAccount = {
   signOut,
   listFavorites,
   addFavorite,
-  removeFavorite
+  removeFavorite,
+  accessToken,
+  subscriptionStatus,
+  createCheckoutSession
 };
 
 window.TSLAccount.ready = initialize();

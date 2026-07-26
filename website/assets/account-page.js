@@ -21,6 +21,9 @@ const elements = {
   message: document.getElementById("signInMessage"),
   emailDisplay: document.getElementById("accountEmailDisplay"),
   signOut: document.getElementById("signOutButton"),
+  membership: document.querySelector(".account-membership"),
+  membershipStatus: document.getElementById("accountMembershipStatus"),
+  subscribe: document.getElementById("accountSubscribeButton"),
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
@@ -670,6 +673,35 @@ async function refreshFavorites() {
   renderFavorites();
 }
 
+async function renderMembership() {
+  if (!elements.membership || !elements.membershipStatus || !elements.subscribe) return;
+  elements.membership.classList.remove("active", "pending");
+  elements.subscribe.hidden = true;
+  elements.membershipStatus.textContent = "Checking your membership status…";
+  try {
+    const status = await window.TSLAccount.subscriptionStatus();
+    if (!status.required) {
+      elements.membership.classList.add("active");
+      elements.membershipStatus.textContent = "Your account is active. Paid enforcement is wired in but not flipped on yet.";
+      return;
+    }
+    if (status.active) {
+      elements.membership.classList.add("active");
+      const periodEnd = status.currentPeriodEnd ? new Date(status.currentPeriodEnd).toLocaleDateString() : "";
+      elements.membershipStatus.textContent = status.cancelAtPeriodEnd && periodEnd
+        ? `Active through ${periodEnd}. Your subscription is set to cancel after this period.`
+        : "Active subscription. Premium MLB boards and tools are unlocked.";
+      return;
+    }
+    elements.membership.classList.add("pending");
+    elements.membershipStatus.textContent = "No active subscription yet. Start membership to unlock the premium MLB boards and tools.";
+    elements.subscribe.hidden = false;
+  } catch (error) {
+    elements.membership.classList.add("pending");
+    elements.membershipStatus.textContent = error.message || "Membership status is temporarily unavailable.";
+  }
+}
+
 async function showSession(session) {
   const signedIn = Boolean(session?.user);
   elements.status.textContent = recoveryMode ? "Password recovery" : signedIn ? "Signed in" : "Signed out";
@@ -683,6 +715,7 @@ async function showSession(session) {
   if (!signedIn) return;
   if (redirectAfterAuth(session)) return;
   elements.emailDisplay.textContent = session.user.email || "Authenticated account";
+  await renderMembership();
   try {
     if (!catalog.length) await loadCatalog();
     await refreshFavorites();
@@ -793,6 +826,19 @@ elements.signOut.addEventListener("click", async () => {
   elements.signOut.disabled = true;
   try { await window.TSLAccount.signOut(); }
   finally { elements.signOut.disabled = false; }
+});
+
+elements.subscribe?.addEventListener("click", async () => {
+  elements.subscribe.disabled = true;
+  elements.subscribe.textContent = "Opening checkout…";
+  try {
+    const checkout = await window.TSLAccount.createCheckoutSession();
+    window.location.href = checkout.url;
+  } catch (error) {
+    setMessage(error.message || "Checkout is temporarily unavailable.", true);
+    elements.subscribe.disabled = false;
+    elements.subscribe.textContent = "Start membership";
+  }
 });
 
 elements.search.addEventListener("input", renderSearchResults);
