@@ -41,11 +41,19 @@ const PREMIUM_HARD_HIT_MPH = 100;
 
 export default {
   async scheduled(controller, env, ctx) {
-    ctx.waitUntil(runWatcher(env, {
-      trigger: "scheduled",
-      cron: controller.cron,
-      scheduledTime: controller.scheduledTime
-    }));
+    ctx.waitUntil(
+      runWatcher(env, {
+        trigger: "scheduled",
+        cron: controller.cron,
+        scheduledTime: controller.scheduledTime
+      })
+        .then(summary => {
+          console.log("live-x-alerts summary", JSON.stringify(summary));
+        })
+        .catch(error => {
+          console.error("live-x-alerts failed", error?.stack || error?.message || String(error));
+        })
+    );
   },
 
   async fetch(request, env) {
@@ -103,6 +111,8 @@ async function runWatcher(env, meta = {}) {
     dryRunEvents: 0,
     skippedEvents: 0,
     failedEvents: 0,
+    duplicateStatusCounts: {},
+    duplicateSamples: [],
     errors: []
   };
 
@@ -137,7 +147,9 @@ async function checkOnce(env, aiIndexes) {
     postedEvents: 0,
     dryRunEvents: 0,
     skippedEvents: 0,
-    failedEvents: 0
+    failedEvents: 0,
+    duplicateStatusCounts: {},
+    duplicateSamples: []
   };
 
   for (const game of games) {
@@ -151,8 +163,15 @@ async function checkOnce(env, aiIndexes) {
       result.matchedEvents += 1;
 
       const eventType = "slip_lab_hit_home_run";
-      const rowEventKey = eventKey(event, eventType);
       const text = fitTweet(buildHomeRunTweet(event, match, eventType));
+      const duplicate = await supabaseGetDuplicatePlay(env, event, ["called_it_home_run", "slip_lab_hit_home_run"]);
+      if (duplicate) incrementDuplicateStatus(result, duplicate);
+      if (duplicate && !retryableDuplicate(duplicate, env)) {
+        result.skippedEvents += 1;
+        continue;
+      }
+
+      const rowEventKey = duplicate?.event_key || eventKey(event, eventType);
       const baseRow = {
         event_key: rowEventKey,
         date: event.date,
@@ -167,14 +186,16 @@ async function checkOnce(env, aiIndexes) {
         payload: { event, ai: match.memberships }
       };
 
-      const existing = await supabaseGetDuplicatePlay(env, event, ["called_it_home_run", "slip_lab_hit_home_run"]);
-      if (existing) {
-        result.skippedEvents += 1;
-        continue;
-      }
-
       if (!livePostingEnabled(env)) {
-        await supabaseInsertEvent(env, { ...baseRow, status: "dry_run" });
+        if (duplicate) {
+          await supabasePatchEvent(env, rowEventKey, {
+            ...eventPatch(baseRow),
+            status: "dry_run",
+            error: null
+          });
+        } else {
+          await supabaseInsertEvent(env, { ...baseRow, status: "dry_run" });
+        }
         result.insertedEvents += 1;
         result.dryRunEvents += 1;
         if (result.postedEvents + result.dryRunEvents >= maxPostsPerRun(env)) {
@@ -183,10 +204,18 @@ async function checkOnce(env, aiIndexes) {
         continue;
       }
 
-      const inserted = await supabaseInsertEvent(env, { ...baseRow, status: "pending" });
-      if (!inserted) {
-        result.skippedEvents += 1;
-        continue;
+      if (duplicate) {
+        await supabasePatchEvent(env, rowEventKey, {
+          ...eventPatch(baseRow),
+          status: "pending",
+          error: null
+        });
+      } else {
+        const inserted = await supabaseInsertEvent(env, { ...baseRow, status: "pending" });
+        if (!inserted) {
+          result.skippedEvents += 1;
+          continue;
+        }
       }
       result.insertedEvents += 1;
 
@@ -285,6 +314,10 @@ function maxPostsPerRun(env) {
   return clamp(Number(env.MAX_POSTS_PER_RUN || 10), 1, 15);
 }
 
+function pendingRetrySeconds(env) {
+  return clamp(Number(env.PENDING_RETRY_SECONDS || 90), 30, 600);
+}
+
 function eligibleSections(env) {
   const raw = String(env.ELIGIBLE_SECTIONS || DEFAULT_BOARD_HIT_SECTIONS.join(","));
   return raw.split(",").map(item => item.trim().toUpperCase()).filter(Boolean);
@@ -293,6 +326,22 @@ function eligibleSections(env) {
 function liveAiUpdateSections(env) {
   const raw = String(env.LIVE_AI_UPDATE_SECTIONS || DEFAULT_LIVE_AI_UPDATE_SECTIONS.join(","));
   return raw.split(",").map(item => item.trim().toUpperCase()).filter(Boolean);
+}
+
+function retryableDuplicate(row, env = {}) {
+  const status = String(row?.status || "").toLowerCase();
+  if (["failed", "dry_run", "skipped"].includes(status)) return true;
+  if (status === "posted") return !row?.x_post_id;
+  if (status !== "pending") return false;
+
+  const createdMs = Date.parse(row?.created_at || "");
+  if (!Number.isFinite(createdMs)) return false;
+  return Date.now() - createdMs > pendingRetrySeconds(env) * 1000;
+}
+
+function eventPatch(row) {
+  const { event_key, ...patch } = row;
+  return patch;
 }
 
 function clamp(value, min, max) {
@@ -709,7 +758,7 @@ async function supabaseGetDuplicatePlay(env, event, eventTypes) {
     `game_pk=eq.${encodeURIComponent(event.gamePk)}`,
     `play_id=eq.${encodeURIComponent(String(event.playId))}`,
     `event_type=in.(${eventTypes.map(type => encodeURIComponent(type)).join(",")})`,
-    "select=id,status,x_post_id,event_type",
+    "select=id,event_key,status,x_post_id,event_type,player_name,created_at,posted_at",
     "limit=1"
   ];
   if (event.playerId) {
@@ -838,5 +887,22 @@ function mergeSummary(target, result) {
     "failedEvents"
   ]) {
     target[key] += result[key] || 0;
+  }
+  for (const [status, count] of Object.entries(result.duplicateStatusCounts || {})) {
+    target.duplicateStatusCounts[status] = (target.duplicateStatusCounts[status] || 0) + count;
+  }
+  target.duplicateSamples.push(...(result.duplicateSamples || []).slice(0, 8 - target.duplicateSamples.length));
+}
+
+function incrementDuplicateStatus(result, row) {
+  const status = String(row?.status || "unknown").toLowerCase() || "unknown";
+  result.duplicateStatusCounts[status] = (result.duplicateStatusCounts[status] || 0) + 1;
+  if (result.duplicateSamples.length < 8) {
+    result.duplicateSamples.push({
+      player: row?.player_name || "",
+      status,
+      eventType: row?.event_type || "",
+      xPostId: row?.x_post_id || null
+    });
   }
 }
