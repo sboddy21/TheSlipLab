@@ -86,6 +86,16 @@
       </div>`;
   }
 
+  function checkoutActions() {
+    return `
+      <div class="tsl-access-plan-grid" aria-label="Choose a membership plan">
+        <button class="tsl-access-button" type="button" data-tsl-checkout="weekly">Weekly</button>
+        <button class="tsl-access-button" type="button" data-tsl-checkout="monthly">Monthly</button>
+        <button class="tsl-access-button" type="button" data-tsl-checkout="annual">Annual</button>
+      </div>
+      <a class="tsl-access-link" href="./account.html">Back to my account</a>`;
+  }
+
   function unlockPage(){
     document.body.classList.remove("tsl-access-checking");
     document.querySelector(".tsl-access-gate")?.remove();
@@ -127,7 +137,7 @@
         eyebrow: "Premium access",
         title: "Subscribe to unlock this board.",
         body: "The premium MLB slate, AI boards, matchup tools, and live edge pages are now reserved for active Slip Lab members.",
-        action: `<button class="tsl-access-button" type="button" data-tsl-checkout>Start membership</button><a class="tsl-access-link" href="./account.html">Back to my account</a>`
+        action: checkoutActions()
       });
     } catch (error) {
       updateGateCard({
@@ -142,19 +152,20 @@
   document.addEventListener("click", async event => {
     const button = event.target.closest("[data-tsl-checkout]");
     if (!button) return;
+    const plan = button.dataset.tslCheckout || "monthly";
     button.disabled = true;
     button.textContent = "Opening checkout…";
     try {
-      const session = await window.TSLAccount.createCheckoutSession();
+      const session = await window.TSLAccount.createCheckoutSession(plan);
       window.location.href = session.url;
     } catch (error) {
       button.disabled = false;
-      button.textContent = "Start membership";
+      button.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
       updateGateCard({
         eyebrow: "Checkout unavailable",
         title: "Membership checkout is not ready yet.",
         body: error.message || "Stripe checkout is still being configured.",
-        action: `<button class="tsl-access-button" type="button" data-tsl-checkout>Try again</button><a class="tsl-access-link" href="./account.html">Back to my account</a>`
+        action: checkoutActions()
       });
     }
   });

@@ -49,6 +49,12 @@ function toIso(seconds) {
   return seconds ? new Date(Number(seconds) * 1000).toISOString() : null;
 }
 
+function normalizePlan(value) {
+  const plan = String(value || "").trim().toLowerCase();
+  if (plan === "yearly") return "annual";
+  return ["weekly", "monthly", "annual"].includes(plan) ? plan : null;
+}
+
 async function stripeGet(path) {
   const secretKey = firstAvailable(["STRIPE_SECRET_KEY"]);
   if (!secretKey) throw new Error("Stripe secret key is not configured");
@@ -112,6 +118,7 @@ async function rowFromSubscription(subscription) {
     stripe_subscription_id: subscription.id || null,
     status: subscription.status || "inactive",
     price_id: firstItem?.price?.id || null,
+    plan: normalizePlan(subscription.metadata?.plan),
     current_period_end: toIso(subscription.current_period_end),
     cancel_at_period_end: Boolean(subscription.cancel_at_period_end)
   };
@@ -122,7 +129,8 @@ async function handleCheckoutCompleted(session) {
   const subscription = await stripeGet(`subscriptions/${session.subscription}`);
   await upsertSubscription({
     ...(await rowFromSubscription(subscription)),
-    user_id: subscription.metadata?.user_id || session.metadata?.user_id || session.client_reference_id
+    user_id: subscription.metadata?.user_id || session.metadata?.user_id || session.client_reference_id,
+    plan: normalizePlan(subscription.metadata?.plan || session.metadata?.plan)
   });
 }
 
