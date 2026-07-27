@@ -99,6 +99,19 @@
 }
 .tsl-access-link:hover{color:#fff}
 @media(max-width:900px){.tsl-site-header-inner{padding:12px 14px;gap:14px}.tsl-brand{font-size:20px}.tsl-nav{gap:7px}.tsl-nav a,.tsl-nav-menu-button{font-size:12px;padding:9px 10px}.tsl-nav-menu-panel{right:-8px;min-width:220px}}
+@media(max-width:900px){
+  .tsl-nav-menu-panel{
+    position:fixed;
+    top:var(--tsl-nav-menu-top,88px);
+    left:14px;
+    right:14px;
+    min-width:0;
+    max-height:var(--tsl-nav-menu-max-height,70vh);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+}
 
 /* MLB editorial shell. Opt-in only so deferred sport pages keep their current UI. */
 body.tsl-editorial{
@@ -2126,7 +2139,7 @@ body.tsl-editorial .search:focus{
     min-height:auto;
     padding:16px 14px 12px;
     gap:12px;
-    overflow:hidden;
+    overflow:visible;
   }
   body.tsl-editorial .tsl-brand{
     display:block;
@@ -2162,12 +2175,16 @@ body.tsl-editorial .search:focus{
     flex:0 0 auto;
   }
   body.tsl-editorial .tsl-nav-menu-panel{
+    position:fixed;
+    top:var(--tsl-nav-menu-top,136px);
     left:14px;
     right:14px;
-    top:auto;
-    margin-top:10px;
+    margin-top:0;
     min-width:0;
-    position:absolute;
+    max-height:var(--tsl-nav-menu-max-height,70vh);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
   }
   body.tsl-editorial .wrap,
   body.tsl-editorial main{width:min(100% - 28px,1460px);padding-top:20px}
