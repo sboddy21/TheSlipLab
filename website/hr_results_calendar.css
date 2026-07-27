@@ -1,4 +1,5 @@
 body.tsl-results-page {
+  --results-sticky-top: 132px;
   background: var(--paper);
   color: var(--ink);
 }
@@ -759,10 +760,15 @@ body.tsl-results-page .search-box::placeholder {
 }
 
 body.tsl-results-page .tabs {
+  position: sticky;
+  top: var(--results-sticky-top);
+  z-index: 40;
   gap: 0;
-  margin-bottom: 14px;
+  margin-bottom: 0;
   border: 1px solid var(--rule);
-  background: var(--white);
+  background: rgba(255, 253, 247, .98);
+  box-shadow: 0 10px 22px rgba(7, 31, 59, .12);
+  backdrop-filter: blur(10px);
 }
 
 body.tsl-results-page .tab {
@@ -782,6 +788,8 @@ body.tsl-results-page .tab.active {
 }
 
 body.tsl-results-page .table-wrap {
+  overflow-x: auto;
+  overflow-y: clip;
   border: 1px solid var(--rule);
   border-radius: 0;
   background: var(--white);
@@ -1040,6 +1048,23 @@ body.tsl-results-page .hr-difficulty-badge.scraper {
   body.tsl-results-page .search-wrap {
     grid-template-columns: 1fr;
     gap: 9px;
+  }
+
+  body.tsl-results-page .tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.tsl-results-page .tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.tsl-results-page .tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
   }
 
   body.tsl-results-page .hr-results-calendar-head {
