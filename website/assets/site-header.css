@@ -2120,10 +2120,71 @@ body.tsl-editorial .search:focus{
   body.tsl-editorial .tsl-site-header{border-top-width:30px}
   body.tsl-editorial .tsl-site-header::before{top:-20px;left:34px;font-size:8px}
   body.tsl-editorial .tsl-site-header::after{top:-21px;left:16px;width:7px;height:7px}
-  body.tsl-editorial .tsl-site-header-inner{min-height:72px;padding:12px 14px;gap:22px}
-  body.tsl-editorial .tsl-nav{gap:18px}
+  body.tsl-editorial .tsl-site-header-inner{
+    align-items:flex-start;
+    flex-direction:column;
+    min-height:auto;
+    padding:16px 14px 12px;
+    gap:12px;
+    overflow:hidden;
+  }
+  body.tsl-editorial .tsl-brand{
+    display:block;
+    width:100%;
+    flex:0 0 auto;
+    font-size:clamp(31px,10vw,44px);
+    line-height:.9;
+    letter-spacing:-.07em;
+  }
+  body.tsl-editorial .tsl-nav{
+    width:100%;
+    max-width:100%;
+    margin-left:0;
+    gap:22px;
+    overflow-x:auto;
+    overflow-y:visible;
+    padding:4px 2px 8px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  body.tsl-editorial .tsl-nav::-webkit-scrollbar{display:none}
+  body.tsl-editorial .tsl-nav a,
+  body.tsl-editorial .tsl-nav-menu-button{
+    flex:0 0 auto;
+    font-size:11px;
+    padding:10px 0;
+  }
+  body.tsl-editorial .tsl-nav a.tsl-account-link{
+    padding:9px 12px;
+  }
+  body.tsl-editorial .tsl-nav-menu{
+    position:static;
+    flex:0 0 auto;
+  }
+  body.tsl-editorial .tsl-nav-menu-panel{
+    left:14px;
+    right:14px;
+    top:auto;
+    margin-top:10px;
+    min-width:0;
+    position:absolute;
+  }
   body.tsl-editorial .wrap,
   body.tsl-editorial main{width:min(100% - 28px,1460px);padding-top:20px}
-  body.tsl-editorial .report-line{margin-bottom:28px}
-  body.tsl-slate-page h1{font-size:clamp(48px,15vw,78px)}
+  body.tsl-editorial .report-line{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:28px;
+    padding-left:28px;
+    font-size:9px;
+    letter-spacing:.14em;
+  }
+  body.tsl-editorial .report-line::before{
+    width:22px;
+  }
+  body.tsl-slate-page h1{
+    font-size:clamp(43px,13vw,70px);
+    line-height:.9;
+  }
 }
