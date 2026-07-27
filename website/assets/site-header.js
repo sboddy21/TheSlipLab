@@ -145,7 +145,17 @@
       panel.appendChild(a);
     });
 
+    function positionMenuPanel(){
+      const rect = menuButton.getBoundingClientRect();
+      const viewportHeight = window.visualViewport?.height || window.innerHeight || 700;
+      const top = Math.max(84, Math.round(rect.bottom + 8));
+      const maxHeight = Math.max(220, Math.round(viewportHeight - top - 16));
+      panel.style.setProperty("--tsl-nav-menu-top", `${top}px`);
+      panel.style.setProperty("--tsl-nav-menu-max-height", `${maxHeight}px`);
+    }
+
     function setMenuOpen(open){
+      if (open) positionMenuPanel();
       menu.classList.toggle("open", open);
       menuButton.setAttribute("aria-expanded", open ? "true" : "false");
     }
@@ -161,6 +171,14 @@
 
     document.addEventListener("keydown", event => {
       if (event.key === "Escape") setMenuOpen(false);
+    });
+
+    window.addEventListener("resize", () => {
+      if (menu.classList.contains("open")) positionMenuPanel();
+    });
+
+    window.visualViewport?.addEventListener("resize", () => {
+      if (menu.classList.contains("open")) positionMenuPanel();
     });
 
     menu.appendChild(menuButton);

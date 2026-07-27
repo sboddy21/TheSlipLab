@@ -1,5 +1,11 @@
 import crypto from "node:crypto";
 
+export const config = {
+  api: {
+    bodyParser: false
+  }
+};
+
 function firstAvailable(names) {
   return names.map(name => process.env[name]).find(Boolean) || "";
 }
@@ -28,10 +34,18 @@ async function readRawBody(request) {
 function verifyStripeSignature(rawBody, signatureHeader) {
   const webhookSecret = firstAvailable(["STRIPE_WEBHOOK_SECRET"]);
   if (!webhookSecret) throw new Error("Stripe webhook secret is not configured");
-  const parts = Object.fromEntries(String(signatureHeader || "").split(",").map(part => part.split("=")));
-  const timestamp = parts.t;
-  const signature = parts.v1;
-  if (!timestamp || !signature) throw new Error("Missing Stripe signature");
+  const parts = String(signatureHeader || "").split(",").reduce((acc, part) => {
+    const index = part.indexOf("=");
+    if (index === -1) return acc;
+    const key = part.slice(0, index);
+    const value = part.slice(index + 1);
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(value);
+    return acc;
+  }, {});
+  const timestamp = parts.t?.[0];
+  const signatures = parts.v1 || [];
+  if (!timestamp || !signatures.length) throw new Error("Missing Stripe signature");
 
   const expected = crypto
     .createHmac("sha256", webhookSecret)
@@ -39,10 +53,11 @@ function verifyStripeSignature(rawBody, signatureHeader) {
     .digest("hex");
 
   const expectedBuffer = Buffer.from(expected, "hex");
-  const signatureBuffer = Buffer.from(signature, "hex");
-  if (expectedBuffer.length !== signatureBuffer.length || !crypto.timingSafeEqual(expectedBuffer, signatureBuffer)) {
-    throw new Error("Invalid Stripe signature");
-  }
+  const valid = signatures.some(signature => {
+    const signatureBuffer = Buffer.from(signature, "hex");
+    return expectedBuffer.length === signatureBuffer.length && crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
+  });
+  if (!valid) throw new Error("Invalid Stripe signature");
 }
 
 function toIso(seconds) {
