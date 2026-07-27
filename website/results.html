@@ -1065,7 +1065,7 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
 </style>
   <link rel="stylesheet" href="./assets/site-header.css">
-  <link rel="stylesheet" href="hr_results_calendar.css?v=20260717">
+  <link rel="stylesheet" href="hr_results_calendar.css?v=20260726-sticky">
   <script defer src="./assets/site-header.js"></script>
 </head>
 
@@ -1363,6 +1363,18 @@ let ballCarryIndex = null;
 let calibrationWindow = "7d";
 let activeFilter = "all";
 let searchTerm = "";
+
+function syncResultsStickyOffsets(){
+  const header = document.querySelector(".tsl-site-header");
+  const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
+
+  document.body.style.setProperty("--results-sticky-top", `${headerHeight}px`);
+}
+
+window.addEventListener("DOMContentLoaded", syncResultsStickyOffsets);
+window.addEventListener("load", syncResultsStickyOffsets);
+window.addEventListener("resize", syncResultsStickyOffsets);
+setTimeout(syncResultsStickyOffsets, 100);
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function n(v){const x = Number(v); return Number.isFinite(x) ? x : 0}
