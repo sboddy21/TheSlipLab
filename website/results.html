@@ -1065,7 +1065,7 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
 </style>
   <link rel="stylesheet" href="./assets/site-header.css">
-  <link rel="stylesheet" href="hr_results_calendar.css?v=20260726-sticky">
+  <link rel="stylesheet" href="hr_results_calendar.css?v=20260726-table-head">
   <script defer src="./assets/site-header.js"></script>
 </head>
 
@@ -1369,11 +1369,92 @@ function syncResultsStickyOffsets(){
   const headerHeight = header ? Math.ceil(header.getBoundingClientRect().height) : 0;
 
   document.body.style.setProperty("--results-sticky-top", `${headerHeight}px`);
+  updateResultsStickyTableHeader();
 }
 
-window.addEventListener("DOMContentLoaded", syncResultsStickyOffsets);
+let resultsStickyHeadFrame = null;
+
+function readResultsStickyTop(){
+  const value = getComputedStyle(document.body).getPropertyValue("--results-sticky-top");
+  const parsed = Number.parseFloat(value);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function ensureResultsStickyTableHeader(){
+  const table = document.querySelector(".results-ledger .table-wrap table");
+  const thead = table?.querySelector("thead");
+  if(!table || !thead) return null;
+
+  let sticky = document.getElementById("resultsStickyTableHead");
+  if(!sticky){
+    sticky = document.createElement("div");
+    sticky.id = "resultsStickyTableHead";
+    sticky.className = "results-sticky-head";
+    sticky.setAttribute("aria-hidden", "true");
+    sticky.innerHTML = "<table><thead></thead></table>";
+    document.body.appendChild(sticky);
+  }
+
+  const stickyThead = sticky.querySelector("thead");
+  if(stickyThead && stickyThead.innerHTML !== thead.innerHTML){
+    stickyThead.innerHTML = thead.innerHTML;
+  }
+
+  return sticky;
+}
+
+function updateResultsStickyTableHeader(){
+  if(resultsStickyHeadFrame) return;
+
+  resultsStickyHeadFrame = requestAnimationFrame(() => {
+    resultsStickyHeadFrame = null;
+
+    const wrap = document.querySelector(".results-ledger .table-wrap");
+    const table = wrap?.querySelector("table");
+    const thead = table?.querySelector("thead");
+    const sticky = ensureResultsStickyTableHeader();
+
+    if(!wrap || !table || !thead || !sticky){
+      if(sticky) sticky.classList.remove("is-visible");
+      return;
+    }
+
+    const top = readResultsStickyTop();
+    const wrapRect = wrap.getBoundingClientRect();
+    const theadRect = thead.getBoundingClientRect();
+    const headerHeight = Math.ceil(theadRect.height || 0);
+    const shouldStick = theadRect.top < top && wrapRect.bottom > top + headerHeight;
+
+    sticky.classList.toggle("is-visible", shouldStick);
+    if(!shouldStick) return;
+
+    sticky.style.top = `${top}px`;
+    sticky.style.left = `${wrapRect.left}px`;
+    sticky.style.width = `${wrapRect.width}px`;
+
+    const stickyTable = sticky.querySelector("table");
+    if(stickyTable){
+      stickyTable.style.width = `${table.offsetWidth}px`;
+      stickyTable.style.transform = `translateX(${-wrap.scrollLeft}px)`;
+    }
+
+    const sourceCells = [...thead.querySelectorAll("th")];
+    const cloneCells = [...sticky.querySelectorAll("th")];
+    sourceCells.forEach((cell, index) => {
+      if(cloneCells[index]){
+        cloneCells[index].style.width = `${cell.getBoundingClientRect().width}px`;
+      }
+    });
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  syncResultsStickyOffsets();
+  document.querySelector(".results-ledger .table-wrap")?.addEventListener("scroll", updateResultsStickyTableHeader, { passive: true });
+});
 window.addEventListener("load", syncResultsStickyOffsets);
 window.addEventListener("resize", syncResultsStickyOffsets);
+window.addEventListener("scroll", updateResultsStickyTableHeader, { passive: true });
 setTimeout(syncResultsStickyOffsets, 100);
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
@@ -2078,6 +2159,8 @@ function render(){
       </td>
     </tr>
   `).join("");
+
+  updateResultsStickyTableHeader();
 }
 
 function toggleDetail(index){
