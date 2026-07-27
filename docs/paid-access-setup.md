@@ -24,6 +24,7 @@ Required for checkout and subscription verification:
 - `STRIPE_PRICE_ID_MONTHLY`
 - `STRIPE_PRICE_ID_ANNUAL`
 - `SITE_URL` set to `https://thesliplab.com`
+- `TSL_ADMIN_SYNC_SECRET` set to a long private random value for admin-only Stripe → Supabase subscription backfills
 
 `STRIPE_PRICE_ID` is still supported as a fallback for the monthly plan, but the three explicit plan variables are preferred.
 
@@ -63,3 +64,14 @@ When `TSL_PAID_ACCESS_ENABLED=true`, premium pages require:
 2. `user_subscriptions.status` of `active` or `trialing`
 
 Logged-in users without an active subscription see a Stripe checkout button.
+
+## 5. Backfill or repair subscriptions
+
+If Stripe shows paid customers but `public.user_subscriptions` is missing rows, run the admin sync endpoint:
+
+```bash
+curl -X POST https://thesliplab.com/api/sync-stripe-subscriptions \
+  -H "Authorization: Bearer $TSL_ADMIN_SYNC_SECRET"
+```
+
+The endpoint pulls all Stripe subscriptions, maps them to Supabase users by `metadata.user_id` first and Stripe customer email second, then upserts the latest/best subscription row for each user.
