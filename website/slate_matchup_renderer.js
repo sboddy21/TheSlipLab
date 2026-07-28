@@ -882,8 +882,21 @@
   }
 
 
+  function normalizedLineupValue(value) {
+    return String(value || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+  }
+
+  function isLineupEligible(row) {
+    return normalizedLineupValue(row?.lineupSource) !== "NOT_IN_LINEUP" &&
+      normalizedLineupValue(row?.lineupStatus) !== "NOT_IN_LINEUP";
+  }
+
   function allHitters(game) {
-    return [...(game.hitters?.away || []), ...(game.hitters?.home || [])];
+    return [...(game.hitters?.away || []), ...(game.hitters?.home || [])]
+      .filter(isLineupEligible);
   }
 
   function pitcherObj(game, side) {
@@ -1036,7 +1049,7 @@
     for (const game of state.games) {
       for (const side of ["away", "home"]) {
         const hitters = (game.hitters?.[side] || [])
-          .filter(row => String(row.lineupSource || "").toUpperCase() !== "NOT_IN_LINEUP")
+          .filter(isLineupEligible)
           .sort((a, b) => lineupSpotOf(a) - lineupSpotOf(b) || num(scoreOf(b)) - num(scoreOf(a)))
           .slice(0, 9);
 
@@ -1189,7 +1202,7 @@
     const hitterTeam = away ? game.homeTeam : game.awayTeam;
     const pitcher = away ? game.awayPitcher : game.homePitcher;
     const hitters = (away ? game.hitters?.home || [] : game.hitters?.away || [])
-      .slice()
+      .filter(isLineupEligible)
       .sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
     const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
     const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
