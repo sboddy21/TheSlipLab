@@ -208,6 +208,12 @@
       gateScript.dataset.tslAccessGate = "true";
       document.head.appendChild(gateScript);
     }
+    if (!document.querySelector('script[data-tsl-abandoned-signup]')) {
+      const reminderScript = document.createElement("script");
+      reminderScript.src = "./assets/abandoned-signup.js";
+      reminderScript.dataset.tslAbandonedSignup = "true";
+      document.body.appendChild(reminderScript);
+    }
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

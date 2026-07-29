@@ -8,6 +8,12 @@ const PLAN_ENV_KEYS = {
   annual: ["STRIPE_PRICE_ID_ANNUAL", "STRIPE_PRICE_ID_ANNUALLY", "TSL_STRIPE_PRICE_ID_ANNUAL", "TSL_STRIPE_PRICE_ID_ANNUALLY"]
 };
 
+const PLAN_PRICE_FALLBACKS = {
+  weekly: "price_1TxaT7Prg6RnNsu9ntaK7jtd",
+  monthly: "price_1TxaRmPrg6RnNsu9tpSzUb6N",
+  annual: "price_1TxaSSPrg6RnNsu9SdIs3Kk3"
+};
+
 function normalizePlan(value) {
   const plan = String(value || "monthly").trim().toLowerCase();
   if (plan === "yearly") return "annual";
@@ -15,7 +21,7 @@ function normalizePlan(value) {
 }
 
 function priceIdForPlan(plan) {
-  return firstAvailable(PLAN_ENV_KEYS[plan] || []);
+  return firstAvailable(PLAN_ENV_KEYS[plan] || []) || PLAN_PRICE_FALLBACKS[plan] || "";
 }
 
 function supabaseConfig() {
@@ -96,7 +102,10 @@ async function createStripeCheckoutSession({ user, request, returnTo, plan }) {
     "metadata[user_id]": user.id,
     "metadata[plan]": plan,
     "subscription_data[metadata][user_id]": user.id,
-    "subscription_data[metadata][plan]": plan
+    "subscription_data[metadata][plan]": plan,
+    expires_at: String(Math.floor(Date.now() / 1000) + 60 * 60),
+    "consent_collection[promotions]": "auto",
+    "after_expiration[recovery][enabled]": "true"
   });
 
   const stripeResponse = await fetch("https://api.stripe.com/v1/checkout/sessions", {

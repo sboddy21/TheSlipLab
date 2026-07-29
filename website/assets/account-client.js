@@ -168,6 +168,7 @@ async function subscriptionStatus() {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Unable to check subscription status");
+  if (data.active) localStorage.removeItem("tsl_checkout_started");
   return data;
 }
 
@@ -189,6 +190,7 @@ async function createCheckoutSession(plan = "monthly") {
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || "Unable to start checkout");
   if (!data.url) throw new Error("Checkout session did not return a Stripe URL");
+  localStorage.setItem("tsl_checkout_started", String(Date.now()));
   return data;
 }
 

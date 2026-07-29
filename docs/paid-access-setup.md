@@ -20,6 +20,7 @@ Required for checkout and subscription verification:
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
+- `RESEND_API_KEY`
 - `STRIPE_PRICE_ID_WEEKLY`
 - `STRIPE_PRICE_ID_MONTHLY`
 - `STRIPE_PRICE_ID_ANNUAL`
@@ -50,6 +51,7 @@ https://thesliplab.com/api/stripe-webhook
 Events to send:
 
 - `checkout.session.completed`
+- `checkout.session.expired`
 - `customer.subscription.created`
 - `customer.subscription.updated`
 - `customer.subscription.deleted`

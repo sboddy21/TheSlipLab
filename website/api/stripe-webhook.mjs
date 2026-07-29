@@ -153,6 +153,56 @@ async function handleSubscriptionEvent(subscription) {
   await upsertSubscription(await rowFromSubscription(subscription));
 }
 
+function recoveryEmail(recoveryUrl) {
+  return `<!doctype html>
+  <html>
+    <body style="margin:0;background:#f4f0e4;color:#071d36;font-family:Arial,Helvetica,sans-serif">
+      <div style="display:none;max-height:0;overflow:hidden">Your Slip Lab access is one step away.</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e4">
+        <tr><td align="center" style="padding:36px 18px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#fffdf7;border:2px solid #071d36">
+            <tr><td style="padding:34px">
+              <div style="color:#d84320;font-size:11px;font-weight:900;letter-spacing:2px;text-transform:uppercase">The Slip Lab</div>
+              <h1 style="margin:18px 0 12px;font-size:40px;line-height:1;letter-spacing:-2px;text-transform:uppercase">You left something behind 👀</h1>
+              <p style="margin:0 0 24px;color:#536375;font-size:17px;line-height:1.6">Your Slip Lab access is almost unlocked. Finish signing up to get the data behind the calls, complete player rankings, matchup insights, and more.</p>
+              <a href="${recoveryUrl}" style="display:inline-block;padding:15px 20px;background:#d84320;color:#fff;font-size:12px;font-weight:900;letter-spacing:1px;text-decoration:none;text-transform:uppercase">Finish my sign-up</a>
+              <p style="margin:28px 0 0;color:#7b8793;font-size:11px;line-height:1.5">If you no longer want to complete your membership, ignore this one-time reminder.</p>
+            </td></tr>
+          </table>
+        </td></tr>
+      </table>
+    </body>
+  </html>`;
+}
+
+async function sendRecoveryEmail(session) {
+  const apiKey = firstAvailable(["RESEND_API_KEY"]);
+  const email = session.customer_details?.email;
+  const recoveryUrl = session.after_expiration?.recovery?.url;
+  const optedIn = session.consent?.promotions === "opt_in";
+  if (!apiKey || !email || !recoveryUrl || !optedIn) return;
+
+  const resendResponse = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `stripe-recovery-${session.id}`
+    },
+    body: JSON.stringify({
+      from: "The Slip Lab <access@thesliplab.com>",
+      to: [email],
+      subject: "You left something behind 👀",
+      html: recoveryEmail(recoveryUrl)
+    })
+  });
+
+  if (!resendResponse.ok) {
+    const details = await resendResponse.text();
+    throw new Error(`Recovery email failed: ${details}`);
+  }
+}
+
 export default async function handler(request, response) {
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
@@ -166,6 +216,8 @@ export default async function handler(request, response) {
 
     if (event.type === "checkout.session.completed") {
       await handleCheckoutCompleted(event.data.object);
+    } else if (event.type === "checkout.session.expired") {
+      await sendRecoveryEmail(event.data.object);
     } else if (
       event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
