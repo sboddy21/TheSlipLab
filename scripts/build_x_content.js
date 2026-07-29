@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { completedResultSlate } from "./mlb/result_slate_status.js";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
@@ -136,11 +137,7 @@ function verifiedHit(result) {
 }
 
 function allGamesFinal(payload) {
-  const scheduled = num(payload?.totalScheduledGames);
-  return scheduled > 0
-    && num(payload?.finalGames) === scheduled
-    && num(payload?.liveGames) === 0
-    && num(payload?.skippedGames) === 0;
+  return completedResultSlate(payload);
 }
 
 const recentPosts = arr(history.posts).filter(post => {

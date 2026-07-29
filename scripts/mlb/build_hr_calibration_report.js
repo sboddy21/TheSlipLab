@@ -1,5 +1,12 @@
 import fs from "fs";
 import path from "path";
+import {
+  completedResultSlate,
+  playableScheduledGames,
+  rescheduledGamePks,
+  terminalNonPlayedCount,
+  terminalNonPlayedGamePks
+} from "./result_slate_status.js";
 
 const DATA = path.join(process.cwd(), "website", "data");
 const now = new Date();
@@ -75,14 +82,6 @@ function weatherBand(row) {
   return "NEUTRAL";
 }
 
-function completedResultSlate(resultFile) {
-  const scheduled = num(resultFile?.totalScheduledGames ?? resultFile?.scheduledGames, 0);
-  return scheduled > 0
-    && num(resultFile?.finalGames, 0) === scheduled
-    && num(resultFile?.liveGames, 0) === 0
-    && num(resultFile?.skippedGames, 0) === 0;
-}
-
 function dailyMetric(rows) {
   const metric = basic(rows);
   return {
@@ -95,24 +94,33 @@ function dailyMetric(rows) {
 
 function dailyReport() {
   const reportDate = previousResults?.date || null;
-  const scheduledGames = num(previousResults?.totalScheduledGames ?? previousResults?.scheduledGames, 0);
-  const actualHomeRuns = arr(previousResults?.homeRuns);
+  const totalScheduledGames = num(previousResults?.totalScheduledGames ?? previousResults?.scheduledGames, 0);
+  const scheduledGames = playableScheduledGames(previousResults);
+  const terminalGamePks = terminalNonPlayedGamePks(previousResults);
+  const rescheduledPks = rescheduledGamePks(previousResults);
+  const excludedGamePks = new Set([...terminalGamePks, ...rescheduledPks]);
+  const actualHomeRuns = arr(previousResults?.homeRuns)
+    .filter(row => !rescheduledPks.has(Number(row?.gamePk)));
   const unavailable = reason => ({
     reportDate,
     status: "unavailable",
     reason,
     scheduledGames,
+    totalScheduledGames,
+    terminalNonPlayedGames: terminalNonPlayedCount(previousResults),
+    rescheduledGames: rescheduledPks.size,
     finalGames: num(previousResults?.finalGames, 0),
     skippedGames: num(previousResults?.skippedGames, 0)
   });
 
   if (!reportDate) return unavailable("missing_result_date");
-  if (scheduledGames === 0) return { ...unavailable("no_games_scheduled"), status: "no_games_scheduled" };
+  if (totalScheduledGames === 0) return { ...unavailable("no_games_scheduled"), status: "no_games_scheduled" };
   if (!completedResultSlate(previousResults)) return unavailable("result_slate_not_final");
 
   const latestByPlayerGame = new Map();
   for (const receipt of receipts) {
     if (receipt?.slateDate !== reportDate || !num(receipt.gamePk) || !num(receipt.playerId)) continue;
+    if (excludedGamePks.has(Number(receipt.gamePk))) continue;
     const snapshotMs = Date.parse(receipt.snapshotAt || receipt.timestamp || "");
     const startMs = Date.parse(receipt.gameStartTime || "");
     if (!Number.isFinite(snapshotMs) || !Number.isFinite(startMs) || snapshotMs >= startMs || num(receipt.probability) === null) continue;
@@ -176,6 +184,9 @@ function dailyReport() {
     status: "verified",
     reason: null,
     scheduledGames,
+    totalScheduledGames,
+    terminalNonPlayedGames: terminalNonPlayedCount(previousResults),
+    rescheduledGames: rescheduledPks.size,
     finalGames: num(previousResults?.finalGames, 0),
     skippedGames: 0,
     archivedPlayers: rows.length,

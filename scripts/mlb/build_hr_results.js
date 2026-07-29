@@ -41,6 +41,13 @@ const FINAL_STATUSES = new Set([
   "Completed Early"
 ]);
 
+const TERMINAL_NON_PLAYED_STATUSES = new Set([
+  "Postponed",
+  "Cancelled",
+  "Canceled",
+  "No Game"
+]);
+
 async function getJSON(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Request failed ${res.status}: ${url}`);
@@ -268,10 +275,31 @@ async function buildResults(date) {
   let skippedGames = 0;
   let finalGames = 0;
   let liveGames = 0;
+  const terminalNonPlayed = [];
+  const rescheduledGames = [];
 
   for (const game of games) {
     const gamePk = game?.gamePk;
     const status = safe(game?.status?.detailedState);
+    const rescheduledFrom = safe(game?.rescheduledFrom);
+
+    if (gamePk && rescheduledFrom && !rescheduledFrom.startsWith(date)) {
+      rescheduledGames.push({
+        gamePk,
+        game: getGameLabel({}, game),
+        rescheduledFrom
+      });
+    }
+
+    if (gamePk && TERMINAL_NON_PLAYED_STATUSES.has(status)) {
+      terminalNonPlayed.push({
+        gamePk,
+        status,
+        game: getGameLabel({}, game),
+        rescheduleDate: safe(game?.rescheduleDate)
+      });
+      continue;
+    }
 
     if (!gamePk || !VALID_STATUSES.has(status)) {
       skippedGames += 1;
@@ -315,6 +343,10 @@ async function buildResults(date) {
     skippedGames,
     finalGames,
     liveGames,
+    terminalNonPlayedGames: terminalNonPlayed.length,
+    terminalNonPlayed,
+    rescheduledGameCount: rescheduledGames.length,
+    rescheduledGames,
     count: homeRuns.length,
     homeRuns,
     playerEventCount: playerEvents.length,
@@ -332,6 +364,7 @@ async function main() {
   console.log("Date:", targetDate);
   console.log("Games checked:", results.checkedGames);
   console.log("Games skipped:", results.skippedGames);
+  console.log("Games terminal without play:", results.terminalNonPlayedGames);
   console.log("Home Runs:", results.homeRuns.length);
   console.log("Tracked Airborne Events:", results.playerEvents.length);
   console.log("Saved:", outputFile);

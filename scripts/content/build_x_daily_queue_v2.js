@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { completedResultSlate, playableScheduledGames } from "../mlb/result_slate_status.js";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
@@ -55,14 +56,12 @@ function requireFinalizedResults(label, data, expectedDate) {
   const result = requireFresh(label, data, "updatedAt", "date", expectedDate);
   const scheduled = Number(data?.totalScheduledGames || 0);
   const finalGames = Number(data?.finalGames || 0);
-  const liveGames = Number(data?.liveGames || 0);
-  const skippedGames = Number(data?.skippedGames || 0);
 
-  if (!scheduled || finalGames !== scheduled || liveGames !== 0 || skippedGames !== 0) {
+  if (!completedResultSlate(data)) {
     throw new Error(`X queue overnight validation failed: ${label} is not a fully finalized slate`);
   }
 
-  return { ...result, scheduledGames: scheduled, finalGames };
+  return { ...result, scheduledGames: playableScheduledGames(data), totalScheduledGames: scheduled, finalGames };
 }
 
 function requirePregameHistory(label, data) {

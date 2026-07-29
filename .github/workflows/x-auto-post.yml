@@ -10,6 +10,8 @@ on:
     # 1:30 a.m. Eastern: EDT and EST windows. Queue logic posts only in the 1 a.m. ET hour.
     - cron: "30 5 * * *"
     - cron: "30 6 * * *"
+    # 5:30/6:30 a.m. Eastern retry. Duplicate protection prevents a second post.
+    - cron: "30 10 * * *"
   workflow_dispatch:
     inputs:
       slot:
@@ -69,6 +71,7 @@ jobs:
               "5 19 * * *") SLOT="afternoon" ;;
               "5 22 * * *") SLOT="pregame" ;;
               "30 2 * * *") SLOT="evening" ;;
+              "30 10 * * *") SLOT="overnight" ;;
               "30 5 * * *"|"30 6 * * *")
                 EASTERN_OFFSET=$(node -e "const name=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',timeZoneName:'shortOffset'}).formatToParts(new Date()).find(p=>p.type==='timeZoneName')?.value||'';console.log(name);")
 
@@ -105,7 +108,10 @@ jobs:
 
       - name: Build verified model report
         if: env.X_SLOT_OVERRIDE == 'overnight'
-        run: node scripts/mlb/build_hr_calibration_report.js
+        run: |
+          REPORT_DATE=$(node -e "const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());const date=new Date(parts+'T12:00:00Z');date.setUTCDate(date.getUTCDate()-1);console.log(date.toISOString().slice(0,10));")
+          node scripts/mlb/build_hr_results.js --date="$REPORT_DATE" --out=website/data/mlb_results_previous.json
+          node scripts/mlb/build_hr_calibration_report.js
 
       - name: Build current X stories
         run: node scripts/build_x_content.js
@@ -124,7 +130,7 @@ jobs:
         run: |
           git config --global user.name "TheSlipLabBot"
           git config --global user.email "bot@thesliplab.com"
-          git add website/data/content/x_daily_queue.json website/data/content/x_post_history.json website/data/hr_calibration_report.json exports/content/x_daily_queue.json exports/content/x_daily_queue.txt || true
+          git add website/data/mlb_results_previous.json website/data/content/x_daily_queue.json website/data/content/x_post_history.json website/data/hr_calibration_report.json exports/content/x_daily_queue.json exports/content/x_daily_queue.txt || true
           git diff --cached --quiet || git commit -m "Automated X posting update"
 
       - name: Push updates

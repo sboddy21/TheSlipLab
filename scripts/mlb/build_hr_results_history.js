@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { completedResultSlate, terminalNonPlayedCount } from "./result_slate_status.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -133,11 +134,8 @@ function cleanEventRows(rows) {
 
 function completionStatus(payload) {
   const scheduled = Number(payload?.totalScheduledGames || 0);
-  const finalGames = Number(payload?.finalGames || 0);
-  const liveGames = Number(payload?.liveGames || 0);
-  const skippedGames = Number(payload?.skippedGames || 0);
   if (scheduled === 0) return "no_games_scheduled";
-  if (finalGames === scheduled && liveGames === 0 && skippedGames === 0) return "final";
+  if (completedResultSlate(payload)) return "final";
   return "in_progress";
 }
 
@@ -157,6 +155,10 @@ function upsertDay(days, payload) {
     skippedGames: Number(payload?.skippedGames || 0),
     finalGames: Number(payload?.finalGames || 0),
     liveGames: Number(payload?.liveGames || 0),
+    terminalNonPlayedGames: terminalNonPlayedCount(payload),
+    terminalNonPlayed: Array.isArray(payload?.terminalNonPlayed) ? payload.terminalNonPlayed : [],
+    rescheduledGameCount: Number(payload?.rescheduledGameCount || 0),
+    rescheduledGames: Array.isArray(payload?.rescheduledGames) ? payload.rescheduledGames : [],
     homeRuns,
     playerEvents,
     total: homeRuns.reduce((sum, r) => sum + Number(r.hr || 0), 0)
