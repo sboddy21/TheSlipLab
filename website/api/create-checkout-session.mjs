@@ -104,7 +104,6 @@ async function createStripeCheckoutSession({ user, request, returnTo, plan }) {
     "subscription_data[metadata][user_id]": user.id,
     "subscription_data[metadata][plan]": plan,
     expires_at: String(Math.floor(Date.now() / 1000) + 60 * 60),
-    "consent_collection[promotions]": "auto",
     "after_expiration[recovery][enabled]": "true"
   });
 

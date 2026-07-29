@@ -153,6 +153,27 @@ async function handleSubscriptionEvent(subscription) {
   await upsertSubscription(await rowFromSubscription(subscription));
 }
 
+async function checkoutUserEmail(session) {
+  const directEmail = session.customer_details?.email || session.customer_email;
+  if (directEmail) return directEmail;
+
+  const userId = session.metadata?.user_id || session.client_reference_id;
+  if (!userId) return "";
+  const { url, serviceKey } = supabaseConfig();
+  if (!url || !serviceKey) return "";
+
+  const userResponse = await fetch(`${url.replace(/\/+$/, "")}/auth/v1/admin/users/${encodeURIComponent(userId)}`, {
+    headers: {
+      apikey: serviceKey,
+      authorization: `Bearer ${serviceKey}`,
+      Accept: "application/json"
+    }
+  });
+  if (!userResponse.ok) return "";
+  const user = await userResponse.json();
+  return user?.email || "";
+}
+
 function recoveryEmail(recoveryUrl) {
   return `<!doctype html>
   <html>
@@ -177,10 +198,9 @@ function recoveryEmail(recoveryUrl) {
 
 async function sendRecoveryEmail(session) {
   const apiKey = firstAvailable(["RESEND_API_KEY"]);
-  const email = session.customer_details?.email;
+  const email = await checkoutUserEmail(session);
   const recoveryUrl = session.after_expiration?.recovery?.url;
-  const optedIn = session.consent?.promotions === "opt_in";
-  if (!apiKey || !email || !recoveryUrl || !optedIn) return;
+  if (!apiKey || !email || !recoveryUrl) return;
 
   const resendResponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
