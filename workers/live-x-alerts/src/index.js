@@ -403,8 +403,7 @@ async function fetchAiBoard(env) {
   const url = new URL(env.AI_SAYS_URL || "https://www.thesliplab.com/data/ai_2.json");
   url.searchParams.set("_live_x_scan", String(Date.now()));
   return getJson(url.toString(), {
-    cache: "no-store",
-    cf: { cacheTtl: 0, cacheEverything: false }
+    cache: "no-store"
   });
 }
 
