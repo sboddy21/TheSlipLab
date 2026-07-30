@@ -88,6 +88,7 @@ const previousResults = readJson(path.join(DATA, "mlb_results_previous.json"));
 const calibration = readJson(path.join(DATA, "hr_calibration_report.json"), {});
 const resultsHistory = readJson(path.join(DATA, "hr_results_history.json"), { days: [] });
 const aiHistory = readJson(path.join(DATA, "hr_ai_history.json"), { history: {} });
+const ai2 = readJson(path.join(DATA, "ai_2.json"), { sections: [] });
 const history = readJson(HISTORY_FILE, { posts: [] });
 
 const allPlayers = uniquePlayers(decision.allPlayers)
@@ -134,6 +135,131 @@ function verifiedHit(result) {
       : null;
 
   return tier ? { result, snapshot, tier } : null;
+}
+
+const AI_SECTION_PRIORITY = [
+  "TOP 5",
+  "TOP 10",
+  "TOP 30",
+  "ELITE SMASH",
+  "SMASH SPOT",
+  "SMASH + PARK",
+  "HOMER AI",
+  "LIVE LONGSHOTS"
+];
+const ELIGIBLE_AI_SECTIONS = new Set(AI_SECTION_PRIORITY);
+const EVENT_POST_TYPES = new Set(["called_it_home_run", "model_receipt", "slip_lab_hit_home_run", "live_longshot_hit"]);
+
+function sectionPriority(section) {
+  const index = AI_SECTION_PRIORITY.indexOf(section);
+  return index === -1 ? AI_SECTION_PRIORITY.length : index;
+}
+
+function safeId(value) {
+  return clean(value)
+    .replace(/[^A-Za-z0-9_-]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function playerKey(row) {
+  return String(row?.playerId || row?.mlbId || row?.id || "");
+}
+
+function aiSectionsForResult(result) {
+  const resultId = String(result?.playerId || "");
+  const resultName = norm(result?.player || result?.batter);
+  const matches = [];
+
+  for (const section of arr(ai2.sections)) {
+    const sectionName = clean(section?.title || section?.name || section?.category).toUpperCase();
+    if (!ELIGIBLE_AI_SECTIONS.has(sectionName)) continue;
+
+    const players = arr(section?.players || section?.items);
+    players.forEach((player, index) => {
+      const id = playerKey(player);
+      const name = norm(player?.name || player?.player || player?.batter);
+      if ((resultId && id && resultId === id) || (resultName && name && resultName === name)) {
+        matches.push({
+          section: sectionName,
+          rank: index + 1,
+          confidence: num(player?.confidence ?? player?.aiScore ?? player?.score, 0),
+          aiScore: num(player?.aiScore ?? player?.score ?? player?.hrScore, 0)
+        });
+      }
+    });
+  }
+
+  const seen = new Set();
+  return matches
+    .filter(item => {
+      const key = `${item.section}:${item.rank}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => sectionPriority(a.section) - sectionPriority(b.section) || num(a.rank, 999) - num(b.rank, 999));
+}
+
+function decisionCenterRankForResult(result) {
+  const resultId = String(result?.playerId || "");
+  const resultName = norm(result?.player || result?.batter);
+  const ranked = allPlayers
+    .map((row, index) => ({ row, rank: index + 1 }))
+    .find(({ row }) => {
+      const id = String(row?.playerId || row?.mlbId || "");
+      const name = norm(row?.player || row?.name);
+      return (resultId && id && resultId === id) || (resultName && name && resultName === name);
+    });
+
+  if (!ranked || ranked.rank > 30) return null;
+  return {
+    section: "TOP 30",
+    rank: ranked.rank,
+    confidence: num(ranked.row?.hrConfidence, 0),
+    aiScore: num(ranked.row?.hrConfidence, 0) / 100,
+    row: ranked.row
+  };
+}
+
+function eventIdForHomeRun(result, type = "called_it_home_run") {
+  const date = clean(result?.date) || TODAY;
+  const game = clean(result?.gamePk) || "game";
+  const player = clean(result?.playerId) || norm(result?.player || result?.batter) || "player";
+  const play = clean(result?.playId ?? result?.endTime ?? result?.description) || "play";
+  return safeId(`${type}_${date}_${game}_${player}_${play}`);
+}
+
+function qualifiedHomeRun(result) {
+  const snapshotHit = verifiedHit(result);
+  const aiMemberships = aiSectionsForResult(result);
+  const decisionRank = decisionCenterRankForResult(result);
+  const memberships = aiMemberships.length
+    ? aiMemberships
+    : decisionRank
+      ? [decisionRank]
+      : [];
+
+  if (!snapshotHit && !memberships.length) return null;
+
+  const primary = memberships[0] || {
+    section: snapshotHit.tier === "core" ? "TOP 30" : "HOMER AI",
+    rank: num(snapshotHit.snapshot?.rank, 999),
+    confidence: num(snapshotHit.snapshot?.confidence, 0),
+    aiScore: num(snapshotHit.snapshot?.confidence, 0) / 100
+  };
+
+  return {
+    result,
+    snapshot: snapshotHit?.snapshot || null,
+    tier: snapshotHit?.tier || "board",
+    primary,
+    memberships,
+    qualifiedBy: [
+      snapshotHit ? "verified_pregame_archive" : "",
+      memberships.length ? "ai_says_current_board" : "",
+      decisionRank ? "decision_center_top_30" : ""
+    ].filter(Boolean)
+  };
 }
 
 function allGamesFinal(payload) {
@@ -185,7 +311,7 @@ function add(slot, type, weight, text, players = [], meta = {}) {
   const body = text.trim();
   if (body.length < 60) return;
   candidates.push({
-    id: `${TODAY}_${slot.toUpperCase()}_${type.toUpperCase()}`,
+    id: meta.id || `${TODAY}_${slot.toUpperCase()}_${type.toUpperCase()}`,
     date: TODAY,
     createdAt: NOW,
     slot,
@@ -195,6 +321,7 @@ function add(slot, type, weight, text, players = [], meta = {}) {
     post: body,
     players: players.map(clean).filter(Boolean),
     fingerprint: fingerprint(body),
+    eventPost: meta.eventPost === true || EVENT_POST_TYPES.has(type),
     ...meta
   });
 }
@@ -295,26 +422,68 @@ Weather can amplify a good power matchup. It cannot rescue a bad one. Which park
 }
 
 if (homeRuns.length) {
-  const documentedHits = homeRuns.map(verifiedHit).filter(Boolean)
-    .sort((a, b) => num(a.snapshot.rank, 9999) - num(b.snapshot.rank, 9999));
+  const documentedHits = homeRuns.map(qualifiedHomeRun).filter(Boolean)
+    .sort((a, b) => {
+      const sectionDiff = sectionPriority(a.primary.section) - sectionPriority(b.primary.section);
+      if (sectionDiff) return sectionDiff;
+      return num(a.primary.rank, 9999) - num(b.primary.rank, 9999);
+    });
 
-  if (documentedHits.length) {
-    const { result: row, snapshot } = documentedHits[0];
-    const evidence = [
-      `${clean(snapshot.grade)} pregame grade / rank #${num(snapshot.rank)}`,
-      num(snapshot.confidence) > 0 ? `${one(snapshot.confidence)} pregame HR confidence` : "",
-      snapshot.bestPitch ? `${clean(snapshot.bestPitch)} matchup` : "",
-      row.distance ? `${Math.round(num(row.distance))} feet` : "",
-      row.exitVelocity ? `${one(row.exitVelocity)} mph EV` : ""
-    ].filter(Boolean);
-    add("evening", "model_receipt", 100,
-`Model receipt from tonight: ${clean(row.player || row.batter)} went deep.
+  for (const [index, hit] of documentedHits.entries()) {
+    const { result: row, snapshot, primary, memberships, qualifiedBy } = hit;
+    const player = clean(row.player || row.batter);
+    const tagLine = memberships.length
+      ? memberships.slice(0, 3).map(item => `${item.section} #${item.rank}`).join(" · ")
+      : `${clean(snapshot?.grade)} archive rank #${num(snapshot?.rank)}`;
+    const stats = [
+      row.distance ? `${Math.round(num(row.distance))} ft` : "",
+      row.exitVelocity ? `${one(row.exitVelocity)} mph EV` : "",
+      row.launchAngle ? `${Math.round(num(row.launchAngle))}° LA` : ""
+    ].filter(Boolean).join(" · ");
+    const game = clean(row.game) || [clean(row.team), clean(row.opponent)].filter(Boolean).join(" vs ");
+    const inning = clean(row.inning);
+    const offPitcher = clean(row.pitcher) ? `Off ${clean(row.pitcher)}` : "";
+    const headline = primary.section === "LIVE LONGSHOTS"
+      ? "🚨 SLIP LAB LONGSHOT HIT"
+      : ["TOP 5", "TOP 10"].includes(primary.section)
+        ? `🚨 ${primary.section} HR HIT`
+        : "🚨 SLIP LAB CALLED IT";
 
-${evidence.map(item => `• ${item}`).join("\n")}
+    add("live", "called_it_home_run", 130 - index,
+`${headline}
 
-The archived model snapshot had ${clean(row.player || row.batter)} graded ${clean(snapshot.grade)} before first pitch.
+${player} just left the yard.
 
-I would rather show the receipts honestly than pretend every homer was predicted.`, [row.player || row.batter]);
+AI Says: ${tagLine}
+${game}
+${inning}
+${stats}
+${offPitcher}
+
+Board: ${SITE_URL}/ai-says.html`, [player], {
+      id: eventIdForHomeRun(row, "called_it_home_run"),
+      eventPost: true,
+      event: {
+        gamePk: row.gamePk ?? null,
+        playId: row.playId ?? null,
+        playerId: row.playerId ?? null,
+        player,
+        team: row.team || null,
+        opponent: row.opponent || null,
+        inning: row.inning || null,
+        distance: row.distance ?? null,
+        exitVelocity: row.exitVelocity ?? null,
+        launchAngle: row.launchAngle ?? null
+      },
+      ai: {
+        primarySection: primary.section,
+        primaryRank: primary.rank,
+        sections: memberships,
+        archiveGrade: snapshot?.grade || null,
+        archiveRank: snapshot?.rank || null,
+        qualifiedBy
+      }
+    });
   }
 }
 
@@ -416,9 +585,20 @@ Which tells you more about a hitter going forward: peak exit velocity, distance,
   }
 }
 
-const selected = [];
+const selectedEventPosts = candidates
+  .filter(candidate => candidate.eventPost === true || EVENT_POST_TYPES.has(candidate.type))
+  .sort((a, b) => b.weight - a.weight)
+  .map(candidate => ({
+    ...candidate,
+    contentSelection: "event_receipt",
+    recentSimilarity: 0
+  }));
+
+const selected = [...selectedEventPosts];
 for (const slot of ["morning", "midday", "afternoon", "pregame", "evening", "overnight"]) {
-  const choices = candidates.filter(candidate => candidate.slot === slot).sort((a, b) => b.weight - a.weight);
+  const choices = candidates
+    .filter(candidate => candidate.slot === slot && candidate.eventPost !== true && !EVENT_POST_TYPES.has(candidate.type))
+    .sort((a, b) => b.weight - a.weight);
   const scored = choices.map(candidate => ({
     candidate,
     similarity: recentPosts.reduce((highest, post) => Math.max(highest, similarity(candidate.text, post.text || "")), 0)
@@ -453,9 +633,11 @@ const output = {
     "Every metric comes from a current production JSON input",
     "Results are not described as predictions without pregame evidence",
     "Recent post history prefers fresh language and falls back to the least-repetitive current live story",
-    "Website links appear selectively rather than in every post"
+    "Website links appear selectively rather than in every post",
+    "Qualified home-run receipts are event posts and are not reduced to one per daypart"
   ],
   posts: selected,
+  live: selected.filter(post => post.slot === "live"),
   morning: selected.filter(post => post.slot === "morning"),
   midday: selected.filter(post => post.slot === "midday"),
   afternoon: selected.filter(post => post.slot === "afternoon"),
