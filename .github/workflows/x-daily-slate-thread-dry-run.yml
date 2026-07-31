@@ -49,7 +49,11 @@ jobs:
         if: env.RUN_DAILY_SLATE_THREAD == 'true'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: node scripts/run_fast_refresh.js
+        run: npm run mlb:refresh
+
+      - name: Validate current MLB inputs
+        if: env.RUN_DAILY_SLATE_THREAD == 'true'
+        run: npm run mlb:validate
 
       - name: Build current game context
         if: env.RUN_DAILY_SLATE_THREAD == 'true'

@@ -96,7 +96,11 @@ jobs:
         if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: node scripts/run_fast_refresh.js
+        run: npm run mlb:refresh
+
+      - name: Validate current MLB inputs
+        if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'
+        run: npm run mlb:validate
 
       - name: Build current game context
         if: env.X_SLOT_OVERRIDE != 'overnight' && env.X_SLOT_OVERRIDE != 'closed'

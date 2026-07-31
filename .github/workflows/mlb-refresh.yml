@@ -3,7 +3,7 @@ name: The Slip Lab MLB Refresh
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
@@ -37,10 +37,10 @@ jobs:
         timeout-minutes: 18
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: node scripts/run_fast_refresh.js
+        run: npm run mlb:refresh
 
       - name: Validate MLB data
-        run: node scripts/mlb/validate_mlb_refresh.mjs
+        run: npm run mlb:validate
 
       - name: Commit refreshed MLB data
         if: success()
