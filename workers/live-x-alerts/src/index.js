@@ -36,6 +36,7 @@ const DEFAULT_LIVE_AI_UPDATE_SECTIONS = [
   "TOP 30"
 ];
 const LIVE_GAME_STATES = new Set(["Live"]);
+const RECENT_FINAL_GAME_WINDOW_MS = 6 * 60 * 60 * 1000;
 const HARD_HIT_MPH = 95;
 const PREMIUM_HARD_HIT_MPH = 100;
 
@@ -113,6 +114,7 @@ async function runWatcher(env, meta = {}) {
     failedEvents: 0,
     duplicateStatusCounts: {},
     duplicateSamples: [],
+    gameErrors: [],
     errors: []
   };
 
@@ -149,11 +151,25 @@ async function checkOnce(env, aiIndexes) {
     skippedEvents: 0,
     failedEvents: 0,
     duplicateStatusCounts: {},
-    duplicateSamples: []
+    duplicateSamples: [],
+    gameErrors: []
   };
 
   for (const game of games) {
-    const feed = await getJson(`${MLB_LIVE_FEED_BASE}/${game.gamePk}/feed/live`);
+    let feed;
+    try {
+      feed = await getJson(`${MLB_LIVE_FEED_BASE}/${game.gamePk}/feed/live`);
+    } catch (error) {
+      result.failedEvents += 1;
+      if (result.gameErrors.length < 8) {
+        result.gameErrors.push({
+          gamePk: game.gamePk,
+          game: scheduleGameLabel(game),
+          error: error.message
+        });
+      }
+      continue;
+    }
     const events = homeRunEvents({ date, game, feed, maxAgeSeconds: maxEventAgeSeconds(env) });
     result.homeRunsScanned += events.length;
 
@@ -356,9 +372,13 @@ function json(payload, status = 200) {
   });
 }
 
-async function getJson(url) {
+async function getJson(url, init = {}) {
   const response = await fetch(url, {
-    headers: { "accept": "application/json" }
+    ...init,
+    headers: {
+      "accept": "application/json",
+      ...(init.headers || {})
+    }
   });
   if (!response.ok) throw new Error(`Request failed ${response.status}: ${url}`);
   return response.json();
@@ -376,11 +396,32 @@ function easternDate() {
 async function fetchActiveGames(date) {
   const schedule = await getJson(`${MLB_SCHEDULE_URL}&date=${date}`);
   return (schedule?.dates?.[0]?.games || [])
-    .filter(game => LIVE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
+    .filter(game => gameIsScannable(game));
 }
 
 async function fetchAiBoard(env) {
-  return getJson(env.AI_SAYS_URL || "https://www.thesliplab.com/data/ai_2.json");
+  const url = new URL(env.AI_SAYS_URL || "https://www.thesliplab.com/data/ai_2.json");
+  url.searchParams.set("_live_x_scan", String(Date.now()));
+  return getJson(url.toString(), {
+    cache: "no-store"
+  });
+}
+
+function gameIsScannable(game, now = Date.now()) {
+  const state = String(game?.status?.abstractGameState || "");
+  if (LIVE_GAME_STATES.has(state)) return true;
+  if (state !== "Final") return false;
+
+  const gameStart = Date.parse(game?.gameDate || "");
+  return Number.isFinite(gameStart)
+    && now >= gameStart
+    && now - gameStart <= RECENT_FINAL_GAME_WINDOW_MS;
+}
+
+function scheduleGameLabel(game) {
+  const away = game?.teams?.away?.team?.name || "";
+  const home = game?.teams?.home?.team?.name || "";
+  return away && home ? `${away} @ ${home}` : "";
 }
 
 function normalizeName(value) {
@@ -892,6 +933,7 @@ function mergeSummary(target, result) {
     target.duplicateStatusCounts[status] = (target.duplicateStatusCounts[status] || 0) + count;
   }
   target.duplicateSamples.push(...(result.duplicateSamples || []).slice(0, 8 - target.duplicateSamples.length));
+  target.gameErrors.push(...(result.gameErrors || []).slice(0, 8 - target.gameErrors.length));
 }
 
 function incrementDuplicateStatus(result, row) {
@@ -906,3 +948,10 @@ function incrementDuplicateStatus(result, row) {
     });
   }
 }
+
+export const __test = {
+  buildAiIndex,
+  gameIsScannable,
+  homeRunEvents,
+  matchAi
+};
