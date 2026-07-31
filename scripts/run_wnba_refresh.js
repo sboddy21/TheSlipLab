@@ -1,14 +1,18 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
 
-const outputFile = "website/data/wnba_games_today.json";
+const steps = ["scripts/wnba/fetch_wnba_today.js", "scripts/wnba/build_wnba_baselines.js"];
+const outputFiles = ["website/data/wnba_games_today.json", "website/data/wnba_player_baselines.json", "website/data/wnba_team_baselines.json"];
 const startedAt = Date.now();
-const result = spawnSync(process.execPath, ["scripts/wnba/fetch_wnba_today.js"], { stdio: "inherit", env: process.env });
-if (result.status !== 0) process.exit(result.status || 1);
-if (!fs.existsSync(outputFile)) throw new Error(`Missing WNBA output: ${outputFile}`);
-const data = JSON.parse(fs.readFileSync(outputFile, "utf8"));
-const fetchedAt = Date.parse(data.fetchedAt || "");
-if (data.sport !== "WNBA") throw new Error("WNBA output has an invalid sport marker");
-if (!Array.isArray(data.games)) throw new Error("WNBA output is missing its games array");
-if (!Number.isFinite(fetchedAt) || fetchedAt < startedAt - 2000) throw new Error("WNBA output was not refreshed during this run");
-console.log("WNBA REFRESH VALIDATION PASSED");
+for (const step of steps) {
+  const result = spawnSync(process.execPath, [step], { stdio: "inherit", env: process.env });
+  if (result.status !== 0) process.exit(result.status || 1);
+}
+for (const outputFile of outputFiles) {
+  if (!fs.existsSync(outputFile)) throw new Error(`Missing WNBA output: ${outputFile}`);
+  const data = JSON.parse(fs.readFileSync(outputFile, "utf8"));
+  const timestamp = Date.parse(data.fetchedAt || data.generatedAt || "");
+  if (data.sport !== "WNBA") throw new Error(`${outputFile} has an invalid sport marker`);
+  if (!Number.isFinite(timestamp) || timestamp < startedAt - 2000) throw new Error(`${outputFile} was not refreshed during this run`);
+}
+console.log(`WNBA REFRESH VALIDATION PASSED: ${outputFiles.length} outputs`);
