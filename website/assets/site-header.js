@@ -18,6 +18,7 @@
   const items = [
     ["Sign In","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]],
     ["Lab Notes","./blog.html",["/blog.html","/blog-hr-shortlist.html","/blog-pitcher-vulnerability.html","/blog-signal-stack.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
@@ -191,10 +192,25 @@
     return header;
   }
 
+  function buildLegalNotice(){
+    const notice = document.createElement("aside");
+    notice.className = "tsl-legal-notice";
+    notice.setAttribute("aria-label", "Important informational-use notice");
+    notice.innerHTML = `
+      <div class="tsl-legal-notice-inner">
+        <strong>Informational use only.</strong>
+        <span>The Slip Lab is a sports analytics and educational platform—not a sportsbook or gambling operator. We do not accept or place wagers, and no model output guarantees an outcome.</span>
+        <a href="./disclaimer.html">Read full disclaimer</a>
+      </div>`;
+    return notice;
+  }
+
   function init(){
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
-    document.body.insertBefore(buildHeader(), document.body.firstChild);
+    const header = buildHeader();
+    document.body.insertBefore(header, document.body.firstChild);
+    header.insertAdjacentElement("afterend", buildLegalNotice());
     if (!document.querySelector('script[data-tsl-account-client]')) {
       const accountScript = document.createElement("script");
       accountScript.type = "module";
