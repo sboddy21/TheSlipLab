@@ -2,6 +2,8 @@ name: The Slip Lab WNBA Refresh
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 10,18 * 5-10 *"
 
 permissions:
   contents: write
@@ -30,7 +32,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add website/data/wnba_games_today.json website/data/wnba_player_baselines.json website/data/wnba_team_baselines.json
+          git add website/data/wnba_games_today.json website/data/wnba_player_baselines.json website/data/wnba_team_baselines.json website/data/wnba_projection_board.json website/data/wnba_projection_history.json website/data/wnba_calibration.json
           git commit -m "Refresh WNBA data" || echo "No changes to commit"
           git pull origin "$GITHUB_REF_NAME" --rebase
           git push origin "HEAD:$GITHUB_REF_NAME"

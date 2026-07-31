@@ -70,12 +70,23 @@ function recentAverage(gameLog, count = 5) {
   const regular = gameLog?.seasonTypes?.find(item => String(item.displayName || "").includes("Regular Season"));
   const rows = regular?.categories?.flatMap(category => category.events || []) || [];
   const names = Array.isArray(gameLog?.names) ? gameLog.names : [];
-  const recent = rows.slice(0, count).map(row => Object.fromEntries(names.map((name, index) => [name, row.stats?.[index] ?? ""])));
+  const recentRows = rows.slice(0, Math.max(count, 10));
+  const recent = recentRows.slice(0, count).map(row => Object.fromEntries(names.map((name, index) => [name, row.stats?.[index] ?? ""])));
   if (!recent.length) return null;
   const average = key => Number((recent.reduce((sum, row) => sum + number(row[key]), 0) / recent.length).toFixed(1));
+  const games = recentRows.map(row => {
+    const mapped = Object.fromEntries(names.map((name, index) => [name, row.stats?.[index] ?? ""]));
+    const event = gameLog.events?.[row.eventId] || {};
+    const threes = splitMadeAttempted(mapped["threePointFieldGoalsMade-threePointFieldGoalsAttempted"]);
+    return {
+      eventId: String(row.eventId || ""), date: event.gameDate || "", opponent: event.opponent?.abbreviation || "",
+      result: event.gameResult || "", minutes: number(mapped.minutes), points: number(mapped.points),
+      rebounds: number(mapped.totalRebounds), assists: number(mapped.assists), threes: threes.made
+    };
+  });
   return {
     games: recent.length, minutes: average("minutes"), points: average("points"), rebounds: average("totalRebounds"),
-    assists: average("assists"), steals: average("steals"), blocks: average("blocks"), turnovers: average("turnovers")
+    assists: average("assists"), steals: average("steals"), blocks: average("blocks"), turnovers: average("turnovers"), gameLog: games
   };
 }
 
