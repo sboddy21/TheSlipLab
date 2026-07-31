@@ -1,0 +1,36 @@
+name: The Slip Lab WNBA Refresh
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-data-writers
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Refresh WNBA foundation data
+        run: node scripts/run_wnba_refresh.js
+      - name: Commit refreshed WNBA data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add website/data/wnba_games_today.json
+          git commit -m "Refresh WNBA data" || echo "No changes to commit"
+          git pull origin "$GITHUB_REF_NAME" --rebase
+          git push origin "HEAD:$GITHUB_REF_NAME"

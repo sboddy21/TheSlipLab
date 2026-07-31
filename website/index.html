@@ -214,14 +214,20 @@
         repeating-linear-gradient(90deg,rgba(255,211,143,.05) 0 20px,rgba(22,5,2,.08) 20px 22px),
         linear-gradient(150deg,#5d1c12,#aa3d16 62%,#64200f);
     }
+    .sport-card.wnba{
+      grid-column:span 3;--sport-accent:#8fffe3;--sport-glow:rgba(190,92,255,.4);
+      background:
+        radial-gradient(circle at 86% 22%,rgba(255,255,255,.16),transparent 24%),
+        linear-gradient(150deg,#241231,#69328a 62%,#3e1b58);
+    }
     .sport-card.nfl{
-      grid-column:span 3;--sport-accent:#c6ff65;--sport-glow:rgba(56,178,90,.42);
+      grid-column:span 6;--sport-accent:#c6ff65;--sport-glow:rgba(56,178,90,.42);
       background:
         repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 11px,rgba(0,0,0,.025) 11px 22px),
         linear-gradient(150deg,#0b3327,#12633d 64%,#0a3427);
     }
     .sport-card.nhl{
-      grid-column:span 12;min-height:235px;--sport-accent:#d51e3c;--sport-glow:rgba(48,170,222,.32);
+      grid-column:span 6;min-height:310px;--sport-accent:#d51e3c;--sport-glow:rgba(48,170,222,.32);
       color:#071d36;border-color:rgba(7,29,54,.26);
       background:
         linear-gradient(90deg,transparent 0 17%,rgba(213,30,60,.28) 17% 17.5%,transparent 17.5% 49.6%,rgba(8,103,242,.34) 49.6% 50.4%,transparent 50.4% 82.5%,rgba(213,30,60,.28) 82.5% 83%,transparent 83%),
@@ -236,6 +242,9 @@
     .nba .field-mark{position:absolute;right:-30px;top:84px;width:170px;height:170px;border:3px solid rgba(255,239,211,.25);border-radius:50%;z-index:-1;box-shadow:0 0 0 44px rgba(255,239,211,.025)}
     .nba .field-mark::before{content:"";position:absolute;left:-105px;top:50%;width:275px;height:1px;background:rgba(255,239,211,.24)}
     .nba .field-mark::after{content:"";position:absolute;left:50%;top:-90px;width:1px;height:350px;background:rgba(255,239,211,.22)}
+    .wnba .field-mark{position:absolute;right:-25px;top:78px;width:165px;height:165px;border:3px solid rgba(255,255,255,.2);border-radius:50%;z-index:-1;box-shadow:0 0 0 38px rgba(255,255,255,.025)}
+    .wnba .field-mark::before{content:"";position:absolute;left:-92px;top:50%;width:255px;height:1px;background:rgba(143,255,227,.28)}
+    .wnba .field-mark::after{content:"";position:absolute;left:50%;top:-85px;width:1px;height:330px;background:rgba(143,255,227,.24)}
     .nfl .field-mark{position:absolute;inset:62px -5px auto;height:170px;background:repeating-linear-gradient(90deg,transparent 0 43px,rgba(255,255,255,.18) 43px 45px);border-top:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16);z-index:-1}
     .nfl .field-mark::after{content:"10   20   30   40   50";position:absolute;left:5px;right:5px;top:50%;color:rgba(255,255,255,.13);font-size:22px;font-weight:900;word-spacing:16px;transform:translateY(-50%)}
     .nhl .field-mark{position:absolute;right:6%;top:50%;width:210px;height:138px;border:2px solid rgba(7,29,54,.2);border-radius:70px;transform:translateY(-50%);z-index:-1}
@@ -265,6 +274,7 @@
     }
     .mlb .sport-name::after{content:"Diamond intelligence"}
     .nba .sport-name::after{content:"Court intelligence"}
+    .wnba .sport-name::after{content:"Women’s court intelligence"}
     .nfl .sport-name::after{content:"Gridiron intelligence"}
     .nhl .sport-name::after{content:"Ice intelligence"}
     .sport-card:not(.mlb) .sport-name{font-size:47px}
@@ -332,8 +342,8 @@
     @media(max-width:1080px){
       .hero{grid-template-columns:1fr;gap:34px;min-height:auto}
       .hero-aside{max-width:720px}
-      .sport-card.mlb{grid-column:span 8}
-      .sport-card.nba{grid-column:span 4}
+      .sport-card.mlb{grid-column:span 12}
+      .sport-card.nba,.sport-card.wnba{grid-column:span 6}
       .sport-card.nfl,.sport-card.nhl{grid-column:span 6}
     }
     @media(max-width:760px){
@@ -348,7 +358,7 @@
       .league-section{padding:42px 0 52px}
       .section-head{align-items:flex-start;flex-direction:column;gap:8px}
       .sports-grid{grid-template-columns:1fr}
-      .sport-card.mlb,.sport-card.nba,.sport-card.nfl,.sport-card.nhl{grid-column:auto;min-height:285px}
+      .sport-card.mlb,.sport-card.nba,.sport-card.wnba,.sport-card.nfl,.sport-card.nhl{grid-column:auto;min-height:285px}
       .mlb .field-mark{right:-25px;opacity:.55}
       .bottom-note{flex-direction:column;gap:10px}
     }
@@ -399,7 +409,7 @@
           <div class="section-kicker">League access</div>
           <h2 id="leagueTitle">Choose your field.</h2>
         </div>
-        <span class="active-count">01 live lab · 03 countdowns</span>
+        <span class="active-count">02 live labs · 03 countdowns</span>
       </div>
 
       <div class="sports-grid">
@@ -418,10 +428,22 @@
           <div class="card-action"><span id="mlbSlate">Enter MLB Lab</span><span class="arrow" aria-hidden="true">→</span></div>
         </a>
 
+        <a class="sport-card sport-link wnba" href="./wnba.html" aria-label="Enter The Slip Lab WNBA intelligence beta">
+          <span class="field-mark" aria-hidden="true"></span>
+          <span class="sport-cue" aria-hidden="true">24</span>
+          <div class="card-top"><span class="sport-number">02 / Court</span><span class="status"><i></i> Beta live</span></div>
+          <h3 class="sport-name">WNBA</h3>
+          <p class="sport-description">Daily schedule, live scores, records, venue, broadcast, and team-leader context while the independent model collects its sample.</p>
+          <ul class="sport-features" aria-label="WNBA beta features">
+            <li>Slate</li><li>Scores</li><li>Records</li><li>Roadmap</li>
+          </ul>
+          <div class="card-action"><span>Enter WNBA Beta</span><span class="arrow" aria-hidden="true">→</span></div>
+        </a>
+
         <article class="sport-card nba disabled" aria-disabled="true">
           <span class="field-mark" aria-hidden="true"></span>
           <span class="sport-cue" aria-hidden="true">24</span>
-          <div class="card-top"><span class="sport-number">02 / Court</span><span class="status"><i></i> Offseason</span></div>
+          <div class="card-top"><span class="sport-number">03 / Court</span><span class="status"><i></i> Offseason</span></div>
           <h3 class="sport-name">NBA</h3>
           <p class="sport-description">Player props, usage, pace, defense, and matchup intelligence.</p>
           <div class="countdown" data-countdown-target="2026-10-20T19:00:00-04:00" aria-label="Countdown to NBA target opening night">
@@ -435,7 +457,7 @@
         <article class="sport-card nfl disabled" aria-disabled="true">
           <span class="field-mark" aria-hidden="true"></span>
           <span class="sport-cue" aria-hidden="true">4TH</span>
-          <div class="card-top"><span class="sport-number">03 / Gridiron</span><span class="status"><i></i> Building soon</span></div>
+          <div class="card-top"><span class="sport-number">04 / Gridiron</span><span class="status"><i></i> Building soon</span></div>
           <h3 class="sport-name">NFL</h3>
           <p class="sport-description">Market plan, training-camp inputs, usage runway, and Week 1 build sequence are being staged quietly.</p>
           <ul class="sport-features" aria-label="NFL planned features">
@@ -452,7 +474,7 @@
         <article class="sport-card nhl disabled" aria-disabled="true">
           <span class="field-mark" aria-hidden="true"></span>
           <span class="sport-cue" aria-hidden="true">3 P</span>
-          <div class="card-top"><span class="sport-number">04 / Ice</span><span class="status"><i></i> In development</span></div>
+          <div class="card-top"><span class="sport-number">05 / Ice</span><span class="status"><i></i> In development</span></div>
           <h3 class="sport-name">NHL</h3>
           <p class="sport-description">Goalie form, shot quality, special teams, and matchup leverage.</p>
           <div class="countdown" data-countdown-target="2026-10-06T19:00:00-04:00" aria-label="Countdown to NHL target opening night">
