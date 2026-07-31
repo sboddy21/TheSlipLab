@@ -34,6 +34,25 @@
   padding:11px 12px;
 }
 .tsl-header-hidden{display:none!important}
+.tsl-legal-notice{
+  width:100%;
+  border-bottom:1px solid rgba(255,255,255,.12);
+  background:#101719;
+  color:#dce8e3;
+  font:700 12px/1.45 Arial,Helvetica,sans-serif;
+}
+.tsl-legal-notice-inner{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  width:min(1800px,100%);
+  margin:0 auto;
+  padding:9px 22px;
+  text-align:center;
+}
+.tsl-legal-notice strong{color:#7cff24}
+.tsl-legal-notice a{color:#fff;font-weight:900;text-underline-offset:3px;white-space:nowrap}
 .tsl-access-checking > :not(.tsl-site-header):not(.tsl-access-gate){visibility:hidden!important}
 .tsl-access-gate{
   position:fixed;
@@ -99,6 +118,11 @@
 }
 .tsl-access-link:hover{color:#fff}
 @media(max-width:900px){.tsl-site-header-inner{padding:12px 14px;gap:14px}.tsl-brand{font-size:20px}.tsl-nav{gap:7px}.tsl-nav a,.tsl-nav-menu-button{font-size:12px;padding:9px 10px}.tsl-nav-menu-panel{right:-8px;min-width:220px}}
+@media(max-width:700px){
+  .tsl-legal-notice-inner{display:block;padding:9px 14px;font-size:11px}
+  .tsl-legal-notice strong,.tsl-legal-notice a{display:inline}
+  .tsl-legal-notice a{margin-left:4px}
+}
 @media(max-width:900px){
   .tsl-nav-menu-panel{
     position:fixed;
@@ -139,6 +163,16 @@ body.tsl-editorial .tsl-site-header{
   border-bottom:1px solid var(--rule);
   backdrop-filter:blur(12px);
 }
+
+body.tsl-editorial .tsl-legal-notice{
+  border-bottom:1px solid rgba(7,29,54,.22);
+  background:#fffdf7;
+  color:#334b61;
+}
+
+body.tsl-editorial .tsl-legal-notice-inner{max-width:1460px}
+body.tsl-editorial .tsl-legal-notice strong{color:#a93419}
+body.tsl-editorial .tsl-legal-notice a{color:#0757d6}
 
 body.tsl-editorial .tsl-site-header::before{
   content:"MLB INTELLIGENCE  •  LIVE DATA PIPELINE";
