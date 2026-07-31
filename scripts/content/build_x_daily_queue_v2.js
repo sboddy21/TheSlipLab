@@ -10,7 +10,9 @@ const SITE_OUT = path.join(SITE_CONTENT, "x_daily_queue.json");
 const JSON_OUT = path.join(EXPORT_CONTENT, "x_daily_queue.json");
 const TXT_OUT = path.join(EXPORT_CONTENT, "x_daily_queue.txt");
 const HISTORY_FILE = path.join(SITE_CONTENT, "x_post_history.json");
-const MAX_INPUT_AGE_MS = 15 * 60 * 1000;
+const MAX_INPUT_AGE_MS = Number.isFinite(Number(process.env.X_MAX_INPUT_AGE_MS))
+  ? Number(process.env.X_MAX_INPUT_AGE_MS)
+  : 15 * 60 * 1000;
 
 fs.mkdirSync(SITE_CONTENT, { recursive: true });
 fs.mkdirSync(EXPORT_CONTENT, { recursive: true });
@@ -104,6 +106,8 @@ const health = readJson(path.join(DATA, "health_status.json"));
 const history = readJson(HISTORY_FILE, { posts: [] });
 const now = easternParts();
 const allowedSlotOverrides = new Set(["morning", "midday", "afternoon", "pregame", "evening", "overnight", "closed"]);
+const EVENT_POST_TYPES = new Set(["called_it_home_run", "model_receipt", "slip_lab_hit_home_run", "live_longshot_hit"]);
+const MAX_EVENT_POSTS_PER_RUN = Number(process.env.X_MAX_EVENT_POSTS_PER_RUN || 10);
 const requestedSlot = String(process.env.X_SLOT_OVERRIDE || "").trim().toLowerCase();
 if (requestedSlot && !allowedSlotOverrides.has(requestedSlot)) {
   throw new Error(`X queue validation failed: unknown slot override ${requestedSlot}`);
@@ -143,14 +147,25 @@ const slotAlreadyPosted = (Array.isArray(history?.posts) ? history.posts : [])
 const availableSlots = [...new Set((Array.isArray(content?.posts) ? content.posts : [])
   .filter(post => post.date === now.date)
   .map(post => post.slot))];
-const slotCandidates = (Array.isArray(content.posts) ? content.posts : [])
-  .filter(post => post.date === now.date && post.slot === slot);
+const currentPosts = (Array.isArray(content.posts) ? content.posts : [])
+  .filter(post => post.date === now.date);
+const slotCandidates = currentPosts.filter(post => post.slot === slot);
+const eventCandidates = currentPosts
+  .filter(post => post.eventPost === true || EVENT_POST_TYPES.has(post.type))
+  .filter(post => !["overnight", "closed"].includes(slot))
+  .filter(post => !alreadyPosted.has(post.id))
+  .sort((a, b) => Number(b.weight || 0) - Number(a.weight || 0))
+  .slice(0, Number.isFinite(MAX_EVENT_POSTS_PER_RUN) && MAX_EVENT_POSTS_PER_RUN > 0 ? MAX_EVENT_POSTS_PER_RUN : 10);
 
-const due = slotAlreadyPosted ? [] : slotCandidates
+const standardDue = slotAlreadyPosted ? [] : slotCandidates
+  .filter(post => post.eventPost !== true && !EVENT_POST_TYPES.has(post.type))
   .filter(post => !alreadyPosted.has(post.id))
   .filter(post => slot !== "overnight" || (post.verifiedPregame === true && post.verifiedResults === true))
   .sort((a, b) => Number(b.weight || 0) - Number(a.weight || 0))
-  .slice(0, 1)
+  .slice(0, 1);
+
+const due = [...eventCandidates, ...standardDue]
+  .filter((post, index, rows) => rows.findIndex(item => item.id === post.id) === index)
   .map(post => ({
     id: post.id,
     date: post.date,
@@ -166,6 +181,9 @@ const due = slotAlreadyPosted ? [] : slotCandidates
     resultsDate: post.resultsDate || null,
     verifiedPregame: post.verifiedPregame === true,
     verifiedResults: post.verifiedResults === true,
+    eventPost: post.eventPost === true || EVENT_POST_TYPES.has(post.type),
+    event: post.event || null,
+    ai: post.ai || null,
     posted: false,
     posted_at: null,
     x_post_id: null,
@@ -177,7 +195,9 @@ const emptyReason = due.length
   : slot === "closed"
     ? "closed_window"
     : slotAlreadyPosted
-      ? "already_posted"
+      ? eventCandidates.length
+        ? "event_posts_only"
+        : "already_posted"
       : slotCandidates.length
         ? "no_eligible_content"
         : "no_content_for_slot";
@@ -190,7 +210,7 @@ const payload = {
   updatedAt: new Date().toISOString(),
   date: now.date,
   slot,
-  cadence: "one current story per workflow run",
+  cadence: "event posts plus one scheduled story per workflow run",
   source: "Content Engine 3.0 selected from current production MLB data",
   fakeData: false,
   emptyReason,
@@ -198,6 +218,11 @@ const payload = {
     requested: requestedSlot || "automatic",
     selected: slot,
     available: availableSlots
+  },
+  eventPosting: {
+    enabled: !["overnight", "closed"].includes(slot),
+    candidates: eventCandidates.length,
+    maxPerRun: Number.isFinite(MAX_EVENT_POSTS_PER_RUN) && MAX_EVENT_POSTS_PER_RUN > 0 ? MAX_EVENT_POSTS_PER_RUN : 10
   },
   inputValidation: { status: "passed", checkedAt: new Date().toISOString(), maxAgeMinutes: 15, inputs: validatedInputs },
   count: due.length,
