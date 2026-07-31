@@ -1,17 +1,16 @@
 {
-  "updatedAt": "2026-07-31T05:31:06.584Z",
+  "updatedAt": "2026-07-31T05:58:28.668Z",
   "date": "2026-07-31",
-  "slot": "overnight",
+  "slot": "evening",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "evening",
+    "selected": "evening",
     "available": [
       "morning",
-      "midday",
       "afternoon",
       "pregame",
       "evening",
@@ -19,76 +18,71 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-31T05:31:06.584Z",
+    "checkedAt": "2026-07-31T05:58:28.668Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T05:31:06.305Z",
+        "timestamp": "2026-07-31T05:58:28.488Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T05:31:05.659Z",
-        "ageSeconds": 0,
-        "scheduledGames": 10,
-        "totalScheduledGames": 10,
-        "finalGames": 10
+        "timestamp": "2026-07-31T05:57:20.882Z",
+        "ageSeconds": 67
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T01:39:55.237Z",
-        "players": 514,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-07-31T05:51:58.955Z",
+        "ageSeconds": 389
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-07-31T05:58:28.273Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-07-31T05:31:05.698Z",
-        "ageSeconds": 0,
-        "reportDate": "2026-07-30",
-        "archivedPlayers": 261,
-        "mode": "verified daily model report"
+        "timestamp": "2026-07-31T05:58:26.131Z",
+        "ageSeconds": 2
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-07-31_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "id": "2026-07-31_EVENING_PROCESS_QUESTION",
       "date": "2026-07-31",
-      "type": "verified_daily_recap",
-      "slot": "overnight",
+      "type": "process_question",
+      "slot": "evening",
       "status": "posted",
-      "scheduled_for_eastern": "2026-07-31T05:31:06.584Z",
-      "text": "The verified MLB model report for 2026-07-30 is in.\n\n18 home runs landed against 25.4 expected (-7.4).\nTop 10: 2 hits from 10 archived players.\n\n• Luis García Jr.: pregame rank #7 | 24.0% model probability | 455 ft\n• Willson Contreras: pregame rank #9 | 24.0% model probability | 414 ft\n• Brandon Lowe: pregame rank #19 | 24.0% model probability | 402 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
-      "players": [
-        "Luis García Jr.",
-        "Willson Contreras",
-        "Brandon Lowe"
-      ],
-      "graphic": "exports/content/graphics/2026-07-31_VERIFIED_MODEL_REPORT.png",
-      "graphicType": "verified_model_report",
-      "reportDate": "2026-07-30",
-      "resultsDate": "2026-07-30",
-      "verifiedPregame": true,
-      "verifiedResults": true,
+      "scheduled_for_eastern": "2026-07-31T05:58:28.668Z",
+      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": true,
-      "posted_at": "2026-07-31T05:31:08.600Z",
-      "x_post_id": "2083062886964813841",
-      "created_at": "2026-07-31T05:31:06.305Z",
+      "posted_at": "2026-07-31T05:58:29.146Z",
+      "x_post_id": "2083069768316191105",
+      "created_at": "2026-07-31T05:58:28.488Z",
       "error": null
     }
   ]
