@@ -7,24 +7,41 @@
   const statNames={points:"PTS",rebounds:"REB",assists:"AST",threes:"3PM"};
   const stats=row=>Object.entries(statNames).map(([key,label])=>`<div class="wnba-stat"><b>${esc(row.projections[key].value)}</b><span>${label} · ${esc(row.projections[key].floor)}–${esc(row.projections[key].ceiling)}</span></div>`).join("");
   const table=rows=>`<div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Player</th><th>Matchup</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th><th>Confidence</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.expectedMinutes)}</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.projections[key].value)}</span><small>${esc(row.projections[key].floor)}–${esc(row.projections[key].ceiling)}</small></td>`).join("")}<td><span class="wnba-confidence">${esc(row.confidence)}%</span></td></tr>`).join("")}</tbody></table></div>`;
-  const strongestMarket=row=>Object.keys(statNames).sort((a,b)=>row.projections[b].value-row.projections[a].value)[0];
+  const strongestMarket=(row,player)=>Object.keys(statNames).sort((a,b)=>{const seasonA=player?.season?.[a==="threes"?"threesMade":a]||1;const seasonB=player?.season?.[b==="threes"?"threesMade":b]||1;return row.projections[b].value/seasonB-row.projections[a].value/seasonA})[0];
+  const signalReason=(row,player)=>{
+    const reasons=[];
+    const minuteDelta=player?.recent?.minutes!=null?player.recent.minutes-player.season.minutes:0;
+    const pointDelta=player?.recent?.points!=null?player.recent.points-player.season.points:0;
+    if(minuteDelta>=2)reasons.push(`recent minutes are up ${minuteDelta.toFixed(1)} from her season role`);
+    if(pointDelta>=2)reasons.push(`recent scoring is up ${pointDelta.toFixed(1)} points`);
+    if(row.context?.paceFactor>=1.02)reasons.push("the matchup carries a positive pace adjustment");
+    if(row.context?.opponentDefenseFactor>=1.02)reasons.push("the opponent environment raises the scoring projection");
+    if(row.roleScore>=75)reasons.push("she owns one of the slate’s strongest established roles");
+    return reasons.slice(0,2).join(" and ")||"her minutes and production profile remain stable";
+  };
   async function load(){
     try{
-      const files=["wnba_projection_board.json","wnba_projection_history.json","wnba_calibration.json","wnba_games_today.json"];
+      const files=["wnba_projection_board.json","wnba_projection_history.json","wnba_calibration.json","wnba_games_today.json","wnba_player_baselines.json"];
       const responses=await Promise.all(files.map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
       if(responses.some(response=>!response.ok))throw new Error("WNBA data unavailable");
-      const [board,history,calibration,gamesData]=await Promise.all(responses.map(response=>response.json()));
+      const [board,history,calibration,gamesData,playerData]=await Promise.all(responses.map(response=>response.json()));
       const rows=Array.isArray(board.projections)?board.projections:[];
+      const playerById=new Map((playerData.players||[]).map(player=>[String(player.playerId),player]));
       status.innerHTML=`<strong>${esc(board.date||"Current slate")}</strong><span>${rows.length} eligible players · Updated automatically</span>`;
       if(view==="full-board") mount.innerHTML=rows.length?table(rows):`<div class="wnba-empty">No pregame player projections are available on the current slate.</div>`;
       if(view==="quick-target"){
-        const targets=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,9);
+        const byConfidence=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore)[0];
+        const byForm=[...rows].sort((a,b)=>{const pa=playerById.get(String(a.playerId)),pb=playerById.get(String(b.playerId));return ((pb?.recent?.points||0)-(pb?.season?.points||0))-((pa?.recent?.points||0)-(pa?.season?.points||0))})[0];
+        const byMinutes=[...rows].sort((a,b)=>{const pa=playerById.get(String(a.playerId)),pb=playerById.get(String(b.playerId));return ((pb?.recent?.minutes||0)-(pb?.season?.minutes||0))-((pa?.recent?.minutes||0)-(pa?.season?.minutes||0))})[0];
+        const byMatchup=[...rows].sort((a,b)=>(b.context?.paceFactor||0)+(b.context?.opponentDefenseFactor||0)-(a.context?.paceFactor||0)-(a.context?.opponentDefenseFactor||0))[0];
+        const candidates=[["Highest confidence",byConfidence],["Hot form",byForm],["Minutes opportunity",byMinutes],["Best matchup",byMatchup],...[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,8).map(row=>["Top profile",row])];
+        const seen=new Set();const targets=candidates.filter(([,row])=>row&&!seen.has(String(row.playerId))&&seen.add(String(row.playerId))).slice(0,9);
         mount.className="wnba-grid";
-        mount.innerHTML=targets.length?targets.map(row=>`<article class="wnba-card"><h2>${esc(row.player)}</h2><div class="matchup">${esc(row.team)} vs ${esc(row.opponent)} · ${esc(row.expectedMinutes)} expected minutes</div><div class="lead">${esc(row.confidence)}%</div><div class="label">Model confidence</div><div class="wnba-stat-grid">${stats(row)}</div></article>`).join(""):`<div class="wnba-empty">Quick Targets will populate when the next pregame slate is available.</div>`;
+        mount.innerHTML=targets.length?targets.map(([category,row])=>`<article class="wnba-card"><div class="label">${esc(category)}</div><h2>${esc(row.player)}</h2><div class="matchup">${esc(row.team)} vs ${esc(row.opponent)} · ${esc(row.expectedMinutes)} expected minutes</div><div class="lead">${esc(row.confidence)}%</div><div class="label">Model confidence</div><p>${esc(signalReason(row,playerById.get(String(row.playerId))))}.</p><div class="wnba-stat-grid">${stats(row)}</div></article>`).join(""):`<div class="wnba-empty">Quick Targets will populate when the next pregame slate is available.</div>`;
       }
       if(view==="ai-says"){
         const ranked=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,8);
-        mount.innerHTML=ranked.length?ranked.map((row,index)=>{const market=strongestMarket(row);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p>The model projects ${esc(row.expectedMinutes)} minutes against ${esc(row.opponent)}, with ${esc(projection.value)} ${esc(statNames[market])} and a ${esc(projection.floor)}–${esc(projection.ceiling)} range. Her full line is ${esc(row.projections.points.value)} points, ${esc(row.projections.rebounds.value)} rebounds, ${esc(row.projections.assists.value)} assists, and ${esc(row.projections.threes.value)} made threes.</p><div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
+        mount.innerHTML=ranked.length?ranked.map((row,index)=>{const player=playerById.get(String(row.playerId));const market=strongestMarket(row,player);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p><strong>Why she stands out:</strong> ${esc(signalReason(row,player))}. The clearest statistical signal is ${esc(projection.value)} ${esc(statNames[market])} with a ${esc(projection.floor)}–${esc(projection.ceiling)} range across ${esc(row.expectedMinutes)} expected minutes against ${esc(row.opponent)}.</p><div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span><span class="wnba-chip">Pace ${esc(row.context?.paceFactor??"—")}x</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
       }
       if(view==="results"){
         const graded=(history.slates||[]).flatMap(slate=>(slate.projections||[]).filter(row=>row.actual).map(row=>({...row,slateDate:slate.date})));
