@@ -17,18 +17,13 @@
 
   const items = [
     ["Sign In","./account.html",["/account.html"]],
-    ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]],
-    ["Lab Notes","./blog.html",["/blog.html","/blog-hr-shortlist.html","/blog-pitcher-vulnerability.html","/blog-signal-stack.html"]],
     ["WNBA","./wnba.html",["/wnba.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
     ["Pitcher Vulnerability","./pitcher-vulnerability.html",["/pitcher-vulnerability.html"]],
     ["Power Zones","./power-zones.html",["/power-zones.html"]],
-    ["Quick Target","./quick-target.html",["/quick-target.html"]],
-    ["Heat Check","./heat-check.html",["/heat-check.html"]],
-    ["Streak Lab","./streak-lab.html",["/streak-lab.html"]],
     ["Weather","./weather.html",["/weather.html"]],
     ["Results","./results.html",["/results.html"]],
     ["Decision Center","./hr-decision-center.html",["/hr-decision-center.html","/decision-center.html"]],
@@ -54,7 +49,6 @@
     "/bullpen-collapse.html",
     "/command-center.html",
     "/full-board.html",
-    "/heat-check.html",
     "/hr-decision-center.html",
     "/decision-center.html",
     "/live-game-center.html",
@@ -78,8 +72,6 @@
     "/pitcher-vulnerability.html",
     "/player-intelligence.html",
     "/power-zones.html",
-    "/quick-target.html",
-    "/streak-lab.html",
     "/tags.html"
   ]);
 
@@ -226,12 +218,33 @@
     return notice;
   }
 
+  function buildFooter(){
+    const footer = document.createElement("footer");
+    footer.className = "tsl-site-footer";
+    footer.innerHTML = `
+      <div class="tsl-site-footer-inner">
+        <a class="tsl-site-footer-brand" href="./index.html">The Slip <span>Lab</span></a>
+        <nav class="tsl-site-footer-links" aria-label="Footer navigation">
+          <a href="./how-to-use.html">How to Use</a>
+          <a href="./blog.html">Lab Notes</a>
+          <a href="./mlb.html">Slate</a>
+          <a href="./results.html">Results</a>
+          <a href="./ai-says.html">AI Says</a>
+        </nav>
+      </div>
+    `;
+    return footer;
+  }
+
   function init(){
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
     const header = buildHeader();
     document.body.insertBefore(header, document.body.firstChild);
     header.insertAdjacentElement("afterend", buildLegalNotice());
+    if (!document.querySelector(".tsl-site-footer")) {
+      document.body.appendChild(buildFooter());
+    }
     if (!document.querySelector('script[data-tsl-account-client]')) {
       const accountScript = document.createElement("script");
       accountScript.type = "module";

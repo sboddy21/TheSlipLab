@@ -327,6 +327,14 @@ const publicTags = [
   ),
 
   make(
+    "HEAT CHECK",
+    "signal",
+    capByBoard(union(["HOT L7", "HOT LATELY", "RECENT HR", "POWER TREND", "HOT LOOK"]), 24),
+    ["tag_registry.json", "player_card_data.json"],
+    "Recent-form heat and power-trend signals folded into the main AI board."
+  ),
+
+  make(
     "HOMER AI",
     "ai",
     capByBoard(union(["ELITE MODEL", "MATCHUP WATCH", "PROFILE WATCH", "POWER FORM"]), 30),

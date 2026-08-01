@@ -1,188 +1,20 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>The Slip Lab | Heat Check</title>
-
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{background:#05070b;color:#f3f3f3;font-family:Inter,Arial,sans-serif}
-    a{text-decoration:none;color:inherit}
-    .topbar{width:100%;border-bottom:1px solid rgba(255,255,255,.06);background:#05070b;position:sticky;top:0;z-index:999}
-    .topbar-inner{max-width:1600px;margin:auto;padding:12px 22px;display:flex;align-items:center;gap:16px}
-    .brand{font-size:20px;font-weight:900;color:white;margin-right:14px;white-space:nowrap}
-    .nav{display:flex;gap:8px;flex-wrap:wrap}
-    .nav-pill{padding:8px 14px;border-radius:14px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;font-size:12px;font-weight:800}
-    .nav-pill.active{background:#93ff2d;color:black;border-color:#93ff2d}
-    .wrap{max-width:1600px;margin:auto;padding:24px 22px}
-    .title{font-size:32px;font-weight:950;margin-bottom:6px}
-    .sub{color:#8e98a3;font-size:13px;margin-bottom:20px}
-    .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
-    .search{flex:1;min-width:260px;background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#fff;border-radius:14px;padding:12px 14px;font-weight:800}
-    .small-pill{background:#0d1318;border:1px solid rgba(255,255,255,.08);color:#d9d9d9;border-radius:14px;padding:11px 14px;font-size:12px;font-weight:900}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-    .card{background:#0b1015;border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
-    .badge{display:inline-flex;background:rgba(255,80,80,.12);border:1px solid rgba(255,80,80,.22);color:#ff7474;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:950;margin-bottom:12px}
-    .name{font-size:17px;font-weight:950;margin-bottom:4px}
-    .meta{font-size:11px;color:#8e98a3;margin-bottom:12px}
-    .score-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .metric{background:#0d1318;border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px}
-    .metric-label{font-size:9px;color:#8e98a3;text-transform:uppercase;font-weight:900;margin-bottom:4px}
-    .metric-value{font-size:18px;font-weight:950;color:#93ff2d}
-    .why{margin-top:12px;color:#c9d1d9;font-size:12px;line-height:1.45}
-  </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="refresh" content="0; url=./ai-says.html" />
+  <title>Heat Check moved | The Slip Lab</title>
   <link rel="stylesheet" href="./assets/site-header.css">
   <script src="./assets/member-data.js"></script>
   <script defer src="./assets/site-header.js"></script>
 </head>
-<body class="tsl-editorial tsl-tool-page tsl-heat-page">
-
-<div class="topbar">
-  <div class="topbar-inner">
-    <a class="brand" href="./index.html">The Slip Lab</a>
-    <div class="nav">
-      <a href="./mlb.html" class="nav-pill">Slate</a>
-      <a href="./full-board.html" class="nav-pill">Full Board</a>
-      <a href="./matchup-lab.html" class="nav-pill">Matchup Lab</a>
-      <a href="./power-zones.html" class="nav-pill">Power Zones</a>
-      <a href="./quick-target.html" class="nav-pill">Quick Target</a>
-      <a href="./heat-check.html" class="nav-pill active">Heat Check</a>
-      <a href="./streak-lab.html" class="nav-pill">Streak Lab</a>
-      <a href="./weather.html" class="nav-pill">Weather</a>
-      <a href="./results.html" class="nav-pill">Results</a>
-      <a href="./hr-decision-center.html" class="nav-pill">Decision Center</a><a href="./ai-says.html" class="nav-pill">AI Says</a>
-    </div>
-  </div>
-</div>
-
-<main class="wrap">
-  <div class="report-line"><span>Momentum report</span><span>Live power and matchup signals</span></div>
-  <div class="eyebrow">Who is building heat</div>
-  <h1 class="title">Heat Check</h1>
-  <p class="sub">Bats showing HR momentum through power score, due score, pitch damage, and current matchup fit.</p>
-
-  <div class="toolbar">
-    <input id="search" class="search" placeholder="Search player, team, opponent, pitch type, or tier"/>
-    <div class="small-pill" id="status">Loading</div>
-  </div>
-
-  <section class="grid" id="grid"></section>
-</main>
-
-<script>
-let players = [];
-
-function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
-function score(v){const n = Number(v); return Number.isFinite(n) ? n.toFixed(1) : "0.0"}
-function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
-
-function heatScore(row){
-  return (
-    num(row.due) * .34 +
-    num(row.powerScore) * .28 +
-    num(row.pitchEdge) * .22 +
-    num(row.hrConfidence) * .16
-  );
-}
-
-function heatSummary(row){
-  const player = clean(row.player);
-  const bestPitch = clean(row.bestPitch);
-  const power = num(row.powerScore);
-  const due = num(row.due);
-  const pitch = num(row.pitchEdge);
-  const hr = num(row.hrConfidence);
-
-  const drivers = [
-    { label: "power", value: power },
-    { label: "due pressure", value: due * 4 },
-    { label: "pitch damage", value: pitch },
-    { label: "HR confidence", value: hr * 4 }
-  ].sort((a,b) => b.value - a.value);
-
-  const main = drivers[0].label;
-  const second = drivers[1].label;
-
-  let lead;
-  if (power >= 95) lead = `${player} is running hot because the raw power score is elite`;
-  else if (pitch >= 70) lead = `${player} is flashing a major pitch edge against ${bestPitch}`;
-  else if (due >= 18) lead = `${player} has elevated due pressure with HR indicators still active`;
-  else if (hr >= 16) lead = `${player} has a strong HR confidence base in this matchup`;
-  else lead = `${player} has a balanced heat profile`;
-
-  let support;
-  if (power >= 90 && pitch >= 60) support = `Power and ${bestPitch} damage are both supporting the card.`;
-  else if (due >= 18 && pitch >= 50) support = `Due pressure pairs with a usable ${bestPitch} matchup.`;
-  else if (power >= 90) support = `The biggest driver is ${main}, with ${second} as the secondary signal.`;
-  else if (pitch >= 55) support = `The best current pitch angle is ${bestPitch}, grading at ${score(pitch)}.`;
-  else support = `Main driver is ${main}, with ${second} adding support.`;
-
-  return `${lead}. ${support}`;
-}
-
-function render(){
-  const q = document.getElementById("search").value.toLowerCase();
-
-  const rows = players
-    .filter(row => {
-      const hay = [
-        row.player,
-        row.team,
-        row.opponent,
-        row.game,
-        row.bestPitch,
-        row.tier
-      ].join(" ").toLowerCase();
-
-      return hay.includes(q);
-    })
-    .map(row => ({...row, heat: heatScore(row)}))
-    .sort((a,b) => b.heat - a.heat)
-    .slice(0,60);
-
-  document.getElementById("status").textContent = `${rows.length} heat bats`;
-
-  document.getElementById("grid").innerHTML = rows.map(row => `
-    <article class="card">
-      <div class="badge">HEAT SCORE ${score(row.heat)}</div>
-
-      <div class="name">${clean(row.player)}</div>
-      <div class="meta">${clean(row.team)} vs ${clean(row.opponent)} • Best pitch: ${clean(row.bestPitch)}</div>
-
-      <div class="score-row">
-        <div class="metric">
-          <div class="metric-label">Due</div>
-          <div class="metric-value">${score(row.due)}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Power</div>
-          <div class="metric-value">${score(row.powerScore)}</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Pitch Edge</div>
-          <div class="metric-value">${score(row.pitchEdge)}</div>
-        </div>
-      </div>
-
-      <div class="why">${heatSummary(row)}</div>
-    </article>
-  `).join("");
-}
-
-async function load(){
-  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
-  const json = await res.json();
-
-  players = json.allPlayers || [];
-
-  document.getElementById("search").addEventListener("input", render);
-
-  render();
-}
-
-load();
-</script>
-
+<body class="tsl-editorial">
+  <main style="width:min(760px,92vw);margin:80px auto;">
+    <p style="font-weight:950;letter-spacing:.16em;text-transform:uppercase;color:#0757d6;">Moved into AI Says</p>
+    <h1 style="font:950 54px/1 Georgia,'Times New Roman',serif;margin:0 0 14px;color:#071d36;">Heat Check is now an AI Says tag.</h1>
+    <p style="color:#506071;font-size:17px;line-height:1.5;">Recent-form heat now lives inside the main AI board instead of being a separate page.</p>
+    <p><a href="./ai-says.html" style="font-weight:950;color:#0757d6;">Open AI Says →</a></p>
+  </main>
 </body>
 </html>

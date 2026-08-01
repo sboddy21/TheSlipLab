@@ -142,6 +142,7 @@ function buildSupportingSignals(row, probability) {
   const power = finite(row.hrPowerIndex);
   const contactDamage = finite(row.contactDamageScore);
   const launchPower = finite(row.launchPowerScore);
+  const recentForm = finite(row.breakdown?.trend);
 
   if (probability !== null && probability >= 20) {
     out.push(signal("hr_probability", "Top-tier HR probability", `${probability}% tracked HR probability (${text(row.probabilityTier, "unclassified")}).`, probability, "hr_probability_tracking.json"));
@@ -157,6 +158,9 @@ function buildSupportingSignals(row, probability) {
   if (launchPower !== null && launchPower >= 50) {
     out.push(signal("launch_power", "Launch-angle power", `${rounded(launchPower)} launch-power score supports home-run damage.`, launchPower, "hr_power_profiles.json"));
   }
+  if (recentForm !== null && recentForm >= 62) {
+    out.push(signal("recent_form_streak", recentForm >= 78 ? "Hot recent-form streak" : "Recent-form support", `${rounded(recentForm, 0)} recent-form trend score is helping the player-card read.`, recentForm, "ai_trust_engine.json"));
+  }
 
   return out.slice(0, 6);
 }
@@ -168,6 +172,7 @@ function buildCounterSignals(row, probability) {
   const launchPower = finite(row.launchPowerScore);
   const strikeoutRate = finite(row.rates?.strikeoutRate);
   const samplePenalty = finite(row.samplePenalty);
+  const recentForm = finite(row.breakdown?.trend);
 
   if (probability !== null && probability < 10) {
     out.push(signal("low_hr_probability", "Longshot base rate", `${probability}% tracked HR probability (${text(row.probabilityTier, "unclassified")}).`, probability, "hr_probability_tracking.json", "high"));
@@ -189,6 +194,9 @@ function buildCounterSignals(row, probability) {
   }
   if (launchPower !== null && launchPower < 35) {
     out.push(signal("limited_launch_power", "Launch profile concern", `${rounded(launchPower)} launch-power score is below the stronger home-run profiles.`, launchPower, "hr_power_profiles.json", launchPower < 20 ? "high" : "moderate"));
+  }
+  if (recentForm !== null && recentForm < 35) {
+    out.push(signal("cold_recent_form", "Cold recent-form signal", `${rounded(recentForm, 0)} recent-form trend score is not helping the profile today.`, recentForm, "ai_trust_engine.json", recentForm < 22 ? "high" : "moderate"));
   }
 
   const seen = new Set();
