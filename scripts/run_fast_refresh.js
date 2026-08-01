@@ -687,6 +687,7 @@ const requiredOutputs = [
   { file: "tag_registry.json", timestampFields: ["generatedAt"] },
   { file: "public_tags.json", timestampFields: ["generatedAt"] },
   { file: "ai_2.json", timestampFields: ["generatedAt"] },
+  { file: "content/x_live_ai_board.json", timestampFields: ["generatedAt"] },
   { file: "hr_ai_hof.json", timestampFields: ["updatedAt"] },
   { file: "hr_ai_stacks.json", timestampFields: ["updatedAt"] },
   { file: "health_status.json", timestampFields: ["generatedAt"] },

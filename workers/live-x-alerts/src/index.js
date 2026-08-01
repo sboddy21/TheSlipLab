@@ -356,9 +356,9 @@ function json(payload, status = 200) {
   });
 }
 
-async function getJson(url) {
+async function getJson(url, headers = {}) {
   const response = await fetch(url, {
-    headers: { "accept": "application/json" }
+    headers: { "accept": "application/json", ...headers }
   });
   if (!response.ok) throw new Error(`Request failed ${response.status}: ${url}`);
   return response.json();
@@ -380,7 +380,10 @@ async function fetchActiveGames(date) {
 }
 
 async function fetchAiBoard(env) {
-  return getJson(env.AI_SAYS_URL || "https://www.thesliplab.com/data/ai_2.json");
+  return getJson(
+    env.AI_SAYS_URL || "https://www.thesliplab.com/data/content/x_live_ai_board.json",
+    { "x-member-data-service-key": env.SUPABASE_SERVICE_ROLE_KEY }
+  );
 }
 
 function normalizeName(value) {

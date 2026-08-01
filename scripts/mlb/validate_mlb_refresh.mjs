@@ -836,6 +836,7 @@ const currentOutputs = [
   ["tag_registry.json", ["generatedAt"]],
   ["public_tags.json", ["generatedAt"]],
   ["ai_2.json", ["generatedAt"]],
+  ["content/x_live_ai_board.json", ["generatedAt"]],
   ["hr_ai_hof.json", ["updatedAt"]],
   ["hr_ai_stacks.json", ["updatedAt"]],
   ["health_status.json", ["generatedAt"]],

@@ -37,6 +37,12 @@ function bearerToken(request) {
   return match ? match[1] : "";
 }
 
+function trustedService(request) {
+  const supplied = String(request.headers["x-member-data-service-key"] || "");
+  const { serviceKey } = supabaseConfig();
+  return Boolean(supplied && serviceKey && supplied === serviceKey);
+}
+
 function json(response, status, payload) {
   response.setHeader("Cache-Control", "private, no-store, max-age=0");
   response.setHeader("Vary", "Authorization");
@@ -90,6 +96,7 @@ async function activeSubscription(userId) {
 }
 
 async function authorize(request) {
+  if (trustedService(request)) return { allowed: true };
   const user = await authenticatedUser(request);
   if (!user?.id) return { allowed: false, status: 401, reason: "signed_out" };
   if (!paidAccessEnabled()) return { allowed: true };

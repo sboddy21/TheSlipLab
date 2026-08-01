@@ -9,6 +9,7 @@ const PLAYER_CARDS = path.join(DATA, "player_card_data.json");
 const MATCHUPS = path.join(DATA, "game_pitcher_matchups.json");
 const MARKET_ODDS = path.join(DATA, "mlb_market_odds.json");
 const OUT = path.join(DATA, "ai_2.json");
+const LIVE_X_OUT = path.join(DATA, "content", "x_live_ai_board.json");
 
 function readJson(file, fallback = null) {
   if (!fs.existsSync(file)) return fallback;
@@ -274,7 +275,23 @@ const output = {
 
 fs.writeFileSync(OUT, JSON.stringify(output, null, 2));
 
+const liveXOutput = {
+  generatedAt: output.generatedAt,
+  sourceType: "slip_lab_public_live_x_tags",
+  summary: output.summary,
+  sections: sections.map(section => ({
+    title: section.title,
+    players: section.players.map(player => ({
+      playerId: player.playerId,
+      name: player.name
+    }))
+  }))
+};
+fs.mkdirSync(path.dirname(LIVE_X_OUT), { recursive: true });
+fs.writeFileSync(LIVE_X_OUT, JSON.stringify(liveXOutput, null, 2));
+
 console.log(`Built ${OUT}`);
+console.log(`Built ${LIVE_X_OUT}`);
 console.log(`Sections: ${output.summary.sections}`);
 console.log(`Players: ${output.summary.players}`);
 for (const s of sections) {
