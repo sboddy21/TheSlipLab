@@ -3,7 +3,8 @@ name: The Slip Lab WNBA Refresh
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 10,18 * 5-10 *"
+    # Every 15 minutes during the WNBA season (May through October).
+    - cron: "*/15 * * 5-10 *"
 
 permissions:
   contents: write
