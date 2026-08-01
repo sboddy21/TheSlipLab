@@ -8,6 +8,22 @@
   const stats=row=>Object.entries(statNames).map(([key,label])=>`<div class="wnba-stat"><b>${esc(row.projections[key].value)}</b><span>${label} · ${esc(row.projections[key].floor)}–${esc(row.projections[key].ceiling)}</span></div>`).join("");
   const table=rows=>`<div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Player</th><th>Matchup</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th><th>Confidence</th></tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.expectedMinutes)}</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.projections[key].value)}</span><small>${esc(row.projections[key].floor)}–${esc(row.projections[key].ceiling)}</small></td>`).join("")}<td><span class="wnba-confidence">${esc(row.confidence)}%</span></td></tr>`).join("")}</tbody></table></div>`;
   const strongestMarket=(row,player)=>Object.keys(statNames).sort((a,b)=>{const seasonA=player?.season?.[a==="threes"?"threesMade":a]||1;const seasonB=player?.season?.[b==="threes"?"threesMade":b]||1;return row.projections[b].value/seasonB-row.projections[a].value/seasonA})[0];
+  const modelPlay=(row,player)=>{
+    const market=strongestMarket(row,player);
+    const projection=Number(row.projections[market].value);
+    const floor=Number(row.projections[market].floor);
+    const ceiling=Number(row.projections[market].ceiling);
+    const seasonKey=market==="threes"?"threesMade":market;
+    const baseline=Number(player?.season?.[seasonKey]);
+    const direction=Number.isFinite(baseline)&&projection<baseline?"under":"over";
+    const spread=Math.max(.5,ceiling-floor);
+    const cushion=Math.max(.5,spread*.12);
+    const threshold=Math.max(.5,direction==="over"?Math.floor((projection-cushion)*2)/2:Math.ceil((projection+cushion)*2)/2);
+    const edge=Number.isFinite(baseline)?Math.abs(projection-baseline)/spread:0;
+    const confidence=row.confidence>=82&&edge>=.08?"High":row.confidence>=72?"Medium":"Lean";
+    return {market,direction,projection,threshold,confidence};
+  };
+  const playMarkup=play=>`<div class="wnba-best-play"><span class="wnba-best-label">Best play</span><strong>${esc(play.direction)} ${esc(statNames[play.market])}</strong><span class="wnba-play-line">Play at ${esc(play.threshold)} or ${play.direction==="over"?"lower":"higher"}</span><span class="wnba-play-meta">Model: ${esc(play.projection)} · ${esc(play.confidence)} confidence</span></div>`;
   const signalReason=(row,player)=>{
     const reasons=[];
     const minuteDelta=player?.recent?.minutes!=null?player.recent.minutes-player.season.minutes:0;
@@ -27,7 +43,7 @@
     if(!token)throw new Error("Sign in to use WNBA AI Says");
     return token;
   }
-  const fallbackAi=(ranked,playerById)=>ranked.length?ranked.map((row,index)=>{const player=playerById.get(String(row.playerId));const market=strongestMarket(row,player);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p><strong>Model context:</strong> ${esc(signalReason(row,player))}. The clearest statistical signal is ${esc(projection.value)} ${esc(statNames[market])} with a ${esc(projection.floor)}–${esc(projection.ceiling)} range across ${esc(row.expectedMinutes)} expected minutes against ${esc(row.opponent)}.</p><div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
+  const fallbackAi=(ranked,playerById)=>ranked.length?ranked.map((row,index)=>{const player=playerById.get(String(row.playerId));const market=strongestMarket(row,player);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p><strong>Model context:</strong> ${esc(signalReason(row,player))}. The clearest statistical signal is ${esc(projection.value)} ${esc(statNames[market])} with a ${esc(projection.floor)}–${esc(projection.ceiling)} range across ${esc(row.expectedMinutes)} expected minutes against ${esc(row.opponent)}.</p>${playMarkup(modelPlay(row,player))}<div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
   async function renderAi(board,rows,playerById){
     const ranked=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,12);
     if(!ranked.length){mount.innerHTML=fallbackAi(ranked,playerById);return;}
@@ -46,7 +62,8 @@
         localStorage.setItem(cacheKey,JSON.stringify(analysis));
       }
       status.innerHTML=`<strong>AI-generated · ${esc(analysis.model||"OpenAI")}</strong><span>${esc(analysis.slateDate||board.date)} · Generated ${new Date(analysis.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</span>`;
-      mount.innerHTML=`<div class="wnba-ai-source"><strong>Genuine AI analysis.</strong> OpenAI analyzes The Slip Lab’s structured WNBA projections; it does not create or change the underlying numbers.</div><div class="wnba-ai-summary"><span>Daily AI read</span><p>${esc(analysis.summary)}</p></div>${analysis.insights.map((insight,index)=>`<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(insight.player)} · ${esc(insight.team)}</h2><p><strong>${esc(insight.headline)}</strong> ${esc(insight.analysis)}</p><div class="wnba-chips">${(insight.signals||[]).map(signal=>`<span class="wnba-chip">${esc(signal)}</span>`).join("")}</div></div></article>`).join("")}`;
+      const rowById=new Map(ranked.map(row=>[String(row.playerId),row]));
+      mount.innerHTML=`<div class="wnba-ai-source"><strong>Genuine AI analysis.</strong> OpenAI analyzes The Slip Lab’s structured WNBA projections; each play shows the maximum or minimum line supported by the model.</div><div class="wnba-ai-summary"><span>Daily AI read</span><p>${esc(analysis.summary)}</p></div>${analysis.insights.map((insight,index)=>{const row=rowById.get(String(insight.playerId));const player=playerById.get(String(insight.playerId));return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(insight.player)} · ${esc(insight.team)}</h2><p><strong>${esc(insight.headline)}</strong> ${esc(insight.analysis)}</p>${row?playMarkup(modelPlay(row,player)):""}<div class="wnba-chips">${(insight.signals||[]).map(signal=>`<span class="wnba-chip">${esc(signal)}</span>`).join("")}</div></div></article>`}).join("")}`;
     }catch(error){
       status.innerHTML=`<strong>AI temporarily unavailable</strong><span>${esc(error.message)} · Showing deterministic model context</span>`;
       mount.innerHTML=fallbackAi(ranked,playerById);
