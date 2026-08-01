@@ -24,11 +24,19 @@
     "x:post-slate-thread": "node scripts/content/post_x_daily_slate_thread.js",
     "x:edge-posts": "node scripts/content/build_x_daily_edge_posts.js",
     "x:post-edge-posts": "node scripts/content/post_x_daily_edge_posts.js",
-    "worker:live-x:check": "node --check workers/live-x-alerts/src/index.js"
+    "worker:live-x:check": "node --check workers/live-x-alerts/src/index.js",
+    "video:mlb:dry": "node scripts/video/build_daily_mlb_video.mjs --dry-run",
+    "video:mlb:voice-sample": "node scripts/video/build_daily_mlb_video.mjs --voice-sample",
+    "video:mlb:preview": "node scripts/video/build_daily_mlb_video.mjs --preview",
+    "video:mlb": "node scripts/video/build_daily_mlb_video.mjs --render"
   },
   "dependencies": {
     "canvas": "^3.2.3",
+    "@remotion/cli": "^4.0.332",
     "dotenv": "^17.4.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "remotion": "^4.0.332",
     "sharp": "^0.34.5",
     "twitter-api-v2": "^1.29.0"
   }
