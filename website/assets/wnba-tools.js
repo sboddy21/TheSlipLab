@@ -19,6 +19,39 @@
     if(row.roleScore>=75)reasons.push("she owns one of the slate’s strongest established roles");
     return reasons.slice(0,2).join(" and ")||"her minutes and production profile remain stable";
   };
+  async function accountToken(){
+    for(let attempt=0;attempt<60&&!window.TSLAccount;attempt++)await new Promise(resolve=>setTimeout(resolve,100));
+    if(!window.TSLAccount)throw new Error("Account session is unavailable");
+    await window.TSLAccount.ready;
+    const token=await window.TSLAccount.accessToken();
+    if(!token)throw new Error("Sign in to use WNBA AI Says");
+    return token;
+  }
+  const fallbackAi=(ranked,playerById)=>ranked.length?ranked.map((row,index)=>{const player=playerById.get(String(row.playerId));const market=strongestMarket(row,player);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p><strong>Model context:</strong> ${esc(signalReason(row,player))}. The clearest statistical signal is ${esc(projection.value)} ${esc(statNames[market])} with a ${esc(projection.floor)}–${esc(projection.ceiling)} range across ${esc(row.expectedMinutes)} expected minutes against ${esc(row.opponent)}.</p><div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
+  async function renderAi(board,rows,playerById){
+    const ranked=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,12);
+    if(!ranked.length){mount.innerHTML=fallbackAi(ranked,playerById);return;}
+    status.innerHTML=`<strong>OpenAI analysis</strong><span>Reading ${ranked.length} WNBA player profiles…</span>`;
+    const cacheKey=`tsl_wnba_ai_${board.date||"slate"}_${board.generatedAt||board.frozenAt||"current"}`;
+    try{
+      const cached=JSON.parse(localStorage.getItem(cacheKey)||"null");
+      let analysis=cached;
+      if(!analysis?.insights?.length){
+        const token=await accountToken();
+        const players=ranked.map(row=>{const player=playerById.get(String(row.playerId));return {...row,context:{...row.context,recentMinutesDelta:player?.recent?.minutes!=null?Number((player.recent.minutes-player.season.minutes).toFixed(1)):0,recentPointsDelta:player?.recent?.points!=null?Number((player.recent.points-player.season.points).toFixed(1)):0,injury:player?.injury?.status||null}}});
+        const response=await fetch("/api/wnba-ai-analysis",{method:"POST",headers:{Accept:"application/json",Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify({slate:{date:board.date,generatedAt:board.generatedAt||board.frozenAt,players}})});
+        const payload=await response.json().catch(()=>({}));
+        if(!response.ok)throw new Error(payload.error||"AI analysis is unavailable");
+        analysis=payload;
+        localStorage.setItem(cacheKey,JSON.stringify(analysis));
+      }
+      status.innerHTML=`<strong>AI-generated · ${esc(analysis.model||"OpenAI")}</strong><span>${esc(analysis.slateDate||board.date)} · Generated ${new Date(analysis.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}</span>`;
+      mount.innerHTML=`<div class="wnba-ai-source"><strong>Genuine AI analysis.</strong> OpenAI analyzes The Slip Lab’s structured WNBA projections; it does not create or change the underlying numbers.</div><div class="wnba-ai-summary"><span>Daily AI read</span><p>${esc(analysis.summary)}</p></div>${analysis.insights.map((insight,index)=>`<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(insight.player)} · ${esc(insight.team)}</h2><p><strong>${esc(insight.headline)}</strong> ${esc(insight.analysis)}</p><div class="wnba-chips">${(insight.signals||[]).map(signal=>`<span class="wnba-chip">${esc(signal)}</span>`).join("")}</div></div></article>`).join("")}`;
+    }catch(error){
+      status.innerHTML=`<strong>AI temporarily unavailable</strong><span>${esc(error.message)} · Showing deterministic model context</span>`;
+      mount.innerHTML=fallbackAi(ranked,playerById);
+    }
+  }
   async function load(){
     try{
       const files=["wnba_projection_board.json","wnba_projection_history.json","wnba_calibration.json","wnba_games_today.json","wnba_player_baselines.json"];
@@ -40,8 +73,7 @@
         mount.innerHTML=targets.length?targets.map(([category,row])=>`<article class="wnba-card"><div class="label">${esc(category)}</div><h2>${esc(row.player)}</h2><div class="matchup">${esc(row.team)} vs ${esc(row.opponent)} · ${esc(row.expectedMinutes)} expected minutes</div><div class="lead">${esc(row.confidence)}%</div><div class="label">Model confidence</div><p>${esc(signalReason(row,playerById.get(String(row.playerId))))}.</p><div class="wnba-stat-grid">${stats(row)}</div></article>`).join(""):`<div class="wnba-empty">Quick Targets will populate when the next pregame slate is available.</div>`;
       }
       if(view==="ai-says"){
-        const ranked=[...rows].sort((a,b)=>b.confidence-a.confidence||b.roleScore-a.roleScore).slice(0,8);
-        mount.innerHTML=ranked.length?ranked.map((row,index)=>{const player=playerById.get(String(row.playerId));const market=strongestMarket(row,player);const projection=row.projections[market];return `<article class="wnba-insight"><div class="wnba-rank">${index+1}</div><div><h2>${esc(row.player)} · ${esc(row.team)}</h2><p><strong>Why she stands out:</strong> ${esc(signalReason(row,player))}. The clearest statistical signal is ${esc(projection.value)} ${esc(statNames[market])} with a ${esc(projection.floor)}–${esc(projection.ceiling)} range across ${esc(row.expectedMinutes)} expected minutes against ${esc(row.opponent)}.</p><div class="wnba-chips"><span class="wnba-chip">${esc(row.confidence)}% confidence</span><span class="wnba-chip">${esc(row.role)}</span><span class="wnba-chip">Defense rank ${esc(row.context?.opponentDefenseRank??"—")}</span><span class="wnba-chip">Pace ${esc(row.context?.paceFactor??"—")}x</span></div></div></article>`}).join(""):`<div class="wnba-empty">WNBA AI Says will populate with the next eligible pregame slate.</div>`;
+        await renderAi(board,rows,playerById);
       }
       if(view==="results"){
         const graded=(history.slates||[]).flatMap(slate=>(slate.projections||[]).filter(row=>row.actual).map(row=>({...row,slateDate:slate.date})));
