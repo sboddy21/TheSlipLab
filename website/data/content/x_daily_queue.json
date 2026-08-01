@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-01T05:31:08.173Z",
+  "updatedAt": "2026-08-01T05:42:49.456Z",
   "date": "2026-08-01",
-  "slot": "overnight",
+  "slot": "evening",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "evening",
+    "selected": "evening",
     "available": [
       "morning",
       "midday",
@@ -19,76 +19,71 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-01T05:31:08.173Z",
+    "checkedAt": "2026-08-01T05:42:49.456Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-01T05:31:07.842Z",
+        "timestamp": "2026-08-01T05:42:49.221Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-01T05:31:07.176Z",
-        "ageSeconds": 0,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-01T05:41:30.373Z",
+        "ageSeconds": 79
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-01T04:50:03.174Z",
-        "players": 518,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-01T05:39:31.470Z",
+        "ageSeconds": 197
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-01T05:42:48.952Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-01T05:31:07.222Z",
-        "ageSeconds": 0,
-        "reportDate": "2026-07-31",
-        "archivedPlayers": 397,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-01T05:42:46.573Z",
+        "ageSeconds": 2
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-08-01_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "id": "2026-08-01_EVENING_PROCESS_QUESTION",
       "date": "2026-08-01",
-      "type": "verified_daily_recap",
-      "slot": "overnight",
+      "type": "process_question",
+      "slot": "evening",
       "status": "posted",
-      "scheduled_for_eastern": "2026-08-01T05:31:08.173Z",
-      "text": "The verified MLB model report for 2026-07-31 is in.\n\n37 home runs landed against 37.3 expected (-0.3).\nTop 10: 2 hits from 10 archived players.\n\n• Munetaka Murakami: pregame rank #7 | 24.0% model probability | 389 ft\n• Junior Caminero: pregame rank #8 | 24.0% model probability | 453 ft\n• CJ Abrams: pregame rank #11 | 24.0% model probability | 393 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
-      "players": [
-        "Munetaka Murakami",
-        "Junior Caminero",
-        "CJ Abrams"
-      ],
-      "graphic": "exports/content/graphics/2026-08-01_VERIFIED_MODEL_REPORT.png",
-      "graphicType": "verified_model_report",
-      "reportDate": "2026-07-31",
-      "resultsDate": "2026-07-31",
-      "verifiedPregame": true,
-      "verifiedResults": true,
+      "scheduled_for_eastern": "2026-08-01T05:42:49.456Z",
+      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": true,
-      "posted_at": "2026-08-01T05:31:10.525Z",
-      "x_post_id": "2083425282807955951",
-      "created_at": "2026-08-01T05:31:07.842Z",
+      "posted_at": "2026-08-01T05:42:49.927Z",
+      "x_post_id": "2083428216866476518",
+      "created_at": "2026-08-01T05:42:49.221Z",
       "error": null
     }
   ]
