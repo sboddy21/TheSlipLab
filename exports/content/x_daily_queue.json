@@ -1,16 +1,15 @@
 {
-  "updatedAt": "2026-07-31T23:09:23.282Z",
-  "date": "2026-07-31",
-  "slot": "pregame",
+  "updatedAt": "2026-08-01T05:31:08.173Z",
+  "date": "2026-08-01",
+  "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "pregame",
-    "selected": "pregame",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
-      "live",
       "morning",
       "midday",
       "afternoon",
@@ -20,177 +19,76 @@
     ]
   },
   "eventPosting": {
-    "enabled": true,
-    "candidates": 2,
+    "enabled": false,
+    "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-07-31T23:09:23.282Z",
+    "checkedAt": "2026-08-01T05:31:08.173Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T23:09:22.959Z",
+        "timestamp": "2026-08-01T05:31:07.842Z",
         "ageSeconds": 0
       },
       {
-        "file": "hr_decision_center.json",
+        "file": "mlb_results_previous.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T23:08:21.417Z",
-        "ageSeconds": 61
+        "timestamp": "2026-08-01T05:31:07.176Z",
+        "ageSeconds": 0,
+        "scheduledGames": 15,
+        "totalScheduledGames": 15,
+        "finalGames": 15
       },
       {
-        "file": "mlb_weather.json",
+        "file": "hr_ai_history.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T23:07:33.656Z",
-        "ageSeconds": 109
+        "timestamp": "2026-08-01T04:50:03.174Z",
+        "players": 518,
+        "mode": "historical pregame archive"
       },
       {
-        "file": "mlb_results.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-07-31T23:09:22.667Z",
-        "ageSeconds": 0
-      },
-      {
-        "file": "health_status.json",
+        "file": "hr_calibration_report.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-07-31T23:09:19.525Z",
-        "ageSeconds": 3
+        "timestamp": "2026-08-01T05:31:07.222Z",
+        "ageSeconds": 0,
+        "reportDate": "2026-07-31",
+        "archivedPlayers": 397,
+        "mode": "verified daily model report"
       }
     ]
   },
-  "count": 3,
+  "count": 1,
   "posts": [
     {
-      "id": "called_it_home_run_2026-07-31_824486_668709_27",
-      "date": "2026-07-31",
-      "type": "called_it_home_run",
-      "slot": "live",
+      "id": "2026-08-01_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "date": "2026-08-01",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
       "status": "queued",
-      "scheduled_for_eastern": "2026-07-31T23:09:23.282Z",
-      "text": "🚨 SLIP LAB CALLED IT\n\nJJ Bleday just left the yard.\n\nAI Says: TOP 30 #28\nPittsburgh Pirates @ Cincinnati Reds\nBottom 3\n386 ft · 105.7 mph EV · 37° LA\nOff Paul Skenes\n\nBoard: https://thesliplab.com/ai-says.html",
+      "scheduled_for_eastern": "2026-08-01T05:31:08.173Z",
+      "text": "The verified MLB model report for 2026-07-31 is in.\n\n37 home runs landed against 37.3 expected (-0.3).\nTop 10: 2 hits from 10 archived players.\n\n• Munetaka Murakami: pregame rank #7 | 24.0% model probability | 389 ft\n• Junior Caminero: pregame rank #8 | 24.0% model probability | 453 ft\n• CJ Abrams: pregame rank #11 | 24.0% model probability | 393 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
       "players": [
-        "JJ Bleday"
+        "Munetaka Murakami",
+        "Junior Caminero",
+        "CJ Abrams"
       ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 824486,
-        "playId": 27,
-        "playerId": 668709,
-        "player": "JJ Bleday",
-        "team": "Cincinnati Reds",
-        "opponent": "Pittsburgh Pirates",
-        "inning": "Bottom 3",
-        "distance": 386,
-        "exitVelocity": 105.7,
-        "launchAngle": 37
-      },
-      "ai": {
-        "primarySection": "TOP 30",
-        "primaryRank": 28,
-        "sections": [
-          {
-            "section": "TOP 30",
-            "rank": 28,
-            "confidence": 1,
-            "aiScore": 0.672
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-07-31T23:09:22.959Z"
-    },
-    {
-      "id": "called_it_home_run_2026-07-31_824651_682987_28",
-      "date": "2026-07-31",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-07-31T23:09:23.282Z",
-      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nSpencer Jones just left the yard.\n\nAI Says: LIVE LONGSHOTS #25\nNew York Yankees @ Chicago Cubs\nTop 5\n418 ft · 108.7 mph EV · 21° LA\nOff Shota Imanaga\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Spencer Jones"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 824651,
-        "playId": 28,
-        "playerId": 682987,
-        "player": "Spencer Jones",
-        "team": "New York Yankees",
-        "opponent": "Chicago Cubs",
-        "inning": "Top 5",
-        "distance": 418,
-        "exitVelocity": 108.7,
-        "launchAngle": 21
-      },
-      "ai": {
-        "primarySection": "LIVE LONGSHOTS",
-        "primaryRank": 25,
-        "sections": [
-          {
-            "section": "LIVE LONGSHOTS",
-            "rank": 25,
-            "confidence": 0.649,
-            "aiScore": 0.45
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-07-31T23:09:22.959Z"
-    },
-    {
-      "id": "2026-07-31_PREGAME_FINAL_READ",
-      "date": "2026-07-31",
-      "type": "final_read",
-      "slot": "pregame",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-07-31T23:09:23.282Z",
-      "text": "Final HR board check: if I had to narrow the entire slate to one profile, I keep coming back to Jordan Walker.\n\nStrong power profile, crushes this pitch mix and good HR weather conditions.\n\nHR confidence 63.1\nPower 69.4\nPitch edge 90.6\nBullpen context 100.0\n\nFull player breakdown: https://thesliplab.com/mlb.html\n\nOne lean—not a guarantee.",
-      "players": [
-        "Jordan Walker"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
+      "graphic": "exports/content/graphics/2026-08-01_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-07-31",
+      "resultsDate": "2026-07-31",
+      "verifiedPregame": true,
+      "verifiedResults": true,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-07-31T23:09:22.959Z"
+      "created_at": "2026-08-01T05:31:07.842Z"
     }
   ]
 }
