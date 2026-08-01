@@ -56,7 +56,12 @@
         <p>Choose a completed slate to inspect its verified home-run outcomes.</p>
       </div>
 
-      <div class="hr-results-calendar-card">
+      <details class="hr-results-calendar-disclosure">
+        <summary>
+          <span><strong>Browse the 60-day archive</strong><small>Choose any completed date to see its verified home runs.</small></span>
+          <em>Open archive</em>
+        </summary>
+        <div class="hr-results-calendar-card">
         <div class="hr-results-calendar-head">
           <div>
             <div class="hr-results-calendar-kicker">Recent slates</div>
@@ -78,7 +83,8 @@
         </div>
 
         <div class="hr-results-calendar-list" aria-live="polite"></div>
-      </div>
+        </div>
+      </details>
     `;
 
     const input = target.querySelector("#hrResultsDate");

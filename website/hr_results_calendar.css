@@ -133,6 +133,84 @@ body.tsl-results-page .section-heading p {
   line-height: 1.55;
 }
 
+body.tsl-results-page .hr-results-calendar-disclosure {
+  border: 1px solid var(--rule);
+  background: var(--white);
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px 26px;
+  cursor: pointer;
+  list-style: none;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary span,
+body.tsl-results-page .hr-results-calendar-disclosure > summary small {
+  display: block;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary strong {
+  color: var(--ink);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 24px;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary small {
+  margin-top: 5px;
+  color: var(--ink-soft);
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary em {
+  color: var(--blue);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure > summary em::after {
+  content: " +";
+  font-size: 18px;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure[open] > summary em::before {
+  content: "Close archive";
+  font-size: 11px;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure[open] > summary em {
+  font-size: 0;
+}
+
+body.tsl-results-page .hr-results-calendar-disclosure[open] > summary em::after {
+  content: " −";
+  font-size: 18px;
+}
+
+body.tsl-results-page .hr-results-calendar-card {
+  border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 640px) {
+  body.tsl-results-page .hr-results-calendar-disclosure > summary {
+    align-items: flex-start;
+    padding: 18px;
+  }
+
+  body.tsl-results-page .hr-results-calendar-disclosure > summary strong {
+    font-size: 20px;
+  }
+}
+
 body.tsl-results-page .summary {
   margin: 0;
   padding: 0;
@@ -381,7 +459,7 @@ body.tsl-results-page .hr-results-calendar-card {
   max-width: none;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--rule);
+  border: 0;
   border-radius: 0;
   background: var(--white);
   box-shadow: none;
