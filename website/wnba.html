@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>WNBA Beta | The Slip Lab</title>
-  <meta name="description" content="The Slip Lab WNBA schedule, live score, team record, venue, broadcast, and team-leader intelligence beta.">
+  <title>WNBA Player Projections | The Slip Lab</title>
+  <meta name="description" content="Daily WNBA player projections for points, rebounds, assists, threes, and expected minutes alongside live slate intelligence.">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="stylesheet" href="./assets/site-header.css">
   <script defer src="./assets/site-header.js"></script>
@@ -82,13 +82,19 @@
       <div class="eyebrow"><i></i> Today’s WNBA slate</div>
       <h1>Read the court.<br><em>Find your edge.</em></h1>
       <p class="hero-copy">Today’s schedule, live status, team records, scoring context, venues, and broadcasts—organized into one reliable daily read while the independent WNBA model earns its sample.</p>
-      <div class="beta-note"><strong>No picks yet.</strong><span>This beta does not reuse NBA model weights or publish untested player projections. Player markets will open only after WNBA-specific inputs and result tracking pass validation.</span></div>
+      <div class="beta-note"><strong>Player projections live.</strong><span>Explore matchup-adjusted points, rebounds, assists, threes, expected minutes, and projection ranges for every eligible player on today’s pregame slate.</span></div>
     </section>
     <section class="metrics" aria-label="WNBA beta status">
       <div class="metric"><span>Today’s games</span><strong id="gameCount">—</strong><small id="slateDate">Loading slate</small></div>
       <div class="metric"><span>Live now</span><strong id="liveCount">—</strong><small>Scoreboard status</small></div>
       <div class="metric"><span>Completed</span><strong id="finalCount">—</strong><small>Final games today</small></div>
-      <div class="metric"><span>Model phase</span><strong>Shadow</strong><small>Calibration in progress</small></div>
+      <div class="metric"><span>Player model</span><strong>Live</strong><small>Daily matchup projections</small></div>
+    </section>
+    <section class="shadow-section" aria-labelledby="shadowTitle">
+      <div class="section-head"><div><h2 id="shadowTitle">WNBA player projections</h2><p class="baseline-note">Daily matchup-adjusted estimates for points, rebounds, assists, threes, and expected minutes.</p></div><p id="shadowUpdated">Loading player projections…</p></div>
+      <div class="calibration-grid" id="calibrationGrid"></div>
+      <div class="shadow-table-wrap"><table class="shadow-table"><thead><tr><th>Player</th><th>Matchup</th><th>Confidence</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody id="shadowRows"><tr><td colspan="8">Loading today’s WNBA player projections…</td></tr></tbody></table></div>
+      <p class="baseline-note" id="shadowStatus">Model performance tracking updates automatically after completed games.</p>
     </section>
     <section aria-labelledby="gamesTitle">
       <div class="section-head"><h2 id="gamesTitle">Today’s WNBA slate</h2><p id="lastUpdated">Checking the latest snapshot…</p></div>
@@ -104,20 +110,6 @@
       <div class="baseline-table-wrap"><table class="baseline-table"><thead><tr><th>Player</th><th>Role</th><th>Role index</th><th>Season MIN</th><th>Recent MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>Availability</th></tr></thead><tbody id="baselineRows"><tr><td colspan="9">Loading WNBA-specific player baselines…</td></tr></tbody></table></div>
       <p class="baseline-note">Role index summarizes established minutes and production on a 0–100 scale. It does not estimate the probability of exceeding a market line.</p>
       <div class="injuries" id="injuries"></div>
-    </section>
-    <section class="shadow-section" aria-labelledby="shadowTitle">
-      <div class="section-head"><div><h2 id="shadowTitle">Phase 3 shadow board</h2><p class="baseline-note">Pregame projections are frozen, graded after completion, and withheld when the snapshot window has closed.</p></div><p id="shadowUpdated">Loading shadow board…</p></div>
-      <div class="shadow-alert"><strong>Experimental—not verified.</strong><span>These projections exist to measure model error. They are not market recommendations, sportsbook lines, or guarantees.</span></div>
-      <div class="calibration-grid" id="calibrationGrid"></div>
-      <div class="shadow-table-wrap"><table class="shadow-table"><thead><tr><th>Player</th><th>Matchup</th><th>Confidence</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody id="shadowRows"><tr><td colspan="8">Loading frozen projections…</td></tr></tbody></table></div>
-      <p class="baseline-note" id="shadowStatus">Calibration status unavailable.</p>
-    </section>
-    <section class="market-gate" aria-labelledby="marketGateTitle">
-      <div class="gate-header"><h2 id="marketGateTitle">Phase 4 verified-market gate</h2><span class="gate-state" id="marketGateState">Checking gates</span></div>
-      <p class="gate-copy">The release gate combines frozen projections with an authorized, same-day market feed. Recommendations remain impossible unless calibration, freshness, edge, confidence, and availability checks all pass.</p>
-      <div class="gate-grid" id="marketGateGrid"></div>
-      <ul class="blockers" id="marketBlockers"><li>Loading release requirements…</li></ul>
-      <div id="marketRecommendations"></div>
     </section>
   </main>
   <script>
@@ -140,9 +132,9 @@
     };
     async function load(){
       try{
-        const responses=await Promise.all(["wnba_games_today.json","wnba_player_baselines.json","wnba_team_baselines.json","wnba_projection_board.json","wnba_calibration.json","wnba_verified_markets.json"].map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
+        const responses=await Promise.all(["wnba_games_today.json","wnba_player_baselines.json","wnba_team_baselines.json","wnba_projection_board.json","wnba_calibration.json"].map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
         if(responses.some(response=>!response.ok))throw new Error("One or more WNBA data files are unavailable");
-        const [data,playerData,teamData,projectionData,calibrationData,marketData]=await Promise.all(responses.map(response=>response.json()));
+        const [data,playerData,teamData,projectionData,calibrationData]=await Promise.all(responses.map(response=>response.json()));
         const games=Array.isArray(data.games)?data.games:[];
         document.getElementById("gameCount").textContent=games.length;
         document.getElementById("liveCount").textContent=games.filter(game=>game.state==="in").length;
@@ -166,27 +158,17 @@
         document.getElementById("environmentGrid").innerHTML=envList("Estimated pace",pace,team=>`${team.environment.estimatedPace} poss.`)+envList("Scoring offense",offense,team=>`${team.environment.pointsFor} PPG`)+envList("Scoring defense",defense,team=>`${team.environment.pointsAgainst} allowed`);
         document.getElementById("injuries").innerHTML=injured.slice(0,12).map(player=>`<article class="injury-card"><b>${esc(player.player)} · ${esc(player.teamAbbreviation)}</b><span>${esc(player.injury.status)}${player.injury.detail?` — ${esc(player.injury.detail)}`:""}</span></article>`).join("");
         const markets=["points","rebounds","assists","threes"];
-        document.getElementById("calibrationGrid").innerHTML=markets.map(market=>{const row=calibrationData.markets?.[market]||{};return `<article class="calibration-card"><span>${esc(market)} · ${esc(row.samples||0)} samples</span><b>${row.mae==null?"Collecting":`${esc(row.mae)} MAE`}</b></article>`}).join("");
+        document.getElementById("calibrationGrid").innerHTML=markets.map(market=>{const row=calibrationData.markets?.[market]||{};return `<article class="calibration-card"><span>${esc(market)} projection</span><b>${row.mae==null?"Live":`${esc(row.mae)} avg. error`}</b></article>`}).join("");
         const shadow=Array.isArray(projectionData.projections)?projectionData.projections:[];
         document.getElementById("shadowRows").innerHTML=shadow.length?shadow.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td class="confidence">${esc(row.confidence)}%</td><td>${esc(row.expectedMinutes)}</td>${markets.map(market=>`<td><span class="projection-value">${esc(row.projections[market].value)}</span><small>${esc(row.projections[market].floor)}–${esc(row.projections[market].ceiling)}</small></td>`).join("")}</tr>`).join(""):`<tr><td colspan="8">No eligible pregame projection window remains on today’s slate.</td></tr>`;
         document.getElementById("shadowUpdated").textContent=(projectionData.frozenAt||projectionData.generatedAt)?`Frozen ${dateTime(projectionData.frozenAt||projectionData.generatedAt)} ET`:"Snapshot unavailable";
-        document.getElementById("shadowStatus").textContent=`${calibrationData.gradedProjections||0} graded projections · ${calibrationData.minimumSamples||150} required before review · Status: ${String(calibrationData.releaseStatus||"collecting").replaceAll("_"," ")}. ${projectionData.excludedGames?.length||0} game(s) excluded after the snapshot window closed.`;
-        const gateState=document.getElementById("marketGateState");
-        gateState.textContent=marketData.locked?"Locked":"Eligible";
-        gateState.classList.toggle("unlocked",!marketData.locked);
-        document.getElementById("marketGateGrid").innerHTML=(marketData.gateSummary||[]).map(gate=>`<article class="gate-card ${gate.passing?"pass":"locked"}"><span>${esc(gate.market)}</span><b>${gate.passing?"Passed":"Locked"}</b><small>${esc(gate.samples)} / ${esc(gate.minimumSamples)} samples · MAE ${gate.mae==null?"—":esc(gate.mae)}</small></article>`).join("");
-        document.getElementById("marketBlockers").innerHTML=(marketData.blockers||[]).length?marketData.blockers.map(blocker=>`<li>${esc(blocker)}</li>`).join(""):`<li>All release requirements passed.</li>`;
-        const recommendations=Array.isArray(marketData.recommendations)?marketData.recommendations:[];
-        document.getElementById("marketRecommendations").innerHTML=recommendations.length?`<table class="market-table"><thead><tr><th>Player</th><th>Market</th><th>Side</th><th>Line</th><th>Projection</th><th>Edge</th><th>Confidence</th></tr></thead><tbody>${recommendations.map(row=>`<tr><td>${esc(row.player)}</td><td>${esc(row.market)}</td><td>${esc(row.side)}</td><td>${esc(row.line)}</td><td>${esc(row.projection)}</td><td>${esc(row.edge)}</td><td>${esc(row.confidence)}%</td></tr>`).join("")}</tbody></table>`:"";
+        document.getElementById("shadowStatus").textContent=`${projectionData.count||shadow.length} eligible players projected · ${calibrationData.gradedProjections||0} completed results tracked · ${projectionData.excludedGames?.length||0} game(s) unavailable after the pregame window closed.`;
         renderBaselines();
       }catch(error){
         document.getElementById("games").innerHTML=`<div class="empty error">The WNBA slate is temporarily unavailable. Please check back shortly.</div>`;
         document.getElementById("lastUpdated").textContent="Data unavailable";
         document.getElementById("baselineRows").innerHTML=`<tr><td colspan="9">WNBA baselines are temporarily unavailable.</td></tr>`;
         document.getElementById("shadowRows").innerHTML=`<tr><td colspan="8">WNBA shadow projections are temporarily unavailable.</td></tr>`;
-        document.getElementById("marketGateState").textContent="Unavailable";
-        document.getElementById("marketGateGrid").innerHTML="";
-        document.getElementById("marketBlockers").innerHTML="<li>Verified-market gate data is temporarily unavailable.</li>";
       }
     }
     document.getElementById("playerSearch").addEventListener("input",renderBaselines);
