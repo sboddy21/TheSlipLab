@@ -38,6 +38,11 @@
       background:rgba(0,0,0,.26);
       border:1px solid rgba(255,255,255,.10);
     }
+    .genuine-ai{margin:18px 0;border-radius:24px;overflow:hidden;border:1px solid rgba(105,240,174,.28);background:linear-gradient(145deg,rgba(15,55,45,.56),rgba(10,15,25,.92));box-shadow:0 18px 55px rgba(0,0,0,.28)}
+    .genuine-ai-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:18px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .genuine-ai-head span{display:block;color:#69f0ae;font-size:10px;font-weight:1000;letter-spacing:.13em;text-transform:uppercase}.genuine-ai-head h2{margin:6px 0 0;font-size:26px}.genuine-ai-state{color:rgba(255,255,255,.62);font-size:11px;font-weight:900;text-align:right}
+    .genuine-ai-summary{padding:18px;border-bottom:1px solid rgba(255,255,255,.08)}.genuine-ai-summary p{max-width:1000px;margin:0;color:rgba(255,255,255,.82);font:700 16px/1.55 Georgia,"Times New Roman",serif}.ai-themes{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.ai-theme{padding:7px 9px;border:1px solid rgba(105,240,174,.26);border-radius:999px;color:#dffff0;font-size:10px;font-weight:900}
+    .ai-insights{display:grid;grid-template-columns:repeat(2,1fr)}.ai-insight{display:grid;grid-template-columns:46px 1fr;gap:12px;padding:17px;border-right:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08)}.ai-rank{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:#69f0ae;color:#06140e;font-weight:1000}.ai-insight h3{margin:0 0 5px;font-size:18px}.ai-insight p{margin:0;color:rgba(255,255,255,.68);font-size:12px;line-height:1.5}.ai-signals{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.ai-signal{padding:5px 7px;border-radius:999px;background:rgba(105,240,174,.1);border:1px solid rgba(105,240,174,.22);color:#dffff0;font-size:9px;font-weight:900}.ai-signal.risk{background:rgba(255,174,75,.1);border-color:rgba(255,174,75,.25);color:#ffe1b5}.ai-fallback{padding:18px;color:rgba(255,255,255,.68);font-size:13px;line-height:1.5}
     .tagbtn{
       border:1px solid rgba(255,255,255,.13);
       background:rgba(255,255,255,.065);
@@ -100,8 +105,8 @@
     .chips{display:flex;flex-wrap:wrap;gap:7px}
     .chip{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.10);font-size:10px;font-weight:1000;text-transform:uppercase}
     @media(max-width:1180px){.players{grid-template-columns:repeat(3,1fr)}}
-    @media(max-width:900px){.players{grid-template-columns:repeat(2,1fr)}.topbar{flex-direction:column}.nav{justify-content:flex-start}}
-    @media(max-width:620px){.players{grid-template-columns:1fr}.section-head{flex-direction:column}.brand h1{font-size:29px}}
+    @media(max-width:900px){.players,.ai-insights{grid-template-columns:repeat(2,1fr)}.topbar{flex-direction:column}.nav{justify-content:flex-start}}
+    @media(max-width:620px){.players,.ai-insights{grid-template-columns:1fr}.section-head,.genuine-ai-head{flex-direction:column}.genuine-ai-state{text-align:left}.brand h1{font-size:29px}}
   </style>
   <link rel="stylesheet" href="./assets/site-header.css">
   <script defer src="./assets/site-header.js"></script>
@@ -131,6 +136,11 @@
         The page does not calculate intelligence. It reads the AI 2.0 engine output and organizes the slate by live signal sections.
       </p>
       <div class="status" id="status"></div>
+    </section>
+
+    <section class="genuine-ai" id="genuineAi" aria-labelledby="genuineAiTitle">
+      <div class="genuine-ai-head"><div><span>OpenAI-powered slate analysis</span><h2 id="genuineAiTitle">Genuine MLB AI Says</h2></div><div class="genuine-ai-state" id="genuineAiState">Preparing canonical MLB signals…</div></div>
+      <div id="genuineAiBody"><div class="ai-fallback">The canonical model board loads first. OpenAI analysis will follow.</div></div>
     </section>
 
     <div class="tagbar" id="tagbar"></div>
@@ -172,7 +182,9 @@
       closeModal: document.getElementById("closeModal"),
       modalName: document.getElementById("modalName"),
       modalSub: document.getElementById("modalSub"),
-      modalBody: document.getElementById("modalBody")
+      modalBody: document.getElementById("modalBody"),
+      genuineAiState: document.getElementById("genuineAiState"),
+      genuineAiBody: document.getElementById("genuineAiBody")
     };
 
     function esc(v){
@@ -333,6 +345,59 @@
       els.modal.classList.add("show");
     }
 
+    async function accountToken(){
+      for(let attempt=0;attempt<60&&!window.TSLAccount;attempt++)await new Promise(resolve=>setTimeout(resolve,100));
+      if(!window.TSLAccount)throw new Error("Account session is unavailable");
+      await window.TSLAccount.ready;
+      const token=await window.TSLAccount.accessToken();
+      if(!token)throw new Error("Sign in to use MLB AI Says");
+      return token;
+    }
+
+    function aiInputPlayers(){
+      const unique=new Map();
+      for(const section of AI.sections||[]){
+        for(const player of section.players||[]){
+          const key=String(player.playerId||playerKey(player.name));
+          const existing=unique.get(key);
+          const score=Number(player.aiScore||player.confidence||0);
+          if(existing&&Number(existing.aiScore||0)>=score)continue;
+          const card=player.card||{};
+          const reasoning=reasoningFor(player);
+          unique.set(key,{
+            playerId:key,player:player.name,team:card.team,opponent:card.opponent,pitcher:card.pitcher,
+            section:section.title,tags:player.tags,aiScore:score,hrScore:card.hrScore,powerScore:card.powerScore,
+            recentForm:card.recentForm,odds:card.odds,
+            reasoning:reasoning?{verdict:reasoning.aiVerdict,probability:reasoning.probability,confidence:reasoning.confidence,stars:reasoning.stars,whyToday:reasoning.whyToday,riskFactors:reasoning.riskFactors,trustBreakdown:reasoning.trustBreakdown,homeRunDNA:reasoning.homeRunDNA}:null
+          });
+        }
+      }
+      return [...unique.values()].sort((a,b)=>(b.reasoning?.confidence||0)-(a.reasoning?.confidence||0)||b.aiScore-a.aiScore).slice(0,24);
+    }
+
+    async function loadGenuineAi(){
+      const players=aiInputPlayers();
+      if(players.length<4){els.genuineAiState.textContent="Waiting for today’s MLB board";return;}
+      const cacheKey=`tsl_mlb_ai_${AI.generatedAt||"current"}`;
+      try{
+        els.genuineAiState.textContent=`OpenAI is analyzing ${players.length} MLB profiles…`;
+        let analysis=JSON.parse(localStorage.getItem(cacheKey)||"null");
+        if(!analysis?.insights?.length){
+          const token=await accountToken();
+          const response=await fetch("/api/mlb-ai-analysis",{method:"POST",headers:{Accept:"application/json",Authorization:`Bearer ${token}`,"Content-Type":"application/json"},body:JSON.stringify({slate:{generatedAt:AI.generatedAt,players}})});
+          const payload=await response.json().catch(()=>({}));
+          if(!response.ok)throw new Error(payload.error||"MLB AI analysis is unavailable");
+          analysis=payload;
+          localStorage.setItem(cacheKey,JSON.stringify(analysis));
+        }
+        els.genuineAiState.textContent=`AI-generated · ${analysis.model||"OpenAI"} · ${new Date(analysis.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`;
+        els.genuineAiBody.innerHTML=`<div class="genuine-ai-summary"><p>${esc(analysis.summary)}</p><div class="ai-themes">${(analysis.slateThemes||[]).map(theme=>`<span class="ai-theme">${esc(theme)}</span>`).join("")}</div></div><div class="ai-insights">${analysis.insights.map((insight,index)=>`<article class="ai-insight"><div class="ai-rank">${index+1}</div><div><h3>${esc(insight.player)} · ${esc(insight.team)}</h3><p><strong>${esc(insight.headline)}</strong> ${esc(insight.analysis)}</p><div class="ai-signals">${(insight.supportingSignals||[]).map(signal=>`<span class="ai-signal">${esc(signal)}</span>`).join("")}${(insight.riskSignals||[]).map(signal=>`<span class="ai-signal risk">${esc(signal)}</span>`).join("")}</div></div></article>`).join("")}</div>`;
+      }catch(error){
+        els.genuineAiState.textContent="Genuine AI temporarily unavailable";
+        els.genuineAiBody.innerHTML=`<div class="ai-fallback">${esc(error.message)}. The canonical MLB model sections below remain available and unchanged.</div>`;
+      }
+    }
+
     async function init(){
       try {
         const [aiRes, reasoningRes] = await Promise.all([
@@ -372,6 +437,7 @@
         `;
 
         render();
+        loadGenuineAi();
       } catch(err) {
         els.status.innerHTML = `<span class="pill">AI 2.0 not loaded</span>`;
         els.sections.innerHTML = `<div class="empty">${esc(err.message)}</div>`;
