@@ -6,10 +6,13 @@
       "includeFiles": "website/data/**/*.json"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/data/:file*",
-      "destination": "/api/member-data?file=:file*"
+      "src": "/data/(.*)",
+      "dest": "/api/member-data?file=$1"
+    },
+    {
+      "handle": "filesystem"
     }
   ]
 }
