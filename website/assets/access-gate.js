@@ -30,7 +30,8 @@
     "/player-intelligence.html",
     "/power-zones.html",
     "/quick-target.html",
-    "/streak-lab.html"
+    "/streak-lab.html",
+    "/tags.html"
   ]);
 
   const openPaths = new Set([

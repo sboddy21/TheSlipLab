@@ -79,7 +79,8 @@
     "/player-intelligence.html",
     "/power-zones.html",
     "/quick-target.html",
-    "/streak-lab.html"
+    "/streak-lab.html",
+    "/tags.html"
   ]);
 
   function itemIsActive(activePaths, path){

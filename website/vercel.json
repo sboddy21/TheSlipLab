@@ -1,0 +1,14 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/member-data.mjs": {
+      "includeFiles": "data/**/*.json"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/data/:file*",
+      "destination": "/api/member-data?file=:file*"
+    }
+  ]
+}
