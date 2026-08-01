@@ -1,0 +1,39 @@
+*{box-sizing:border-box}
+body.tsl-wnba-page{--ink:#241231;--paper:#f5f0e8;--white:#fffdf8;--purple:#6f36a7;--orange:#b43d25;--mint:#43d5b0;--muted:#675e70;--rule:#402654;margin:0;background:var(--paper);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body.tsl-wnba-page main{width:min(1460px,calc(100% - 44px));max-width:1460px;margin:0 auto;padding:28px 0 80px}
+.wnba-report-line{display:flex;justify-content:space-between;gap:20px;margin-bottom:38px;padding:15px 0 14px 38px;border-bottom:5px solid var(--ink);position:relative;font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.wnba-report-line:before{content:"";position:absolute;left:0;top:18px;width:28px;height:5px;background:linear-gradient(90deg,var(--orange) 72%,var(--purple) 72%)}
+.wnba-eyebrow{color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.17em;text-transform:uppercase}
+.wnba-title{max-width:980px;margin:10px 0 18px;font:700 clamp(55px,7.2vw,108px)/.82 Georgia,"Times New Roman",serif;letter-spacing:-.065em}
+.wnba-title em{color:var(--purple);font-weight:400}
+.wnba-sub{max-width:760px;margin:0 0 34px;color:#51425c;font:18px/1.55 Georgia,"Times New Roman",serif}
+.wnba-status{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-bottom:18px;padding:12px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);color:var(--muted);font-size:11px;font-weight:850}
+.wnba-status strong{color:var(--purple);text-transform:uppercase;letter-spacing:.1em}
+.wnba-panel{overflow:hidden;border:1px solid var(--rule);background:rgba(255,253,248,.64)}
+.wnba-table-wrap{overflow:auto}
+.wnba-table{width:100%;min-width:880px;border-collapse:collapse}
+.wnba-table th,.wnba-table td{padding:13px 14px;border-bottom:1px solid rgba(36,18,49,.14);text-align:left;font-size:12px}
+.wnba-table th{background:var(--ink);color:#fff;font-size:9px;letter-spacing:.12em;text-transform:uppercase}
+.wnba-table td:first-child{font-weight:950}
+.wnba-table small{display:block;margin-top:3px;color:var(--muted)}
+.wnba-value{color:var(--purple);font-weight:950}
+.wnba-confidence{display:inline-block;padding:6px 8px;border:1px solid var(--purple);color:var(--purple);font-weight:950}
+.wnba-empty{padding:36px;color:var(--muted);text-align:center}
+.wnba-finals{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}.wnba-final{padding:18px;border:1px solid var(--rule);background:var(--white)}.wnba-final-date{color:var(--muted);font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.wnba-final-team{display:flex;justify-content:space-between;gap:15px;padding:10px 0;border-bottom:1px solid rgba(36,18,49,.14);font-weight:900}.wnba-final-team b{color:var(--purple);font-size:20px}.wnba-results-heading{margin:26px 0 10px;font:900 27px/1 Georgia,"Times New Roman",serif}
+.wnba-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+.wnba-card{padding:20px;border:1px solid var(--rule);border-top:5px solid var(--purple);background:var(--white)}
+.wnba-card:nth-child(3n+1){border-top-color:var(--mint)}
+.wnba-card h2{margin:0 0 5px;font:900 25px/1 Georgia,"Times New Roman",serif}
+.wnba-card .matchup{color:var(--muted);font-size:11px;font-weight:850}
+.wnba-card .lead{margin:17px 0 6px;color:var(--purple);font:900 34px/1 Arial,Helvetica,sans-serif}
+.wnba-card .label{font-size:9px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+.wnba-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:16px}
+.wnba-stat{padding:10px 7px;background:#eee5f3;text-align:center}
+.wnba-stat b{display:block;color:var(--purple);font-size:18px}.wnba-stat span{display:block;margin-top:4px;color:var(--muted);font-size:8px;font-weight:950;text-transform:uppercase}
+.wnba-insight{display:grid;grid-template-columns:68px 1fr;gap:16px;padding:20px;border-bottom:1px solid rgba(36,18,49,.16)}
+.wnba-insight:last-child{border-bottom:0}
+.wnba-rank{display:grid;place-items:center;width:58px;height:58px;background:var(--ink);color:var(--mint);font:950 22px Arial,Helvetica,sans-serif}
+.wnba-insight h2{margin:0 0 6px;font:900 25px/1 Georgia,"Times New Roman",serif}
+.wnba-insight p{max-width:850px;margin:0;color:#51425c;font-size:13px;line-height:1.55}
+.wnba-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.wnba-chip{padding:6px 8px;border:1px solid var(--purple);color:var(--purple);font-size:9px;font-weight:950;text-transform:uppercase}
+@media(max-width:760px){body.tsl-wnba-page main{width:min(100% - 26px,1460px);padding-top:22px}.wnba-report-line{margin-bottom:28px}.wnba-title{font-size:clamp(52px,17vw,78px)}.wnba-title em{display:block}.wnba-grid,.wnba-finals{grid-template-columns:1fr}.wnba-status{align-items:flex-start;flex-direction:column}.wnba-insight{grid-template-columns:1fr}.wnba-stat-grid{grid-template-columns:repeat(2,1fr)}}

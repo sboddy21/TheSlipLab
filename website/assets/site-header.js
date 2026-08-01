@@ -38,6 +38,16 @@
 
   const primaryLabels = new Set(["Sign In", "Slate", "Results", "Weather", "AI Says"]);
   const primaryOrder = ["Sign In", "Slate", "Results", "Weather", "AI Says"];
+  const wnbaItems = [
+    ["Slate","./wnba.html",["/wnba.html"]],
+    ["Results","./wnba-results.html",["/wnba-results.html"]],
+    ["AI Says","./wnba-ai-says.html",["/wnba-ai-says.html"]],
+    ["How to Use","./how-to-use.html",["/how-to-use.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]],
+    ["Full Board","./wnba-full-board.html",["/wnba-full-board.html"]],
+    ["Quick Target","./wnba-quick-target.html",["/wnba-quick-target.html"]]
+  ];
+  const wnbaPrimaryOrder = ["Slate", "Results", "AI Says"];
   const protectedPaths = new Set([
     "/ai-hall-of-fame.html",
     "/ai-says.html",
@@ -60,6 +70,10 @@
     "/nba-rebounds.html",
     "/nba-threes.html",
     "/wnba.html",
+    "/wnba-results.html",
+    "/wnba-ai-says.html",
+    "/wnba-full-board.html",
+    "/wnba-quick-target.html",
     "/nfl.html",
     "/pitcher-vulnerability.html",
     "/player-intelligence.html",
@@ -103,6 +117,10 @@
 
   function buildHeader(){
     const path = window.location.pathname;
+    const wnbaSection = path === "/wnba.html" || path.startsWith("/wnba-");
+    const navItems = wnbaSection ? wnbaItems : items;
+    const navPrimaryOrder = wnbaSection ? wnbaPrimaryOrder : primaryOrder;
+    const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = "tsl-site-header";
 
@@ -111,16 +129,16 @@
 
     const brand = document.createElement("a");
     brand.className = "tsl-brand";
-    brand.href = "./index.html";
+    brand.href = wnbaSection ? "./wnba.html" : "./index.html";
     brand.innerHTML = "The Slip <span>Lab</span>";
 
     const nav = document.createElement("nav");
     nav.className = "tsl-nav";
 
-    const primaryItems = primaryOrder
-      .map(label => items.find(([itemLabel]) => itemLabel === label))
+    const primaryItems = navPrimaryOrder
+      .map(label => navItems.find(([itemLabel]) => itemLabel === label))
       .filter(Boolean);
-    const menuItems = items.filter(([label]) => !primaryLabels.has(label));
+    const menuItems = navItems.filter(([label]) => !navPrimaryLabels.has(label));
     const menuHasActiveItem = menuItems.some(([, , activePaths]) => itemIsActive(activePaths, path));
 
     primaryItems.forEach(([label, href, activePaths]) => {
