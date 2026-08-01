@@ -120,13 +120,22 @@ export default async function handler(request, response) {
       }
     }
 
-    const dataRoot = path.resolve(process.cwd(), "data");
-    const filePath = path.resolve(dataRoot, file);
-    if (filePath !== dataRoot && !filePath.startsWith(`${dataRoot}${path.sep}`)) {
-      return json(response, 400, { error: "Invalid data file" });
+    const dataRoots = [
+      path.resolve(process.cwd(), "website", "data"),
+      path.resolve(process.cwd(), "data")
+    ];
+    let body = null;
+    for (const dataRoot of dataRoots) {
+      const filePath = path.resolve(dataRoot, file);
+      if (filePath !== dataRoot && !filePath.startsWith(`${dataRoot}${path.sep}`)) continue;
+      try {
+        body = await fs.readFile(filePath, "utf8");
+        break;
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+      }
     }
-
-    const body = await fs.readFile(filePath, "utf8");
+    if (body === null) return json(response, 404, { error: "Data file not found" });
     JSON.parse(body);
     response.setHeader(
       "Cache-Control",
