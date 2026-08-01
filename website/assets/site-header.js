@@ -129,7 +129,7 @@
 
     const brand = document.createElement("a");
     brand.className = "tsl-brand";
-    brand.href = wnbaSection ? "./wnba.html" : "./index.html";
+    brand.href = "./index.html";
     brand.innerHTML = "The Slip <span>Lab</span>";
 
     const nav = document.createElement("nav");
