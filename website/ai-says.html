@@ -372,7 +372,7 @@
           });
         }
       }
-      return [...unique.values()].sort((a,b)=>(b.reasoning?.confidence||0)-(a.reasoning?.confidence||0)||b.aiScore-a.aiScore).slice(0,24);
+      return [...unique.values()].sort((a,b)=>(b.reasoning?.confidence||0)-(a.reasoning?.confidence||0)||b.aiScore-a.aiScore).slice(0,14);
     }
 
     async function loadGenuineAi(){
@@ -380,7 +380,7 @@
       if(players.length<4){els.genuineAiState.textContent="Waiting for today’s MLB board";return;}
       const cacheKey=`tsl_mlb_ai_${AI.generatedAt||"current"}`;
       try{
-        els.genuineAiState.textContent=`OpenAI is analyzing ${players.length} MLB profiles…`;
+        els.genuineAiState.textContent=`OpenAI is analyzing ${Math.min(players.length,14)} MLB profiles · first analysis can take up to a minute…`;
         let analysis=JSON.parse(localStorage.getItem(cacheKey)||"null");
         if(!analysis?.insights?.length){
           const token=await accountToken();
