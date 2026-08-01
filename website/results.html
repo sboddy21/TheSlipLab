@@ -662,6 +662,41 @@ body.tsl-results-page .results-date-panel .date-box{
   font-size:23px;
 }
 body.tsl-results-page .model-performance{margin:34px 0 52px}
+body.tsl-results-page .performance-technical{
+  margin:24px 26px 26px;
+  border:1px solid #9eabb7;
+  background:#f7f4eb;
+}
+body.tsl-results-page .performance-technical > summary{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:18px 20px;
+  color:#071f3b;
+  font-weight:900;
+  cursor:pointer;
+  list-style:none;
+}
+body.tsl-results-page .performance-technical > summary::-webkit-details-marker{display:none}
+body.tsl-results-page .performance-technical > summary:after{
+  content:"+";
+  color:#1267ee;
+  font-size:24px;
+  line-height:1;
+}
+body.tsl-results-page .performance-technical[open] > summary:after{content:"−"}
+body.tsl-results-page .performance-technical > summary span{display:block}
+body.tsl-results-page .performance-technical > summary small{
+  display:block;
+  margin-top:4px;
+  color:#536980;
+  font-weight:600;
+}
+body.tsl-results-page .performance-technical .receipt-lifecycle{border-top:1px solid #9eabb7}
+body.tsl-results-page .performance-technical .performance-detail,
+body.tsl-results-page .performance-technical .performance-evidence{margin-left:20px;margin-right:20px}
+body.tsl-results-page .performance-technical .performance-method{margin:26px 20px 20px}
 body.tsl-results-page .performance-shell{
   overflow:hidden;
   border:1px solid #071f3b;
@@ -1104,14 +1139,14 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
   <section class="model-performance" aria-labelledby="modelPerformanceTitle">
     <div class="section-heading">
-      <div><span>01 / Verified accountability</span><h2 id="modelPerformanceTitle">The model scorecard.</h2></div>
-      <p>Pregame probabilities compared with completed outcomes using the same player, game, and date.</p>
+      <div><span>05 / Model transparency</span><h2 id="modelPerformanceTitle">How the model performed.</h2></div>
+      <p>A plain-language scorecard first, with the detailed verification audit available when you want it.</p>
     </div>
 
     <div class="performance-shell" id="performanceShell">
       <div class="performance-head">
         <div>
-          <span class="performance-kicker">Verified receipt ledger</span>
+          <span class="performance-kicker">Verified model results</span>
           <strong id="performanceWindowLabel">Last 7 days</strong>
         </div>
         <div class="performance-tabs" role="group" aria-label="Model performance period">
@@ -1121,68 +1156,70 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
         </div>
       </div>
 
-      <div class="receipt-lifecycle" aria-label="Receipt verification lifecycle">
-        <article class="receipt-stage">
-          <span>01 · Frozen</span>
-          <strong id="performanceSavedReceipts">—</strong>
-          <small>Pregame receipts captured before the listed first pitch.</small>
-        </article>
-        <article class="receipt-stage">
-          <span>02 · Awaiting</span>
-          <strong id="performanceAwaitingReceipts">—</strong>
-          <small>Calls waiting for a completed MLB result day.</small>
-        </article>
-        <article class="receipt-stage">
-          <span>03 · Graded</span>
-          <strong id="performanceEligibleReceipts">—</strong>
-          <small>Receipts joined to final outcomes and eligible for scoring.</small>
-        </article>
-      </div>
-
-      <div class="performance-status" id="performanceStatus">Loading verified model receipts.</div>
+      <div class="performance-status" id="performanceStatus">Loading verified model results.</div>
 
       <div class="performance-metrics" id="performanceMetrics" hidden>
-        <article><span>Verified predictions</span><strong id="performancePredictions">—</strong><small>in selected period</small></article>
+        <article><span>Picks tracked</span><strong id="performancePredictions">—</strong><small>completed picks in this period</small></article>
         <article><span>Home-run hits</span><strong id="performanceHits">—</strong><small id="performanceHitRate">— hit rate</small></article>
-        <article><span>Expected home runs</span><strong id="performanceExpected">—</strong><small>sum of frozen probabilities</small></article>
-        <article><span>Actual vs forecast</span><strong id="performanceGap">—</strong><small id="performanceGapLabel">calibration difference</small></article>
-        <article><span>Top 10 conversion</span><strong id="performanceTop10">—</strong><small id="performanceTop10Sample">— verified calls</small></article>
-        <article><span>Top 30 conversion</span><strong id="performanceTop30">—</strong><small id="performanceTop30Sample">— verified calls</small></article>
+        <article><span>Top 10 hit rate</span><strong id="performanceTop10">—</strong><small id="performanceTop10Sample">— tracked picks</small></article>
+        <article><span>Top 30 hit rate</span><strong id="performanceTop30">—</strong><small id="performanceTop30Sample">— tracked picks</small></article>
       </div>
 
-      <div class="performance-detail" id="performanceDetail" hidden>
-        <div>
-          <h3>Forecast versus reality.</h3>
-          <p>The blue bar is the actual home-run rate. The orange marker is the average probability printed before the game.</p>
-          <div class="calibration-legend" aria-hidden="true"><span>Actual HR rate</span><span>Frozen forecast</span></div>
+      <details class="performance-technical">
+        <summary><span>View the verification and calibration details<small>Recorded picks, pending games, expected results, probability groups, hits and misses.</small></span></summary>
+        <div class="receipt-lifecycle" aria-label="Prediction verification lifecycle">
+          <article class="receipt-stage">
+            <span>Recorded before games</span>
+            <strong id="performanceSavedReceipts">—</strong>
+            <small>Predictions saved before the listed first pitch.</small>
+          </article>
+          <article class="receipt-stage">
+            <span>Games not finalized</span>
+            <strong id="performanceAwaitingReceipts">—</strong>
+            <small>Predictions waiting for completed MLB results.</small>
+          </article>
+          <article class="receipt-stage">
+            <span>Completed picks</span>
+            <strong id="performanceEligibleReceipts">—</strong>
+            <small>Predictions matched to final outcomes and ready to score.</small>
+          </article>
         </div>
-        <div class="performance-band-list" id="performanceBands"></div>
-      </div>
-
-      <div class="performance-evidence" id="performanceEvidence" hidden>
-        <div>
-          <h3>Season receipt evidence.</h3>
-          <p>Verified hits and the highest-probability completed calls that did not homer. Both sides stay visible.</p>
+        <div class="performance-metrics performance-advanced-metrics">
+          <article><span>Expected home runs</span><strong id="performanceExpected">—</strong><small>combined pregame probabilities</small></article>
+          <article><span>Expected vs actual</span><strong id="performanceGap">—</strong><small id="performanceGapLabel">difference from expectation</small></article>
         </div>
-        <div class="receipt-ledgers">
-          <section class="receipt-ledger" aria-labelledby="verifiedHitsTitle">
-            <div class="receipt-ledger-head"><span id="verifiedHitsTitle">Verified HR hits</span><span>Pregame call → result</span></div>
-            <div id="performanceHitsLedger"></div>
-          </section>
-          <section class="receipt-ledger" aria-labelledby="verifiedMissesTitle">
-            <div class="receipt-ledger-head"><span id="verifiedMissesTitle">Did not homer</span><span>Highest probability first</span></div>
-            <div id="performanceMissesLedger"></div>
-          </section>
+        <div class="performance-detail" id="performanceDetail" hidden>
+          <div>
+            <h3>Expected versus actual results.</h3>
+            <p>The blue bar is the actual home-run rate. The orange marker is the average pregame probability.</p>
+            <div class="calibration-legend" aria-hidden="true"><span>Actual HR rate</span><span>Pregame forecast</span></div>
+          </div>
+          <div class="performance-band-list" id="performanceBands"></div>
         </div>
-      </div>
-
-      <p class="performance-method"><strong>Integrity rule:</strong> legacy snapshots without proof of capture time are excluded. Calls from unfinished result days remain pending and are never counted as misses.</p>
+        <div class="performance-evidence" id="performanceEvidence" hidden>
+          <div>
+            <h3>Completed prediction examples.</h3>
+            <p>Recent verified hits and a small sample of the highest-probability misses.</p>
+          </div>
+          <div class="receipt-ledgers">
+            <section class="receipt-ledger" aria-labelledby="verifiedHitsTitle">
+              <div class="receipt-ledger-head"><span id="verifiedHitsTitle">Recent home-run hits</span><span>Pregame pick → result</span></div>
+              <div id="performanceHitsLedger"></div>
+            </section>
+            <section class="receipt-ledger" aria-labelledby="verifiedMissesTitle">
+              <div class="receipt-ledger-head"><span id="verifiedMissesTitle">Recent misses</span><span>Highest probability first</span></div>
+              <div id="performanceMissesLedger"></div>
+            </section>
+          </div>
+        </div>
+        <p class="performance-method"><strong>Integrity rule:</strong> predictions without proof of capture time are excluded. Picks from unfinished result days remain pending and are never counted as misses.</p>
+      </details>
     </div>
   </section>
 
   <section class="results-overview" aria-labelledby="resultsOverviewTitle">
     <div class="section-heading">
-      <div><span>02 / Daily outcome audit</span><h2 id="resultsOverviewTitle">What happened.</h2></div>
+      <div><span>01 / Daily results</span><h2 id="resultsOverviewTitle">What happened.</h2></div>
       <p>Outcome totals and the model signals attached before first pitch.</p>
     </div>
 
@@ -1249,7 +1286,7 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
   <section class="results-notables" aria-labelledby="resultsNotablesTitle">
     <div class="section-heading compact">
-      <div><span>03 / Notable outcomes</span><h2 id="resultsNotablesTitle">The swings that mattered.</h2></div>
+      <div><span>02 / Notable outcomes</span><h2 id="resultsNotablesTitle">The swings that mattered.</h2></div>
       <p>Game leaders and the strongest pregame receipts.</p>
     </div>
 
@@ -1303,7 +1340,7 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
   <section class="results-ledger" aria-labelledby="resultsLedgerTitle">
     <div class="section-heading compact">
-      <div><span>05 / Full ledger</span><h2 id="resultsLedgerTitle">Every verified homer.</h2></div>
+      <div><span>03 / Full results</span><h2 id="resultsLedgerTitle">Every verified homer.</h2></div>
       <p>Open any row for pitch location, weather, park, umpire, and model context.</p>
     </div>
 
@@ -1352,6 +1389,12 @@ body.tsl-results-page .carry-index-card.neutral .carry-score-line strong{color:#
 
 <script src="/js/player-tags.js"></script>
 <script>
+const resultsMain = document.querySelector("main.wrap");
+const resultsArchive = document.querySelector("#hr-results-calendar");
+const modelPerformance = document.querySelector(".model-performance");
+if(resultsMain && resultsArchive) resultsMain.append(resultsArchive);
+if(resultsMain && modelPerformance) resultsMain.append(modelPerformance);
+
 let results = [];
 let model = [];
 let contextFactors = [];
@@ -1529,6 +1572,10 @@ function renderModelPerformance(){
   };
   const actualHits = Array.isArray(calibrationReport.actualHrHits) ? calibrationReport.actualHrHits : [];
   const falsePositives = Array.isArray(calibrationReport.biggestFalsePositives) ? calibrationReport.biggestFalsePositives : [];
+  const uniqueFalsePositives = falsePositives.filter((receipt, index, rows) => {
+    const key = receipt.playerId || receipt.player;
+    return rows.findIndex(candidate => (candidate.playerId || candidate.player) === key) === index;
+  });
   document.getElementById("performanceHitsLedger").innerHTML = actualHits.length
     ? actualHits.slice(0, 6).map(receipt => {
         const battedBall = [
@@ -1538,21 +1585,21 @@ function renderModelPerformance(){
         return `<article class="receipt-entry"><div><strong>${escapeHtml(receipt.player || "Unknown player")}</strong><small>${receiptDetail(receipt)}${battedBall ? `<br>${escapeHtml(battedBall)}` : ""}</small></div><span class="receipt-probability">${displayRate(receipt.probability)}</span></article>`;
       }).join("")
     : `<div class="receipt-empty">No verified home-run hit has a completed receipt yet. This ledger will populate only after final MLB results are matched.</div>`;
-  document.getElementById("performanceMissesLedger").innerHTML = falsePositives.length
-    ? falsePositives.slice(0, 6).map(receipt => `<article class="receipt-entry"><div><strong>${escapeHtml(receipt.player || "Unknown player")}</strong><small>${receiptDetail(receipt)}</small></div><span class="receipt-probability">${displayRate(receipt.probability)}</span></article>`).join("")
+  document.getElementById("performanceMissesLedger").innerHTML = uniqueFalsePositives.length
+    ? uniqueFalsePositives.slice(0, 4).map(receipt => `<article class="receipt-entry"><div><strong>${escapeHtml(receipt.player || "Unknown player")}</strong><small>${receiptDetail(receipt)}</small></div><span class="receipt-probability">${displayRate(receipt.probability)}</span></article>`).join("")
     : `<div class="receipt-empty">No completed non-HR receipt is eligible yet. Pending games are deliberately excluded from this list.</div>`;
   evidence.hidden = false;
 
   if(!Number(reportWindow.predictions)){
     status.hidden = false;
-    status.innerHTML = `<strong>${saved.toLocaleString()} pregame receipt${saved === 1 ? "" : "s"} saved.</strong> ${awaiting ? `${awaiting.toLocaleString()} await completed game results before grading.` : "The first verified grade will appear after a completed slate is matched."}`;
+    status.innerHTML = `<strong>${saved.toLocaleString()} pregame prediction${saved === 1 ? "" : "s"} saved.</strong> ${awaiting ? `${awaiting.toLocaleString()} await completed game results before grading.` : "The first verified result will appear after a completed slate is matched."}`;
     metrics.hidden = true;
     detail.hidden = true;
     return;
   }
 
   status.hidden = false;
-  status.innerHTML = `<strong>${Number(reportWindow.predictions).toLocaleString()} completed receipt${Number(reportWindow.predictions) === 1 ? "" : "s"} graded for this period.</strong> Every displayed result passed the pregame capture and final-outcome checks.`;
+  status.innerHTML = `<strong>${Number(reportWindow.predictions).toLocaleString()} completed pick${Number(reportWindow.predictions) === 1 ? "" : "s"} tracked for this period.</strong> Every displayed result passed the pregame capture and final-outcome checks.`;
   metrics.hidden = false;
   detail.hidden = false;
   const actual = Number(reportWindow.hits || 0);
@@ -1572,16 +1619,16 @@ function renderModelPerformance(){
       ? "actual below frozen forecast"
       : "actual aligned with forecast";
   document.getElementById("performanceTop10").textContent = displayRate(reportWindow.top10?.hitRate);
-  document.getElementById("performanceTop10Sample").textContent = `${Number(reportWindow.top10?.predictions || 0).toLocaleString()} verified calls`;
+  document.getElementById("performanceTop10Sample").textContent = `${Number(reportWindow.top10?.predictions || 0).toLocaleString()} tracked picks`;
   document.getElementById("performanceTop30").textContent = displayRate(reportWindow.top30?.hitRate);
-  document.getElementById("performanceTop30Sample").textContent = `${Number(reportWindow.top30?.predictions || 0).toLocaleString()} verified calls`;
+  document.getElementById("performanceTop30Sample").textContent = `${Number(reportWindow.top30?.predictions || 0).toLocaleString()} tracked picks`;
 
   const bands = Array.isArray(reportWindow.probabilityBands) ? reportWindow.probabilityBands : [];
   document.getElementById("performanceBands").innerHTML = bands.length
     ? bands.map(band => {
         const actualRate = Math.max(0, Math.min(100, Number(band.hitRate) || 0));
         const forecastRate = Math.max(0, Math.min(100, Number(band.averageProbability) || 0));
-        return `<article class="performance-band"><strong>${escapeHtml(band.label)}</strong><div class="calibration-track" aria-label="${displayRate(actualRate)} actual compared with ${displayRate(forecastRate)} forecast"><i style="width:${actualRate}%"></i><b style="left:${forecastRate}%"></b></div><span class="calibration-values"><span><strong>${displayRate(actualRate)}</strong> actual</span><span>${displayRate(forecastRate)} forecast</span><span class="performance-sample">n=${Number(band.predictions || 0).toLocaleString()}</span></span></article>`;
+        return `<article class="performance-band"><strong>${escapeHtml(band.label)}</strong><div class="calibration-track" aria-label="${displayRate(actualRate)} actual compared with ${displayRate(forecastRate)} forecast"><i style="width:${actualRate}%"></i><b style="left:${forecastRate}%"></b></div><span class="calibration-values"><span><strong>${displayRate(actualRate)}</strong> actual</span><span>${displayRate(forecastRate)} forecast</span><span class="performance-sample">${Number(band.predictions || 0).toLocaleString()} tracked picks</span></span></article>`;
       }).join("")
     : `<div class="performance-empty">No probability bands have a completed sample in this period.</div>`;
 }
