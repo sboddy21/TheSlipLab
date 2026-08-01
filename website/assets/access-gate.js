@@ -5,7 +5,6 @@
     "/bullpen-collapse.html",
     "/command-center.html",
     "/full-board.html",
-    "/heat-check.html",
     "/hr-decision-center.html",
     "/decision-center.html",
     "/live-game-center.html",
@@ -29,8 +28,6 @@
     "/pitcher-vulnerability.html",
     "/player-intelligence.html",
     "/power-zones.html",
-    "/quick-target.html",
-    "/streak-lab.html",
     "/tags.html"
   ]);
 
