@@ -138,15 +138,21 @@ function isHomeRun(play) {
   return event === "home run" || eventType === "home_run" || event.includes("home run");
 }
 
-function airborneCategory(play) {
+function battedBallCategory(play) {
   const event = String(play?.result?.event || "").trim().toLowerCase();
   const eventType = String(play?.result?.eventType || "").trim().toLowerCase();
+  const pitch = getLastPitch(play);
+  const hitData = pitch?.hitData || {};
 
   if (isHomeRun(play)) return "home_run";
+  if (event === "double" || eventType === "double") return "double";
+  if (event === "triple" || eventType === "triple") return "triple";
+  if (event === "single" || eventType === "single") return "single";
   if (event === "sac fly" || eventType === "sac_fly") return "sac_fly";
   if (event.includes("flyout") || event.includes("fly out")) return "flyout";
   if (event.includes("lineout") || event.includes("line out")) return "lineout";
   if (event.includes("pop out") || event.includes("popout")) return "pop_out";
+  if (hitData.launchSpeed !== undefined || hitData.launchAngle !== undefined || hitData.totalDistance !== undefined) return eventType || "batted_ball";
   return "";
 }
 
@@ -216,7 +222,7 @@ function buildEventRow({ date, game, feed, play, status, gameLabel, score, gameC
   const pitchData = pitch?.pitchData || {};
   const details = pitch?.details || {};
   const batter = safe(play?.matchup?.batter?.fullName);
-  const category = airborneCategory(play);
+  const category = battedBallCategory(play);
   const distance = num(hitData?.totalDistance);
   const exitVelocity = num(hitData?.launchSpeed);
   const launchAngle = num(hitData?.launchAngle);
@@ -317,7 +323,7 @@ async function buildResults(date) {
     const gameContext = getGameContext(game, feed, contextMap);
 
     for (const play of plays) {
-      const category = airborneCategory(play);
+      const category = battedBallCategory(play);
       if (!category) continue;
 
       const row = buildEventRow({ date, game, feed, play, status, gameLabel, score, gameContext });
@@ -332,6 +338,9 @@ async function buildResults(date) {
   playerEvents.sort((a, b) =>
     String(b.endTime || b.startTime || "").localeCompare(String(a.endTime || a.startTime || ""))
   );
+  const nearHomeRuns = playerEvents.filter(row => row.category !== "home_run" && row.isCloseCall);
+  const extraBaseHits = playerEvents.filter(row => ["double", "triple", "home_run"].includes(row.category));
+  const hardHitBalls = playerEvents.filter(row => Number(row.exitVelocity) >= 95);
 
   return {
     updatedAt: new Date().toISOString(),
@@ -349,6 +358,12 @@ async function buildResults(date) {
     rescheduledGames,
     count: homeRuns.length,
     homeRuns,
+    nearHomeRunCount: nearHomeRuns.length,
+    nearHomeRuns,
+    extraBaseHitCount: extraBaseHits.length,
+    extraBaseHits,
+    hardHitBallCount: hardHitBalls.length,
+    hardHitBalls,
     playerEventCount: playerEvents.length,
     playerEvents
   };
@@ -366,7 +381,10 @@ async function main() {
   console.log("Games skipped:", results.skippedGames);
   console.log("Games terminal without play:", results.terminalNonPlayedGames);
   console.log("Home Runs:", results.homeRuns.length);
-  console.log("Tracked Airborne Events:", results.playerEvents.length);
+  console.log("Near Home Runs:", results.nearHomeRuns.length);
+  console.log("Extra-Base Hits:", results.extraBaseHits.length);
+  console.log("Hard-Hit Balls:", results.hardHitBalls.length);
+  console.log("Tracked Batted-Ball Events:", results.playerEvents.length);
   console.log("Saved:", outputFile);
 }
 
