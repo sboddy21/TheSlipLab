@@ -421,8 +421,7 @@ function renderLiveAlerts() {
   elements.liveAlertsList.innerHTML = matching.length ? matching.map(alert => {
     const created = new Date(alert.createdAt || "");
     const time = Number.isNaN(created.getTime()) ? "Time unavailable" : created.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    const sources = Array.isArray(alert.sourceFiles) ? alert.sourceFiles.join(" · ") : "Verified production data";
-    return `<article class="live-alert-card ${escapeHtml(alert.severity || "info")}"><div class="live-alert-card-head"><span>${escapeHtml(alertKindLabel(alert.kind))}</span><time>${escapeHtml(time)}</time></div><h4>${escapeHtml(alert.title || alert.entityName)}</h4><p>${escapeHtml(alert.message || "A verified live change was detected.")}</p><small>Source: ${escapeHtml(sources)}</small></article>`;
+    return `<article class="live-alert-card ${escapeHtml(alert.severity || "info")}"><div class="live-alert-card-head"><span>${escapeHtml(alertKindLabel(alert.kind))}</span><time>${escapeHtml(time)}</time></div><h4>${escapeHtml(alert.title || alert.entityName)}</h4><p>${escapeHtml(alert.message || "A verified live change was detected.")}</p></article>`;
   }).join("") : '<div class="empty-state">No verified changes have been detected for your saved players or pitchers yet today.</div>';
 }
 
