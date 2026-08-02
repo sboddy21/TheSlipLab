@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-02T05:31:03.098Z",
+  "updatedAt": "2026-08-02T05:41:12.291Z",
   "date": "2026-08-02",
-  "slot": "overnight",
+  "slot": "evening",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "evening",
+    "selected": "evening",
     "available": [
       "morning",
       "midday",
@@ -19,76 +19,71 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-02T05:31:03.098Z",
+    "checkedAt": "2026-08-02T05:41:12.291Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-02T05:31:02.756Z",
+        "timestamp": "2026-08-02T05:41:11.961Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-02T05:31:02.091Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-02T05:40:15.463Z",
+        "ageSeconds": 56
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-02T04:55:41.531Z",
-        "players": 520,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-02T05:39:43.908Z",
+        "ageSeconds": 88
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-02T05:41:11.600Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-02T05:31:02.141Z",
-        "ageSeconds": 0,
-        "reportDate": "2026-08-01",
-        "archivedPlayers": 394,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-02T05:41:08.787Z",
+        "ageSeconds": 3
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-08-02_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "id": "2026-08-02_EVENING_PROCESS_QUESTION",
       "date": "2026-08-02",
-      "type": "verified_daily_recap",
-      "slot": "overnight",
+      "type": "process_question",
+      "slot": "evening",
       "status": "queued",
-      "scheduled_for_eastern": "2026-08-02T05:31:03.098Z",
-      "text": "The verified MLB model report for 2026-08-01 is in.\n\n35 home runs landed against 37.6 expected (-2.6).\nTop 10: 1 hits from 10 archived players.\n\n• Hunter Goodman: pregame rank #4 | 24.0% model probability | 384 ft\n• Matt Olson: pregame rank #13 | 24.0% model probability | 372 ft\n• Jake Bauers: pregame rank #32 | 24.0% model probability | 401 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
-      "players": [
-        "Hunter Goodman",
-        "Matt Olson",
-        "Jake Bauers"
-      ],
-      "graphic": "exports/content/graphics/2026-08-02_VERIFIED_MODEL_REPORT.png",
-      "graphicType": "verified_model_report",
-      "reportDate": "2026-08-01",
-      "resultsDate": "2026-08-01",
-      "verifiedPregame": true,
-      "verifiedResults": true,
+      "scheduled_for_eastern": "2026-08-02T05:41:12.290Z",
+      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-08-02T05:31:02.756Z"
+      "created_at": "2026-08-02T05:41:11.961Z"
     }
   ]
 }
