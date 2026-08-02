@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { normalizeResultEventCategory } from "./result_event_categories.mjs";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -139,21 +140,17 @@ function isHomeRun(play) {
 }
 
 function battedBallCategory(play) {
-  const event = String(play?.result?.event || "").trim().toLowerCase();
-  const eventType = String(play?.result?.eventType || "").trim().toLowerCase();
   const pitch = getLastPitch(play);
   const hitData = pitch?.hitData || {};
+  const hasHitData = hitData.launchSpeed !== undefined ||
+    hitData.launchAngle !== undefined ||
+    hitData.totalDistance !== undefined;
 
-  if (isHomeRun(play)) return "home_run";
-  if (event === "double" || eventType === "double") return "double";
-  if (event === "triple" || eventType === "triple") return "triple";
-  if (event === "single" || eventType === "single") return "single";
-  if (event === "sac fly" || eventType === "sac_fly") return "sac_fly";
-  if (event.includes("flyout") || event.includes("fly out")) return "flyout";
-  if (event.includes("lineout") || event.includes("line out")) return "lineout";
-  if (event.includes("pop out") || event.includes("popout")) return "pop_out";
-  if (hitData.launchSpeed !== undefined || hitData.launchAngle !== undefined || hitData.totalDistance !== undefined) return eventType || "batted_ball";
-  return "";
+  return normalizeResultEventCategory({
+    event: play?.result?.event,
+    eventType: play?.result?.eventType,
+    hasHitData
+  });
 }
 
 function uniquePlays(feed) {

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -312,7 +313,7 @@ function validatePlayerResultEvents() {
     fail("mlb_results.json has an invalid playerEvents array");
   }
 
-  const allowedCategories = new Set(["home_run", "flyout", "lineout", "pop_out", "sac_fly"]);
+  const allowedCategories = new Set(RESULT_EVENT_CATEGORIES);
 
   for (const event of payload.playerEvents) {
     const label = event.player || event.batter || "unknown player";
