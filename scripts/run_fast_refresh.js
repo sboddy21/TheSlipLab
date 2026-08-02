@@ -615,6 +615,7 @@ const steps = [
 
   ["MLB Today", "node scripts/mlb/fetch_mlb_today.js"],
   ["MLB Player Pool", "node scripts/mlb/build_mlb_player_pool.js"],
+  ["Live HR Results", "node scripts/mlb/build_hr_results.js"],
   ["HR Power Profiles", "node scripts/mlb/build_hr_power_profiles.js"],
 
   ["Pitch Type Damage", "node scripts/mlb/build_pitch_type_damage.js"],
@@ -657,6 +658,7 @@ const steps = [
 const requiredOutputs = [
   { file: "mlb_games_today.json", timestampFields: ["updatedAt"] },
   { file: "mlb_player_pool.json", timestampFields: ["updatedAt"] },
+  { file: "mlb_results.json", timestampFields: ["updatedAt"] },
   { file: "hr_power_profiles.json", timestampFields: ["generatedAt"] },
   { file: "game_pitcher_matchups.json", timestampFields: ["updatedAt"] },
   { file: "lineup_impact_engine.json", timestampFields: ["updatedAt"] },
@@ -768,6 +770,7 @@ try {
   validateCalibrationReport();
 
   validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_player_pool.json");
+  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_results.json");
   validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");
   validateDependencyOrder(outputTimes, "mlb_player_pool.json", "pitch_type_damage.json");
   validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_weather.json");
