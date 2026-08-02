@@ -93,11 +93,13 @@
         await renderAi(board,rows,playerById);
       }
       if(view==="results"){
-        const graded=(history.slates||[]).flatMap(slate=>(slate.projections||[]).filter(row=>row.actual).map(row=>({...row,slateDate:slate.date})));
+        const resultsDate=gamesData.date||board.date;
+        const resultsSlate=(history.slates||[]).find(slate=>slate.date===resultsDate);
+        const graded=(resultsSlate?.projections||[]).filter(row=>row.actual).map(row=>({...row,slateDate:resultsSlate.date}));
         const finals=(gamesData.games||[]).filter(game=>game.completed);
         status.innerHTML=`<strong>WNBA results only</strong><span>${finals.length} final games · ${graded.length} player results graded</span>`;
         const finalMarkup=finals.length?`<div class="wnba-finals">${finals.map(game=>`<article class="wnba-final"><div class="wnba-final-date">${esc(gamesData.date)} · Final</div><div class="wnba-final-team"><span>${esc(game.awayTeam.name)}</span><b>${esc(game.awayTeam.score)}</b></div><div class="wnba-final-team"><span>${esc(game.homeTeam.name)}</span><b>${esc(game.homeTeam.score)}</b></div></article>`).join("")}</div>`:"";
-        const playerMarkup=graded.length?`<h2 class="wnba-results-heading">Player results</h2><div class="wnba-panel"><div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Date</th><th>Player</th><th>Matchup</th><th>Minutes</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody>${graded.map(row=>`<tr><td>${esc(row.slateDate)}</td><td>${esc(row.player)}<small>${esc(row.team)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.actual.minutes)}</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.actual[key])}</span><small>Proj. ${esc(row.projections[key].value)}</small></td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`:"";
+        const playerMarkup=graded.length?`<h2 class="wnba-results-heading">Player results</h2><div class="wnba-panel"><div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Date</th><th>Player</th><th>Matchup</th><th>Minutes</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody>${graded.map(row=>`<tr><td>${esc(row.slateDate)}</td><td>${esc(row.player)}<small>${esc(row.team)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.actual.minutes)}</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.actual[key])}</span><small>Proj. ${esc(row.projections[key].value)}</small></td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`:`<div class="wnba-panel"><div class="wnba-empty">Player results for ${esc(resultsDate)} will appear as completed stat lines are verified.</div></div>`;
         mount.className="";
         mount.innerHTML=finalMarkup+playerMarkup||`<div class="wnba-panel"><div class="wnba-empty">No WNBA games are final yet. Results will update automatically when today’s games finish.</div></div>`;
       }

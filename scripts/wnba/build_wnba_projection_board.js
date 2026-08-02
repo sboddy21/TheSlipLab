@@ -25,7 +25,7 @@ function latestActual(player, eventId) {
 
 function gradeHistory(history, playersById) {
   for (const slate of history.slates || []) {
-    if (slate.status === "graded" || slate.date >= todayET()) continue;
+    if (slate.status === "graded" || slate.date > todayET()) continue;
     let graded = 0;
     for (const projection of slate.projections || []) {
       const player = playersById.get(String(projection.playerId));
