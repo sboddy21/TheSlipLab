@@ -1,547 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<script src="./assets/member-data.js"></script>
-  <meta name="description" content="Enter The Slip Lab for live, matchup-driven sports intelligence across MLB, NBA, NFL, and NHL." />
-  <title>The Slip Lab | Choose Your Sport</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Slip Lab turns live MLB and WNBA data into clear daily sports intelligence.">
+  <title>The Slip Lab | Live Sports Intelligence</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script src="./assets/member-data.js"></script>
   <script defer src="/_vercel/insights/script.js" data-tsl-vercel-analytics="true"></script>
   <style>
-    :root{
-      --night:#05182c;
-      --night-deep:#020d1a;
-      --paper:#f4f0e4;
-      --paper-soft:#fbf8ef;
-      --ink:#071d36;
-      --muted:#607083;
-      --blue:#1268f3;
-      --orange:#e14b25;
-      --lime:#a8ff30;
-      --rule:rgba(7,29,54,.2);
-      --white:#fff;
-    }
-
-    *{box-sizing:border-box}
-    html{background:var(--night-deep);scroll-behavior:smooth}
-    body{
-      min-height:100vh;
-      margin:0;
-      color:var(--ink);
-      background:var(--paper);
-      font-family:Arial,Helvetica,sans-serif;
-      -webkit-font-smoothing:antialiased;
-    }
-    a{color:inherit}
-
-    .topline{
-      min-height:40px;
-      padding:0 max(22px,calc((100% - 1500px)/2));
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:22px;
-      color:#fff;
-      background:var(--night-deep);
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.17em;
-      text-transform:uppercase;
-    }
-    .pipeline{display:flex;align-items:center;gap:10px}
-    .pipeline-dot{
-      width:8px;height:8px;border-radius:50%;background:var(--lime);
-      box-shadow:0 0 0 4px rgba(168,255,48,.12),0 0 16px rgba(168,255,48,.5);
-    }
-
-    .site-header{
-      position:relative;
-      z-index:10;
-      color:#fff;
-      background:var(--night);
-      border-bottom:1px solid rgba(255,255,255,.14);
-    }
-    .header-inner{
-      width:min(1500px,calc(100% - 44px));
-      min-height:88px;
-      margin:0 auto;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:24px;
-    }
-    .brand{
-      text-decoration:none;
-      font-size:26px;
-      font-weight:950;
-      letter-spacing:-.06em;
-      text-transform:uppercase;
-    }
-    .brand span{color:#ff5a32}
-    .header-note{
-      display:flex;
-      align-items:center;
-      gap:12px;
-      color:rgba(255,255,255,.7);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:.16em;
-      text-align:right;
-      text-transform:uppercase;
-    }
-    .header-note::before{content:"";width:34px;height:1px;background:rgba(255,255,255,.35)}
-    .account-entry{margin-left:auto;padding:11px 16px;border:1px solid rgba(168,255,48,.72);color:var(--lime);text-decoration:none;font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
-
-    .hero-shell{
-      position:relative;
-      overflow:hidden;
-      color:#fff;
-      background:
-        radial-gradient(circle at 82% 20%,rgba(18,104,243,.25),transparent 31%),
-        linear-gradient(120deg,var(--night) 0 65%,#092849 100%);
-    }
-    .hero-shell::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      opacity:.16;
-      background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);
-      background-size:52px 52px;
-      mask-image:linear-gradient(90deg,#000,transparent 82%);
-    }
-    .hero{
-      position:relative;
-      width:min(1500px,calc(100% - 44px));
-      min-height:480px;
-      margin:0 auto;
-      padding:58px 0 66px;
-      display:grid;
-      grid-template-columns:minmax(0,1.28fr) minmax(300px,.72fr);
-      align-items:end;
-      gap:72px;
-    }
-    .eyebrow,.section-kicker{
-      display:flex;
-      align-items:center;
-      gap:11px;
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:.19em;
-      text-transform:uppercase;
-    }
-    .eyebrow{margin-bottom:20px;color:rgba(255,255,255,.67)}
-    .eyebrow::before,.section-kicker::before{content:"";width:30px;height:5px;background:linear-gradient(90deg,#ff5a32 72%,#1d75ff 72%)}
-    h1{
-      max-width:940px;
-      margin:0;
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:clamp(66px,8.4vw,132px);
-      line-height:.78;
-      letter-spacing:-.077em;
-    }
-    h1 em{display:block;color:#4d90ff;font-weight:400}
-    .hero-aside{
-      padding:25px 0 5px 27px;
-      border-left:1px solid rgba(255,255,255,.32);
-    }
-    .hero-aside p{
-      margin:0 0 27px;
-      color:rgba(255,255,255,.76);
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:20px;
-      line-height:1.55;
-    }
-    .hero-facts{display:grid;grid-template-columns:repeat(2,1fr);border-top:1px solid rgba(255,255,255,.22)}
-    .hero-fact{padding:16px 10px 0 0}
-    .hero-fact strong{display:block;margin-bottom:5px;color:#fff;font-size:21px}
-    .hero-fact span{color:rgba(255,255,255,.55);font-size:9px;font-weight:900;letter-spacing:.14em;text-transform:uppercase}
-
-    main{background:var(--paper)}
-    .league-section{
-      width:min(1500px,calc(100% - 44px));
-      margin:0 auto;
-      padding:58px 0 70px;
-    }
-    .section-head{
-      margin-bottom:22px;
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:24px;
-    }
-    .section-kicker{margin-bottom:12px;color:var(--muted)}
-    .section-head h2{
-      margin:0;
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:clamp(40px,4.5vw,66px);
-      line-height:.95;
-      letter-spacing:-.055em;
-    }
-    .active-count{padding-bottom:7px;color:var(--blue);font-size:10px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-
-    .sports-grid{
-      display:grid;
-      grid-template-columns:repeat(12,minmax(0,1fr));
-      gap:14px;
-    }
-    .sport-card{
-      --sport-accent:#fff;
-      --sport-glow:rgba(255,255,255,.16);
-      position:relative;
-      isolation:isolate;
-      overflow:hidden;
-      min-height:310px;
-      padding:25px;
-      display:flex;
-      flex-direction:column;
-      color:#fff;
-      border:1px solid rgba(255,255,255,.18);
-      background:var(--night);
-    }
-    .sport-card::before,.sport-card::after{content:"";position:absolute;pointer-events:none;z-index:-1}
-    .sport-card::before{inset:0;background:linear-gradient(145deg,transparent 30%,var(--sport-glow));opacity:.82}
-    .sport-card::after{right:-70px;bottom:-98px;width:250px;height:250px;border:1px solid rgba(255,255,255,.2);border-radius:50%;box-shadow:0 0 0 31px rgba(255,255,255,.035),0 0 0 62px rgba(255,255,255,.025)}
-    .sport-card.mlb{
-      grid-column:span 6;min-height:390px;--sport-accent:#a8ff30;--sport-glow:rgba(18,104,243,.53);
-      background:
-        radial-gradient(circle at 82% 18%,rgba(255,255,255,.18) 0 2px,transparent 3px),
-        radial-gradient(circle at 88% 24%,rgba(255,255,255,.12) 0 2px,transparent 3px),
-        linear-gradient(145deg,#075fe2,#063c98 72%,#062e72);
-    }
-    .sport-card.nba{
-      grid-column:span 3;--sport-accent:#ffd166;--sport-glow:rgba(255,103,26,.42);
-      background:
-        repeating-linear-gradient(90deg,rgba(255,211,143,.05) 0 20px,rgba(22,5,2,.08) 20px 22px),
-        linear-gradient(150deg,#5d1c12,#aa3d16 62%,#64200f);
-    }
-    .sport-card.wnba{
-      grid-column:span 3;--sport-accent:#8fffe3;--sport-glow:rgba(190,92,255,.4);
-      background:
-        radial-gradient(circle at 86% 22%,rgba(255,255,255,.16),transparent 24%),
-        linear-gradient(150deg,#241231,#69328a 62%,#3e1b58);
-    }
-    .sport-card.nfl{
-      grid-column:span 6;--sport-accent:#c6ff65;--sport-glow:rgba(56,178,90,.42);
-      background:
-        repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 11px,rgba(0,0,0,.025) 11px 22px),
-        linear-gradient(150deg,#0b3327,#12633d 64%,#0a3427);
-    }
-    .sport-card.nhl{
-      grid-column:span 6;min-height:310px;--sport-accent:#d51e3c;--sport-glow:rgba(48,170,222,.32);
-      color:#071d36;border-color:rgba(7,29,54,.26);
-      background:
-        linear-gradient(90deg,transparent 0 17%,rgba(213,30,60,.28) 17% 17.5%,transparent 17.5% 49.6%,rgba(8,103,242,.34) 49.6% 50.4%,transparent 50.4% 82.5%,rgba(213,30,60,.28) 82.5% 83%,transparent 83%),
-        linear-gradient(135deg,#f5fbfc,#d6eef4 58%,#b9dae5);
-    }
-
-    .mlb .field-mark{
-      position:absolute;right:7%;top:21%;width:174px;height:174px;border:2px solid rgba(255,255,255,.3);transform:rotate(45deg);z-index:-1;
-      box-shadow:inset 0 0 0 35px rgba(255,255,255,.025),0 0 0 28px rgba(255,255,255,.025);
-    }
-    .mlb .field-mark::before{content:"";position:absolute;inset:27%;border:1px solid rgba(168,255,48,.52);background:rgba(168,255,48,.05)}
-    .nba .field-mark{position:absolute;right:-30px;top:84px;width:170px;height:170px;border:3px solid rgba(255,239,211,.25);border-radius:50%;z-index:-1;box-shadow:0 0 0 44px rgba(255,239,211,.025)}
-    .nba .field-mark::before{content:"";position:absolute;left:-105px;top:50%;width:275px;height:1px;background:rgba(255,239,211,.24)}
-    .nba .field-mark::after{content:"";position:absolute;left:50%;top:-90px;width:1px;height:350px;background:rgba(255,239,211,.22)}
-    .wnba .field-mark{position:absolute;right:-25px;top:78px;width:165px;height:165px;border:3px solid rgba(255,255,255,.2);border-radius:50%;z-index:-1;box-shadow:0 0 0 38px rgba(255,255,255,.025)}
-    .wnba .field-mark::before{content:"";position:absolute;left:-92px;top:50%;width:255px;height:1px;background:rgba(143,255,227,.28)}
-    .wnba .field-mark::after{content:"";position:absolute;left:50%;top:-85px;width:1px;height:330px;background:rgba(143,255,227,.24)}
-    .nfl .field-mark{position:absolute;inset:62px -5px auto;height:170px;background:repeating-linear-gradient(90deg,transparent 0 43px,rgba(255,255,255,.18) 43px 45px);border-top:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16);z-index:-1}
-    .nfl .field-mark::after{content:"10   20   30   40   50";position:absolute;left:5px;right:5px;top:50%;color:rgba(255,255,255,.13);font-size:22px;font-weight:900;word-spacing:16px;transform:translateY(-50%)}
-    .nhl .field-mark{position:absolute;right:6%;top:50%;width:210px;height:138px;border:2px solid rgba(7,29,54,.2);border-radius:70px;transform:translateY(-50%);z-index:-1}
-    .nhl .field-mark::before{content:"";position:absolute;left:50%;top:0;bottom:0;width:2px;background:rgba(8,103,242,.32)}
-    .nhl .field-mark::after{content:"";position:absolute;left:50%;top:50%;width:58px;height:58px;border:2px solid rgba(8,103,242,.28);border-radius:50%;transform:translate(-50%,-50%)}
-
-    .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
-    .sport-number{font-size:9px;font-weight:900;letter-spacing:.17em;text-transform:uppercase}
-    .status{
-      display:inline-flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid currentColor;color:rgba(255,255,255,.68);
-      font-size:8px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
-    }
-    .status i{width:6px;height:6px;border-radius:50%;background:currentColor}
-    .mlb .status{color:var(--sport-accent)}
-    .mlb .status i{box-shadow:0 0 9px currentColor}
-    .sport-name{
-      margin:46px 0 10px;
-      color:#fff;
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:clamp(47px,5vw,78px);
-      line-height:.9;
-      letter-spacing:-.065em;
-    }
-    .sport-name::after{
-      display:block;margin-top:14px;color:var(--sport-accent);font-family:Arial,Helvetica,sans-serif;
-      font-size:9px;font-weight:900;letter-spacing:.2em;text-transform:uppercase;
-    }
-    .mlb .sport-name::after{content:"Diamond intelligence"}
-    .nba .sport-name::after{content:"Court intelligence"}
-    .wnba .sport-name::after{content:"Women’s court intelligence"}
-    .nfl .sport-name::after{content:"Gridiron intelligence"}
-    .nhl .sport-name::after{content:"Ice intelligence"}
-    .sport-card:not(.mlb) .sport-name{font-size:47px}
-    .sport-description{max-width:400px;margin:0;color:rgba(255,255,255,.7);font-size:13px;line-height:1.55}
-    .sport-features{margin:20px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:7px;list-style:none}
-    .sport-features li{padding:6px 8px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.1);font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
-    .countdown{
-      margin:20px 0 0;
-      padding:12px 13px;
-      display:grid;
-      gap:5px;
-      border:1px solid rgba(255,255,255,.22);
-      background:rgba(0,0,0,.14);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
-    }
-    .countdown-label{
-      color:rgba(255,255,255,.66);
-      font-size:8px;
-      font-weight:900;
-      letter-spacing:.15em;
-      text-transform:uppercase;
-    }
-    .countdown-value{
-      color:var(--sport-accent);
-      font-family:Georgia,"Times New Roman",serif;
-      font-size:clamp(26px,3.2vw,36px);
-      line-height:.96;
-      letter-spacing:-.055em;
-    }
-    .countdown-sub{
-      color:rgba(255,255,255,.62);
-      font-size:10px;
-      font-weight:800;
-      line-height:1.35;
-    }
-    .card-action{
-      margin-top:auto;padding-top:25px;display:flex;align-items:center;justify-content:space-between;gap:15px;border-top:1px solid rgba(255,255,255,.28);
-      color:var(--sport-accent);font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;
-    }
-    .arrow{width:39px;height:39px;display:grid;place-items:center;border:1px solid currentColor;border-radius:50%;font-size:18px}
-    .sport-link{text-decoration:none;transition:transform .2s ease,box-shadow .2s ease,filter .2s ease}
-    .sport-link:hover{transform:translateY(-5px);box-shadow:0 23px 42px rgba(7,29,54,.24);filter:saturate(1.08)}
-    .sport-link:focus-visible{outline:4px solid var(--lime);outline-offset:4px}
-    .disabled{filter:saturate(.72);cursor:not-allowed}
-    .disabled .card-action{color:rgba(255,255,255,.55)}
-    .nhl .sport-name{color:#071d36}
-    .nhl .sport-description{color:#38586b}
-    .nhl .status{color:#496778}
-    .nhl .sport-features li{border-color:rgba(7,29,54,.18);background:rgba(255,255,255,.24)}
-    .nhl .countdown{border-color:rgba(7,29,54,.2);background:rgba(255,255,255,.3);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
-    .nhl .countdown-label,.nhl .countdown-sub{color:#496778}
-    .nhl .card-action{border-color:rgba(7,29,54,.24);color:#496778}
-    .sport-cue{
-      position:absolute;right:22px;bottom:78px;color:rgba(255,255,255,.14);font-family:Georgia,"Times New Roman",serif;
-      font-size:64px;font-weight:700;letter-spacing:-.08em;line-height:1;z-index:-1;
-    }
-    .nhl .sport-cue{color:rgba(7,29,54,.1)}
-
-    .bottom-note{
-      margin-top:38px;padding-top:20px;display:flex;justify-content:space-between;gap:30px;border-top:1px solid var(--rule);
-      color:var(--muted);font-size:11px;line-height:1.55;
-    }
-    .bottom-note strong{color:var(--ink)}
-
-    @media(max-width:1080px){
-      .hero{grid-template-columns:1fr;gap:34px;min-height:auto}
-      .hero-aside{max-width:720px}
-      .sport-card.mlb{grid-column:span 12}
-      .sport-card.nba,.sport-card.wnba{grid-column:span 6}
-      .sport-card.nfl,.sport-card.nhl{grid-column:span 6}
-    }
-    @media(max-width:760px){
-      .topline{padding:10px 16px;align-items:flex-start;flex-direction:column;gap:5px}
-      .header-inner,.hero,.league-section{width:min(100% - 28px,1500px)}
-      .header-inner{min-height:74px}
-      .header-note::before{display:none}
-      .hero{padding:44px 0 50px}
-      h1{font-size:clamp(58px,19vw,88px)}
-      .hero-aside{padding:20px 0 0;border-left:0;border-top:1px solid rgba(255,255,255,.28)}
-      .hero-aside p{font-size:18px}
-      .league-section{padding:42px 0 52px}
-      .section-head{align-items:flex-start;flex-direction:column;gap:8px}
-      .sports-grid{grid-template-columns:1fr}
-      .sport-card.mlb,.sport-card.nba,.sport-card.wnba,.sport-card.nfl,.sport-card.nhl{grid-column:auto;min-height:285px}
-      .mlb .field-mark{right:-25px;opacity:.55}
-      .bottom-note{flex-direction:column;gap:10px}
-    }
-    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.sport-link{transition:none}}
-    .legal-notice{border-bottom:1px solid var(--rule);background:#fffdf7;color:#344b61;font-size:12px;font-weight:750;line-height:1.45;text-align:center}
-    .legal-notice-inner{width:min(100% - 32px,1500px);margin:auto;padding:9px 0}
-    .legal-notice strong{color:#a93419}.legal-notice a{color:#0757d6;font-weight:950;text-underline-offset:3px;white-space:nowrap}
+    :root{--night:#031326;--night-2:#071d36;--night-3:#0c294a;--paper:#f3efe3;--white:#fffdf7;--ink:#071d36;--muted:#9bacbc;--blue:#1268f3;--orange:#ee5430;--lime:#a8ff30;--purple:#a65cff;--rule:rgba(255,255,255,.15)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth;background:var(--night)}body{margin:0;background:var(--night);color:#fff;font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased}a{color:inherit}button,a{touch-action:manipulation}.wrap{width:min(1380px,calc(100% - 44px));margin:auto}
+    .topline{min-height:34px;display:flex;align-items:center;justify-content:center;gap:9px;background:#020b15;color:#d4dde7;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}.topline i,.live-dot{width:7px;height:7px;border-radius:50%;background:var(--lime);box-shadow:0 0 10px rgba(168,255,48,.65)}
+    .site-header{position:sticky;top:0;z-index:30;background:rgba(3,19,38,.96);border-bottom:1px solid rgba(255,255,255,.13);backdrop-filter:blur(14px)}.nav{min-height:78px;display:flex;align-items:center;gap:30px}.brand{margin-right:14px;text-decoration:none;font-size:25px;font-weight:950;letter-spacing:-.06em;text-transform:uppercase}.brand span{color:var(--orange)}.nav-links{display:flex;align-items:center;gap:25px}.nav-links a{color:#bac7d4;text-decoration:none;font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.nav-links a:hover{color:#fff}.nav-actions{margin-left:auto;display:flex;align-items:center;gap:11px}.button{display:inline-flex;min-height:44px;padding:0 19px;align-items:center;justify-content:center;border:1px solid var(--blue);background:var(--blue);color:#fff;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.button.secondary{background:transparent;border-color:rgba(255,255,255,.3)}.button.lime{border-color:var(--lime);background:var(--lime);color:var(--night)}
+    .legal{background:#fffdf7;color:#41566a;border-bottom:1px solid #c4ccd4;text-align:center;font-size:11px;font-weight:750;line-height:1.45}.legal .wrap{padding:8px 0}.legal strong{color:#a93419}.legal a{color:#0757d6;font-weight:950}
+    .hero{position:relative;overflow:hidden;padding:84px 0 88px;background:radial-gradient(circle at 82% 28%,rgba(18,104,243,.28),transparent 28%),linear-gradient(145deg,#020d1b 0 58%,#082748 100%)}.hero:before{content:"";position:absolute;inset:0;opacity:.12;background-image:linear-gradient(rgba(255,255,255,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.12) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(90deg,#000,transparent 88%)}.hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,.88fr) minmax(520px,1.12fr);align-items:center;gap:68px}.eyebrow,.kicker{display:flex;align-items:center;gap:10px;color:#aebed0;font-size:9px;font-weight:950;letter-spacing:.19em;text-transform:uppercase}.eyebrow:before,.kicker:before{content:"";width:30px;height:5px;background:linear-gradient(90deg,var(--orange) 72%,var(--blue) 72%)}h1{max-width:650px;margin:21px 0 25px;font:700 clamp(62px,6.8vw,106px)/.84 Georgia,"Times New Roman",serif;letter-spacing:-.065em}h1 em{display:block;color:#4c90ff;font-weight:400}.hero-copy>p{max-width:590px;margin:0;color:#bdc9d6;font:20px/1.55 Georgia,"Times New Roman",serif}.hero-copy>strong{display:block;margin-top:17px;color:#fff;font-size:14px}.hero-ctas{display:flex;flex-wrap:wrap;gap:11px;margin-top:31px}.live-leagues{display:flex;gap:25px;margin-top:31px;padding-top:20px;border-top:1px solid rgba(255,255,255,.18)}.league-live{display:flex;align-items:center;gap:9px;color:#dbe4ed;font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+    .dashboard{border:1px solid rgba(135,171,213,.3);background:#020c18;box-shadow:0 34px 80px rgba(0,0,0,.4);transform:perspective(1200px) rotateY(-3deg)}.dash-top{display:flex;align-items:center;justify-content:space-between;padding:14px 17px;border-bottom:1px solid rgba(255,255,255,.11);background:#06172b}.dash-brand{font-size:12px;font-weight:950;letter-spacing:.08em}.dash-brand span{color:var(--orange)}.dash-state{display:flex;align-items:center;gap:7px;color:var(--lime);font-size:8px;font-weight:950;letter-spacing:.13em;text-transform:uppercase}.dash-filters{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:7px;padding:12px;border-bottom:1px solid rgba(255,255,255,.1)}.dash-filter{padding:8px;background:#0d223a;color:#8fa4b9;font-size:8px}.dash-head,.dash-row{display:grid;grid-template-columns:1.7fr .6fr .7fr .7fr .7fr;gap:9px;align-items:center}.dash-head{padding:10px 15px;color:#71869c;font-size:7px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}.dash-row{min-height:58px;padding:9px 15px;border-top:1px solid rgba(255,255,255,.075);font-size:10px}.dash-player strong{display:block;color:#fff;font-size:11px}.dash-player small{display:block;margin-top:4px;color:#7e94aa}.dash-rank{color:var(--lime);font-weight:950}.dash-score{color:#51d98a;font-weight:950}.dash-tag{display:inline-block;padding:5px;border:1px solid rgba(18,104,243,.45);color:#7eb0ff;font-size:7px;font-weight:900;text-transform:uppercase}.dash-foot{display:flex;justify-content:space-between;padding:12px 15px;border-top:1px solid rgba(255,255,255,.1);color:#778ca1;font-size:8px}.dash-foot strong{color:#fff}
+    .section{padding:88px 0}.section.navy{background:#081a30}.section.deep{background:#020b18}.section.paper{background:var(--paper);color:var(--ink)}.section-head{max-width:800px;margin:0 auto 42px;text-align:center}.section-head .kicker{justify-content:center}.section-head h2{margin:17px 0 13px;font:700 clamp(42px,5vw,70px)/.92 Georgia,"Times New Roman",serif;letter-spacing:-.05em}.section-head p{margin:0;color:#91a2b5;font-size:16px;line-height:1.6}.paper .section-head p{color:#52687c}
+    .feature-split{display:grid;grid-template-columns:1.05fr .95fr;align-items:center;gap:72px}.feature-panel{padding:26px;border:1px solid rgba(255,255,255,.14);background:#030e1d}.feature-panel .dashboard{transform:none}.feature-copy h2{margin:14px 0 18px;font:700 clamp(42px,4.4vw,65px)/.94 Georgia,"Times New Roman",serif;letter-spacing:-.05em}.feature-copy p{color:#9fb0c2;font-size:16px;line-height:1.65}.check-list{margin:26px 0 0;padding:0;display:grid;gap:15px;list-style:none}.check-list li{display:flex;gap:11px;color:#d7e0e9;font-size:14px;line-height:1.45}.check-list li:before{content:"✓";color:#48df9d;font-weight:950}
+    .league-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}.league-card{position:relative;overflow:hidden;min-height:300px;padding:31px;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.18);text-decoration:none}.league-card.mlb{background:linear-gradient(145deg,#075fe2,#063b91)}.league-card.wnba{background:linear-gradient(145deg,#281235,#743b94)}.league-card .status{display:flex;align-items:center;gap:8px;color:var(--lime);font-size:9px;font-weight:950;letter-spacing:.13em;text-transform:uppercase}.league-card h3{margin:64px 0 9px;font:700 60px/.9 Georgia,"Times New Roman",serif;letter-spacing:-.055em}.league-card p{max-width:490px;margin:0;color:rgba(255,255,255,.76);font-size:13px;line-height:1.55}.league-card footer{margin-top:auto;padding-top:23px;display:flex;justify-content:space-between;border-top:1px solid rgba(255,255,255,.25);color:#fff;font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.league-card footer span:last-child{color:var(--lime);font-size:19px}.coming-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}.coming{padding:21px;border:1px solid rgba(7,29,54,.2);background:var(--white)}.coming strong{font:700 25px Georgia,"Times New Roman",serif}.coming span{display:block;margin-top:7px;color:#617386;font-size:10px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}.tool{min-height:170px;padding:25px;border:1px solid rgba(255,255,255,.12);background:#0b1a31;text-decoration:none;transition:transform .2s,border-color .2s}.tool:hover{transform:translateY(-4px);border-color:var(--blue)}.tool .num{color:#659fff;font-size:9px;font-weight:950;letter-spacing:.15em}.tool h3{margin:28px 0 9px;font:700 25px Georgia,"Times New Roman",serif}.tool p{margin:0;color:#92a4b6;font-size:12px;line-height:1.55}
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.plan{position:relative;padding:29px;border:1px solid rgba(255,255,255,.16);background:#0a1930}.plan.featured{border:2px solid var(--lime);box-shadow:0 0 42px rgba(168,255,48,.08)}.plan-badge{position:absolute;top:-13px;left:50%;transform:translateX(-50%);padding:7px 15px;background:var(--lime);color:var(--night);font-size:8px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.plan h3{margin:0;font:700 31px Georgia,"Times New Roman",serif}.plan p{min-height:49px;color:#94a6b7;font-size:12px;line-height:1.55}.plan ul{min-height:150px;margin:24px 0;padding:0;display:grid;gap:12px;list-style:none}.plan li{display:flex;gap:9px;color:#d7e0e9;font-size:12px;line-height:1.4}.plan li:before{content:"✓";color:#4bdd9e}.plan .button{width:100%}.pricing-note{margin-top:25px;text-align:center;color:#9aacbd;font-size:12px;font-weight:800}
+    .footer{padding:38px 0;background:#020913;border-top:1px solid rgba(255,255,255,.1)}.footer-grid{display:flex;align-items:flex-end;justify-content:space-between;gap:30px}.footer p{max-width:500px;margin:13px 0 0;color:#718498;font-size:11px;line-height:1.6}.footer-links{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:18px}.footer-links a{color:#8ea0b3;font-size:10px;font-weight:800}.copyright{margin-top:25px;padding-top:20px;border-top:1px solid rgba(255,255,255,.09);color:#64778b;font-size:10px}
+    @media(max-width:1000px){.nav-links{display:none}.hero-grid,.feature-split{grid-template-columns:1fr}.hero-grid{gap:48px}.dashboard{transform:none}.tools-grid{grid-template-columns:repeat(2,1fr)}.pricing-grid{grid-template-columns:1fr}.plan ul{min-height:0}}
+    @media(max-width:700px){.wrap{width:min(100% - 28px,1380px)}.site-header{position:relative}.nav{min-height:68px;gap:10px}.brand{font-size:21px}.nav-actions .button.secondary{display:none}.button{padding:0 13px}.legal{font-size:10px}.hero{padding:55px 0 62px}.hero-grid{grid-template-columns:minmax(0,1fr)}h1{font-size:clamp(58px,18vw,82px)}.hero-copy>p{font-size:17px}.dashboard{overflow:hidden}.dash-filters{grid-template-columns:1fr 1fr}.dash-filter:nth-child(n+3){display:none}.dash-head,.dash-row{grid-template-columns:1.5fr .5fr .7fr}.dash-head span:nth-child(4),.dash-head span:nth-child(5),.dash-row>*:nth-child(4),.dash-row>*:nth-child(5){display:none}.section{padding:62px 0}.feature-split{gap:38px}.feature-panel{padding:10px}.league-grid,.coming-row,.tools-grid{grid-template-columns:1fr}.league-card{min-height:270px}.league-card h3{font-size:52px}.footer-grid{align-items:flex-start;flex-direction:column}.footer-links{justify-content:flex-start}}
+    @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.tool{transition:none}}
   </style>
 </head>
 <body>
-  <div class="topline">
-    <div class="pipeline"><span class="pipeline-dot"></span> Live sports intelligence pipeline</div>
-    <div id="todayLabel">The Slip Lab</div>
-  </div>
-
-  <header class="site-header">
-    <div class="header-inner">
-      <a class="brand" href="./index.html" aria-label="The Slip Lab home">The Slip <span>Lab</span></a>
-      <a class="account-entry" href="./account.html" data-tsl-account-link>Sign In</a>
-      <div class="header-note">One intelligence desk<br />Every sport</div>
-    </div>
-  </header>
-
-  <aside class="legal-notice" aria-label="Important informational-use notice">
-    <div class="legal-notice-inner"><strong>Informational use only.</strong> The Slip Lab is a sports analytics and educational platform—not a sportsbook or gambling operator. We do not accept or place wagers, and no model output guarantees an outcome. <a href="./disclaimer.html">Read full disclaimer</a></div>
-  </aside>
-
-  <section class="hero-shell" aria-labelledby="pageTitle">
-    <div class="hero">
-      <div>
-        <div class="eyebrow">The sports intelligence desk</div>
-        <h1 id="pageTitle">Pick your game.<em>Find your edge.</em></h1>
-      </div>
-      <aside class="hero-aside">
-        <p>Live signals, matchup context, and model-ranked decisions—organized into one clear daily read.</p>
-        <div class="hero-facts" aria-label="Platform status">
-          <div class="hero-fact"><strong>MLB</strong><span>Live intelligence</span></div>
-          <div class="hero-fact"><strong>WNBA</strong><span>Live intelligence</span></div>
-        </div>
-      </aside>
-    </div>
-  </section>
+  <div class="topline"><i></i> MLB and WNBA intelligence pipelines live</div>
+  <header class="site-header"><div class="nav wrap">
+    <a class="brand" href="./index.html">The Slip <span>Lab</span></a>
+    <nav class="nav-links" aria-label="Landing page"><a href="#platform">Platform</a><a href="#leagues">Leagues</a><a href="#tools">Free tools</a><a href="#plans">Plans</a></nav>
+    <div class="nav-actions"><a class="button secondary" href="./account.html" data-tsl-account-link>Sign in</a><a class="button lime" href="./account.html">My account</a></div>
+  </div></header>
+  <aside class="legal"><div class="wrap"><strong>Informational use only.</strong> Sports analytics and education—not a sportsbook. We do not accept wagers, and no model output guarantees an outcome. <a href="./disclaimer.html">Read full disclaimer</a></div></aside>
 
   <main>
-    <section class="league-section" aria-labelledby="leagueTitle">
-      <div class="section-head">
-        <div>
-          <div class="section-kicker">League access</div>
-          <h2 id="leagueTitle">Choose your field.</h2>
-        </div>
-        <span class="active-count">02 live labs · 03 countdowns</span>
-      </div>
+    <section class="hero" aria-labelledby="heroTitle"><div class="hero-grid wrap">
+      <div class="hero-copy"><div class="eyebrow">The sports intelligence desk</div><h1 id="heroTitle">Know the slate.<em>Read the edge.</em></h1><p>Live data, matchup context, model-ranked players, and verified results—organized into one clear daily read.</p><strong>No mystery picks. No rewritten history. Just evidence you can inspect.</strong><div class="hero-ctas"><a class="button lime" href="./mlb.html">Open today’s MLB slate</a><a class="button secondary" href="./wnba.html">Explore WNBA</a></div><div class="live-leagues"><span class="league-live"><i class="live-dot"></i> MLB live</span><span class="league-live"><i class="live-dot"></i> WNBA live</span></div></div>
+      <div class="dashboard" aria-label="Live Slip Lab dashboard preview"><div class="dash-top"><div class="dash-brand">THE SLIP <span>LAB</span> · LIVE BOARD</div><div class="dash-state"><i class="live-dot"></i> Updated now</div></div><div class="dash-filters"><span class="dash-filter">Search player…</span><span class="dash-filter">All games</span><span class="dash-filter">All teams</span><span class="dash-filter">Top signals</span></div><div class="dash-head"><span>Player</span><span>Rank</span><span>HR model</span><span>Matchup</span><span>Signals</span></div><div id="heroBoard"><div class="dash-row"><div class="dash-player"><strong>Loading today’s board</strong><small>Verified slate data</small></div><span>—</span><span>—</span><span>—</span><span>—</span></div></div><div class="dash-foot"><span>Pregame intelligence · verified live inputs</span><strong>THE SLIP LAB</strong></div></div>
+    </div></section>
 
-      <div class="sports-grid">
-        <a class="sport-card sport-link mlb" href="./mlb.html" aria-label="Enter The Slip Lab MLB intelligence platform">
-          <span class="field-mark" aria-hidden="true"></span>
-          <span class="sport-cue" aria-hidden="true">9 INN</span>
-          <div class="card-top">
-            <span class="sport-number">01 / Diamond</span>
-            <span class="status"><i></i> Live now</span>
-          </div>
-          <h3 class="sport-name">MLB</h3>
-          <p class="sport-description">Home-run intelligence, player markets, pitcher vulnerability, weather, live lineups, and verified results.</p>
-          <ul class="sport-features" aria-label="MLB features">
-            <li>Slate</li><li>AI Says</li><li>Power Zones</li><li>Results</li>
-          </ul>
-          <div class="card-action"><span id="mlbSlate">Enter MLB Lab</span><span class="arrow" aria-hidden="true">→</span></div>
-        </a>
+    <section class="section navy" id="platform"><div class="feature-split wrap"><div class="feature-panel"><div class="dashboard"><div class="dash-top"><div class="dash-brand">MODEL RECEIPTS</div><div class="dash-state"><i class="live-dot"></i> Public record</div></div><div class="dash-row"><div class="dash-player"><strong>Pregame calls frozen</strong><small>Before the listed first pitch</small></div><span class="dash-rank">01</span><span class="dash-score">Saved</span><span class="dash-tag">Verified</span><span>✓</span></div><div class="dash-row"><div class="dash-player"><strong>Final outcomes matched</strong><small>Same player, game, and date</small></div><span class="dash-rank">02</span><span class="dash-score">Graded</span><span class="dash-tag">Final</span><span>✓</span></div><div class="dash-row"><div class="dash-player"><strong>Results published</strong><small>Hits and misses stay visible</small></div><span class="dash-rank">03</span><span class="dash-score">Public</span><span class="dash-tag">Receipt</span><span>✓</span></div></div></div><div class="feature-copy"><div class="kicker">Built for clarity</div><h2>From live signal to verified result.</h2><p>The Slip Lab brings the full decision trail into one place. Read the matchup, compare the model signals, then return to see what actually happened.</p><ul class="check-list"><li>Live lineups, pitching changes, weather, and game context</li><li>Model-ranked MLB and WNBA player boards</li><li>Plain-language AI analysis tied to structured data</li><li>Public results that never count unfinished games as misses</li></ul></div></div></section>
 
-        <a class="sport-card sport-link wnba" href="./wnba.html" aria-label="Enter The Slip Lab WNBA intelligence beta">
-          <span class="field-mark" aria-hidden="true"></span>
-          <span class="sport-cue" aria-hidden="true">24</span>
-          <div class="card-top"><span class="sport-number">02 / Court</span><span class="status"><i></i> Beta live</span></div>
-          <h3 class="sport-name">WNBA</h3>
-          <p class="sport-description">Daily schedule, live scores, records, venue, broadcast, and team-leader context while the independent model collects its sample.</p>
-          <ul class="sport-features" aria-label="WNBA beta features">
-            <li>Slate</li><li>Scores</li><li>Records</li><li>Roadmap</li>
-          </ul>
-          <div class="card-action"><span>Enter WNBA Beta</span><span class="arrow" aria-hidden="true">→</span></div>
-        </a>
+    <section class="section paper" id="leagues"><div class="wrap"><div class="section-head"><div class="kicker">The Slip Lab lineup</div><h2>One desk. Every active league.</h2><p>Enter the live labs now, with new sports added as their seasons and data pipelines are ready.</p></div><div class="league-grid"><a class="league-card mlb" href="./mlb.html"><span class="status"><i class="live-dot"></i> Live now</span><h3>MLB</h3><p>Home-run intelligence, pitcher vulnerability, power zones, weather, live lineup changes, and verified results.</p><footer><span id="mlbSlate">Enter MLB Lab</span><span>→</span></footer></a><a class="league-card wnba" href="./wnba.html"><span class="status"><i class="live-dot"></i> Live now</span><h3>WNBA</h3><p>Daily player projections, matchup context, AI analysis, final scores, and same-day verified player results.</p><footer><span id="wnbaSlate">Enter WNBA Lab</span><span>→</span></footer></a></div><div class="coming-row"><div class="coming"><strong>NFL</strong><span>Building for kickoff</span></div><div class="coming"><strong>NBA</strong><span>Returns this fall</span></div><div class="coming"><strong>NHL</strong><span>In development</span></div></div></div></section>
 
-        <article class="sport-card nba disabled" aria-disabled="true">
-          <span class="field-mark" aria-hidden="true"></span>
-          <span class="sport-cue" aria-hidden="true">24</span>
-          <div class="card-top"><span class="sport-number">03 / Court</span><span class="status"><i></i> Offseason</span></div>
-          <h3 class="sport-name">NBA</h3>
-          <p class="sport-description">Player props, usage, pace, defense, and matchup intelligence.</p>
-          <div class="countdown" data-countdown-target="2026-10-20T19:00:00-04:00" aria-label="Countdown to NBA target opening night">
-            <span class="countdown-label">Target opening night</span>
-            <strong class="countdown-value">—</strong>
-            <small class="countdown-sub">NBA target date · adjusts when official schedule lands</small>
-          </div>
-          <div class="card-action"><span>Coming later</span><span class="arrow" aria-hidden="true">×</span></div>
-        </article>
+    <section class="section deep" id="tools"><div class="wrap"><div class="section-head"><div class="kicker">Explore before subscribing</div><h2>Free tools. Real utility.</h2><p>Start with the public weather and live-tracking tools, then save favorites with a free account.</p></div><div class="tools-grid"><a class="tool" href="./weather.html"><span class="num">01 / WEATHER</span><h3>MLB Weather Report</h3><p>Wind, temperature, roof status, and projected carry conditions for every game.</p></a><a class="tool" href="./live-platform.html"><span class="num">02 / LIVE</span><h3>Home Run Tracker</h3><p>Every homer as it happens with exit velocity, distance, and player context.</p></a><a class="tool" href="./live-platform.html"><span class="num">03 / LIVE</span><h3>Near-HR Tracker</h3><p>Deep drives that stayed in and how many more feet they needed.</p></a><a class="tool" href="./live-platform.html"><span class="num">04 / LIVE</span><h3>Extra Bases Tracker</h3><p>Live extra-base results organized for a fast read across the slate.</p></a><a class="tool" href="./live-platform.html"><span class="num">05 / CONTACT</span><h3>Hard-Hit Tracker</h3><p>Every 95-plus mph batted ball with an elite-contact filter.</p></a><a class="tool" href="./results.html"><span class="num">06 / RECEIPTS</span><h3>Verified Results</h3><p>Pregame model calls matched against completed MLB outcomes.</p></a></div></div></section>
 
-        <article class="sport-card nfl disabled" aria-disabled="true">
-          <span class="field-mark" aria-hidden="true"></span>
-          <span class="sport-cue" aria-hidden="true">4TH</span>
-          <div class="card-top"><span class="sport-number">04 / Gridiron</span><span class="status"><i></i> Building soon</span></div>
-          <h3 class="sport-name">NFL</h3>
-          <p class="sport-description">Market plan, training-camp inputs, usage runway, and Week 1 build sequence are being staged quietly.</p>
-          <ul class="sport-features" aria-label="NFL planned features">
-            <li>Markets</li><li>Roles</li><li>Pipeline</li><li>Roadmap</li>
-          </ul>
-          <div class="countdown" data-countdown-target="2026-09-10T20:20:00-04:00" aria-label="Countdown to NFL target kickoff">
-            <span class="countdown-label">Target kickoff</span>
-            <strong class="countdown-value">—</strong>
-            <small class="countdown-sub">NFL target date · public board opens closer to season</small>
-          </div>
-          <div class="card-action"><span>Locked for now</span><span class="arrow" aria-hidden="true">×</span></div>
-        </article>
-
-        <article class="sport-card nhl disabled" aria-disabled="true">
-          <span class="field-mark" aria-hidden="true"></span>
-          <span class="sport-cue" aria-hidden="true">3 P</span>
-          <div class="card-top"><span class="sport-number">05 / Ice</span><span class="status"><i></i> In development</span></div>
-          <h3 class="sport-name">NHL</h3>
-          <p class="sport-description">Goalie form, shot quality, special teams, and matchup leverage.</p>
-          <div class="countdown" data-countdown-target="2026-10-06T19:00:00-04:00" aria-label="Countdown to NHL target opening night">
-            <span class="countdown-label">Target opening night</span>
-            <strong class="countdown-value">—</strong>
-            <small class="countdown-sub">NHL target date · adjusts when official schedule lands</small>
-          </div>
-          <div class="card-action"><span>Coming later</span><span class="arrow" aria-hidden="true">×</span></div>
-        </article>
-      </div>
-
-      <footer class="bottom-note">
-        <span><strong>The Slip Lab</strong> turns live sports data into a clearer daily read.</span>
-        <span>Model outputs are informational—not guarantees or sportsbook odds. <a href="./disclaimer.html">Disclaimer</a></span>
-      </footer>
-    </section>
+    <section class="section navy" id="plans"><div class="wrap"><div class="section-head"><div class="kicker">Membership</div><h2>One subscription. Every live lab.</h2><p>Choose the billing schedule that fits you. Every paid plan unlocks the same active sports intelligence.</p></div><div class="pricing-grid"><article class="plan"><h3>Weekly</h3><p>Full access with the shortest commitment.</p><ul><li>MLB and WNBA intelligence</li><li>Model-ranked boards and AI Says</li><li>Saved players and live alerts</li><li>Verified results and archives</li></ul><a class="button secondary" href="./account.html">Choose weekly</a></article><article class="plan featured"><span class="plan-badge">Most flexible</span><h3>Monthly</h3><p>Stay current through the heart of the season.</p><ul><li>Everything in weekly access</li><li>Every active sport included</li><li>Full matchup and player detail</li><li>Cancel through your account</li></ul><a class="button lime" href="./account.html">Choose monthly</a></article><article class="plan"><h3>Annual</h3><p>The complete Slip Lab calendar in one plan.</p><ul><li>Everything in monthly access</li><li>Future live leagues included</li><li>Year-round account access</li><li>One renewal each year</li></ul><a class="button secondary" href="./account.html">Choose annual</a></article></div><p class="pricing-note">Secure checkout through Stripe · Manage or cancel from My Account</p></div></section>
   </main>
 
+  <footer class="footer"><div class="wrap"><div class="footer-grid"><div><a class="brand" href="./index.html">The Slip <span>Lab</span></a><p>Sports intelligence and educational analysis built for a clearer daily read. The Slip Lab is not a sportsbook and does not accept wagers.</p></div><nav class="footer-links" aria-label="Footer"><a href="./account.html">My Account</a><a href="./how-to-use.html">How to Use</a><a href="./blog.html">Lab Notes</a><a href="./disclaimer.html">Disclaimer</a></nav></div><div class="copyright">© 2026 The Slip Lab. All rights reserved.</div></div></footer>
+
   <script>
-    const dateLabel = new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/New_York",
-      weekday: "long",
-      month: "long",
-      day: "numeric"
-    }).format(new Date());
-    document.getElementById("todayLabel").textContent = dateLabel;
-
-    function formatCountdown(targetDate){
-      const remaining = targetDate.getTime() - Date.now();
-      if (!Number.isFinite(remaining)) return "TBD";
-      if (remaining <= 0) return "Live window";
-
-      const totalHours = Math.max(0,Math.floor(remaining / 3600000));
-      const days = Math.floor(totalHours / 24);
-      const hours = totalHours % 24;
-
-      if (days >= 14) return `${days} days`;
-      if (days > 0) return `${days}d ${hours}h`;
-      return `${totalHours}h`;
-    }
-
-    function updateCountdowns(){
-      document.querySelectorAll("[data-countdown-target]").forEach(card => {
-        const value = card.querySelector(".countdown-value");
-        if (!value) return;
-        value.textContent = formatCountdown(new Date(card.dataset.countdownTarget));
-      });
-    }
-
-    updateCountdowns();
-    window.setInterval(updateCountdowns,60000);
-
-    fetch("./data/mlb_games_today.json?v=" + Date.now())
-      .then(response => {
-        if (!response.ok) throw new Error("MLB slate unavailable");
-        return response.json();
-      })
-      .then(data => {
-        const count = Number(data.gameCount || (Array.isArray(data.games) ? data.games.length : 0));
-        document.getElementById("mlbSlate").textContent = count > 0
-          ? `${count} game${count === 1 ? "" : "s"} today · Enter lab`
-          : "Enter MLB Lab";
-      })
-      .catch(() => {
-        document.getElementById("mlbSlate").textContent = "Enter MLB Lab";
-      });
+    const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+    const number=value=>{const parsed=Number(value);return Number.isFinite(parsed)?parsed:0};
+    Promise.all([
+      fetch("./data/hr_decision_center.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():{}),
+      fetch("./data/mlb_games_today.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():{}),
+      fetch("./data/wnba_games_today.json?v="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():{})
+    ]).then(([board,mlbGames,wnbaGames])=>{
+      const players=(board.allPlayers||board.players||[]).slice().sort((a,b)=>number(b.hrConfidence)-number(a.hrConfidence)).slice(0,5);
+      const heroBoard=document.getElementById("heroBoard");
+      if(players.length) heroBoard.innerHTML=players.map((player,index)=>`<div class="dash-row"><div class="dash-player"><strong>${esc(player.player||player.name||"Player")}</strong><small>${esc(player.team||"")} vs ${esc(player.opponent||player.opponentTeam||"Today")}</small></div><span class="dash-rank">#${index+1}</span><span class="dash-score">${number(player.hrConfidence).toFixed(1)}%</span><span class="dash-tag">${esc(player.tier||"Live")}</span><span>${number(player.signalCount||player.signals?.length||0)}</span></div>`).join("");
+      const mlbCount=number(mlbGames.gameCount||(mlbGames.games||[]).length);
+      const wnbaCount=number(wnbaGames.count||(wnbaGames.games||[]).length);
+      document.getElementById("mlbSlate").textContent=mlbCount?`${mlbCount} games today · Enter lab`:"Enter MLB Lab";
+      document.getElementById("wnbaSlate").textContent=wnbaCount?`${wnbaCount} games today · Enter lab`:"Enter WNBA Lab";
+    }).catch(()=>{});
   </script>
   <script type="module" src="./assets/account-client.js"></script>
 </body>
