@@ -35,7 +35,7 @@ const DEFAULT_LIVE_AI_UPDATE_SECTIONS = [
   "LIVE LONGSHOTS",
   "TOP 30"
 ];
-const LIVE_GAME_STATES = new Set(["Live"]);
+const EXCLUDED_GAME_STATES = new Set(["cancelled", "postponed"]);
 const HARD_HIT_MPH = 95;
 const PREMIUM_HARD_HIT_MPH = 100;
 
@@ -67,7 +67,8 @@ export default {
         liveAiUpdateDryRun: liveAiUpdateDryRun(env),
         eligibleSections: eligibleSections(env),
         liveAiUpdateSections: liveAiUpdateSections(env),
-        cadence: "one live-game scan per scheduled run",
+        cadence: "bounded deterministic rotation across today's MLB schedule",
+        gamesPerRun: gamesPerRun(env),
         maxEventAgeSeconds: maxEventAgeSeconds(env),
         maxPostsPerRun: maxPostsPerRun(env)
       });
@@ -111,6 +112,8 @@ async function runWatcher(env, meta = {}) {
     dryRunEvents: 0,
     skippedEvents: 0,
     failedEvents: 0,
+    scheduledGames: 0,
+    selectedGamePks: [],
     duplicateStatusCounts: {},
     duplicateSamples: [],
     errors: []
@@ -124,7 +127,7 @@ async function runWatcher(env, meta = {}) {
 
   summary.loops += 1;
   try {
-    const result = await checkOnce(env, aiIndexes);
+    const result = await checkOnce(env, aiIndexes, meta);
     mergeSummary(summary, result);
   } catch (error) {
     summary.errors.push(error.message);
@@ -135,11 +138,17 @@ async function runWatcher(env, meta = {}) {
   return summary;
 }
 
-async function checkOnce(env, aiIndexes) {
-  const date = easternDate();
-  const games = await fetchActiveGames(date);
+async function checkOnce(env, aiIndexes, meta = {}) {
+  const referenceTime = Number.isFinite(Number(meta.scheduledTime))
+    ? new Date(Number(meta.scheduledTime))
+    : new Date();
+  const date = easternDate(referenceTime);
+  const scheduledGames = await fetchScheduledGames(date);
+  const games = selectGamesForRun(scheduledGames, referenceTime, gamesPerRun(env));
   const result = {
     gamesScanned: games.length,
+    scheduledGames: scheduledGames.length,
+    selectedGamePks: games.map(game => game.gamePk),
     homeRunsScanned: 0,
     hardHitPlayersScanned: 0,
     matchedEvents: 0,
@@ -303,7 +312,11 @@ function liveAiUpdateDryRun(env) {
 }
 
 function maxEventAgeSeconds(env) {
-  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 1800), 30, 1800);
+  return clamp(Number(env.MAX_EVENT_AGE_SECONDS || 21600), 30, 21600);
+}
+
+function gamesPerRun(env) {
+  return clamp(Number(env.GAMES_PER_RUN || 1), 1, 2);
 }
 
 function minLiveAiConfidenceMove(env) {
@@ -364,19 +377,28 @@ async function getJson(url, headers = {}) {
   return response.json();
 }
 
-function easternDate() {
+function easternDate(referenceTime = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
-  }).format(new Date());
+  }).format(referenceTime);
 }
 
-async function fetchActiveGames(date) {
+async function fetchScheduledGames(date) {
   const schedule = await getJson(`${MLB_SCHEDULE_URL}&date=${date}`);
   return (schedule?.dates?.[0]?.games || [])
-    .filter(game => LIVE_GAME_STATES.has(String(game?.status?.abstractGameState || "")));
+    .filter(game => !EXCLUDED_GAME_STATES.has(String(game?.status?.detailedState || "").toLowerCase()))
+    .sort((a, b) => Date.parse(a?.gameDate || 0) - Date.parse(b?.gameDate || 0) || Number(a?.gamePk || 0) - Number(b?.gamePk || 0));
+}
+
+export function selectGamesForRun(games, referenceTime = new Date(), count = 1) {
+  if (!Array.isArray(games) || games.length === 0) return [];
+  const safeCount = Math.min(games.length, clamp(Number(count || 1), 1, 2));
+  const minute = Math.floor(referenceTime.getTime() / 60000);
+  const start = ((minute % games.length) + games.length) % games.length;
+  return Array.from({ length: safeCount }, (_, offset) => games[(start + offset) % games.length]);
 }
 
 async function fetchAiBoard(env) {
@@ -878,6 +900,8 @@ function percent(value) {
 }
 
 function mergeSummary(target, result) {
+  target.scheduledGames = result.scheduledGames || target.scheduledGames || 0;
+  target.selectedGamePks = result.selectedGamePks || [];
   for (const key of [
     "gamesScanned",
     "homeRunsScanned",

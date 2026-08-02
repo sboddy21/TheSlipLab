@@ -11,7 +11,7 @@ Home-run posts are conservative:
 - `TOP 5` and `TOP 10` home runs post as `slip_lab_hit_home_run` with the branded “SLIP LAB HIT” copy.
 - `ELITE SMASH` and `LIVE LONGSHOTS` keep the existing called-it/longshot home-run path.
 
-It uses a review-safe lookback by default. `MAX_EVENT_AGE_SECONDS=1800` means the Worker considers home runs from the last 30 minutes, which gives MLB scoring/review delays enough time to settle while Supabase duplicate keys prevent reposts.
+It uses a recovery-safe lookback by default. `MAX_EVENT_AGE_SECONDS=21600` means the Worker can recover qualified home runs from the last six hours after a platform interruption, while Supabase play-level duplicate checks prevent reposts.
 
 `LIVE AI UPDATE` is intentionally dry-run only in this version. It stores a `live_ai_update` row in Supabase when:
 
@@ -23,12 +23,12 @@ It uses a review-safe lookback by default. `MAX_EVENT_AGE_SECONDS=1800` means th
 
 ## Runtime model
 
-Cloudflare Cron wakes the Worker every minute. Each scheduled run performs one focused live-game scan:
+Cloudflare Cron wakes the Worker every minute. Each scheduled run performs one bounded game scan selected by a deterministic rotation across the full daily schedule:
 
 ```text
 Cloudflare scheduled trigger
 ↓
-scan active MLB live games
+select the next scheduled MLB game (pregame, live, or final)
 ↓
 match new HR plays against AI Says
 ↓
@@ -37,9 +37,9 @@ write dry-run or posted event to Supabase
 store dry-run Live AI Update candidates for review
 ```
 
-This is much closer to “when it happens” than a five-minute refresh, while staying inside Cloudflare Worker CPU limits.
+With a normal 15-game slate, every game is revisited within 15 minutes. Keeping final games in the rotation and using a six-hour recovery window means a delayed MLB feed or interrupted run is recovered rather than lost. The single-game CPU budget prevents Cloudflare from terminating the worker halfway through the slate.
 
-`MAX_POSTS_PER_RUN=5` allows the Worker to catch clustered home runs in the same scan instead of posting one event and letting the rest age out.
+`MAX_POSTS_PER_RUN=10` allows the Worker to catch clustered home runs in the selected game. `GAMES_PER_RUN=1` is intentionally conservative for Cloudflare CPU reliability.
 
 ## Required Supabase setup
 
