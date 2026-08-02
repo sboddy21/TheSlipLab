@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-02T08:54:52.614Z",
+  "updatedAt": "2026-08-02T11:39:50.018Z",
   "date": "2026-08-02",
-  "slot": "closed",
+  "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": "already_posted",
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
       "morning",
       "midday",
@@ -25,14 +25,39 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-02T08:54:52.614Z",
+    "checkedAt": "2026-08-02T11:39:50.018Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-02T08:54:52.133Z",
+        "timestamp": "2026-08-02T11:39:49.604Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "mlb_results_previous.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-02T11:39:48.934Z",
+        "ageSeconds": 1,
+        "scheduledGames": 15,
+        "totalScheduledGames": 15,
+        "finalGames": 15
+      },
+      {
+        "file": "hr_ai_history.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-02T11:10:49.534Z",
+        "players": 520,
+        "mode": "historical pregame archive"
+      },
+      {
+        "file": "hr_calibration_report.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-08-02T11:39:48.981Z",
+        "ageSeconds": 1,
+        "reportDate": "2026-08-01",
+        "archivedPlayers": 394,
+        "mode": "verified daily model report"
       }
     ]
   },
