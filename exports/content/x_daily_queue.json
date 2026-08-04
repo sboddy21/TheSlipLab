@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-04T09:21:09.167Z",
+  "updatedAt": "2026-08-04T12:23:42.990Z",
   "date": "2026-08-04",
-  "slot": "closed",
+  "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "closed_window",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "closed",
-    "selected": "closed",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
       "morning",
       "midday",
@@ -25,17 +25,70 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-04T09:21:09.167Z",
+    "checkedAt": "2026-08-04T12:23:42.990Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-04T09:21:08.839Z",
+        "timestamp": "2026-08-04T12:23:42.740Z",
         "ageSeconds": 0
+      },
+      {
+        "file": "mlb_results_previous.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-04T12:23:42.211Z",
+        "ageSeconds": 0,
+        "scheduledGames": 8,
+        "totalScheduledGames": 8,
+        "finalGames": 8
+      },
+      {
+        "file": "hr_ai_history.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-04T10:47:30.460Z",
+        "players": 524,
+        "mode": "historical pregame archive"
+      },
+      {
+        "file": "hr_calibration_report.json",
+        "timestampField": "generatedAt",
+        "timestamp": "2026-08-04T12:23:42.245Z",
+        "ageSeconds": 0,
+        "reportDate": "2026-08-03",
+        "archivedPlayers": 213,
+        "mode": "verified daily model report"
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-04_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "date": "2026-08-04",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-04T12:23:42.990Z",
+      "text": "The verified MLB model report for 2026-08-03 is in.\n\n30 home runs landed against 20.6 expected (+9.4).\nTop 10: 2 hits from 10 archived players.\n\n• Junior Caminero: pregame rank #7 | 24.0% model probability | 422 ft\n• Luis García Jr.: pregame rank #8 | 24.0% model probability | 424 ft\n• Bryce Harper: pregame rank #12 | 24.0% model probability | 433 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
+      "players": [
+        "Junior Caminero",
+        "Luis García Jr.",
+        "Bryce Harper"
+      ],
+      "graphic": "exports/content/graphics/2026-08-04_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-08-03",
+      "resultsDate": "2026-08-03",
+      "verifiedPregame": true,
+      "verifiedResults": true,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-04T12:23:42.740Z"
+    }
+  ]
 }
