@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-06T05:32:10.568Z",
+  "updatedAt": "2026-08-06T08:01:50.802Z",
   "date": "2026-08-06",
-  "slot": "evening",
+  "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "evening",
-    "selected": "evening",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
       "morning",
       "midday",
@@ -19,71 +19,76 @@
     ]
   },
   "eventPosting": {
-    "enabled": true,
+    "enabled": false,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-06T05:32:10.568Z",
+    "checkedAt": "2026-08-06T08:01:50.802Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-06T05:32:10.239Z",
+        "timestamp": "2026-08-06T08:01:50.338Z",
         "ageSeconds": 0
       },
       {
-        "file": "hr_decision_center.json",
+        "file": "mlb_results_previous.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-06T05:31:15.471Z",
-        "ageSeconds": 55
+        "timestamp": "2026-08-06T08:01:49.370Z",
+        "ageSeconds": 1,
+        "scheduledGames": 15,
+        "totalScheduledGames": 15,
+        "finalGames": 15
       },
       {
-        "file": "mlb_weather.json",
+        "file": "hr_ai_history.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-06T05:30:09.315Z",
-        "ageSeconds": 121
+        "timestamp": "2026-08-06T07:20:04.354Z",
+        "players": 538,
+        "mode": "historical pregame archive"
       },
       {
-        "file": "mlb_results.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-08-06T05:32:09.880Z",
-        "ageSeconds": 0
-      },
-      {
-        "file": "health_status.json",
+        "file": "hr_calibration_report.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-06T05:32:06.999Z",
-        "ageSeconds": 3
+        "timestamp": "2026-08-06T08:01:49.418Z",
+        "ageSeconds": 1,
+        "reportDate": "2026-08-05",
+        "archivedPlayers": 392,
+        "mode": "verified daily model report"
       }
     ]
   },
   "count": 1,
   "posts": [
     {
-      "id": "2026-08-06_EVENING_PROCESS_QUESTION",
+      "id": "2026-08-06_OVERNIGHT_VERIFIED_DAILY_RECAP",
       "date": "2026-08-06",
-      "type": "process_question",
-      "slot": "evening",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
       "status": "posted",
-      "scheduled_for_eastern": "2026-08-06T05:32:10.568Z",
-      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
-      "players": [],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
+      "scheduled_for_eastern": "2026-08-06T08:01:50.802Z",
+      "text": "The verified MLB model report for 2026-08-05 is in.\n\n30 home runs landed against 37.1 expected (-7.1).\nTop 10: 1 hits from 9 archived players.\n\n• Junior Caminero: pregame rank #5 | 24.0% model probability | 449 ft\n• Shohei Ohtani: pregame rank #13 | 24.0% model probability | 376 ft\n• Dillon Dingler: pregame rank #15 | 24.0% model probability | 424 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
+      "players": [
+        "Junior Caminero",
+        "Shohei Ohtani",
+        "Dillon Dingler"
+      ],
+      "graphic": "exports/content/graphics/2026-08-06_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-08-05",
+      "resultsDate": "2026-08-05",
+      "verifiedPregame": true,
+      "verifiedResults": true,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": true,
-      "posted_at": "2026-08-06T05:32:11.171Z",
-      "x_post_id": "2085237476935741514",
-      "created_at": "2026-08-06T05:32:10.239Z",
+      "posted_at": "2026-08-06T08:01:52.528Z",
+      "x_post_id": "2085275147137663046",
+      "created_at": "2026-08-06T08:01:50.338Z",
       "error": null
     }
   ]
