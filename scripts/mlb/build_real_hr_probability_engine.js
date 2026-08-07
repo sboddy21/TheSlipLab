@@ -1,5 +1,9 @@
 import fs from "fs";
 import path from "path";
+import {
+  adjustProbabilityForPlateAppearances,
+  lineupConfidence
+} from "./lib/plate_appearance_probability.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -96,6 +100,16 @@ function calculateEventScore(row, player) {
 
 const homeRuns = readRequired("mlb_home_runs.json");
 const rows = rowsOf(homeRuns);
+const lineupImpact = readRequired("lineup_impact_engine.json");
+const playerPool = readRequired("mlb_player_pool.json");
+
+const normalize = value => String(value || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const lineupRows = Array.isArray(lineupImpact?.rows) ? lineupImpact.rows : [];
+const poolRows = Array.isArray(playerPool?.players) ? playerPool.players : [];
+const lineupById = new Map(lineupRows.filter(row => row.playerId).map(row => [String(row.playerId), row]));
+const lineupByName = new Map(lineupRows.map(row => [normalize(row.player), row]));
+const poolById = new Map(poolRows.filter(row => row.playerId).map(row => [String(row.playerId), row]));
+const poolByName = new Map(poolRows.map(row => [normalize(row.player), row]));
 
 if (!rows.length) {
   const playerPool = readRequired("mlb_player_pool.json");
@@ -107,7 +121,7 @@ if (!rows.length) {
     generatedAt: new Date().toISOString(),
     date: playerPool.date,
     availability: "no_games_scheduled",
-    scoringMode: "Calibrated Logistic HR Probability",
+    scoringMode: "Calibrated Logistic HR Probability + Expected PA",
     players: []
   });
 
@@ -126,17 +140,37 @@ const calibrated = rows
     const team = requiredText(row, "team", rowIndex);
     const opponent = requiredText(row, "opponent", rowIndex);
     const rawHrEventScore = calculateEventScore(row, player);
-    const probability = clamp(logisticProbability(rawHrEventScore) * 100, 1.5, 24);
+    const playerId = Number.isFinite(Number(row.playerId)) ? Number(row.playerId) : null;
+    const lineup = lineupById.get(String(playerId)) || lineupByName.get(normalize(player)) || {};
+    const pool = poolById.get(String(playerId)) || poolByName.get(normalize(player)) || {};
+    const lineupStatus = pool.lineupStatus || lineup.lineupSource || "PROJECTED";
+    const confirmedLineup = Boolean(pool.confirmedLineup || lineup.confirmedLineup);
+    const lineupSpot = Number(pool.lineupSpot || lineup.lineupSpot) || null;
+    const expectedPlateAppearances = lineupStatus === "NOT IN LINEUP"
+      ? 0
+      : Number(lineup.projectedPlateAppearances || 4.05);
+    const baseProbability = clamp(logisticProbability(rawHrEventScore) * 100, 1.5, 24);
+    const probability = adjustProbabilityForPlateAppearances(baseProbability, expectedPlateAppearances, { lineupStatus });
+    const opportunityAdjustmentPct = baseProbability
+      ? ((probability / baseProbability) - 1) * 100
+      : 0;
 
     return {
-      playerId: Number.isFinite(Number(row.playerId)) ? Number(row.playerId) : null,
+      playerId,
       player,
       team,
       opponent,
       probabilityRank: 0,
       rawHrEventScore,
+      baseHrProbability: round(baseProbability, 1),
       realHrProbability: round(probability, 1),
-      probabilityTier: probabilityTier(probability),
+      probabilityTier: lineupStatus === "NOT IN LINEUP" ? "OUT" : probabilityTier(probability),
+      expectedPlateAppearances: round(expectedPlateAppearances, 2),
+      opportunityAdjustmentPct: round(opportunityAdjustmentPct, 1),
+      lineupSpot,
+      lineupStatus,
+      confirmedLineup,
+      lineupConfidence: lineupConfidence({ lineupStatus, confirmedLineup, lineupSpot }),
       actualHr: typeof row.actualHr === "boolean" ? row.actualHr : null
     };
   })
@@ -151,9 +185,30 @@ const calibrated = rows
     probabilityRank: index + 1
   }));
 
+for (const row of calibrated) {
+  const validExpectedPa = row.lineupStatus === "NOT IN LINEUP"
+    ? row.expectedPlateAppearances === 0
+    : row.expectedPlateAppearances >= 3.7 && row.expectedPlateAppearances <= 4.75;
+  if (!Number.isFinite(row.expectedPlateAppearances) || !validExpectedPa) {
+    throw new Error(`${row.player} has invalid expected plate appearances: ${row.expectedPlateAppearances}`);
+  }
+  if (row.lineupStatus === "NOT IN LINEUP" && (row.realHrProbability !== 0 || row.probabilityTier !== "OUT")) {
+    throw new Error(`${row.player} was not suppressed after being removed from the lineup`);
+  }
+  if (row.realHrProbability < 0 || row.realHrProbability > 24) {
+    throw new Error(`${row.player} has invalid opportunity-adjusted probability: ${row.realHrProbability}`);
+  }
+}
+
 write("hr_probability_tracking.json", {
   generatedAt: new Date().toISOString(),
-  scoringMode: "Calibrated Logistic HR Probability",
+  scoringMode: "Calibrated Logistic HR Probability + Expected PA",
+  opportunityModel: {
+    baselinePlateAppearances: 4.3,
+    minimumPlateAppearances: 3.7,
+    maximumPlateAppearances: 4.75,
+    notInLineupProbability: 0
+  },
   players: calibrated
 });
 

@@ -257,6 +257,18 @@ async function main() {
       opposingPitcher: player.opposingPitcher,
       opposingPitcherHand: player.opposingPitcherHand,
       lineupStatus: player.lineupStatus,
+      lineupSpot: player.lineupSpot || null,
+      confirmedLineup: Boolean(player.confirmedLineup),
+      expectedPlateAppearances: String(player.lineupStatus || "").toUpperCase() === "NOT IN LINEUP"
+        ? 0
+        : num(player.projectedPlateAppearances) || 4.05,
+      lineupConfidence: String(player.lineupStatus || "").toUpperCase() === "NOT IN LINEUP"
+        ? "OUT"
+        : player.confirmedLineup && num(player.lineupSpot) > 0
+          ? "HIGH"
+          : num(player.lineupSpot) > 0
+            ? "MEDIUM"
+            : "LOW",
 
       season: {
         hr: num(h.hr),
