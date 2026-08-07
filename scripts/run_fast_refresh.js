@@ -220,6 +220,22 @@ function validatePitchDamageCache(expectedDate) {
   }
 }
 
+function validatePlayerPoolOwnership() {
+  const pool = readJson(outputPath("mlb_player_pool.json"));
+  const gamesByPlayerId = new Map();
+  for (const player of pool.players || []) {
+    const playerId = String(player.playerId || "");
+    if (!playerId) throw new Error("player pool contains a player without an MLB ID");
+    if (!gamesByPlayerId.has(playerId)) gamesByPlayerId.set(playerId, new Set());
+    gamesByPlayerId.get(playerId).add(String(player.gamePk || ""));
+  }
+  for (const [playerId, gamePks] of gamesByPlayerId) {
+    if (gamePks.size > 1) {
+      throw new Error(`MLB ID ${playerId} appears in multiple slate games: ${[...gamePks].join(", ")}`);
+    }
+  }
+}
+
 function validateHealthStatus(expectedDate) {
   const health = readJson(outputPath("health_status.json"));
   const updatedAt = Date.parse(health.updatedAt);
@@ -761,6 +777,7 @@ try {
   validateSlateDate("hr_decision_center.json", "pitcherDate", slateDate);
   validateSlateDate("live_change_alerts.json", "date", slateDate);
   validateLiveChangeAlerts(slateDate);
+  validatePlayerPoolOwnership();
   validatePitchDamageCache(slateDate);
   validatePitcherVulnerability(slateDate);
   validateRealStatcastZones(slateDate);

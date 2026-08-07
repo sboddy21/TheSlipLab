@@ -1178,11 +1178,19 @@
     const signalClasses = signals.map(signal => signalClassName(signal.key)).join(" ");
     const signalIcons = signals.map(signal => `<span class="slate-signal-icon ${signalClassName(signal.key)}" title="${esc(signal.label)}" aria-label="${esc(signal.label)}">${esc(signal.emoji)}</span>`).join("");
     const signalLabels = signals.map(signal => `<span class="slate-signal-label ${signalClassName(signal.key)}"><span aria-hidden="true">${esc(signal.emoji)}</span>${esc(signal.label)}</span>`).join("");
+    const normalizedName = playerNameOf(row);
+    const sameNamePlayerIds = new Set(
+      state.games.flatMap(game => allHitters(game))
+        .filter(player => playerNameOf(player) === normalizedName)
+        .map(player => String(player.playerId || ""))
+        .filter(Boolean)
+    );
+    const displayName = sameNamePlayerIds.size > 1 ? `${row.player} · ${code(row.team)}` : row.player;
     return `
       <article class="bat sweet-bat ${signalClasses}" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
         <div class="face">${esc(initials(row.player))}</div>
         <div class="sweet-main">
-          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
+          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(displayName)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
           ${signalLabels ? `<div class="slate-signal-labels">${signalLabels}</div>` : ""}
           <div class="sweet-lineup">${esc(lineupSpotLabel(row))}</div>
           ${matchupBadges(row)}

@@ -1028,6 +1028,16 @@ for (const [player, probability] of trackingByPlayer) {
 const pool = read("mlb_player_pool.json");
 if (pool.date !== slateDate) fail(`mlb_player_pool date is ${pool.date}, expected slate date ${slateDate}`);
 if (!Array.isArray(pool.players)) fail("player pool players is not an array");
+const poolGamesByPlayerId = new Map();
+for (const player of pool.players) {
+  const playerId = String(player.playerId || "");
+  if (!playerId) fail("player pool contains a player without an MLB ID");
+  if (!poolGamesByPlayerId.has(playerId)) poolGamesByPlayerId.set(playerId, new Set());
+  poolGamesByPlayerId.get(playerId).add(String(player.gamePk || ""));
+}
+for (const [playerId, gamePks] of poolGamesByPlayerId) {
+  if (gamePks.size > 1) fail(`MLB ID ${playerId} appears in multiple slate games: ${[...gamePks].join(", ")}`);
+}
 
 if (noGamesScheduled) {
   const zeroSlateOutputs = [

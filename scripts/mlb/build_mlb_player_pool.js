@@ -167,6 +167,56 @@ function mapRosterRows(rows) {
     }));
 }
 
+async function resolveCanonicalOwnership(players) {
+  const byPlayerId = new Map();
+  for (const player of players) {
+    const key = String(player.playerId);
+    if (!byPlayerId.has(key)) byPlayerId.set(key, []);
+    byPlayerId.get(key).push(player);
+  }
+
+  const rejected = [];
+  const canonical = [];
+  for (const [playerId, rows] of byPlayerId) {
+    const teamIds = new Set(rows.map(row => String(row.teamId)));
+    if (teamIds.size === 1) {
+      canonical.push(...rows);
+      continue;
+    }
+
+    const person = await getJson(`https://statsapi.mlb.com/api/v1/people/${playerId}?hydrate=currentTeam`);
+    const currentTeamId = String(person?.people?.[0]?.currentTeam?.id || "");
+    let keep = currentTeamId ? rows.filter(row => String(row.teamId) === currentTeamId) : [];
+
+    if (!keep.length) {
+      const confirmed = rows.filter(row => row.confirmedLineup);
+      if (confirmed.length === 1) keep = confirmed;
+    }
+
+    if (keep.length !== 1) {
+      throw new Error(
+        `Unable to resolve current ownership for ${rows[0]?.player || playerId} (${playerId}) across teams ` +
+        `${[...teamIds].join(", ")}`
+      );
+    }
+
+    canonical.push(keep[0]);
+    for (const row of rows) {
+      if (row !== keep[0]) rejected.push({
+        playerId: row.playerId,
+        player: row.player,
+        rejectedTeamId: row.teamId,
+        rejectedTeam: row.team,
+        canonicalTeamId: keep[0].teamId,
+        canonicalTeam: keep[0].team,
+        reason: currentTeamId ? "MLB_CURRENT_TEAM_MISMATCH" : "CONFIRMED_LINEUP_OWNERSHIP"
+      });
+    }
+  }
+
+  return { players: canonical, rejected };
+}
+
 const boxscoreCache = new Map();
 
 async function getBoxscore(gamePk) {
@@ -357,18 +407,23 @@ async function main() {
     throw new Error("Scheduled analysis games produced no official MLB hitters");
   }
 
+  const ownership = await resolveCanonicalOwnership(pool);
+
   const output = {
     date: gamesData.date,
     source: "MLB Stats API",
     updatedAt: new Date().toISOString(),
-    playerCount: pool.length,
-    players: pool
+    playerCount: ownership.players.length,
+    ownershipRejectionCount: ownership.rejected.length,
+    ownershipRejections: ownership.rejected,
+    players: ownership.players
   };
 
   fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
 
   console.log("MLB player pool saved");
-  console.log("Players:", pool.length);
+  console.log("Players:", ownership.players.length);
+  console.log("Stale ownership rows rejected:", ownership.rejected.length);
   console.log("File:", OUT_FILE);
 }
 
