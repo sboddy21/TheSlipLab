@@ -3,7 +3,9 @@ name: The Slip Lab MLB Refresh
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
+    # Cover roughly 8/9 a.m. through 2/3 a.m. Eastern; no slate needs a full refresh overnight.
+    - cron: "*/15 0-7 * * *"
+    - cron: "*/15 13-23 * * *"
 
 permissions:
   contents: write

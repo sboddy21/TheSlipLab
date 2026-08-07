@@ -45,16 +45,6 @@ jobs:
           echo "RUN_DAILY_EDGE_POSTS=true" >> "$GITHUB_ENV"
           echo "Building daily edge posts. Hour=$EASTERN_HOUR"
 
-      - name: Refresh current MLB inputs
-        if: env.RUN_DAILY_EDGE_POSTS == 'true'
-        env:
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-        run: npm run mlb:refresh
-
-      - name: Validate current MLB inputs
-        if: env.RUN_DAILY_EDGE_POSTS == 'true'
-        run: npm run mlb:validate
-
       - name: Build current game context
         if: env.RUN_DAILY_EDGE_POSTS == 'true'
         run: node scripts/mlb/build_context_factors.js

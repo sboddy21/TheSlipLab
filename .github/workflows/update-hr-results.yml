@@ -2,6 +2,9 @@ name: Update HR Results
 
 on:
   workflow_dispatch:
+  schedule:
+    # Once after the MLB slate, rather than rebuilding historical reports every 15 minutes.
+    - cron: "15 11 * * *"
 
 permissions:
   contents: write
@@ -18,6 +21,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Sync selected branch
+        run: git pull origin "${GITHUB_REF_NAME}" --rebase
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

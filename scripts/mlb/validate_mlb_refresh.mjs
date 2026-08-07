@@ -830,7 +830,6 @@ const currentOutputs = [
   ["live_change_alerts.json", ["generatedAt"]],
   ["hr_ai_breakdowns.json", ["updatedAt"]],
   ["hr_ai_history.json", ["updatedAt"]],
-  ["hr_calibration_report.json", ["generatedAt"]],
   ["hr_ai_movement.json", ["updatedAt"]],
   ["ai_trust_engine.json", ["updatedAt"]],
   ["ai_reasoning_engine.json", ["updatedAt"]],
@@ -838,11 +837,8 @@ const currentOutputs = [
   ["public_tags.json", ["generatedAt"]],
   ["ai_2.json", ["generatedAt"]],
   ["content/x_live_ai_board.json", ["generatedAt"]],
-  ["hr_ai_hof.json", ["updatedAt"]],
-  ["hr_ai_stacks.json", ["updatedAt"]],
   ["health_status.json", ["generatedAt"]],
-  ["site_last_updated.json", ["updatedAt", "updated_at"]],
-  ["content/x_posts.json", ["updatedAt"]]
+  ["site_last_updated.json", ["updatedAt", "updated_at"]]
 ];
 
 const outputTimes = new Map();
@@ -873,7 +869,6 @@ validateDependencyOrder(outputTimes, "lineup_impact_engine.json", "hr_decision_c
 validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
 validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
 validateDependencyOrder(outputTimes, "hr_ai_breakdowns.json", "hr_ai_history.json");
-validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_calibration_report.json");
 validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_ai_movement.json");
 validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.json");
 validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
@@ -887,7 +882,6 @@ validateDependencyOrder(outputTimes, "player_card_data.json", "live_change_alert
 validateDependencyOrder(outputTimes, "tag_registry.json", "public_tags.json");
 validateDependencyOrder(outputTimes, "public_tags.json", "ai_2.json");
 validateDependencyOrder(outputTimes, "health_status.json", "site_last_updated.json");
-validateDependencyOrder(outputTimes, "content/x_posts.json", "site_last_updated.json");
 
 validateSlateDate("mlb_games_today.json", "date", today);
 validateSlateDate("mlb_player_pool.json", "date", today);

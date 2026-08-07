@@ -657,18 +657,13 @@ const steps = [
   ["Live Change Alerts", "node scripts/mlb/build_live_change_alerts.js"],
   ["AI Breakdowns", "node scripts/build_hr_ai_breakdowns.cjs"],
   ["AI History", "node scripts/build_hr_ai_history.cjs"],
-  ["HR Calibration Report", "node scripts/mlb/build_hr_calibration_report.js"],
-  ["Ball Carry Index", "node scripts/mlb/build_ball_carry_index.js"],
   ["AI Movement", "node scripts/build_hr_ai_movement.cjs"],
   ["AI Trust Engine", "node scripts/build_ai_trust_engine.cjs"],
   ["AI Reasoning Engine", "node scripts/build_ai_reasoning_engine.cjs"],
   ["Tag Registry", "node scripts/build_tag_registry.cjs"],
   ["Public Tags", "node scripts/build_public_tags.cjs"],
   ["AI 2.0", "node scripts/build_ai_2.cjs"],
-  ["AI Hall of Fame", "node scripts/build_hr_ai_hof.cjs"],
-  ["AI Stacks", "node scripts/build_hr_ai_stacks.cjs"],
-  ["Health Status", "node scripts/build_health_status.js"],
-  ["X Content", "node scripts/build_x_content.js"]
+  ["Health Status", "node scripts/build_health_status.js"]
 ];
 
 const requiredOutputs = [
@@ -697,8 +692,6 @@ const requiredOutputs = [
   { file: "live_change_alerts.json", timestampFields: ["generatedAt"] },
   { file: "hr_ai_breakdowns.json", timestampFields: ["updatedAt"] },
   { file: "hr_ai_history.json", timestampFields: ["updatedAt"] },
-  { file: "hr_calibration_report.json", timestampFields: ["generatedAt"] },
-  { file: "mlb_ball_carry_index.json", timestampFields: ["updatedAt"] },
   { file: "hr_ai_movement.json", timestampFields: ["updatedAt"] },
   { file: "ai_trust_engine.json", timestampFields: ["updatedAt"] },
   { file: "ai_reasoning_engine.json", timestampFields: ["updatedAt"] },
@@ -706,11 +699,7 @@ const requiredOutputs = [
   { file: "public_tags.json", timestampFields: ["generatedAt"] },
   { file: "ai_2.json", timestampFields: ["generatedAt"] },
   { file: "content/x_live_ai_board.json", timestampFields: ["generatedAt"] },
-  { file: "hr_ai_hof.json", timestampFields: ["updatedAt"] },
-  { file: "hr_ai_stacks.json", timestampFields: ["updatedAt"] },
-  { file: "health_status.json", timestampFields: ["generatedAt"] },
-  { file: "website/data/content/x_posts.json", timestampFields: ["updatedAt"] },
-  { file: "exports/content/x_posts.txt" }
+  { file: "health_status.json", timestampFields: ["generatedAt"] }
 ];
 
 console.log("");
@@ -811,7 +800,6 @@ try {
   validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
   validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
   validateDependencyOrder(outputTimes, "hr_ai_breakdowns.json", "hr_ai_history.json");
-  validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_calibration_report.json");
   validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_ai_movement.json");
   validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.json");
   validateDependencyOrder(outputTimes, "ai_trust_engine.json", "ai_reasoning_engine.json");
