@@ -159,6 +159,7 @@ const calibrated = rows
       playerId,
       player,
       team,
+      teamId: Number(pool.teamId) || null,
       opponent,
       probabilityRank: 0,
       rawHrEventScore,
@@ -171,6 +172,7 @@ const calibrated = rows
       lineupStatus,
       confirmedLineup,
       lineupConfidence: lineupConfidence({ lineupStatus, confirmedLineup, lineupSpot }),
+      ownershipVerification: pool.ownershipVerification || null,
       actualHr: typeof row.actualHr === "boolean" ? row.actualHr : null
     };
   })

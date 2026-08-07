@@ -227,6 +227,10 @@ function validatePlayerPoolOwnership() {
   for (const player of pool.players || []) {
     const playerId = String(player.playerId || "");
     if (!playerId) throw new Error("player pool contains a player without an MLB ID");
+    const verification = player.ownershipVerification;
+    if (verification?.status !== "VERIFIED" || String(verification.playerId) !== playerId || String(verification.teamId) !== String(player.teamId) || !Number.isFinite(Date.parse(verification.verifiedAt))) {
+      throw new Error(`player pool has invalid ownership verification for ${player.player || playerId}`);
+    }
     if (!gamesByPlayerId.has(playerId)) gamesByPlayerId.set(playerId, new Set());
     gamesByPlayerId.get(playerId).add(String(player.gamePk || ""));
   }
@@ -234,6 +238,18 @@ function validatePlayerPoolOwnership() {
     if (gamePks.size > 1) {
       throw new Error(`MLB ID ${playerId} appears in multiple slate games: ${[...gamePks].join(", ")}`);
     }
+  }
+
+  const ledger = readJson(outputPath("mlb_player_transactions.json"));
+  if (ledger?.schemaVersion !== "1.0" || !Array.isArray(ledger.events) || Number(ledger.eventCount) !== ledger.events.length) {
+    throw new Error("mlb_player_transactions.json has an invalid ledger schema");
+  }
+  const eventIds = new Set();
+  for (const event of ledger.events) {
+    if (!event.eventId || eventIds.has(event.eventId) || !["TEAM_CHANGE", "STALE_OWNERSHIP_REJECTED"].includes(event.type) || !event.playerId) {
+      throw new Error("mlb_player_transactions.json contains an invalid or duplicate event");
+    }
+    eventIds.add(event.eventId);
   }
 }
 
@@ -517,6 +533,10 @@ function validateRealPitcherAttackZones(expectedDate) {
         throw new Error(`Decision Center has invalid movement reason for ${row.player}`);
       }
     }
+    const ownership = row.ownershipVerification;
+    if (ownership?.status !== "VERIFIED" || String(ownership.playerId) !== String(row.playerId) || String(ownership.teamId) !== String(row.teamId)) {
+      throw new Error(`Decision Center has invalid ownership verification for ${row.player}`);
+    }
   }
   for (const player of hr) {
     if (!decisionByPlayer.has(String(player.playerId))) {
@@ -734,6 +754,7 @@ const steps = allSteps.filter(([label]) => {
 const allRequiredOutputs = [
   { file: "mlb_games_today.json", timestampFields: ["updatedAt"] },
   { file: "mlb_player_pool.json", timestampFields: ["updatedAt"] },
+  { file: "mlb_player_transactions.json", timestampFields: ["updatedAt"] },
   { file: "mlb_results.json", timestampFields: ["updatedAt"] },
   { file: "hr_power_profiles.json", timestampFields: ["generatedAt"] },
   { file: "game_pitcher_matchups.json", timestampFields: ["updatedAt"] },
@@ -770,6 +791,7 @@ const allRequiredOutputs = [
 const pulseOutputFiles = new Set([
   "mlb_games_today.json",
   "mlb_player_pool.json",
+  "mlb_player_transactions.json",
   "mlb_results.json",
   "mlb_weather.json",
   "mlb_market_odds.json",
@@ -866,6 +888,7 @@ try {
   validateCalibrationReport();
 
   validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_player_pool.json");
+  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_player_transactions.json");
   if (refreshProfile === "full") {
     validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_results.json");
     validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");

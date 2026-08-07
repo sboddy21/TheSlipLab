@@ -251,6 +251,7 @@ async function main() {
       player: player.player,
       playerId: player.playerId,
       team: player.team,
+      teamId: player.teamId || player.ownershipVerification?.teamId || null,
       opponent: player.opponent,
       game: player.game,
       venue: player.venue,
@@ -274,6 +275,7 @@ async function main() {
       dataQuality: player.dataQuality || null,
       rawModelConfidence: num(player.rawModelConfidence),
       movement: player.movement || null,
+      ownershipVerification: player.ownershipVerification || null,
 
       season: {
         hr: num(h.hr),

@@ -721,6 +721,10 @@ function validateRealPitcherAttackZones(expectedDate) {
         fail(`Decision Center has invalid movement reason for ${row.player}`);
       }
     }
+    const ownership = row.ownershipVerification;
+    if (ownership?.status !== "VERIFIED" || String(ownership.playerId) !== String(row.playerId) || String(ownership.teamId) !== String(row.teamId)) {
+      fail(`Decision Center has invalid ownership verification for ${row.player}`);
+    }
   }
   for (const player of hr) {
     if (!decisionByPlayer.has(String(player.playerId))) {
@@ -852,6 +856,7 @@ if (Date.now() - refreshAnchor > MAX_REFRESH_AGE_MS) {
 const currentOutputs = [
   ["mlb_games_today.json", ["updatedAt"]],
   ["mlb_player_pool.json", ["updatedAt"]],
+  ["mlb_player_transactions.json", ["updatedAt"]],
   ["hr_power_profiles.json", ["generatedAt"]],
   ["game_pitcher_matchups.json", ["updatedAt"]],
   ["lineup_impact_engine.json", ["updatedAt"]],
@@ -891,6 +896,7 @@ for (const [file, timestampFields] of currentOutputs) {
 }
 
 validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_player_pool.json");
+validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_player_transactions.json");
 validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");
 validateDependencyOrder(outputTimes, "mlb_player_pool.json", "pitch_type_damage.json");
 validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_weather.json");
@@ -1070,11 +1076,27 @@ const poolGamesByPlayerId = new Map();
 for (const player of pool.players) {
   const playerId = String(player.playerId || "");
   if (!playerId) fail("player pool contains a player without an MLB ID");
+  const verification = player.ownershipVerification;
+  if (verification?.status !== "VERIFIED" || String(verification.playerId) !== playerId || String(verification.teamId) !== String(player.teamId) || !Number.isFinite(Date.parse(verification.verifiedAt))) {
+    fail(`player pool has invalid ownership verification for ${player.player || playerId}`);
+  }
   if (!poolGamesByPlayerId.has(playerId)) poolGamesByPlayerId.set(playerId, new Set());
   poolGamesByPlayerId.get(playerId).add(String(player.gamePk || ""));
 }
 for (const [playerId, gamePks] of poolGamesByPlayerId) {
   if (gamePks.size > 1) fail(`MLB ID ${playerId} appears in multiple slate games: ${[...gamePks].join(", ")}`);
+}
+
+const identityLedger = read("mlb_player_transactions.json");
+if (identityLedger?.schemaVersion !== "1.0" || !Array.isArray(identityLedger.events) || Number(identityLedger.eventCount) !== identityLedger.events.length) {
+  fail("mlb_player_transactions.json has an invalid ledger schema");
+}
+const identityEventIds = new Set();
+for (const event of identityLedger.events) {
+  if (!event.eventId || identityEventIds.has(event.eventId) || !["TEAM_CHANGE", "STALE_OWNERSHIP_REJECTED"].includes(event.type) || !event.playerId) {
+    fail("mlb_player_transactions.json contains an invalid or duplicate event");
+  }
+  identityEventIds.add(event.eventId);
 }
 
 if (noGamesScheduled) {

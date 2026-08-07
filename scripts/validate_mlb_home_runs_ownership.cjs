@@ -5,6 +5,10 @@ const ROOT = process.cwd();
 
 const ownershipRules = [
   {
+    target: "mlb_player_transactions.json",
+    allowedWriters: new Set(["scripts/mlb/build_mlb_player_pool.js"])
+  },
+  {
     target: "mlb_home_runs.json",
     allowedWriters: new Set(["scripts/mlb/build_master_hr_model.js"])
   },

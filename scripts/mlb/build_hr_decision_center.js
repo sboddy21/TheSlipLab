@@ -51,7 +51,8 @@ for (const row of playerPoolRows) {
       lineupSpot: row.lineupSpot || null,
       lineupStatus: row.lineupStatus || "",
       lineupSource: row.lineupSource || "",
-      confirmedLineup: Boolean(row.confirmedLineup)
+      confirmedLineup: Boolean(row.confirmedLineup),
+      ownershipVerification: row.ownershipVerification || null
     });
   }
 }
@@ -863,8 +864,10 @@ function buildCard(row) {
     playerId: playerId ? Number(playerId) : null,
     mlbId: playerId ? Number(playerId) : null,
     team,
+    teamId: Number(row.teamId || liveLineup.ownershipVerification?.teamId) || null,
     opponent,
     game,
+    ownershipVerification: liveLineup.ownershipVerification || row.ownershipVerification || null,
 
     hrConfidence,
     baseHrConfidence,

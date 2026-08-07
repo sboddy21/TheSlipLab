@@ -1,9 +1,11 @@
 import fs from "fs";
 import path from "path";
+import { buildIdentityLedger } from "./lib/identity_ledger.js";
 
 const ROOT = process.cwd();
 const GAMES_FILE = path.join(ROOT, "website", "data", "mlb_games_today.json");
 const OUT_FILE = path.join(ROOT, "website", "data", "mlb_player_pool.json");
+const LEDGER_FILE = path.join(ROOT, "website", "data", "mlb_player_transactions.json");
 
 async function getJson(url) {
   const res = await fetch(url);
@@ -291,20 +293,24 @@ async function main() {
   }
 
   const gamesData = readJson(GAMES_FILE);
+  const previousPool = fs.existsSync(OUT_FILE) ? readJson(OUT_FILE) : {};
+  const previousLedger = fs.existsSync(LEDGER_FILE) ? readJson(LEDGER_FILE) : {};
   const games = gamesData.games || [];
   const analysisGames = selectAnalysisGames(games);
 
   if (!games.length) {
+    const verifiedAt = new Date().toISOString();
     const output = {
       date: gamesData.date,
       source: "MLB Stats API",
-      updatedAt: new Date().toISOString(),
+      updatedAt: verifiedAt,
       availability: "no_games_scheduled",
       playerCount: 0,
       players: []
     };
 
     fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
+    fs.writeFileSync(LEDGER_FILE, JSON.stringify(buildIdentityLedger({ previousLedger, previousPool, currentPlayers: [], rejections: [], date: gamesData.date, verifiedAt }), null, 2));
     console.log("MLB player pool saved");
     console.log("Availability: no games scheduled");
     console.log("Players: 0");
@@ -408,18 +414,32 @@ async function main() {
   }
 
   const ownership = await resolveCanonicalOwnership(pool);
+  const verifiedAt = new Date().toISOString();
+  const verifiedPlayers = ownership.players.map(player => ({
+    ...player,
+    ownershipVerification: {
+      status: "VERIFIED",
+      verifiedAt,
+      source: player.rosterSource || "MLB_ACTIVE_ROSTER",
+      playerId: Number(player.playerId),
+      teamId: Number(player.teamId)
+    }
+  }));
 
   const output = {
     date: gamesData.date,
     source: "MLB Stats API",
-    updatedAt: new Date().toISOString(),
-    playerCount: ownership.players.length,
+    updatedAt: verifiedAt,
+    playerCount: verifiedPlayers.length,
     ownershipRejectionCount: ownership.rejected.length,
     ownershipRejections: ownership.rejected,
-    players: ownership.players
+    players: verifiedPlayers
   };
 
+  const ledger = buildIdentityLedger({ previousLedger, previousPool, currentPlayers: verifiedPlayers, rejections: ownership.rejected, date: gamesData.date, verifiedAt });
+
   fs.writeFileSync(OUT_FILE, JSON.stringify(output, null, 2));
+  fs.writeFileSync(LEDGER_FILE, JSON.stringify(ledger, null, 2));
 
   console.log("MLB player pool saved");
   console.log("Players:", ownership.players.length);
