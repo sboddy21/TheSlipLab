@@ -269,6 +269,7 @@ async function main() {
           : num(player.lineupSpot) > 0
             ? "MEDIUM"
             : "LOW",
+      recentStatcast: player.recentStatcastForm || null,
 
       season: {
         hr: num(h.hr),

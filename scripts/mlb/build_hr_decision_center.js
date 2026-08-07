@@ -422,7 +422,8 @@ function statcastZoneProfile(row) {
     hrZones: cellsFromArray(zones.hr),
     kZones: cellsFromArray(zones.k),
     hardHitZones: cellsFromArray(zones.hardHit),
-    barrelZones: cellsFromArray(zones.barrel)
+    barrelZones: cellsFromArray(zones.barrel),
+    recentForm: statcastRow?.recentForm || null
   };
 }
 
@@ -770,6 +771,7 @@ function buildCard(row) {
   const lineupImpactScore = round(num(lineupImpact.lineupImpactScore));
   const projectedPlateAppearances = round(num(lineupImpact.projectedPlateAppearances));
   const protectionScore = round(num(lineupImpact.protectionScore));
+  const recentStatcastAdjustment = round(num(statcast.recentForm?.modelAdjustment));
 
   const baseHrConfidence = round(weightedScore([
     [powerScore, 0.30],
@@ -784,7 +786,8 @@ function buildCard(row) {
     baseHrConfidence +
     lineupBoost * 0.18 +
     Math.max(0, lineupImpactScore - 65) * 0.035 +
-    Math.max(0, protectionScore - 60) * 0.025
+    Math.max(0, protectionScore - 60) * 0.025 +
+    recentStatcastAdjustment
   );
 
   const card = {
@@ -806,6 +809,8 @@ function buildCard(row) {
     confirmedLineup,
     projectedPlateAppearances,
     protectionScore,
+    recentStatcastAdjustment,
+    recentStatcastForm: statcast.recentForm,
     hitterBefore: lineupImpact.hitterBefore || "",
     hitterAfter: lineupImpact.hitterAfter || "",
     powerScore,

@@ -397,6 +397,13 @@ function validateRealStatcastZones(expectedDate) {
         throw new Error(`Statcast ${metric} zones are invalid for ${player.player}`);
       }
     }
+    const recent = row.recentForm;
+    if (recent?.schemaVersion !== "1.0" || !["last7", "last15", "last30", "season"].every(key => recent[key])) {
+      throw new Error(`Statcast recent form is invalid for ${player.player}`);
+    }
+    if (Number(recent.reliability) < 0 || Number(recent.reliability) > 1 || Math.abs(Number(recent.modelAdjustment)) > 2.5) {
+      throw new Error(`Statcast recent form adjustment is unsafe for ${player.player}`);
+    }
   }
 
   if (!statcast.pitchers || Object.keys(statcast.pitchers).length !== pitcherIds.size) {

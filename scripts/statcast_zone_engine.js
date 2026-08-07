@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const ROOT = process.cwd();
 const WEBSITE_DATA_DIR = path.join(ROOT, "website", "data");
@@ -378,12 +379,109 @@ function buildMetricZones(rows) {
   return { avg, iso, slg, xwoba, hr, k, hardHit, barrel, raw: cells };
 }
 
+function average(values) {
+  const finite = values.filter(value => Number.isFinite(value));
+  return finite.length ? finite.reduce((sum, value) => sum + value, 0) / finite.length : null;
+}
+
+function round(value, digits = 3) {
+  return Number.isFinite(value) ? Number(value.toFixed(digits)) : null;
+}
+
+function recentCutoff(days) {
+  const end = new Date(`${SLATE_DATE}T12:00:00Z`);
+  end.setUTCDate(end.getUTCDate() - (days - 1));
+  return end.toISOString().slice(0, 10);
+}
+
+function contactWindow(rows, days, targetBattedBalls) {
+  const cutoff = recentCutoff(days);
+  const windowRows = rows.filter(row => String(row.game_date || "") >= cutoff);
+  const battedBalls = windowRows.filter(row => number(row.launch_speed) !== null);
+  const hardHits = battedBalls.filter(row => number(row.launch_speed) >= 95);
+  const barrels = battedBalls.filter(row => number(row.launch_speed_angle) === 6);
+  const sweetSpots = battedBalls.filter(row => {
+    const angle = number(row.launch_angle);
+    return angle !== null && angle >= 8 && angle <= 32;
+  });
+  const xwobaValues = windowRows
+    .map(row => number(row.estimated_woba_using_speedangle))
+    .filter(value => value !== null);
+
+  return {
+    days,
+    pitches: windowRows.length,
+    battedBalls: battedBalls.length,
+    reliability: round(Math.min(1, battedBalls.length / targetBattedBalls)),
+    avgExitVelocity: round(average(battedBalls.map(row => number(row.launch_speed))), 1),
+    avgLaunchAngle: round(average(battedBalls.map(row => number(row.launch_angle))), 1),
+    hardHitRate: round(battedBalls.length ? hardHits.length / battedBalls.length : 0),
+    barrelRate: round(battedBalls.length ? barrels.length / battedBalls.length : 0),
+    sweetSpotRate: round(battedBalls.length ? sweetSpots.length / battedBalls.length : 0),
+    xwobaOnContact: round(average(xwobaValues))
+  };
+}
+
+export function buildRecentForm(rows) {
+  const season = contactWindow(rows, 400, 120);
+  const last7 = contactWindow(rows, 7, 15);
+  const last15 = contactWindow(rows, 15, 30);
+  const last30 = contactWindow(rows, 30, 60);
+  const primary = last15.battedBalls >= 8 ? last15 : last30;
+
+  if (!season.battedBalls || !primary.battedBalls) {
+    return {
+      schemaVersion: "1.0",
+      status: "INSUFFICIENT_SAMPLE",
+      sampleWindow: primary.days,
+      reliability: 0,
+      trendIndex: 50,
+      modelAdjustment: 0,
+      season,
+      last7,
+      last15,
+      last30
+    };
+  }
+
+  const evDelta = (primary.avgExitVelocity ?? season.avgExitVelocity ?? 0) - (season.avgExitVelocity ?? 0);
+  const hardHitDelta = primary.hardHitRate - season.hardHitRate;
+  const barrelDelta = primary.barrelRate - season.barrelRate;
+  const xwobaDelta = (primary.xwobaOnContact ?? season.xwobaOnContact ?? 0) - (season.xwobaOnContact ?? 0);
+  const unshrunkIndex = Math.max(0, Math.min(100,
+    50 + evDelta * 2 + hardHitDelta * 80 + barrelDelta * 300 + xwobaDelta * 100
+  ));
+  const reliability = primary.reliability;
+  const trendIndex = 50 + (unshrunkIndex - 50) * reliability;
+  const modelAdjustment = Math.max(-2.5, Math.min(2.5, (trendIndex - 50) / 10));
+
+  return {
+    schemaVersion: "1.0",
+    status: reliability >= 0.75 ? "HIGH_CONFIDENCE" : reliability >= 0.4 ? "MEDIUM_CONFIDENCE" : "LOW_CONFIDENCE",
+    sampleWindow: primary.days,
+    reliability: round(reliability),
+    trendIndex: round(trendIndex, 1),
+    modelAdjustment: round(modelAdjustment, 2),
+    deltas: {
+      avgExitVelocity: round(evDelta, 1),
+      hardHitRate: round(hardHitDelta),
+      barrelRate: round(barrelDelta),
+      xwobaOnContact: round(xwobaDelta)
+    },
+    season,
+    last7,
+    last15,
+    last30
+  };
+}
+
 function validZoneCard(card, playerId) {
   if (!card || String(card.playerId || card.mlbId || "") !== String(playerId)) return false;
   if (easternDate(card.cached_at) !== SLATE_DATE) return false;
 
   const zones = card.zones;
   if (!zones || typeof zones !== "object") return false;
+  if (card.recentForm?.schemaVersion !== "1.0") return false;
 
   for (const metric of ["avg", "iso", "slg", "xwoba", "hr", "k", "hardHit", "barrel", "raw"]) {
     if (!Array.isArray(zones[metric]) || zones[metric].length !== 25) return false;
@@ -516,7 +614,8 @@ async function main() {
         zonePitchCount,
         source: zonePitchCount ? SOURCE : "no_real_statcast_sample",
         cached_at: new Date().toISOString(),
-        zones
+        zones,
+        recentForm: buildRecentForm(statcastRows)
       };
 
       if (item.kind === "pitcher") {
@@ -584,7 +683,9 @@ async function main() {
   console.log("Saved:", OUT_WEB);
 }
 
-main().catch(err => {
-  console.error(err);
-  process.exit(1);
-});
+if (path.resolve(process.argv[1] || "") === fileURLToPath(import.meta.url)) {
+  main().catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+}
