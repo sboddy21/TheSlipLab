@@ -69,6 +69,20 @@ function outputText(payload) {
   return (payload?.output || []).flatMap(item => item?.content || []).filter(part => part?.type === "output_text").map(part => part.text || "").join("");
 }
 
+function parseStructuredOutput(payload) {
+  const output = outputText(payload);
+  if (payload?.status === "incomplete") {
+    const reason = payload?.incomplete_details?.reason || "unknown";
+    throw new Error(`OpenAI returned an incomplete structured response (${reason}). Please retry.`);
+  }
+  if (!output.trim()) throw new Error("OpenAI returned an empty structured response. Please retry.");
+  try {
+    return JSON.parse(output);
+  } catch {
+    throw new Error("OpenAI returned malformed structured output. Please retry.");
+  }
+}
+
 const schema = {
   type: "object",
   additionalProperties: false,
@@ -137,14 +151,14 @@ export default async function handler(request, response) {
           { role: "user", content: [{ type: "input_text", text: JSON.stringify({ sport: "MLB", market: "home_runs", players }) }] }
         ],
         text: { verbosity: "medium", format: { type: "json_schema", name: "mlb_daily_ai_analysis", strict: true, schema } },
-        max_output_tokens: 2200
+        max_output_tokens: 6000
       }),
       signal: AbortSignal.timeout(55000)
     });
     console.log("[mlb-ai-analysis] OpenAI response received", { status: openaiResponse.status, elapsedMs: Date.now() - startedAt });
     const payload = await openaiResponse.json().catch(() => ({}));
     if (!openaiResponse.ok) throw new Error(payload?.error?.message || "OpenAI analysis failed");
-    const parsed = JSON.parse(outputText(payload));
+    const parsed = parseStructuredOutput(payload);
     const result = { source: "openai", model: MODEL, generatedAt: new Date().toISOString(), slateGeneratedAt: generatedAt, ...parsed };
     memoryCache.set(cacheKey, result);
     if (memoryCache.size > 8) memoryCache.delete(memoryCache.keys().next().value);
