@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-07T11:14:22.884Z",
+  "updatedAt": "2026-08-07T14:35:54.292Z",
   "date": "2026-08-07",
-  "slot": "overnight",
+  "slot": "morning",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "morning",
+    "selected": "morning",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,75 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-07T11:14:22.884Z",
+    "checkedAt": "2026-08-07T14:35:54.292Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-07T11:14:22.515Z",
+        "timestamp": "2026-08-07T14:35:53.917Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-07T11:14:21.718Z",
-        "ageSeconds": 1,
-        "scheduledGames": 10,
-        "totalScheduledGames": 11,
-        "finalGames": 11
+        "timestamp": "2026-08-07T14:34:56.165Z",
+        "ageSeconds": 58
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-07T10:51:32.039Z",
-        "players": 538,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-07T14:34:11.333Z",
+        "ageSeconds": 102
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-07T14:35:53.492Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-07T11:14:21.765Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-06",
-        "archivedPlayers": 260,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-07T14:35:50.620Z",
+        "ageSeconds": 3
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-07_MORNING_SLATE_READ",
+      "date": "2026-08-07",
+      "type": "slate_read",
+      "slot": "morning",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-07T14:35:54.292Z",
+      "text": "I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:\n\n1. Luis García Jr. — 58.9 HR confidence | Sweeper matchup 76.6\n2. Ben Rice — 58.2 HR confidence | 4 Seam matchup 67.8\n3. Tyrone Taylor — 58.1 HR confidence | Splitter matchup 100.0\n\nThe important part: Strong power profile and crushes this pitch mix.\n\nWho is your favorite HR look today?",
+      "players": [
+        "Luis García Jr.",
+        "Ben Rice",
+        "Tyrone Taylor"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-07T14:35:53.917Z"
+    }
+  ]
 }
