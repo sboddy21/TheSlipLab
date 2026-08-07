@@ -273,6 +273,7 @@ async function main() {
       pitchingExposure: player.pitchingExposure || null,
       dataQuality: player.dataQuality || null,
       rawModelConfidence: num(player.rawModelConfidence),
+      movement: player.movement || null,
 
       season: {
         hr: num(h.hr),

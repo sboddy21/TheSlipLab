@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { projectPitchingExposure } from "./lib/bullpen_context.js";
 import { applyDataQualityPenalty, buildDataQualityConfidence } from "./lib/data_quality_confidence.js";
+import { explainPlayerMovement } from "./lib/player_movement.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -278,11 +279,15 @@ const bullpenRows = Object.values(bullpenPayload.teamSummaries || {});
 const marketOddsPayload = readRawJson("mlb_market_odds.json") || {};
 const marketOddsRows = Array.isArray(marketOddsPayload.prices) ? marketOddsPayload.prices : [];
 const manualAvailabilityPayload = readRawJson("manual_player_availability.json") || {};
+const previousDecisionPayload = readRawJson("hr_decision_center.json") || {};
 
 const pitchMap = makePlayerMap(pitchRows);
 const attackMap = makePlayerMap(attackRows);
 const statcastMap = makePlayerMap(statcastRows);
 const bullpenMap = makeBullpenRiskMap(bullpenRows);
+const previousDecisionMap = previousDecisionPayload.pitcherDate === todayEastern()
+  ? makePlayerMap(Array.isArray(previousDecisionPayload.allPlayers) ? previousDecisionPayload.allPlayers : [])
+  : new Map();
 
 function playerKey(row) {
   const id = text(pick(row || {}, ["playerId", "mlbId", "id"]));
@@ -396,6 +401,14 @@ function enrichDataQuality(card) {
     reasons: quality.score < 65 && quality.grade !== "OUT"
       ? [...(card.reasons || []), "data confidence limited"]
       : card.reasons
+  };
+}
+
+function enrichMovement(card) {
+  const previous = previousDecisionMap.get(String(card.playerId || "")) || previousDecisionMap.get(norm(card.player));
+  return {
+    ...card,
+    movement: explainPlayerMovement(card, previous)
   };
 }
 
@@ -992,7 +1005,8 @@ async function main() {
     .filter(row => row.player)
     .map(card => enrichPitcher(card, opponentMap))
     .map(enrichMarket)
-    .map(enrichDataQuality);
+    .map(enrichDataQuality)
+    .map(enrichMovement);
 
   const promotedCards = promotionPool(cards);
 

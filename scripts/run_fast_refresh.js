@@ -502,6 +502,21 @@ function validateRealPitcherAttackZones(expectedDate) {
     } else if (Number(quality.penaltyFactor) < 0.85 || Number(quality.penaltyFactor) > 1 || adjustedConfidence > rawConfidence) {
       throw new Error(`Decision Center has unsafe data quality penalty for ${row.player}`);
     }
+    const movement = row.movement;
+    if (!movement || !["NEW", "UP", "DOWN", "UNCHANGED"].includes(movement.direction) || !Array.isArray(movement.reasons)) {
+      throw new Error(`Decision Center has invalid movement for ${row.player}`);
+    }
+    if (movement.status !== "INITIAL_SNAPSHOT") {
+      const expectedDelta = Math.round((Number(movement.currentConfidence) - Number(movement.previousConfidence)) * 10) / 10;
+      if (Math.abs(expectedDelta - Number(movement.confidenceDelta)) > 0.01 || Number(movement.currentConfidence) !== adjustedConfidence) {
+        throw new Error(`Decision Center movement delta is invalid for ${row.player}`);
+      }
+    }
+    for (const reason of movement.reasons) {
+      if (!reason?.key || !reason?.label || !["support", "risk", "neutral"].includes(reason.impact)) {
+        throw new Error(`Decision Center has invalid movement reason for ${row.player}`);
+      }
+    }
   }
   for (const player of hr) {
     if (!decisionByPlayer.has(String(player.playerId))) {
