@@ -349,9 +349,39 @@
       color:#31465a;
       line-height:1.5;
     }
+    .slate-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+    }
+    .game-card{
+      padding:16px;
+      border:1px solid #1a3045;
+      background:#fffdf7;
+    }
+    .game-card time,.health-row span{
+      color:#607285;
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+    .game-card h3{margin:12px 0 7px;font-family:Georgia,"Times New Roman",serif;font-size:22px}
+    .game-card p{margin:0;color:#506071;font-size:13px;line-height:1.45}
+    .health-board{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:1px;
+      margin-top:14px;
+      border:1px solid #1a3045;
+      background:#1a3045;
+    }
+    .health-row{padding:14px;background:#fffdf7;display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .health-row strong{font-size:11px;text-transform:uppercase;color:#12633d}
+    .health-row strong.pending{color:#996315}
     @media(max-width:1150px){
       .hero{grid-template-columns:1fr}
-      .build-grid,.contract-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .build-grid,.contract-grid,.slate-grid,.health-board{grid-template-columns:repeat(2,minmax(0,1fr))}
       .market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(max-width:680px){
@@ -359,7 +389,7 @@
       .nfl-report-line,.section-head{display:block}
       .hero-copy{min-height:390px;padding:22px}
       .hero-copy:after{font-size:24px;word-spacing:18px}
-      .panel-stat,.build-grid,.market-grid,.contract-grid,.rules-grid{grid-template-columns:1fr}
+      .panel-stat,.build-grid,.market-grid,.contract-grid,.rules-grid,.slate-grid,.health-board{grid-template-columns:1fr}
       .section-head p{text-align:left;margin-top:8px}
     }
   </style>
@@ -389,6 +419,12 @@
         <div class="panel-stat">
           <article><span>Launch markets</span><strong id="marketCount">0</strong></article>
           <article><span>Data contracts</span><strong id="contractCount">0</strong></article>
+          <article><span>Season games</span><strong id="gameCount">—</strong></article>
+          <article><span>Player pool</span><strong id="playerCount">—</strong></article>
+          <article><span>Depth entries</span><strong id="depthCount">—</strong></article>
+          <article><span>Injury reports</span><strong id="injuryCount">—</strong></article>
+          <article><span>Usage profiles</span><strong id="usageCount">—</strong></article>
+          <article><span>Role eligible</span><strong id="roleCount">—</strong></article>
         </div>
       </aside>
     </section>
@@ -401,9 +437,18 @@
       <div class="build-grid" id="phaseGrid"></div>
     </section>
 
+    <section aria-labelledby="slateTitle">
+      <div class="section-head">
+        <div><span class="section-kicker">02 / Week 1</span><h2 class="section-title" id="slateTitle">The opening slate.</h2></div>
+        <p>Real schedule data only. Player projections stay off until role, usage, injury, and market inputs pass validation.</p>
+      </div>
+      <div class="slate-grid" id="weekOneGrid"><article class="game-card"><p>Loading Week 1.</p></article></div>
+      <div class="health-board" id="healthBoard"></div>
+    </section>
+
     <section aria-labelledby="marketTitle">
       <div class="section-head">
-        <div><span class="section-kicker">02 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
+        <div><span class="section-kicker">03 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
         <p>These are the first markets worth supporting because they connect cleanly to usage, role, game environment, and sportsbook lines.</p>
       </div>
       <div class="market-grid" id="marketGrid"></div>
@@ -411,7 +456,7 @@
 
     <section aria-labelledby="contractTitle">
       <div class="section-head">
-        <div><span class="section-kicker">03 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
+        <div><span class="section-kicker">04 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
         <p>The first JSON files are placeholders by design. They tell every future page and script where the NFL truth should live.</p>
       </div>
       <div class="contract-grid" id="contractGrid"></div>
@@ -419,7 +464,7 @@
 
     <section aria-labelledby="rulesTitle">
       <div class="section-head">
-        <div><span class="section-kicker">04 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
+        <div><span class="section-kicker">05 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
         <p>Football is role-driven. The first version should handle unknowns cleanly instead of pretending camp noise is a finished model.</p>
       </div>
       <div class="rules-grid">
@@ -436,13 +481,20 @@
   <script>
     const fallbackFoundation = {
       summary: "Phase one establishes the NFL build surface.",
-      currentPhase: { label: "Foundation", window: "July 24 – July 31", objective: "Create the NFL launch structure before projections go live." },
+      currentPhase: { label: "Data Foundation", window: "August 7 – August 13", objective: "Stabilize schedule, roster, identity, and source-health contracts." },
       phases: [],
       dataContracts: [],
       integrityRules: [],
       nextBuildSteps: []
     };
     const fallbackMarkets = { launchMarkets: [] };
+    const fallbackSchedule = { gameCount: 0, games: [] };
+    const fallbackPool = { playerCount: 0 };
+    const fallbackDepth = { entryCount: 0 };
+    const fallbackInjuries = { injuryCount: 0 };
+    const fallbackUsage = { profileCount: 0 };
+    const fallbackRoles = { modelEligibleCount: 0 };
+    const fallbackHealth = { sources: {} };
 
     const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
       "&": "&amp;",
@@ -495,10 +547,41 @@
       `;
     }
 
+    function kickoffLabel(value){
+      const date = new Date(value);
+      if(!Number.isFinite(date.getTime())) return "Kickoff TBD";
+      return new Intl.DateTimeFormat("en-US", {
+        timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit"
+      }).format(date) + " ET";
+    }
+
+    function renderGame(game){
+      const away = game.awayTeam?.abbreviation || "TBD";
+      const home = game.homeTeam?.abbreviation || "TBD";
+      const detail = [game.venue, ...(game.broadcasts || [])].filter(Boolean).join(" · ");
+      return `<article class="game-card"><time>${escapeHtml(kickoffLabel(game.kickoffUTC))}</time><h3>${escapeHtml(away)} at ${escapeHtml(home)}</h3><p>${escapeHtml(detail || "Details pending")}</p></article>`;
+    }
+
+    function renderHealth(sources){
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", roleEngine: "Role engine", preseasonUsage: "Preseason usage", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
+      return Object.entries(labels).map(([key, label]) => {
+        const status = sources?.[key]?.status || "pending";
+        const ready = status === "available";
+        return `<article class="health-row"><span>${escapeHtml(label)}</span><strong class="${ready ? "" : "pending"}">${escapeHtml(status)}</strong></article>`;
+      }).join("");
+    }
+
     async function init(){
-      const [foundation, markets] = await Promise.all([
+      const [foundation, markets, schedule, pool, depth, injuries, usage, roles, health] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
-        loadJson("./data/nfl_markets.json", fallbackMarkets)
+        loadJson("./data/nfl_markets.json", fallbackMarkets),
+        loadJson("./data/nfl_schedule.json", fallbackSchedule),
+        loadJson("./data/nfl_player_pool.json", fallbackPool),
+        loadJson("./data/nfl_depth_charts.json", fallbackDepth),
+        loadJson("./data/nfl_injuries.json", fallbackInjuries),
+        loadJson("./data/nfl_usage_baselines.json", fallbackUsage),
+        loadJson("./data/nfl_role_engine.json", fallbackRoles),
+        loadJson("./data/nfl_data_health.json", fallbackHealth)
       ]);
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
@@ -511,12 +594,21 @@
       document.getElementById("phaseObjective").textContent = current.objective || fallbackFoundation.currentPhase.objective;
       document.getElementById("marketCount").textContent = launchMarkets.length;
       document.getElementById("contractCount").textContent = contracts.length;
+      document.getElementById("gameCount").textContent = schedule.gameCount || 0;
+      document.getElementById("playerCount").textContent = pool.playerCount || 0;
+      document.getElementById("depthCount").textContent = depth.entryCount || 0;
+      document.getElementById("injuryCount").textContent = injuries.injuryCount || 0;
+      document.getElementById("usageCount").textContent = usage.profileCount || 0;
+      document.getElementById("roleCount").textContent = roles.modelEligibleCount || 0;
 
       document.getElementById("phaseGrid").innerHTML = (foundation.phases || []).map(renderPhaseCard).join("");
       document.getElementById("marketGrid").innerHTML = launchMarkets.map(renderMarketCard).join("");
       document.getElementById("contractGrid").innerHTML = contracts.map(renderContract).join("");
       document.getElementById("integrityRules").innerHTML = (foundation.integrityRules || []).map(rule => `<li>${escapeHtml(rule)}</li>`).join("");
       document.getElementById("nextSteps").innerHTML = (foundation.nextBuildSteps || []).map(step => `<li>${escapeHtml(step)}</li>`).join("");
+      const weekOne = (schedule.games || []).filter(game => Number(game.week) === 1);
+      document.getElementById("weekOneGrid").innerHTML = weekOne.length ? weekOne.map(renderGame).join("") : `<article class="game-card"><p>Week 1 schedule data is unavailable.</p></article>`;
+      document.getElementById("healthBoard").innerHTML = renderHealth(health.sources);
     }
 
     init();
@@ -524,4 +616,3 @@
   <script src="./health-widget.js?v=2"></script>
 </body>
 </html>
-

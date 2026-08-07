@@ -40,14 +40,16 @@ const markets = {
       supportedPositions: ["WR", "TE", "RB"],
       coreInputs: ["routeShare", "targetShare", "airYardsShare", "defenseCoverage", "sportsbookLine"],
       status: "planned"
-    },
+    }
+  ],
+  deferredMarkets: [
     {
       id: "rushing_yards",
       label: "Rushing Yards",
       launchPriority: 3,
       supportedPositions: ["RB", "QB"],
       coreInputs: ["carryShare", "snapShare", "offensiveLineContext", "gameScript", "sportsbookLine"],
-      status: "planned"
+      reason: "Add after the carry-share and offensive-line inputs are validated."
     },
     {
       id: "passing_yards",
@@ -55,7 +57,7 @@ const markets = {
       launchPriority: 4,
       supportedPositions: ["QB"],
       coreInputs: ["dropbackRate", "passRateOverExpected", "opponentPressure", "pace", "sportsbookLine"],
-      status: "planned"
+      reason: "Add after the dropback, pressure, and pace inputs are validated."
     },
     {
       id: "receptions",
@@ -63,10 +65,8 @@ const markets = {
       launchPriority: 5,
       supportedPositions: ["WR", "TE", "RB"],
       coreInputs: ["targetShare", "routeShare", "aDot", "coverageShell", "sportsbookLine"],
-      status: "planned"
-    }
-  ],
-  deferredMarkets: [
+      reason: "Add after route and target-share inputs are stable."
+    },
     {
       id: "passing_tds",
       label: "Passing TDs",
@@ -89,30 +89,30 @@ const foundation = {
   updatedAt: now.toISOString(),
   headline: "NFL Lab foundation is underway.",
   summary:
-    "Phase one establishes the data contracts, market priorities, and page shell before live projections are released.",
+    "The 2026 schedule, teams, and eligible player pool are now wired. Depth charts, usage, odds, and projections remain intentionally gated.",
   currentPhase: {
     id: "foundation",
-    label: "Foundation",
-    window: "July 24 – July 31",
-    objective: "Create the NFL data structure, supported markets, and launch surface without publishing fake predictions."
+    label: "Data Foundation",
+    window: "August 7 – August 13",
+    objective: "Stabilize schedule, roster, identity, availability, and source-health contracts before modeling usage."
   },
   phases: [
     {
       id: "foundation",
-      label: "Foundation",
-      window: "July 24 – July 31",
+      label: "Data Foundation",
+      window: "August 7 – August 13",
       status: "active",
       tasks: [
-        "Define launch markets",
-        "Create starter JSON contracts",
-        "Build NFL hub page",
-        "Prepare refresh script shape"
+        "Load 2026 regular-season schedule",
+        "Normalize all 32 teams",
+        "Build QB/RB/WR/TE player pool",
+        "Validate canonical provider IDs"
       ]
     },
     {
       id: "camp",
       label: "Training Camp Inputs",
-      window: "Early August",
+      window: "August 14 – August 20",
       status: "queued",
       tasks: [
         "Depth charts",
@@ -123,9 +123,9 @@ const foundation = {
       ]
     },
     {
-      id: "preseason_model",
-      label: "Preseason Model Shape",
-      window: "Mid/Late August",
+      id: "usage_model",
+      label: "Usage Engine",
+      window: "August 21 – August 27",
       status: "queued",
       tasks: [
         "Expected usage",
@@ -139,7 +139,7 @@ const foundation = {
     {
       id: "dress_rehearsal",
       label: "Dress Rehearsal",
-      window: "Labor Day Week",
+      window: "August 28 – September 8",
       status: "queued",
       tasks: [
         "Automated updates",
@@ -151,12 +151,40 @@ const foundation = {
   ],
   dataContracts: [
     {
+      file: "nfl_schedule.json",
+      purpose: "Canonical 2026 regular-season schedule with provider game/team IDs, kickoff, venue, and broadcast context."
+    },
+    {
       file: "nfl_games_today.json",
       purpose: "Daily NFL slate shell with kickoff, teams, venue, weather, and game environment."
     },
     {
+      file: "nfl_teams.json",
+      purpose: "Canonical 32-team identity table used to join schedule, roster, usage, and market sources."
+    },
+    {
       file: "nfl_player_pool.json",
       purpose: "Eligible players by market with team, opponent, position, depth role, and availability."
+    },
+    {
+      file: "nfl_depth_charts.json",
+      purpose: "Latest team-by-team QB/RB/WR/TE depth slots, ranks, starters, and canonical player-ID joins."
+    },
+    {
+      file: "nfl_injuries.json",
+      purpose: "Roster-reported preseason injuries with explicit partial coverage until weekly practice reports begin."
+    },
+    {
+      file: "nfl_usage_baselines.json",
+      purpose: "Three-season targets, carries, passing, yardage, touchdown, and red-zone opportunity baselines for current players."
+    },
+    {
+      file: "nfl_role_engine.json",
+      purpose: "Availability-adjusted 2026 role certainty using current depth rank, historical opportunity, and team continuity."
+    },
+    {
+      file: "nfl_data_health.json",
+      purpose: "Source-by-source availability and gating status; projections remain disabled until required inputs pass validation."
     },
     {
       file: "nfl_markets.json",
@@ -174,37 +202,15 @@ const foundation = {
     "Every market must eventually connect to a result-tracking path."
   ],
   nextBuildSteps: [
-    "Add nfl_games_today.json from the NFL schedule source.",
-    "Add nfl_player_pool.json with teams, positions, roles, and launch-market eligibility.",
-    "Create the first role engine for RB/WR/TE/QB usage.",
-    "Add injury/depth-chart placeholders before training camp data arrives."
+    "Select and normalize the depth-chart source.",
+    "Add a dedicated injury-report contract with freshness rules.",
+    "Load historical play-by-play for usage baselines and backtesting.",
+    "Select the sportsbook provider and define quote-age rejection rules."
   ]
 };
 
 writeJson("nfl_foundation.json", foundation);
 writeJson("nfl_markets.json", markets);
-writeJson("nfl_games_today.json", {
-  sport: "NFL",
-  version: "0.1.0",
-  status: "foundation",
-  season: "2026",
-  date,
-  updatedAt: now.toISOString(),
-  gameCount: 0,
-  availability: "preseason_build",
-  games: []
-});
-writeJson("nfl_player_pool.json", {
-  sport: "NFL",
-  version: "0.1.0",
-  status: "foundation",
-  season: "2026",
-  date,
-  updatedAt: now.toISOString(),
-  playerCount: 0,
-  availability: "preseason_build",
-  players: []
-});
 writeJson("nfl_decision_center.json", {
   sport: "NFL",
   version: "0.1.0",
@@ -212,7 +218,7 @@ writeJson("nfl_decision_center.json", {
   season: "2026",
   date,
   updatedAt: now.toISOString(),
-  marketCount: markets.launchMarkets.length,
+  marketCount: 0,
   playerCount: 0,
   disclaimer: "NFL recommendations are not live yet. This file is a foundation contract for the upcoming model.",
   sections: []
