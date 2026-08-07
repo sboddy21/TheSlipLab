@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { projectPitchingExposure } from "./lib/bullpen_context.js";
+import { applyDataQualityPenalty, buildDataQualityConfidence } from "./lib/data_quality_confidence.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -360,6 +361,44 @@ function enrichMarket(card) {
   };
 }
 
+function enrichDataQuality(card) {
+  const marketGeneratedAt = Date.parse(marketOddsPayload.generatedAt || "");
+  const marketAgeMinutes = Number.isFinite(marketGeneratedAt)
+    ? Math.max(0, (Date.now() - marketGeneratedAt) / 60000)
+    : 999;
+  const quality = buildDataQualityConfidence({
+    lineupStatus: card.lineupStatus,
+    confirmedLineup: card.confirmedLineup,
+    lineupSpot: card.lineupSpot,
+    pitcherConfirmed: Boolean(card.pitcher && card.pitcher !== "TBD"),
+    zoneSignalAvailable: card.zoneSignalAvailable,
+    statcastReliability: card.recentStatcastForm?.reliability,
+    bullpenConfidence: card.bullpenContext?.confidence,
+    marketFeedAvailable: hasVerifiedMarketOdds,
+    marketAvailable: card.marketAvailable,
+    marketAgeMinutes
+  });
+  const rawModelConfidence = card.hrConfidence;
+  const adjustedConfidence = applyDataQualityPenalty(rawModelConfidence, quality);
+  const qualityTag = quality.grade === "A" || quality.grade === "B"
+    ? "DATA VERIFIED"
+    : quality.grade === "OUT"
+      ? "OUT"
+      : "DATA CAUTION";
+
+  return {
+    ...card,
+    rawModelConfidence,
+    dataQuality: quality,
+    hrConfidence: adjustedConfidence,
+    tier: tier(adjustedConfidence),
+    tags: [...(card.tags || []), qualityTag],
+    reasons: quality.score < 65 && quality.grade !== "OUT"
+      ? [...(card.reasons || []), "data confidence limited"]
+      : card.reasons
+  };
+}
+
 function promotionPool(cards) {
   return cards.filter(card => card.promotionEligible !== false);
 }
@@ -654,6 +693,17 @@ function bullpenScore(opponent) {
   return round(num(pick(row, ["bullpenRiskScore", "collapseScore", "dangerScore", "hrRiskScore"])));
 }
 
+function bullpenContext(opponent) {
+  return bullpenMap.get(norm(opponent)) || {
+    team: opponent,
+    bullpenRiskScore: 45,
+    confidence: "LOW",
+    relieverCount: 0,
+    sampleInnings: 0,
+    highestRiskRelievers: []
+  };
+}
+
 function tier(score) {
   if (score >= 72) return "Nuclear";
   if (score >= 62) return "Elite";
@@ -741,6 +791,7 @@ function buildCard(row) {
   const pitcherRisk = round(zone.zoneSignalAvailable ? zone.zoneOverlap : zone.pitcherLeak);
   const weather = round(weatherScore());
   const bullpen = round(bullpenScore(opponent));
+  const bullpenProfile = bullpenContext(opponent);
 
   const due = round(hardHit * 0.24 + barrel * 0.28 + iso * 20 + powerScore * 0.18);
   const seasonHr = round(num(row?.stats?.hitter?.hr ?? pick(row, ["hr", "HR", "hrs", "homeRuns", "home_runs", "seasonHr", "season_hr"], 0)));
@@ -822,6 +873,7 @@ function buildCard(row) {
     pitcherRisk,
     weather,
     bullpen,
+    bullpenContext: bullpenProfile,
     pitchingExposure,
     due,
     seasonHr,
@@ -939,7 +991,8 @@ async function main() {
     .map(buildCard)
     .filter(row => row.player)
     .map(card => enrichPitcher(card, opponentMap))
-    .map(enrichMarket);
+    .map(enrichMarket)
+    .map(enrichDataQuality);
 
   const promotedCards = promotionPool(cards);
 

@@ -695,6 +695,17 @@ function validateRealPitcherAttackZones(expectedDate) {
     } else if (Number(exposure.starterShare) !== 0.58 || Number(exposure.bullpenShare) !== 0.42) {
       fail(`Decision Center has invalid pitching exposure shares for ${row.player}`);
     }
+    const quality = row.dataQuality;
+    const rawConfidence = Number(row.rawModelConfidence);
+    const adjustedConfidence = Number(row.hrConfidence);
+    if (!quality || Number(quality.score) < 0 || Number(quality.score) > 100) {
+      fail(`Decision Center has invalid data quality for ${row.player}`);
+    }
+    if (quality.grade === "OUT") {
+      if (adjustedConfidence !== 0) fail(`Out player retained adjusted confidence for ${row.player}`);
+    } else if (Number(quality.penaltyFactor) < 0.85 || Number(quality.penaltyFactor) > 1 || adjustedConfidence > rawConfidence) {
+      fail(`Decision Center has unsafe data quality penalty for ${row.player}`);
+    }
   }
   for (const player of hr) {
     if (!decisionByPlayer.has(String(player.playerId))) {

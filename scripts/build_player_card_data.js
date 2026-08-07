@@ -271,6 +271,8 @@ async function main() {
             : "LOW",
       recentStatcast: player.recentStatcastForm || null,
       pitchingExposure: player.pitchingExposure || null,
+      dataQuality: player.dataQuality || null,
+      rawModelConfidence: num(player.rawModelConfidence),
 
       season: {
         hr: num(h.hr),
