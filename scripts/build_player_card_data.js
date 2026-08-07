@@ -270,6 +270,7 @@ async function main() {
             ? "MEDIUM"
             : "LOW",
       recentStatcast: player.recentStatcastForm || null,
+      pitchingExposure: player.pitchingExposure || null,
 
       season: {
         hr: num(h.hr),

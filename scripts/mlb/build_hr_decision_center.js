@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { projectPitchingExposure } from "./lib/bullpen_context.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -240,10 +241,10 @@ function makeBullpenRiskMap(rows) {
     if (!team) continue;
 
     const teamKey = norm(team);
-    const risk = num(pick(row, ["hrRiskScore", "collapseScore", "dangerScore"]));
+    const risk = num(pick(row, ["bullpenRiskScore", "hrRiskScore", "collapseScore", "dangerScore"]));
     const current = map.get(teamKey);
 
-    if (!current || risk > num(pick(current, ["hrRiskScore", "collapseScore", "dangerScore"]))) {
+    if (!current || risk > num(pick(current, ["bullpenRiskScore", "hrRiskScore", "collapseScore", "dangerScore"]))) {
       map.set(teamKey, row);
     }
   }
@@ -271,7 +272,8 @@ const weatherRows = readRows("mlb_weather.json");
 const pitchRows = readRows("pitch_type_damage.json");
 const attackRows = readRows("pitcher_attack_zones.json");
 const statcastRows = readRows("statcast_zones.json");
-const bullpenRows = readRows("bullpen_relievers.json");
+const bullpenPayload = readRawJson("bullpen_relievers.json") || {};
+const bullpenRows = Object.values(bullpenPayload.teamSummaries || {});
 const marketOddsPayload = readRawJson("mlb_market_odds.json") || {};
 const marketOddsRows = Array.isArray(marketOddsPayload.prices) ? marketOddsPayload.prices : [];
 const manualAvailabilityPayload = readRawJson("manual_player_availability.json") || {};
@@ -647,9 +649,9 @@ function buildIfOnlyOne(rows) {
 
 function bullpenScore(opponent) {
   const row = bullpenMap.get(norm(opponent));
-  if (!row) return 0;
+  if (!row) return 45;
 
-  return round(num(pick(row, ["collapseScore", "dangerScore", "hrRiskScore"])));
+  return round(num(pick(row, ["bullpenRiskScore", "collapseScore", "dangerScore", "hrRiskScore"])));
 }
 
 function tier(score) {
@@ -769,17 +771,19 @@ function buildCard(row) {
 
   const lineupBoost = round(num(lineupImpact.lineupBoost));
   const lineupImpactScore = round(num(lineupImpact.lineupImpactScore));
-  const projectedPlateAppearances = round(num(lineupImpact.projectedPlateAppearances));
+  const projectedPlateAppearances = lineupStatus === "NOT IN LINEUP"
+    ? 0
+    : round(num(lineupImpact.projectedPlateAppearances) || 4.05);
   const protectionScore = round(num(lineupImpact.protectionScore));
   const recentStatcastAdjustment = round(num(statcast.recentForm?.modelAdjustment));
+  const pitchingExposure = projectPitchingExposure(projectedPlateAppearances, pitcherRisk, bullpen);
 
   const baseHrConfidence = round(weightedScore([
     [powerScore, 0.30],
     [pitchEdge, 0.22],
-    [pitcherRisk, 0.18],
+    [pitchingExposure.blendedPitchingRisk, 0.28],
     [due, 0.12],
-    [weather, 0.08],
-    [bullpen, 0.10]
+    [weather, 0.08]
   ]));
 
   const hrConfidence = round(
@@ -818,6 +822,7 @@ function buildCard(row) {
     pitcherRisk,
     weather,
     bullpen,
+    pitchingExposure,
     due,
     seasonHr,
 

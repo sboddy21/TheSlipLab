@@ -685,6 +685,16 @@ function validateRealPitcherAttackZones(expectedDate) {
   for (const row of decision.allPlayers || []) {
     if (row.playerId) decisionByPlayer.set(String(row.playerId), row);
     if (row.player) decisionByPlayer.set(row.player, row);
+    const exposure = row.pitchingExposure;
+    const expectedPa = Number(row.projectedPlateAppearances || 0);
+    if (!exposure || Math.abs(Number(exposure.starterPlateAppearances) + Number(exposure.bullpenPlateAppearances) - expectedPa) > 0.011) {
+      fail(`Decision Center has invalid pitching exposure for ${row.player}`);
+    }
+    if (expectedPa === 0) {
+      if (Number(exposure.blendedPitchingRisk) !== 0) fail(`Inactive player has pitching exposure for ${row.player}`);
+    } else if (Number(exposure.starterShare) !== 0.58 || Number(exposure.bullpenShare) !== 0.42) {
+      fail(`Decision Center has invalid pitching exposure shares for ${row.player}`);
+    }
   }
   for (const player of hr) {
     if (!decisionByPlayer.has(String(player.playerId))) {

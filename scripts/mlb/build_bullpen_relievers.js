@@ -1,5 +1,10 @@
 import fs from "fs";
 import path from "path";
+import {
+  isRelieverProfile,
+  sampleAdjustedRelieverRisk,
+  summarizeBullpen
+} from "./lib/bullpen_context.js";
 
 const DATA_DIR = path.join(process.cwd(), "website", "data");
 
@@ -39,6 +44,12 @@ function teamIdList() {
   return [...teams.entries()].map(([id, name]) => ({ id, name }));
 }
 
+function probablePitcherIds() {
+  const games = read("mlb_games_today.json", {});
+  const rows = Array.isArray(games) ? games : games.games || [];
+  return new Set(rows.flatMap(game => [game.awayProbablePitcherId, game.homeProbablePitcherId]).filter(Boolean).map(Number));
+}
+
 async function getJson(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -68,6 +79,8 @@ async function pitcherStats(playerId) {
   const hits = num(stat.hits);
   const bb = num(stat.baseOnBalls);
   const so = num(stat.strikeOuts);
+  const gamesPitched = num(stat.gamesPlayed || stat.gamesPitched);
+  const gamesStarted = num(stat.gamesStarted);
   const era = num(stat.era, null);
   const whip = num(stat.whip, null);
 
@@ -93,6 +106,10 @@ async function pitcherStats(playerId) {
     hitsAllowed: hits,
     walks: bb,
     strikeouts: so,
+    gamesPitched,
+    gamesStarted,
+    saves: num(stat.saves),
+    holds: num(stat.holds),
     hr9: Math.round(hr9 * 100) / 100,
     h9: Math.round(h9 * 100) / 100,
     bb9: Math.round(bb9 * 100) / 100,
@@ -119,6 +136,7 @@ async function teamRelievers(team) {
   });
 
   const out = [];
+  const probableIds = probablePitcherIds();
 
   for (const p of pitchers) {
     try {
@@ -135,6 +153,9 @@ async function teamRelievers(team) {
         position: p.position?.abbreviation || "P",
         ...stats
       };
+
+      reliever.sampleAdjustedRisk = Math.round(sampleAdjustedRelieverRisk(reliever.hrRiskScore, num(reliever.inningsPitched)) * 10) / 10;
+      reliever.role = isRelieverProfile(reliever) ? "RELIEVER" : "STARTER_OR_SWINGMAN";
 
       reliever.tag = tag(reliever.hrRiskScore);
 
@@ -155,9 +176,9 @@ async function teamRelievers(team) {
   }
 
   return out
-    .filter(p => num(p.inningsPitched) < 70 || p.position === "P")
-    .sort((a, b) => num(b.hrRiskScore) - num(a.hrRiskScore))
-    .slice(0, 8);
+    .filter(p => !probableIds.has(Number(p.playerId)) && isRelieverProfile(p))
+    .sort((a, b) => num(b.sampleAdjustedRisk) - num(a.sampleAdjustedRisk))
+    .slice(0, 10);
 }
 
 async function main() {
@@ -174,6 +195,7 @@ async function main() {
         availability: "no_games_scheduled",
         totalRelievers: 0,
         byTeam: {},
+        teamSummaries: {},
         players: []
       });
       console.log("BULLPEN RELIEVERS COMPLETE");
@@ -193,16 +215,31 @@ async function main() {
     all.push(...relievers);
   }
 
-  const byTeam = {};
+  const byTeam = Object.fromEntries(teams.map(team => [team.name, []]));
   for (const r of all) {
     if (!byTeam[r.team]) byTeam[r.team] = [];
     byTeam[r.team].push(r);
+  }
+
+  const teamSummaries = Object.fromEntries(
+    Object.entries(byTeam).map(([team, rows]) => [team, summarizeBullpen(team, rows)])
+  );
+
+  for (const team of teams) {
+    const summary = teamSummaries[team.name];
+    if (!summary || summary.bullpenRiskScore < 0 || summary.bullpenRiskScore > 100) {
+      throw new Error(`Invalid bullpen summary for ${team.name}`);
+    }
+    if (summary.relieverCount !== byTeam[team.name].length) {
+      throw new Error(`Bullpen summary count mismatch for ${team.name}`);
+    }
   }
 
   const output = {
     updatedAt: new Date().toISOString(),
     totalRelievers: all.length,
     byTeam,
+    teamSummaries,
     players: all
   };
 
