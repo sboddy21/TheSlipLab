@@ -54,7 +54,12 @@ export function explainPlayerMovement(current = {}, previous = null) {
     add("market_price", "Best market price moved", finite(previous.bestOverPrice), finite(current.bestOverPrice), "neutral");
   }
 
-  const confidenceDelta = rounded(finite(current.hrConfidence) - finite(previous.hrConfidence));
+  // The published endpoints are one-decimal values. Derive the delta from those
+  // same values so validators and consumers cannot disagree because of hidden
+  // precision (for example 50.04 -> 50.06 publishes as 50.0 -> 50.1).
+  const previousConfidence = rounded(previous.hrConfidence);
+  const currentConfidence = rounded(current.hrConfidence);
+  const confidenceDelta = rounded(currentConfidence - previousConfidence);
   const direction = confidenceDelta >= 0.2 ? "UP" : confidenceDelta <= -0.2 ? "DOWN" : "UNCHANGED";
   if (direction !== "UNCHANGED") {
     add("model_confidence", "Quality-adjusted model confidence moved", rounded(previous.hrConfidence), rounded(current.hrConfidence), direction === "UP" ? "support" : "risk");
@@ -64,8 +69,8 @@ export function explainPlayerMovement(current = {}, previous = null) {
     status: reasons.length ? "CHANGED" : "STABLE",
     direction,
     confidenceDelta,
-    previousConfidence: rounded(previous.hrConfidence),
-    currentConfidence: rounded(current.hrConfidence),
+    previousConfidence,
+    currentConfidence,
     reasons
   };
 }

@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, "../..");
 const PLAYER_OUT = path.join(ROOT, "website/data/wnba_player_baselines.json");
 const TEAM_OUT = path.join(ROOT, "website/data/wnba_team_baselines.json");
 const SEASON = Number(process.env.WNBA_SEASON || new Date().getUTCFullYear());
+const MAX_CACHED_BASELINE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const TEAM_URL = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams";
 const rosterUrl = slug => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams/${slug}/roster`;
@@ -220,8 +221,31 @@ async function main() {
   console.log(`Started: ${startedAt}`);
 }
 
+function useCachedBaselines(error) {
+  if (!fs.existsSync(PLAYER_OUT) || !fs.existsSync(TEAM_OUT)) throw error;
+  const playerOutput = JSON.parse(fs.readFileSync(PLAYER_OUT, "utf8"));
+  const teamOutput = JSON.parse(fs.readFileSync(TEAM_OUT, "utf8"));
+  const dataAsOf = playerOutput.dataAsOf || playerOutput.generatedAt;
+  const age = Date.now() - Date.parse(dataAsOf || "");
+  if (playerOutput.sport !== "WNBA" || teamOutput.sport !== "WNBA" ||
+      !playerOutput.players?.length || !teamOutput.teams?.length ||
+      !Number.isFinite(age) || age < 0 || age > MAX_CACHED_BASELINE_AGE_MS) throw error;
+  const generatedAt = new Date().toISOString();
+  const warning = `Live baseline refresh unavailable; using validated data from ${dataAsOf}: ${error.message}`;
+  const markCached = output => ({
+    ...output, generatedAt, dataAsOf, sourceStatus: "cached_fallback",
+    warnings: [...new Set([...(output.warnings || []), warning])]
+  });
+  fs.writeFileSync(PLAYER_OUT, `${JSON.stringify(markCached(playerOutput), null, 2)}\n`);
+  fs.writeFileSync(TEAM_OUT, `${JSON.stringify(markCached(teamOutput), null, 2)}\n`);
+  console.warn(`WNBA BASELINES CACHED FALLBACK: ${playerOutput.players.length} players and ${teamOutput.teams.length} teams; data as of ${dataAsOf}`);
+}
+
 main().catch(error => {
-  console.error("WNBA BASELINES FAILED");
-  console.error(error);
-  process.exit(1);
+  try { useCachedBaselines(error); }
+  catch (fallbackError) {
+    console.error("WNBA BASELINES FAILED");
+    console.error(fallbackError);
+    process.exit(1);
+  }
 });

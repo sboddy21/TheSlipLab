@@ -21,4 +21,9 @@ const initial = explainPlayerMovement(current, null);
 assert.equal(initial.status, "INITIAL_SNAPSHOT");
 assert.equal(initial.direction, "NEW");
 
+const roundedEndpoints = explainPlayerMovement({ hrConfidence: 50.06 }, { hrConfidence: 50.04 });
+assert.equal(roundedEndpoints.previousConfidence, 50);
+assert.equal(roundedEndpoints.currentConfidence, 50.1);
+assert.equal(roundedEndpoints.confidenceDelta, 0.1);
+
 console.log("Player movement tests passed");
