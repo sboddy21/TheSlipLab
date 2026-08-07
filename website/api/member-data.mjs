@@ -14,6 +14,9 @@ const PUBLIC_FILES = new Set([
   "mlb_results.json",
   "mlb_results_previous.json",
   "mlb_weather.json"
+  ,"nfl_foundation.json"
+  ,"nfl_markets.json"
+  ,"nfl_public_status.json"
 ]);
 
 function firstAvailable(names) {

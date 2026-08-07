@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_role_engine.json", "nfl_data_health.json"];
+const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_role_engine.json", "nfl_data_health.json", "nfl_public_status.json"];
 
 function fail(message) {
   throw new Error(`NFL VALIDATION FAILED: ${message}`);
@@ -28,6 +28,7 @@ const injuries = payloads["nfl_injuries.json"];
 const usage = payloads["nfl_usage_baselines.json"];
 const roles = payloads["nfl_role_engine.json"];
 const health = payloads["nfl_data_health.json"];
+const publicStatus = payloads["nfl_public_status.json"];
 
 if (teams.teamCount !== 32 || teams.teams?.length !== 32) fail("team contract must contain 32 teams");
 if (new Set(teams.teams.map(team => team.teamId)).size !== 32) fail("team IDs must be unique");
@@ -50,5 +51,7 @@ if (health.status !== "role_engine_ready_projections_gated" || health.sources?.d
 if (health.sources?.injuries?.status !== "partial" || health.sources?.projections?.status !== "disabled") fail("health contract must keep partial injuries and disabled projections explicit");
 if (health.sources?.usageBaselines?.status !== "available" || health.sources?.routes?.status !== "unavailable") fail("health contract must distinguish usage baselines from unavailable routes");
 if (health.sources?.roleEngine?.status !== "available" || health.sources?.preseasonUsage?.status !== "pending") fail("health contract must distinguish role estimates from pending preseason usage");
+if (publicStatus.weekOneGames?.length !== 16 || publicStatus.counts?.roleEligible !== roles.modelEligibleCount) fail("public NFL status is incomplete");
+if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
 
 console.log(`NFL VALIDATION PASSED: ${teams.teamCount} teams, ${schedule.gameCount} games, ${pool.playerCount} eligible players, ${depth.entryCount} depth entries, ${injuries.injuryCount} injuries, ${usage.profileCount} usage profiles, ${roles.modelEligibleCount} role-eligible players`);

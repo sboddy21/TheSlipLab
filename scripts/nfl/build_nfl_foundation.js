@@ -16,6 +16,10 @@ function writeJson(filename, payload) {
   console.log(`Built website/data/${filename}`);
 }
 
+function readJson(filename) {
+  return JSON.parse(fs.readFileSync(path.join(DATA_DIR, filename), "utf8"));
+}
+
 const now = new Date();
 const date = isoDate(now);
 
@@ -222,4 +226,36 @@ writeJson("nfl_decision_center.json", {
   playerCount: 0,
   disclaimer: "NFL recommendations are not live yet. This file is a foundation contract for the upcoming model.",
   sections: []
+});
+
+const schedule = readJson("nfl_schedule.json");
+const pool = readJson("nfl_player_pool.json");
+const depth = readJson("nfl_depth_charts.json");
+const injuries = readJson("nfl_injuries.json");
+const usage = readJson("nfl_usage_baselines.json");
+const roles = readJson("nfl_role_engine.json");
+const health = readJson("nfl_data_health.json");
+writeJson("nfl_public_status.json", {
+  sport: "NFL",
+  schemaVersion: "1.0",
+  season: 2026,
+  generatedAt: now.toISOString(),
+  status: health.status,
+  counts: {
+    games: schedule.gameCount,
+    players: pool.playerCount,
+    depthEntries: depth.entryCount,
+    injuryReports: injuries.injuryCount,
+    usageProfiles: usage.profileCount,
+    roleEligible: roles.modelEligibleCount
+  },
+  weekOneGames: schedule.games.filter(game => game.week === 1).map(game => ({
+    gameId: game.gameId,
+    kickoffUTC: game.kickoffUTC,
+    venue: game.venue,
+    broadcasts: game.broadcasts,
+    homeTeam: { abbreviation: game.homeTeam.abbreviation },
+    awayTeam: { abbreviation: game.awayTeam.abbreviation }
+  })),
+  sources: Object.fromEntries(Object.entries(health.sources || {}).map(([key, value]) => [key, { status: value.status }]))
 });
