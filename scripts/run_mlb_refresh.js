@@ -1,5 +1,5 @@
-// Canonical public entry point for the complete MLB refresh.
+// Canonical public entry point for the adaptive MLB refresh.
 //
-// The implementation remains in run_fast_refresh.js temporarily so existing
-// deployments that invoke that file continue to work while callers migrate.
-import "./run_fast_refresh.js";
+// Scheduled callers use a cheap pulse unless canonical slate inputs changed or
+// the last complete model build is more than an hour old.
+import "./run_smart_refresh.js";

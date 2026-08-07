@@ -5,6 +5,7 @@ const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
 const OUT = path.join(DATA, "health_status.json");
 const MAX_REFRESH_AGE_MS = 15 * 60 * 1000;
+const MAX_MODEL_AGE_MS = 70 * 60 * 1000;
 const CLOCK_TOLERANCE_MS = 1000;
 const requestedState = String(process.env.SL_HEALTH_STATE || "").trim().toLowerCase();
 
@@ -99,8 +100,8 @@ const artifacts = {
 const artifactDefinitions = {
   games: { timestampFields: ["updatedAt"], countKeys: ["games"], dateField: "date", required: true },
   playerPool: { timestampFields: ["updatedAt"], countKeys: ["players"], dateField: "date", required: true },
-  hrBoard: { timestampFields: [], countKeys: ["players", "rows"], dateField: "date", required: true },
-  matchups: { timestampFields: ["updatedAt"], countKeys: ["games"], dateField: "date", required: true },
+  hrBoard: { timestampFields: [], countKeys: ["players", "rows"], dateField: "date", required: true, cadence: "model" },
+  matchups: { timestampFields: ["updatedAt"], countKeys: ["games"], dateField: "date", required: true, cadence: "model" },
   decision: { timestampFields: ["updatedAt"], countKeys: ["allPlayers"], dateField: "pitcherDate", required: true },
   weather: { timestampFields: ["updatedAt"], countKeys: ["games", "weather"], dateField: "date", required: true },
   results: { timestampFields: ["generatedAt", "updatedAt"], countKeys: ["homeRuns", "results"], dateField: "date", required: false }
@@ -121,12 +122,12 @@ const scheduledGames = Array.isArray(games.games) ? games.games : [];
 const noGamesScheduled = games.date === slateDate && scheduledGames.length === 0;
 
 const productionArtifacts = [
-  [artifacts.games, ["updatedAt"]],
-  [artifacts.playerPool, ["updatedAt"]],
-  [artifacts.hrBoard, []],
-  [artifacts.matchups, ["updatedAt"]],
-  [artifacts.decision, ["updatedAt"]],
-  [artifacts.weather, ["updatedAt"]]
+  [artifacts.games, ["updatedAt"], "live"],
+  [artifacts.playerPool, ["updatedAt"], "live"],
+  [artifacts.hrBoard, [], "model"],
+  [artifacts.matchups, ["updatedAt"], "model"],
+  [artifacts.decision, ["updatedAt"], "live"],
+  [artifacts.weather, ["updatedAt"], "live"]
 ];
 
 const productionTimes = productionArtifacts
@@ -185,12 +186,15 @@ if (!Number.isFinite(gamesAnchor)) {
     payload.errors.push("mlb_games_today.json updatedAt is in the future");
   }
 
-  for (const [artifact, fields] of productionArtifacts) {
+  for (const [artifact, fields, cadence] of productionArtifacts) {
     const timestamp = embeddedTimestamp(artifact, fields);
+    const maxAge = cadence === "model" ? MAX_MODEL_AGE_MS : MAX_REFRESH_AGE_MS;
     if (!Number.isFinite(timestamp)) {
       payload.errors.push(`${artifact.file} has no valid ${fields.join(" or ") || "filesystem timestamp"}`);
-    } else if (timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) {
+    } else if (cadence === "live" && timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) {
       payload.errors.push(`${artifact.file} predates the current production chain`);
+    } else if (generatedAtMs - timestamp > maxAge) {
+      payload.errors.push(`${artifact.file} exceeded its ${cadence} refresh window`);
     } else if (timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) {
       payload.errors.push(`${artifact.file} timestamp is in the future`);
     }
@@ -204,12 +208,13 @@ for (const [key, definition] of Object.entries(artifactDefinitions)) {
     ? Math.round((generatedAtMs - details.timestamp) / 1000)
     : null;
   let freshness = "current";
+  const maxAge = definition.cadence === "model" ? MAX_MODEL_AGE_MS : MAX_REFRESH_AGE_MS;
 
   if (artifact.error) freshness = "missing";
   else if (!Number.isFinite(details.timestamp)) freshness = "invalid";
   else if (details.timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) freshness = "future";
-  else if (definition.required && Number.isFinite(gamesAnchor) && details.timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) freshness = "stale_chain";
-  else if (ageSeconds > MAX_REFRESH_AGE_MS / 1000) freshness = "delayed";
+  else if (definition.required && definition.cadence !== "model" && Number.isFinite(gamesAnchor) && details.timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) freshness = "stale_chain";
+  else if (ageSeconds > maxAge / 1000) freshness = "delayed";
 
   payload.artifacts[key] = {
     file: artifact.file,

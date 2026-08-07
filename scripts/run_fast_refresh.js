@@ -1,7 +1,8 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
 
-const REFRESH_STARTED_AT = Date.now();
+const requestedStart = Number(process.env.MLB_REFRESH_STARTED_AT);
+const REFRESH_STARTED_AT = Number.isFinite(requestedStart) && requestedStart > 0 ? requestedStart : Date.now();
 const DATA_DIR = "website/data";
 
 function todayEastern() {
@@ -625,7 +626,10 @@ function run(label, command) {
   }
 }
 
-const steps = [
+const refreshProfile = process.env.MLB_REFRESH_PROFILE === "pulse" ? "pulse" : "full";
+const preflightComplete = process.env.MLB_PREFLIGHT_COMPLETE === "true";
+
+const allSteps = [
   ["Decision Center Ownership Check", "node scripts/validate_decision_center_ownership.cjs"],
   ["Canonical Ownership Check", "node scripts/validate_mlb_home_runs_ownership.cjs"],
 
@@ -666,7 +670,31 @@ const steps = [
   ["Health Status", "node scripts/build_health_status.js"]
 ];
 
-const requiredOutputs = [
+const pulseLabels = new Set([
+  "Live HR Results",
+  "Weather Board",
+  "Market Odds",
+  "HR Decision Center",
+  "Final Ownership Check",
+  "Player Card Data",
+  "Live Change Alerts",
+  "AI Breakdowns",
+  "AI History",
+  "AI Movement",
+  "AI Trust Engine",
+  "AI Reasoning Engine",
+  "Tag Registry",
+  "Public Tags",
+  "AI 2.0",
+  "Health Status"
+]);
+const preflightLabels = new Set(["Decision Center Ownership Check", "Canonical Ownership Check", "MLB Today", "MLB Player Pool"]);
+const steps = allSteps.filter(([label]) => {
+  if (preflightComplete && preflightLabels.has(label)) return false;
+  return refreshProfile === "full" || pulseLabels.has(label);
+});
+
+const allRequiredOutputs = [
   { file: "mlb_games_today.json", timestampFields: ["updatedAt"] },
   { file: "mlb_player_pool.json", timestampFields: ["updatedAt"] },
   { file: "mlb_results.json", timestampFields: ["updatedAt"] },
@@ -702,9 +730,40 @@ const requiredOutputs = [
   { file: "health_status.json", timestampFields: ["generatedAt"] }
 ];
 
+const pulseOutputFiles = new Set([
+  "mlb_games_today.json",
+  "mlb_player_pool.json",
+  "mlb_results.json",
+  "mlb_weather.json",
+  "mlb_market_odds.json",
+  "hr_decision_center.json",
+  "player_card_data.json",
+  "live_change_alerts.json",
+  "hr_ai_breakdowns.json",
+  "hr_ai_history.json",
+  "hr_ai_movement.json",
+  "ai_trust_engine.json",
+  "ai_reasoning_engine.json",
+  "tag_registry.json",
+  "public_tags.json",
+  "ai_2.json",
+  "content/x_live_ai_board.json",
+  "health_status.json"
+]);
+const requiredOutputs = refreshProfile === "full"
+  ? allRequiredOutputs
+  : allRequiredOutputs.filter(output => pulseOutputFiles.has(output.file));
+
 console.log("");
 console.log("THE SLIP LAB FAST REFRESH");
 console.log("Time:", new Date().toISOString());
+console.log("Profile:", refreshProfile);
+
+if (process.env.MLB_REFRESH_PLAN_ONLY === "true") {
+  console.log("Stages:", steps.length);
+  for (const [label] of steps) console.log(`- ${label}`);
+  process.exit(0);
+}
 
 run("Health Status: Updating", "SL_HEALTH_STATE=updating node scripts/build_health_status.js");
 
@@ -776,29 +835,31 @@ try {
   validateCalibrationReport();
 
   validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_player_pool.json");
-  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_results.json");
-  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");
-  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "pitch_type_damage.json");
-  validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_weather.json");
-  validateDependencyOrder(outputTimes, "hr_power_profiles.json", "mlb_home_runs.json");
-  validateDependencyOrder(outputTimes, "pitch_type_damage.json", "mlb_home_runs.json");
-  validateDependencyOrder(outputTimes, "mlb_weather.json", "mlb_home_runs.json");
-  validateDependencyOrder(outputTimes, "bullpen_relievers.json", "mlb_home_runs.json");
-  validateDependencyOrder(outputTimes, "mlb_home_runs.json", "game_pitcher_matchups.json");
-  validateDependencyOrder(outputTimes, "mlb_player_pool.json", "game_pitcher_matchups.json");
-  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "lineup_impact_engine.json");
-  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "statcast_zones.json");
-  validateDependencyOrder(outputTimes, "statcast_zones.json", "pitcher_attack_zones.json");
-  validateDependencyOrder(outputTimes, "mlb_home_runs.json", "pitcher_attack_zones.json");
-  validateDependencyOrder(outputTimes, "mlb_home_runs.json", "statcast_zones.json");
-  validateDependencyOrder(outputTimes, "mlb_home_runs.json", "hr_probability_tracking.json");
-  validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "mlb_market_odds.json");
-  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_hits.json");
-  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_total_bases.json");
-  validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_pitcher_strikeouts.json");
-  validateDependencyOrder(outputTimes, "lineup_impact_engine.json", "hr_decision_center.json");
-  validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
-  validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
+  if (refreshProfile === "full") {
+    validateDependencyOrder(outputTimes, "mlb_player_pool.json", "mlb_results.json");
+    validateDependencyOrder(outputTimes, "mlb_player_pool.json", "hr_power_profiles.json");
+    validateDependencyOrder(outputTimes, "mlb_player_pool.json", "pitch_type_damage.json");
+    validateDependencyOrder(outputTimes, "mlb_games_today.json", "mlb_weather.json");
+    validateDependencyOrder(outputTimes, "hr_power_profiles.json", "mlb_home_runs.json");
+    validateDependencyOrder(outputTimes, "pitch_type_damage.json", "mlb_home_runs.json");
+    validateDependencyOrder(outputTimes, "mlb_weather.json", "mlb_home_runs.json");
+    validateDependencyOrder(outputTimes, "bullpen_relievers.json", "mlb_home_runs.json");
+    validateDependencyOrder(outputTimes, "mlb_home_runs.json", "game_pitcher_matchups.json");
+    validateDependencyOrder(outputTimes, "mlb_player_pool.json", "game_pitcher_matchups.json");
+    validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "lineup_impact_engine.json");
+    validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "statcast_zones.json");
+    validateDependencyOrder(outputTimes, "statcast_zones.json", "pitcher_attack_zones.json");
+    validateDependencyOrder(outputTimes, "mlb_home_runs.json", "pitcher_attack_zones.json");
+    validateDependencyOrder(outputTimes, "mlb_home_runs.json", "statcast_zones.json");
+    validateDependencyOrder(outputTimes, "mlb_home_runs.json", "hr_probability_tracking.json");
+    validateDependencyOrder(outputTimes, "hr_probability_tracking.json", "mlb_market_odds.json");
+    validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_hits.json");
+    validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_total_bases.json");
+    validateDependencyOrder(outputTimes, "game_pitcher_matchups.json", "mlb_pitcher_strikeouts.json");
+    validateDependencyOrder(outputTimes, "lineup_impact_engine.json", "hr_decision_center.json");
+    validateDependencyOrder(outputTimes, "pitcher_attack_zones.json", "hr_decision_center.json");
+    validateDependencyOrder(outputTimes, "statcast_zones.json", "hr_decision_center.json");
+  }
   validateDependencyOrder(outputTimes, "hr_ai_breakdowns.json", "hr_ai_history.json");
   validateDependencyOrder(outputTimes, "hr_ai_history.json", "hr_ai_movement.json");
   validateDependencyOrder(outputTimes, "hr_ai_movement.json", "ai_trust_engine.json");
