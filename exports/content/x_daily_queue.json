@@ -1,15 +1,16 @@
 {
-  "updatedAt": "2026-08-08T16:43:41.024Z",
+  "updatedAt": "2026-08-08T22:36:00.471Z",
   "date": "2026-08-08",
-  "slot": "midday",
+  "slot": "pregame",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "midday",
-    "selected": "midday",
+    "requested": "pregame",
+    "selected": "pregame",
     "available": [
+      "live",
       "morning",
       "midday",
       "afternoon",
@@ -20,57 +21,230 @@
   },
   "eventPosting": {
     "enabled": true,
-    "candidates": 0,
+    "candidates": 3,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-08T16:43:41.024Z",
+    "checkedAt": "2026-08-08T22:36:00.471Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T16:43:40.676Z",
+        "timestamp": "2026-08-08T22:36:00.030Z",
         "ageSeconds": 0
       },
       {
         "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T16:39:04.646Z",
-        "ageSeconds": 276
+        "timestamp": "2026-08-08T22:34:42.393Z",
+        "ageSeconds": 78
       },
       {
         "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T16:38:44.663Z",
-        "ageSeconds": 296
+        "timestamp": "2026-08-08T22:33:55.099Z",
+        "ageSeconds": 125
       },
       {
         "file": "mlb_results.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T16:43:40.285Z",
+        "timestamp": "2026-08-08T22:35:59.693Z",
         "ageSeconds": 0
       },
       {
         "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-08T16:39:56.756Z",
-        "ageSeconds": 224
+        "timestamp": "2026-08-08T22:35:35.709Z",
+        "ageSeconds": 24
       }
     ]
   },
-  "count": 1,
+  "count": 4,
   "posts": [
     {
-      "id": "2026-08-08_MIDDAY_WEATHER_NOTE",
+      "id": "called_it_home_run_2026-08-08_823514_700250_61",
       "date": "2026-08-08",
-      "type": "weather_note",
-      "slot": "midday",
+      "type": "called_it_home_run",
+      "slot": "live",
       "status": "queued",
-      "scheduled_for_eastern": "2026-08-08T16:43:41.024Z",
-      "text": "Weather note—not a pick by itself:\n\nNew York Mets at Pittsburgh Pirates at PNC Park is the environment I am watching most closely.\n\n79° | 10.5 mph SW\n\nWeather can amplify a good power matchup. It cannot rescue a bad one. Which park conditions are you watching today?",
-      "players": [],
+      "scheduled_for_eastern": "2026-08-08T22:36:00.471Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nBen Rice just left the yard.\n\nAI Says: TOP 30 #2 · ELITE SMASH #2 · HOMER AI #2\nAtlanta Braves @ New York Yankees\nBottom 8\n431 ft · 105.2 mph EV · 35° LA\nOff Danny Young\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Ben Rice"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823514,
+        "playId": 61,
+        "playerId": 700250,
+        "player": "Ben Rice",
+        "team": "New York Yankees",
+        "opponent": "Atlanta Braves",
+        "inning": "Bottom 8",
+        "distance": 431,
+        "exitVelocity": 105.2,
+        "launchAngle": 35
+      },
+      "ai": {
+        "primarySection": "TOP 30",
+        "primaryRank": 2,
+        "sections": [
+          {
+            "section": "TOP 30",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          },
+          {
+            "section": "ELITE SMASH",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          },
+          {
+            "section": "HOMER AI",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          }
+        ],
+        "archiveGrade": "A",
+        "archiveRank": 2,
+        "qualifiedBy": [
+          "verified_pregame_archive",
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-08T22:36:00.030Z"
+    },
+    {
+      "id": "called_it_home_run_2026-08-08_824726_691016_57",
+      "date": "2026-08-08",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-08T22:36:00.471Z",
+      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nTyler Soderstrom just left the yard.\n\nAI Says: LIVE LONGSHOTS #11\nAthletics @ Boston Red Sox\nTop 7\n413 ft · 108.4 mph EV · 24° LA\nOff Raymond Burgos\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Tyler Soderstrom"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 824726,
+        "playId": 57,
+        "playerId": 691016,
+        "player": "Tyler Soderstrom",
+        "team": "Athletics",
+        "opponent": "Boston Red Sox",
+        "inning": "Top 7",
+        "distance": 413,
+        "exitVelocity": 108.4,
+        "launchAngle": 24
+      },
+      "ai": {
+        "primarySection": "LIVE LONGSHOTS",
+        "primaryRank": 11,
+        "sections": [
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 11,
+            "confidence": 0.666,
+            "aiScore": 0.666
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board"
+        ]
+      },
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-08T22:36:00.030Z"
+    },
+    {
+      "id": "called_it_home_run_2026-08-08_823514_660670_57",
+      "date": "2026-08-08",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-08T22:36:00.471Z",
+      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nRonald Acuña Jr. just left the yard.\n\nAI Says: LIVE LONGSHOTS #16\nAtlanta Braves @ New York Yankees\nTop 8\n383 ft · 109.0 mph EV · 23° LA\nOff Brent Headrick\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Ronald Acuña Jr."
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823514,
+        "playId": 57,
+        "playerId": 660670,
+        "player": "Ronald Acuña Jr.",
+        "team": "Atlanta Braves",
+        "opponent": "New York Yankees",
+        "inning": "Top 8",
+        "distance": 383,
+        "exitVelocity": 109,
+        "launchAngle": 23
+      },
+      "ai": {
+        "primarySection": "LIVE LONGSHOTS",
+        "primaryRank": 16,
+        "sections": [
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 16,
+            "confidence": 0.678,
+            "aiScore": 0.618
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-08T22:36:00.030Z"
+    },
+    {
+      "id": "2026-08-08_PREGAME_FINAL_READ",
+      "date": "2026-08-08",
+      "type": "final_read",
+      "slot": "pregame",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-08T22:36:00.471Z",
+      "text": "Final HR board check: if I had to narrow the entire slate to one profile, I keep coming back to Tyrone Taylor.\n\nStrong power profile, crushes this pitch mix and good HR weather conditions.\n\nHR confidence 59.2\nPower 63.7\nPitch edge 100.0\nBullpen context 68.0\n\nFull player breakdown: https://thesliplab.com/mlb.html\n\nOne lean—not a guarantee.",
+      "players": [
+        "Tyrone Taylor"
+      ],
       "graphic": null,
       "graphicType": null,
       "reportDate": null,
@@ -83,7 +257,7 @@
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-08-08T16:43:40.676Z"
+      "created_at": "2026-08-08T22:36:00.030Z"
     }
   ]
 }
