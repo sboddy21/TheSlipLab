@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-08T10:58:21.988Z",
+  "updatedAt": "2026-08-08T16:43:41.024Z",
   "date": "2026-08-08",
-  "slot": "overnight",
+  "slot": "midday",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "midday",
+    "selected": "midday",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,72 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-08T10:58:21.989Z",
+    "checkedAt": "2026-08-08T16:43:41.024Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T10:58:21.628Z",
+        "timestamp": "2026-08-08T16:43:40.676Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T10:58:20.812Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-08T16:39:04.646Z",
+        "ageSeconds": 276
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-08T07:36:31.048Z",
-        "players": 541,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-08T16:38:44.663Z",
+        "ageSeconds": 296
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-08T16:43:40.285Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-08T10:58:20.858Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-07",
-        "archivedPlayers": 393,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-08T16:39:56.756Z",
+        "ageSeconds": 224
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-08_MIDDAY_WEATHER_NOTE",
+      "date": "2026-08-08",
+      "type": "weather_note",
+      "slot": "midday",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-08T16:43:41.024Z",
+      "text": "Weather note—not a pick by itself:\n\nNew York Mets at Pittsburgh Pirates at PNC Park is the environment I am watching most closely.\n\n79° | 10.5 mph SW\n\nWeather can amplify a good power matchup. It cannot rescue a bad one. Which park conditions are you watching today?",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-08T16:43:41.453Z",
+      "x_post_id": "2086131242526011765",
+      "created_at": "2026-08-08T16:43:40.676Z",
+      "error": null
+    }
+  ]
 }
