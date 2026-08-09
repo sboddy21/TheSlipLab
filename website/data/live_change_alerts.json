@@ -1,17 +1,1086 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-09T22:08:33.872Z",
+  "generatedAt": "2026-08-09T22:55:15.201Z",
   "date": "2026-08-09",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-08-09T22:05:12.104Z",
-    "mlb_player_pool.json": "2026-08-09T22:05:13.957Z",
-    "game_pitcher_matchups.json": "2026-08-09T22:07:19.280Z",
-    "player_card_data.json": "2026-08-09T22:08:33.773Z",
-    "hr_probability_tracking.json": "2026-08-09T22:07:18.095Z",
-    "pitcher_vulnerability.json": "2026-08-09T22:07:19.292Z"
+    "mlb_games_today.json": "2026-08-09T22:51:33.735Z",
+    "mlb_player_pool.json": "2026-08-09T22:51:36.595Z",
+    "game_pitcher_matchups.json": "2026-08-09T22:54:05.844Z",
+    "player_card_data.json": "2026-08-09T22:55:15.103Z",
+    "hr_probability_tracking.json": "2026-08-09T22:54:04.072Z",
+    "pitcher_vulnerability.json": "2026-08-09T22:54:05.855Z"
   },
   "alerts": [
+    {
+      "id": "a760b39c94bcda601923",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Randal Grichuk removed from the confirmed lineup",
+      "message": "Randal Grichuk's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ff596efe638a3d6b34c5",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Randal Grichuk's HR probability fell",
+      "message": "Tracked HR probability fell from 23.9% to 0%.",
+      "previous": {
+        "probability": 23.9
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "fb55744e72422a29cb65",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Randal Grichuk's model score fell",
+      "message": "The live model score fell from 49.1 to 0.",
+      "previous": {
+        "modelScore": 49.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "6e3d08e79930976a7cd9",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Max Muncy confirmed in the lineup",
+      "message": "Max Muncy is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "e7e87528d95ee8a7944f",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Max Muncy's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 22.8%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 22.8
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "c02d98eb1459cb4f37ba",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Max Muncy's model score rose",
+      "message": "The live model score rose from 0 to 46.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 46.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "bc1b03584c0e0b99f2a9",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "606192",
+      "entityName": "Teoscar Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Teoscar Hernández removed from the confirmed lineup",
+      "message": "Teoscar Hernández's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "be6f8ff1527b33e344e0",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "606192",
+      "entityName": "Teoscar Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Teoscar Hernández's HR probability fell",
+      "message": "Tracked HR probability fell from 6.4% to 0%.",
+      "previous": {
+        "probability": 6.4
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "a9191f5a945ff28254b7",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "606192",
+      "entityName": "Teoscar Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Teoscar Hernández's model score fell",
+      "message": "The live model score fell from 33.7 to 0.",
+      "previous": {
+        "modelScore": 33.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "24ef61423750ef28a206",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Gleyber Torres removed from the confirmed lineup",
+      "message": "Gleyber Torres's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "654aa39b1007e9aa6864",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Gleyber Torres's HR probability fell",
+      "message": "Tracked HR probability fell from 7% to 0%.",
+      "previous": {
+        "probability": 7
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "3dfb0abeef5bb8aae01c",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Gleyber Torres's model score fell",
+      "message": "The live model score fell from 38.8 to 0.",
+      "previous": {
+        "modelScore": 38.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a1a06f54261f9db37dc4",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656555",
+      "entityName": "Rhys Hoskins",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Rhys Hoskins confirmed in the lineup",
+      "message": "Rhys Hoskins is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a01e3586c788c00f2999",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656555",
+      "entityName": "Rhys Hoskins",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Rhys Hoskins's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 10%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 10
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f99f4ca242eca7de32e0",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656555",
+      "entityName": "Rhys Hoskins",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Rhys Hoskins's model score rose",
+      "message": "The live model score rose from 0 to 40.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 40.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "b865a0bb0ac2ac0c23c5",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663993",
+      "entityName": "Nathaniel Lowe",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Nathaniel Lowe removed from the confirmed lineup",
+      "message": "Nathaniel Lowe's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "c9f1f490931873ebb600",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663993",
+      "entityName": "Nathaniel Lowe",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Nathaniel Lowe's HR probability fell",
+      "message": "Tracked HR probability fell from 24% to 0%.",
+      "previous": {
+        "probability": 24
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f9d6281fe82671ee188e",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663993",
+      "entityName": "Nathaniel Lowe",
+      "team": "Cleveland Guardians",
+      "gamePk": 824564,
+      "title": "Nathaniel Lowe's model score fell",
+      "message": "The live model score fell from 50.1 to 0.",
+      "previous": {
+        "modelScore": 50.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "60549f7710568f1bda4f",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666163",
+      "entityName": "Ben Rortvedt",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Ben Rortvedt removed from the confirmed lineup",
+      "message": "Ben Rortvedt's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "85cd25fe2ee74c178b6b",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666163",
+      "entityName": "Ben Rortvedt",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Ben Rortvedt's model score fell",
+      "message": "The live model score fell from 17.9 to 0.",
+      "previous": {
+        "modelScore": 17.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "28f92fe3a53ed4872981",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671083",
+      "entityName": "Buddy Kennedy",
+      "team": "San Francisco Giants",
+      "gamePk": 823190,
+      "title": "Buddy Kennedy confirmed in the lineup",
+      "message": "Buddy Kennedy is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2fb1dacfc46061d11446",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671083",
+      "entityName": "Buddy Kennedy",
+      "team": "San Francisco Giants",
+      "gamePk": 823190,
+      "title": "Buddy Kennedy's model score rose",
+      "message": "The live model score rose from 0 to 23.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 23
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "c22e596999961c1e5157",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671976",
+      "entityName": "Tristan Peters",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Tristan Peters confirmed in the lineup",
+      "message": "Tristan Peters is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "97970a2a2752c0e6df22",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671976",
+      "entityName": "Tristan Peters",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Tristan Peters's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 7.5%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 7.5
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "1e7b30f8edac1b196708",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671976",
+      "entityName": "Tristan Peters",
+      "team": "Chicago White Sox",
+      "gamePk": 824564,
+      "title": "Tristan Peters's model score rose",
+      "message": "The live model score rose from 0 to 40.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 40
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "332f01d3ed455797b135",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "676439",
+      "entityName": "Hunter Feduccia",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Hunter Feduccia confirmed in the lineup",
+      "message": "Hunter Feduccia is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ec48e0ae9682beb67ea1",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "676439",
+      "entityName": "Hunter Feduccia",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 825050,
+      "title": "Hunter Feduccia's model score rose",
+      "message": "The live model score rose from 0 to 24.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 24.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "00f2b4f4ab69f96a1353",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "678489",
+      "entityName": "Jorge Barrosa",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Jorge Barrosa confirmed in the lineup",
+      "message": "Jorge Barrosa is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8b3a59ab66e725862e51",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "678489",
+      "entityName": "Jorge Barrosa",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Jorge Barrosa's model score rose",
+      "message": "The live model score rose from 0 to 29.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 29.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "6862a122a3d04d47332b",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "681546",
+      "entityName": "James Outman",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "James Outman confirmed in the lineup",
+      "message": "James Outman is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ada8d883c1adbf1fa186",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "681546",
+      "entityName": "James Outman",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "James Outman's model score rose",
+      "message": "The live model score rose from 0 to 36.1.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 36.1
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a3a8ff7f491eaa0a7202",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "682988",
+      "entityName": "Tyler Locklear",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Tyler Locklear removed from the confirmed lineup",
+      "message": "Tyler Locklear's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "34005a822d46f3ae0b0f",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682988",
+      "entityName": "Tyler Locklear",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Tyler Locklear's HR probability fell",
+      "message": "Tracked HR probability fell from 9.5% to 0%.",
+      "previous": {
+        "probability": 9.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "9e59d9ded42ef6e638ae",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682988",
+      "entityName": "Tyler Locklear",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Tyler Locklear's model score fell",
+      "message": "The live model score fell from 45.5 to 0.",
+      "previous": {
+        "modelScore": 45.5
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "4ad9e4dbf8007fd8fbaa",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682988",
+      "entityName": "Tyler Locklear",
+      "team": "Arizona Diamondbacks",
+      "gamePk": 825050,
+      "title": "Tyler Locklear's verified signals changed",
+      "message": "Removed: sleeper.",
+      "previous": {
+        "signals": [
+          "due",
+          "sleeper"
+        ]
+      },
+      "current": {
+        "signals": [
+          "due"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "cc247998511581d0f955",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "687529",
+      "entityName": "Grant McCray",
+      "team": "San Francisco Giants",
+      "gamePk": 823190,
+      "title": "Grant McCray removed from the confirmed lineup",
+      "message": "Grant McCray's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "e5fa57c2efdfa55a1583",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687529",
+      "entityName": "Grant McCray",
+      "team": "San Francisco Giants",
+      "gamePk": 823190,
+      "title": "Grant McCray's model score fell",
+      "message": "The live model score fell from 21.2 to 0.",
+      "previous": {
+        "modelScore": 21.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a55284805b905957272d",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Colt Keith removed from the confirmed lineup",
+      "message": "Colt Keith's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "dae6b10c819980ad63f9",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Colt Keith's HR probability fell",
+      "message": "Tracked HR probability fell from 8.5% to 0%.",
+      "previous": {
+        "probability": 8.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "c597ba5f91868cca301a",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Colt Keith's model score fell",
+      "message": "The live model score fell from 38 to 0.",
+      "previous": {
+        "modelScore": 38
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "27f4deb8e60652c2e043",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Hao-Yu Lee confirmed in the lineup",
+      "message": "Hao-Yu Lee is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5067e3844cd9ba31dcdd",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Hao-Yu Lee's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 7%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 7
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "c127fbf0a307e7c240c0",
+      "createdAt": "2026-08-09T22:55:15.201Z",
+      "date": "2026-08-09",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 823190,
+      "title": "Hao-Yu Lee's model score rose",
+      "message": "The live model score rose from 0 to 40.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 40.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "c0a2f0214e0a51b9db66",
       "createdAt": "2026-08-09T22:08:33.872Z",
@@ -5205,1091 +6274,6 @@
       "sourceFiles": [
         "player_card_data.json"
       ]
-    },
-    {
-      "id": "3f1a1be0b43ee97c49ce",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "650490",
-      "entityName": "Yandy Díaz",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Yandy Díaz confirmed in the lineup",
-      "message": "Yandy Díaz is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "ac2ad91bfe5279f03de5",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "656775",
-      "entityName": "Cedric Mullins",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Cedric Mullins confirmed in the lineup",
-      "message": "Cedric Mullins is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "7ec9c411b2a8d92a6068",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "656941",
-      "entityName": "Kyle Schwarber",
-      "team": "Philadelphia Phillies",
-      "gamePk": 823425,
-      "title": "Kyle Schwarber's verified signals changed",
-      "message": "Added: hotLately. Removed: due.",
-      "previous": {
-        "signals": [
-          "due"
-        ]
-      },
-      "current": {
-        "signals": [
-          "hotLately"
-        ]
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "c81e52d9a6af318fa1bb",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "663457",
-      "entityName": "Lars Nootbaar",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Lars Nootbaar's model score fell",
-      "message": "The live model score fell from 28.1 to 0.",
-      "previous": {
-        "modelScore": 28.1
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "6c2cfe073ecf0356f1af",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_removed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "663647",
-      "entityName": "Ke'Bryan Hayes",
-      "team": "Cincinnati Reds",
-      "gamePk": 822700,
-      "title": "Ke'Bryan Hayes removed from the confirmed lineup",
-      "message": "Ke'Bryan Hayes's verified lineup status changed to NOT IN LINEUP.",
-      "previous": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "current": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "7a3414cd7910c4315a70",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "663647",
-      "entityName": "Ke'Bryan Hayes",
-      "team": "Cincinnati Reds",
-      "gamePk": 822700,
-      "title": "Ke'Bryan Hayes's model score fell",
-      "message": "The live model score fell from 22.8 to 0.",
-      "previous": {
-        "modelScore": 22.8
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "3323a356d2b4757af98e",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "663743",
-      "entityName": "Nick Fortes",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Nick Fortes's model score fell",
-      "message": "The live model score fell from 25.6 to 0.",
-      "previous": {
-        "modelScore": 25.6
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "4278e349395bf62d0690",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "665953",
-      "entityName": "Andrés Chaparro",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Andrés Chaparro confirmed in the lineup",
-      "message": "Andrés Chaparro is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "f2151c2cb3e3d65dc354",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "665953",
-      "entityName": "Andrés Chaparro",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Andrés Chaparro's HR probability rose",
-      "message": "Tracked HR probability rose from 0% to 22.8%.",
-      "previous": {
-        "probability": 0
-      },
-      "current": {
-        "probability": 22.8
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "f1c763cdee85d38aceca",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "665953",
-      "entityName": "Andrés Chaparro",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Andrés Chaparro's model score rose",
-      "message": "The live model score rose from 0 to 50.1.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 50.1
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "988fae0b747c92694b4b",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "666018",
-      "entityName": "Jonathan Aranda",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Jonathan Aranda confirmed in the lineup",
-      "message": "Jonathan Aranda is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "97687eca871614201cf1",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "666126",
-      "entityName": "Carlos Cortes",
-      "team": "Athletics",
-      "gamePk": 824724,
-      "title": "Carlos Cortes confirmed in the lineup",
-      "message": "Carlos Cortes is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "ffcabc62e50a7c7b831e",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "666126",
-      "entityName": "Carlos Cortes",
-      "team": "Athletics",
-      "gamePk": 824724,
-      "title": "Carlos Cortes's HR probability rose",
-      "message": "Tracked HR probability rose from 0% to 7.1%.",
-      "previous": {
-        "probability": 0
-      },
-      "current": {
-        "probability": 7.1
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "8174ba064b4d5d7b4fbc",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "666126",
-      "entityName": "Carlos Cortes",
-      "team": "Athletics",
-      "gamePk": 824724,
-      "title": "Carlos Cortes's model score rose",
-      "message": "The live model score rose from 0 to 32.1.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 32.1
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "2076684c0435320f4704",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "668723",
-      "entityName": "Ryan Vilade",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Ryan Vilade's HR probability fell",
-      "message": "Tracked HR probability fell from 17.8% to 0%.",
-      "previous": {
-        "probability": 17.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "2773333ed3fc0579e8b4",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "668723",
-      "entityName": "Ryan Vilade",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Ryan Vilade's model score fell",
-      "message": "The live model score fell from 39.2 to 0.",
-      "previous": {
-        "modelScore": 39.2
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "392550c4cf436660438b",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "670764",
-      "entityName": "Taylor Walls",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Taylor Walls confirmed in the lineup",
-      "message": "Taylor Walls is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "46789bb621356bdec916",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "671155",
-      "entityName": "Ivan Johnson",
-      "team": "Cincinnati Reds",
-      "gamePk": 822700,
-      "title": "Ivan Johnson confirmed in the lineup",
-      "message": "Ivan Johnson is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "d180a1b847b71533c290",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "671155",
-      "entityName": "Ivan Johnson",
-      "team": "Cincinnati Reds",
-      "gamePk": 822700,
-      "title": "Ivan Johnson's model score rose",
-      "message": "The live model score rose from 0 to 20.4.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 20.4
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "315b909177a474acf275",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "672515",
-      "entityName": "Gabriel Moreno",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Gabriel Moreno confirmed in the lineup",
-      "message": "Gabriel Moreno is confirmed batting 3.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "d25fa681fdc9cdb33abd",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "672695",
-      "entityName": "Geraldo Perdomo",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Geraldo Perdomo confirmed in the lineup",
-      "message": "Geraldo Perdomo is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "f76e3611b1bcedd9d209",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "676356",
-      "entityName": "Jonny DeLuca",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Jonny DeLuca's HR probability fell",
-      "message": "Tracked HR probability fell from 10.1% to 0%.",
-      "previous": {
-        "probability": 10.1
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "3c3bdabf44f3befbf85d",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "676356",
-      "entityName": "Jonny DeLuca",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Jonny DeLuca's model score fell",
-      "message": "The live model score fell from 37.3 to 0.",
-      "previous": {
-        "modelScore": 37.3
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "5a62e1cad9b1149c27e7",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_removed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "677588",
-      "entityName": "José Tena",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "José Tena removed from the confirmed lineup",
-      "message": "José Tena's verified lineup status changed to NOT IN LINEUP.",
-      "previous": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "current": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "437a74a630421c33fd18",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "677588",
-      "entityName": "José Tena",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "José Tena's HR probability fell",
-      "message": "Tracked HR probability fell from 6.5% to 0%.",
-      "previous": {
-        "probability": 6.5
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "2d5bbaea19b783e8e47e",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "677588",
-      "entityName": "José Tena",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "José Tena's model score fell",
-      "message": "The live model score fell from 36.5 to 0.",
-      "previous": {
-        "modelScore": 36.5
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "2a230cf9649310cb0814",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_removed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "678391",
-      "entityName": "Jorbit Vivas",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Jorbit Vivas removed from the confirmed lineup",
-      "message": "Jorbit Vivas's verified lineup status changed to NOT IN LINEUP.",
-      "previous": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 6
-      },
-      "current": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "04416a878548f871cc4f",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "678391",
-      "entityName": "Jorbit Vivas",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Jorbit Vivas's model score fell",
-      "message": "The live model score fell from 23.1 to 0.",
-      "previous": {
-        "modelScore": 23.1
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "0ea12dd65e6c62ad4677",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "678489",
-      "entityName": "Jorge Barrosa",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Jorge Barrosa's model score fell",
-      "message": "The live model score fell from 28.7 to 0.",
-      "previous": {
-        "modelScore": 28.7
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "bf450107abe49df5ebff",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "680700",
-      "entityName": "Richie Palacios",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Richie Palacios confirmed in the lineup",
-      "message": "Richie Palacios is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "d8787766d2d9a17ceaf2",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_removed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "680716",
-      "entityName": "Jonathan Ornelas",
-      "team": "Athletics",
-      "gamePk": 824724,
-      "title": "Jonathan Ornelas removed from the confirmed lineup",
-      "message": "Jonathan Ornelas's verified lineup status changed to NOT IN LINEUP.",
-      "previous": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "current": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "fab962517b466bac8fb2",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "680716",
-      "entityName": "Jonathan Ornelas",
-      "team": "Athletics",
-      "gamePk": 824724,
-      "title": "Jonathan Ornelas's model score fell",
-      "message": "The live model score fell from 26.9 to 0.",
-      "previous": {
-        "modelScore": 26.9
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "9c695c77ec6b8ce8eba9",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "682988",
-      "entityName": "Tyler Locklear",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Tyler Locklear confirmed in the lineup",
-      "message": "Tyler Locklear is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "40ba522881de0aabec09",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "682998",
-      "entityName": "Corbin Carroll",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Corbin Carroll confirmed in the lineup",
-      "message": "Corbin Carroll is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "0491e852bd151d76660f",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "683748",
-      "entityName": "Victor Mesa Jr.",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Victor Mesa Jr. confirmed in the lineup",
-      "message": "Victor Mesa Jr. is confirmed batting 6.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 6
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "b9458752e8e2dc3fafc8",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "686475",
-      "entityName": "Tyler Tolbert",
-      "team": "Kansas City Royals",
-      "gamePk": 824078,
-      "title": "Tyler Tolbert's verified signals changed",
-      "message": "Added: due.",
-      "previous": {
-        "signals": []
-      },
-      "current": {
-        "signals": [
-          "due"
-        ]
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "eb701b93291b8c4e4836",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "689414",
-      "entityName": "Liam Hicks",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Liam Hicks confirmed in the lineup",
-      "message": "Liam Hicks is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "35249169dd091838c9fe",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "691406",
-      "entityName": "Junior Caminero",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Junior Caminero confirmed in the lineup",
-      "message": "Junior Caminero is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "6627b5c1043cdc427ef4",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "691406",
-      "entityName": "Junior Caminero",
-      "team": "Tampa Bay Rays",
-      "gamePk": 823104,
-      "title": "Junior Caminero's verified signals changed",
-      "message": "Added: hotLook.",
-      "previous": {
-        "signals": [
-          "hotLately"
-        ]
-      },
-      "current": {
-        "signals": [
-          "hotLately",
-          "hotLook"
-        ]
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "741fa391da66348c1501",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "691781",
-      "entityName": "Brady House",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Brady House confirmed in the lineup",
-      "message": "Brady House is confirmed batting 3.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "c23758aacd06ecc41592",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "691781",
-      "entityName": "Brady House",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Brady House's HR probability rose",
-      "message": "Tracked HR probability rose from 0% to 7.6%.",
-      "previous": {
-        "probability": 0
-      },
-      "current": {
-        "probability": 7.6
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "d011e5ec52f62eeac243",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "691781",
-      "entityName": "Brady House",
-      "team": "Washington Nationals",
-      "gamePk": 822700,
-      "title": "Brady House's model score rose",
-      "message": "The live model score rose from 0 to 44.8.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 44.8
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "a2420538dd0d403fa43a",
-      "createdAt": "2026-08-09T18:57:01.511Z",
-      "date": "2026-08-09",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "694374",
-      "entityName": "Tim Tawa",
-      "team": "Arizona Diamondbacks",
-      "gamePk": 825050,
-      "title": "Tim Tawa confirmed in the lineup",
-      "message": "Tim Tawa is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
     }
   ],
   "snapshot": {
@@ -6335,8 +6319,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 7.2,
-        "modelScore": 35.7,
+        "probability": 7.9,
+        "modelScore": 35.6,
         "signals": []
       },
       "516782": {
@@ -6351,7 +6335,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 1.5,
-        "modelScore": 26.8,
+        "modelScore": 26.7,
         "signals": []
       },
       "518595": {
@@ -6380,8 +6364,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 23.4,
-        "modelScore": 43.6,
+        "probability": 23.3,
+        "modelScore": 43.5,
         "signals": [
           "due"
         ]
@@ -6428,7 +6412,7 @@
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
         "probability": 6.3,
-        "modelScore": 36.1,
+        "modelScore": 36,
         "signals": [
           "hotLately"
         ]
@@ -6484,13 +6468,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 824564,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 4,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
-        "probability": 23.9,
-        "modelScore": 49.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -6540,7 +6524,7 @@
         "opposingPitcherId": "700249",
         "opposingPitcher": "Cade Povich",
         "probability": 7.4,
-        "modelScore": 42.3,
+        "modelScore": 42.2,
         "signals": []
       },
       "553993": {
@@ -6571,8 +6555,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 20.7,
-        "modelScore": 45,
+        "probability": 18.9,
+        "modelScore": 44.4,
         "signals": [
           "hotLately"
         ]
@@ -6588,8 +6572,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 10.9,
-        "modelScore": 33.2,
+        "probability": 9.7,
+        "modelScore": 32.6,
         "signals": [
           "due"
         ]
@@ -6615,13 +6599,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Arizona Diamondbacks",
         "gamePk": 825050,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 22.8,
+        "modelScore": 46.2,
         "signals": []
       },
       "572233": {
@@ -6635,7 +6619,7 @@
         "lineupSpot": 6,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 22.8,
+        "probability": 23.3,
         "modelScore": 46.8,
         "signals": []
       },
@@ -6651,7 +6635,7 @@
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
         "probability": 4.5,
-        "modelScore": 32.8,
+        "modelScore": 32.7,
         "signals": []
       },
       "575929": {
@@ -6666,7 +6650,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 24,
-        "modelScore": 55.6,
+        "modelScore": 55.5,
         "signals": [
           "hotLook"
         ]
@@ -6683,7 +6667,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 24,
-        "modelScore": 48.4,
+        "modelScore": 48.3,
         "signals": []
       },
       "592626": {
@@ -6879,8 +6863,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 7,
-        "modelScore": 37.1,
+        "probability": 6.9,
+        "modelScore": 37,
         "signals": []
       },
       "605170": {
@@ -6904,13 +6888,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Arizona Diamondbacks",
         "gamePk": 825050,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 6.4,
-        "modelScore": 33.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "606466": {
@@ -6957,7 +6941,7 @@
         "opposingPitcherId": "669456",
         "opposingPitcher": "Shane Bieber",
         "probability": 9.8,
-        "modelScore": 39.8,
+        "modelScore": 39.7,
         "signals": []
       },
       "608070": {
@@ -7113,7 +7097,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 7.5,
-        "modelScore": 32.8,
+        "modelScore": 32.7,
         "signals": [
           "due"
         ]
@@ -7162,7 +7146,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 20.7,
-        "modelScore": 46.2,
+        "modelScore": 46.1,
         "signals": []
       },
       "624428": {
@@ -7224,7 +7208,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 1.6,
-        "modelScore": 24,
+        "modelScore": 23.9,
         "signals": []
       },
       "640459": {
@@ -7269,7 +7253,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 24,
-        "modelScore": 56.8,
+        "modelScore": 56.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7302,7 +7286,7 @@
         "opposingPitcherId": "656550",
         "opposingPitcher": "Grant Holmes",
         "probability": 4.7,
-        "modelScore": 32.5,
+        "modelScore": 32.4,
         "signals": []
       },
       "641933": {
@@ -7349,7 +7333,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 5.6,
-        "modelScore": 32.8,
+        "modelScore": 32.7,
         "signals": []
       },
       "642215": {
@@ -7363,8 +7347,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 2.4,
-        "modelScore": 25,
+        "probability": 2.2,
+        "modelScore": 24.4,
         "signals": []
       },
       "642350": {
@@ -7379,7 +7363,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 15,
-        "modelScore": 44.6,
+        "modelScore": 44.5,
         "signals": [
           "hotLately"
         ]
@@ -7410,8 +7394,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 15,
-        "modelScore": 40.2,
+        "probability": 15.1,
+        "modelScore": 40.1,
         "signals": []
       },
       "642851": {
@@ -7473,7 +7457,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 1.3,
-        "modelScore": 20.6,
+        "modelScore": 20.5,
         "signals": []
       },
       "645277": {
@@ -7533,7 +7517,7 @@
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 24,
-        "modelScore": 50.9,
+        "modelScore": 50.7,
         "signals": [
           "hotLately"
         ]
@@ -7549,8 +7533,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 2.8,
-        "modelScore": 30.6,
+        "probability": 2.7,
+        "modelScore": 30.3,
         "signals": [
           "hotLately"
         ]
@@ -7576,13 +7560,13 @@
         "team": "Detroit Tigers",
         "opponent": "San Francisco Giants",
         "gamePk": 823190,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 2,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 7,
-        "modelScore": 38.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "650489": {
@@ -7597,7 +7581,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 12.8,
-        "modelScore": 42.1,
+        "modelScore": 42,
         "signals": [
           "hotLately"
         ]
@@ -7613,8 +7597,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 20.8,
-        "modelScore": 45.2,
+        "probability": 20.9,
+        "modelScore": 45.1,
         "signals": [
           "due"
         ]
@@ -7691,7 +7675,7 @@
         "opposingPitcherId": "669456",
         "opposingPitcher": "Shane Bieber",
         "probability": 12.4,
-        "modelScore": 37.1,
+        "modelScore": 37,
         "signals": []
       },
       "656555": {
@@ -7700,13 +7684,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 824564,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 10,
+        "modelScore": 40.9,
         "signals": [
           "hotLately"
         ]
@@ -7738,7 +7722,7 @@
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
         "probability": 1.8,
-        "modelScore": 27,
+        "modelScore": 26.9,
         "signals": []
       },
       "656775": {
@@ -7752,8 +7736,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 7.5,
-        "modelScore": 37.4,
+        "probability": 7.4,
+        "modelScore": 37.2,
         "signals": []
       },
       "656941": {
@@ -7830,7 +7814,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 24,
-        "modelScore": 54.1,
+        "modelScore": 54,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7910,7 +7894,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 7.3,
-        "modelScore": 40.8,
+        "modelScore": 40.7,
         "signals": []
       },
       "661531": {
@@ -7939,8 +7923,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 3,
-        "modelScore": 28.3,
+        "probability": 2.9,
+        "modelScore": 28.2,
         "signals": []
       },
       "663330": {
@@ -7955,7 +7939,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 3.2,
-        "modelScore": 31.8,
+        "modelScore": 31.7,
         "signals": []
       },
       "663457": {
@@ -8015,7 +7999,7 @@
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
         "probability": 7.4,
-        "modelScore": 36.1,
+        "modelScore": 36,
         "signals": [
           "hotLately"
         ]
@@ -8078,8 +8062,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 7.3,
-        "modelScore": 37.1,
+        "probability": 7.2,
+        "modelScore": 36.9,
         "signals": [
           "hotLately"
         ]
@@ -8095,8 +8079,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 5.7,
-        "modelScore": 35.5,
+        "probability": 5.6,
+        "modelScore": 35.4,
         "signals": []
       },
       "663743": {
@@ -8143,7 +8127,7 @@
         "opposingPitcherId": "695418",
         "opposingPitcher": "Brad Lord",
         "probability": 11.1,
-        "modelScore": 42.4,
+        "modelScore": 42.3,
         "signals": [
           "hotLately"
         ]
@@ -8169,13 +8153,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 824564,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 4,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 24,
-        "modelScore": 50.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "664023": {
@@ -8241,7 +8225,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 1.4,
-        "modelScore": 23.4,
+        "modelScore": 23.3,
         "signals": []
       },
       "664728": {
@@ -8256,7 +8240,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 1.4,
-        "modelScore": 29.6,
+        "modelScore": 29.5,
         "signals": []
       },
       "664761": {
@@ -8271,7 +8255,7 @@
         "opposingPitcherId": "669456",
         "opposingPitcher": "Shane Bieber",
         "probability": 7,
-        "modelScore": 35.2,
+        "modelScore": 35.1,
         "signals": []
       },
       "664770": {
@@ -8286,7 +8270,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 2.2,
-        "modelScore": 28.6,
+        "modelScore": 28.5,
         "signals": []
       },
       "664774": {
@@ -8300,7 +8284,7 @@
         "lineupSpot": 9,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 4.5,
+        "probability": 4.1,
         "modelScore": 29.6,
         "signals": []
       },
@@ -8316,7 +8300,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 6.6,
-        "modelScore": 34.2,
+        "modelScore": 34.1,
         "signals": []
       },
       "664983": {
@@ -8331,7 +8315,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 24,
-        "modelScore": 48.6,
+        "modelScore": 48.5,
         "signals": [
           "hotLately"
         ]
@@ -8365,7 +8349,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 24,
-        "modelScore": 50.6,
+        "modelScore": 50.5,
         "signals": [
           "hotLately"
         ]
@@ -8381,7 +8365,7 @@
         "lineupSpot": 1,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 22,
+        "probability": 24,
         "modelScore": 45.5,
         "signals": []
       },
@@ -8397,7 +8381,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 7.1,
-        "modelScore": 38.1,
+        "modelScore": 38,
         "signals": [
           "hotLately"
         ]
@@ -8444,7 +8428,7 @@
         "opposingPitcherId": "677958",
         "opposingPitcher": "Kumar Rocker",
         "probability": 2.6,
-        "modelScore": 30.9,
+        "modelScore": 30.8,
         "signals": []
       },
       "665804": {
@@ -8521,7 +8505,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 3,
-        "modelScore": 29.3,
+        "modelScore": 29.2,
         "signals": []
       },
       "665953": {
@@ -8536,7 +8520,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 24,
-        "modelScore": 50.1,
+        "modelScore": 50,
         "signals": [
           "due"
         ]
@@ -8567,8 +8551,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 17.1,
-        "modelScore": 44.5,
+        "probability": 16.9,
+        "modelScore": 44.4,
         "signals": []
       },
       "666023": {
@@ -8613,7 +8597,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 3.8,
-        "modelScore": 33.4,
+        "modelScore": 33.3,
         "signals": []
       },
       "666152": {
@@ -8643,7 +8627,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 24,
-        "modelScore": 50.9,
+        "modelScore": 50.8,
         "signals": [
           "hotLately"
         ]
@@ -8654,13 +8638,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Arizona Diamondbacks",
         "gamePk": 825050,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 1.3,
-        "modelScore": 17.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "666176": {
@@ -8674,8 +8658,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 9.6,
-        "modelScore": 39.6,
+        "probability": 9.2,
+        "modelScore": 39.2,
         "signals": []
       },
       "666182": {
@@ -8704,8 +8688,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 7.3,
-        "modelScore": 38.6,
+        "probability": 7.7,
+        "modelScore": 38.5,
         "signals": [
           "hotLately"
         ]
@@ -8737,7 +8721,7 @@
         "opposingPitcherId": "695418",
         "opposingPitcher": "Brad Lord",
         "probability": 1.6,
-        "modelScore": 26.5,
+        "modelScore": 26.4,
         "signals": []
       },
       "668227": {
@@ -8751,8 +8735,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 18.9,
-        "modelScore": 43.3,
+        "probability": 18.7,
+        "modelScore": 43.1,
         "signals": [
           "due"
         ]
@@ -8831,7 +8815,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 1.3,
-        "modelScore": 21.8,
+        "modelScore": 21.7,
         "signals": []
       },
       "668904": {
@@ -8863,7 +8847,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 23.1,
-        "modelScore": 45.1,
+        "modelScore": 45,
         "signals": [
           "due"
         ]
@@ -8895,7 +8879,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 4.9,
-        "modelScore": 31.8,
+        "modelScore": 31.7,
         "signals": []
       },
       "669003": {
@@ -8910,7 +8894,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 9.4,
-        "modelScore": 40.4,
+        "modelScore": 40.3,
         "signals": []
       },
       "669016": {
@@ -8987,7 +8971,7 @@
         "opposingPitcherId": "656550",
         "opposingPitcher": "Grant Holmes",
         "probability": 3.3,
-        "modelScore": 32.5,
+        "modelScore": 32.4,
         "signals": []
       },
       "669236": {
@@ -9002,7 +8986,7 @@
         "opposingPitcherId": "677958",
         "opposingPitcher": "Kumar Rocker",
         "probability": 5.2,
-        "modelScore": 34.4,
+        "modelScore": 34.3,
         "signals": []
       },
       "669242": {
@@ -9016,8 +9000,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 7.4,
-        "modelScore": 44.3,
+        "probability": 7.2,
+        "modelScore": 44.1,
         "signals": []
       },
       "669364": {
@@ -9032,7 +9016,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 3.1,
-        "modelScore": 33.4,
+        "modelScore": 33.3,
         "signals": []
       },
       "669394": {
@@ -9065,21 +9049,6 @@
         "modelScore": 0,
         "signals": []
       },
-      "669398": {
-        "id": "669398",
-        "name": "Gage Workman",
-        "team": "San Diego Padres",
-        "opponent": "Houston Astros",
-        "gamePk": 823268,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
-        "opposingPitcherId": "664299",
-        "opposingPitcher": "Cristian Javier",
-        "probability": 0,
-        "modelScore": 0,
-        "signals": []
-      },
       "669701": {
         "id": "669701",
         "name": "Josh Smith",
@@ -9107,7 +9076,22 @@
         "opposingPitcherId": "640455",
         "opposingPitcher": "Sean Manaea",
         "probability": 1.3,
-        "modelScore": 23.2,
+        "modelScore": 23.1,
+        "signals": []
+      },
+      "669720": {
+        "id": "669720",
+        "name": "Austin Hays",
+        "team": "San Diego Padres",
+        "opponent": "Houston Astros",
+        "gamePk": 823268,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
+        "opposingPitcherId": "664299",
+        "opposingPitcher": "Cristian Javier",
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "669743": {
@@ -9152,7 +9136,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 18.7,
-        "modelScore": 46.5,
+        "modelScore": 46.4,
         "signals": [
           "due"
         ]
@@ -9168,7 +9152,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 22.8,
+        "probability": 24,
         "modelScore": 54.2,
         "signals": [
           "due",
@@ -9186,7 +9170,7 @@
         "lineupSpot": 3,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 11.5,
+        "probability": 12.8,
         "modelScore": 38.1,
         "signals": []
       },
@@ -9202,7 +9186,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 1.3,
-        "modelScore": 16.1,
+        "modelScore": 16,
         "signals": []
       },
       "670770": {
@@ -9241,13 +9225,13 @@
         "team": "San Francisco Giants",
         "opponent": "Detroit Tigers",
         "gamePk": 823190,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 23,
         "signals": []
       },
       "671155": {
@@ -9262,7 +9246,7 @@
         "opposingPitcherId": "695418",
         "opposingPitcher": "Brad Lord",
         "probability": 1.3,
-        "modelScore": 20.3,
+        "modelScore": 20.2,
         "signals": []
       },
       "671218": {
@@ -9277,7 +9261,7 @@
         "opposingPitcherId": "656550",
         "opposingPitcher": "Grant Holmes",
         "probability": 9.5,
-        "modelScore": 38.8,
+        "modelScore": 38.7,
         "signals": []
       },
       "671277": {
@@ -9324,7 +9308,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 2,
-        "modelScore": 30.8,
+        "modelScore": 30.7,
         "signals": []
       },
       "671739": {
@@ -9339,7 +9323,7 @@
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
         "probability": 24,
-        "modelScore": 44.5,
+        "modelScore": 44.4,
         "signals": [
           "due"
         ]
@@ -9350,13 +9334,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 824564,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 7.5,
+        "modelScore": 40,
         "signals": []
       },
       "672275": {
@@ -9371,7 +9355,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 1.7,
-        "modelScore": 24.9,
+        "modelScore": 24.8,
         "signals": []
       },
       "672356": {
@@ -9415,8 +9399,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 11.3,
-        "modelScore": 39.2,
+        "probability": 11.1,
+        "modelScore": 39.1,
         "signals": [
           "due"
         ]
@@ -9433,7 +9417,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 14.8,
-        "modelScore": 42.6,
+        "modelScore": 42.5,
         "signals": [
           "due"
         ]
@@ -9465,7 +9449,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 3.3,
-        "modelScore": 33.5,
+        "modelScore": 33.4,
         "signals": []
       },
       "672960": {
@@ -9494,8 +9478,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
-        "probability": 4.7,
-        "modelScore": 29.8,
+        "probability": 4.4,
+        "modelScore": 29.7,
         "signals": []
       },
       "673357": {
@@ -9510,7 +9494,7 @@
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
         "probability": 3.7,
-        "modelScore": 31,
+        "modelScore": 30.9,
         "signals": []
       },
       "673490": {
@@ -9587,7 +9571,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 4.5,
-        "modelScore": 31.5,
+        "modelScore": 31.4,
         "signals": []
       },
       "676439": {
@@ -9596,13 +9580,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Arizona Diamondbacks",
         "gamePk": 825050,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 24.2,
         "signals": []
       },
       "676475": {
@@ -9666,7 +9650,7 @@
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
         "probability": 8.6,
-        "modelScore": 36.2,
+        "modelScore": 36.1,
         "signals": []
       },
       "676914": {
@@ -9696,7 +9680,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 3.4,
-        "modelScore": 28.8,
+        "modelScore": 28.7,
         "signals": []
       },
       "677588": {
@@ -9726,7 +9710,7 @@
         "opposingPitcherId": "547179",
         "opposingPitcher": "Michael Lorenzen",
         "probability": 8.5,
-        "modelScore": 40.8,
+        "modelScore": 40.7,
         "signals": []
       },
       "677594": {
@@ -9741,7 +9725,7 @@
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
         "probability": 18.2,
-        "modelScore": 43.1,
+        "modelScore": 43,
         "signals": [
           "hotLately"
         ]
@@ -9758,7 +9742,7 @@
         "opposingPitcherId": "700249",
         "opposingPitcher": "Cade Povich",
         "probability": 19.8,
-        "modelScore": 44.9,
+        "modelScore": 44.8,
         "signals": []
       },
       "677800": {
@@ -9773,7 +9757,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 22.5,
-        "modelScore": 48.5,
+        "modelScore": 48.4,
         "signals": [
           "hotLately"
         ]
@@ -9790,7 +9774,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 1.7,
-        "modelScore": 28.4,
+        "modelScore": 28.3,
         "signals": []
       },
       "677951": {
@@ -9893,13 +9877,13 @@
         "team": "Arizona Diamondbacks",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 825050,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.2,
+        "modelScore": 29.9,
         "signals": []
       },
       "678545": {
@@ -9913,8 +9897,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 24,
-        "modelScore": 48.2,
+        "probability": 22.7,
+        "modelScore": 47.7,
         "signals": [
           "hotLately"
         ]
@@ -9931,7 +9915,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 3.5,
-        "modelScore": 32.1,
+        "modelScore": 32,
         "signals": []
       },
       "678760": {
@@ -10008,7 +9992,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 6.5,
-        "modelScore": 36.3,
+        "modelScore": 36.2,
         "signals": []
       },
       "680574": {
@@ -10023,7 +10007,7 @@
         "opposingPitcherId": "695418",
         "opposingPitcher": "Brad Lord",
         "probability": 6.3,
-        "modelScore": 33.6,
+        "modelScore": 33.5,
         "signals": [
           "hotLately"
         ]
@@ -10040,7 +10024,7 @@
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
         "probability": 21.5,
-        "modelScore": 45.7,
+        "modelScore": 45.6,
         "signals": [
           "due"
         ]
@@ -10119,7 +10103,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 23.4,
-        "modelScore": 42.2,
+        "modelScore": 42.1,
         "signals": [
           "due"
         ]
@@ -10136,7 +10120,7 @@
         "opposingPitcherId": "640455",
         "opposingPitcher": "Sean Manaea",
         "probability": 5.1,
-        "modelScore": 35.2,
+        "modelScore": 35.1,
         "signals": []
       },
       "680977": {
@@ -10237,13 +10221,13 @@
         "team": "Detroit Tigers",
         "opponent": "San Francisco Giants",
         "gamePk": 823190,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.9,
+        "modelScore": 36.1,
         "signals": []
       },
       "681624": {
@@ -10257,7 +10241,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
-        "probability": 21.7,
+        "probability": 21.9,
         "modelScore": 42.1,
         "signals": []
       },
@@ -10273,7 +10257,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 18.8,
-        "modelScore": 42.6,
+        "modelScore": 42.5,
         "signals": []
       },
       "682622": {
@@ -10348,7 +10332,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.3,
-        "modelScore": 23.6,
+        "modelScore": 23.5,
         "signals": []
       },
       "682829": {
@@ -10363,7 +10347,7 @@
         "opposingPitcherId": "695418",
         "opposingPitcher": "Brad Lord",
         "probability": 24,
-        "modelScore": 50.3,
+        "modelScore": 50.2,
         "signals": [
           "hotLately"
         ]
@@ -10412,7 +10396,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 24,
-        "modelScore": 55.2,
+        "modelScore": 55.1,
         "signals": [
           "due",
           "hotLook"
@@ -10429,8 +10413,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 17.3,
-        "modelScore": 41.4,
+        "probability": 17.2,
+        "modelScore": 41.3,
         "signals": []
       },
       "682987": {
@@ -10454,16 +10438,15 @@
         "team": "Arizona Diamondbacks",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 825050,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 9.5,
-        "modelScore": 45.5,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
-          "due",
-          "sleeper"
+          "due"
         ]
       },
       "682998": {
@@ -10478,7 +10461,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 24,
-        "modelScore": 48,
+        "modelScore": 47.9,
         "signals": []
       },
       "683002": {
@@ -10538,7 +10521,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 16,
-        "modelScore": 40,
+        "modelScore": 39.9,
         "signals": []
       },
       "683734": {
@@ -10582,8 +10565,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 18,
-        "modelScore": 43.8,
+        "probability": 17.2,
+        "modelScore": 43.4,
         "signals": []
       },
       "683766": {
@@ -10598,7 +10581,7 @@
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 1.3,
-        "modelScore": 23.7,
+        "modelScore": 23.6,
         "signals": []
       },
       "683953": {
@@ -10612,8 +10595,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 6.8,
-        "modelScore": 36,
+        "probability": 6.7,
+        "modelScore": 35.9,
         "signals": []
       },
       "685133": {
@@ -10628,7 +10611,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 4,
-        "modelScore": 32.6,
+        "modelScore": 32.5,
         "signals": []
       },
       "686475": {
@@ -10643,7 +10626,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 7.8,
-        "modelScore": 37.3,
+        "modelScore": 37.2,
         "signals": [
           "due"
         ]
@@ -10660,7 +10643,7 @@
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
         "probability": 24,
-        "modelScore": 49.6,
+        "modelScore": 49.4,
         "signals": [
           "due"
         ]
@@ -10707,7 +10690,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.7,
-        "modelScore": 24.5,
+        "modelScore": 24.4,
         "signals": []
       },
       "686681": {
@@ -10767,7 +10750,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 15.2,
-        "modelScore": 41.2,
+        "modelScore": 41.1,
         "signals": []
       },
       "686948": {
@@ -10782,7 +10765,7 @@
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
         "probability": 22.8,
-        "modelScore": 43.1,
+        "modelScore": 43,
         "signals": [
           "due"
         ]
@@ -10814,7 +10797,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 16.8,
-        "modelScore": 44.9,
+        "modelScore": 44.8,
         "signals": []
       },
       "687401": {
@@ -10855,13 +10838,13 @@
         "team": "San Francisco Giants",
         "opponent": "Detroit Tigers",
         "gamePk": 823190,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 1.3,
-        "modelScore": 21.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "687551": {
@@ -10875,8 +10858,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 2,
-        "modelScore": 31.3,
+        "probability": 1.9,
+        "modelScore": 31,
         "signals": []
       },
       "687597": {
@@ -10980,8 +10963,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 15.7,
-        "modelScore": 43.1,
+        "probability": 15.6,
+        "modelScore": 42.9,
         "signals": []
       },
       "690984": {
@@ -11005,13 +10988,13 @@
         "team": "Detroit Tigers",
         "opponent": "San Francisco Giants",
         "gamePk": 823190,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 5,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 8.5,
-        "modelScore": 38,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "691011": {
@@ -11105,7 +11088,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 24,
-        "modelScore": 56.9,
+        "modelScore": 56.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -11138,7 +11121,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 4.7,
-        "modelScore": 33.7,
+        "modelScore": 33.6,
         "signals": []
       },
       "691718": {
@@ -11153,7 +11136,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 24,
-        "modelScore": 54.6,
+        "modelScore": 54.5,
         "signals": [
           "hotLately",
           "hotLook"
@@ -11171,7 +11154,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 13.3,
-        "modelScore": 40.9,
+        "modelScore": 40.8,
         "signals": []
       },
       "691723": {
@@ -11216,7 +11199,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 5.4,
-        "modelScore": 32.7,
+        "modelScore": 32,
         "signals": []
       },
       "691781": {
@@ -11246,7 +11229,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 14.3,
-        "modelScore": 39.9,
+        "modelScore": 39.8,
         "signals": []
       },
       "693304": {
@@ -11276,7 +11259,7 @@
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
         "probability": 24,
-        "modelScore": 50,
+        "modelScore": 49.9,
         "signals": [
           "hotLately"
         ]
@@ -11308,7 +11291,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 24,
-        "modelScore": 51,
+        "modelScore": 50.9,
         "signals": [
           "hotLately"
         ]
@@ -11324,8 +11307,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 7.4,
-        "modelScore": 31.5,
+        "probability": 6.4,
+        "modelScore": 30.8,
         "signals": []
       },
       "694203": {
@@ -11355,7 +11338,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 4.1,
-        "modelScore": 36.6,
+        "modelScore": 36.5,
         "signals": []
       },
       "694249": {
@@ -11370,7 +11353,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 15.1,
-        "modelScore": 44.4,
+        "modelScore": 44.3,
         "signals": [
           "due"
         ]
@@ -11498,7 +11481,7 @@
         "opposingPitcherId": "700249",
         "opposingPitcher": "Cade Povich",
         "probability": 2.8,
-        "modelScore": 25.9,
+        "modelScore": 25.8,
         "signals": []
       },
       "695600": {
@@ -11572,8 +11555,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
-        "probability": 5.8,
-        "modelScore": 40,
+        "probability": 5.6,
+        "modelScore": 39.8,
         "signals": []
       },
       "695734": {
@@ -11605,7 +11588,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 24,
-        "modelScore": 52.3,
+        "modelScore": 52.2,
         "signals": [
           "hotLately",
           "hotLook"
@@ -11638,7 +11621,7 @@
         "opposingPitcherId": "640455",
         "opposingPitcher": "Sean Manaea",
         "probability": 24,
-        "modelScore": 49.5,
+        "modelScore": 49.4,
         "signals": [
           "due"
         ]
@@ -11670,7 +11653,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 7.7,
-        "modelScore": 42.9,
+        "modelScore": 42.8,
         "signals": []
       },
       "699625": {
@@ -11699,8 +11682,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
-        "probability": 1.4,
-        "modelScore": 20.1,
+        "probability": 1.3,
+        "modelScore": 20,
         "signals": []
       },
       "700250": {
@@ -11715,7 +11698,7 @@
         "opposingPitcherId": "656550",
         "opposingPitcher": "Grant Holmes",
         "probability": 24,
-        "modelScore": 56.6,
+        "modelScore": 56.5,
         "signals": [
           "hotLook"
         ]
@@ -11837,13 +11820,13 @@
         "team": "Detroit Tigers",
         "opponent": "San Francisco Giants",
         "gamePk": 823190,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 7,
+        "modelScore": 40.8,
         "signals": []
       },
       "701785": {
@@ -11934,8 +11917,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 11.1,
-        "modelScore": 41.2,
+        "probability": 11.2,
+        "modelScore": 41.1,
         "signals": []
       },
       "702332": {
@@ -11965,7 +11948,7 @@
         "opposingPitcherId": "677958",
         "opposingPitcher": "Kumar Rocker",
         "probability": 7.5,
-        "modelScore": 37.7,
+        "modelScore": 37.6,
         "signals": []
       },
       "703520": {
@@ -11994,8 +11977,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 9.8,
-        "modelScore": 40.2,
+        "probability": 9.5,
+        "modelScore": 40,
         "signals": [
           "due"
         ]
@@ -12012,7 +11995,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 1.9,
-        "modelScore": 29.6,
+        "modelScore": 29.5,
         "signals": []
       },
       "800050": {
@@ -12026,8 +12009,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
-        "probability": 17,
-        "modelScore": 42.3,
+        "probability": 16.9,
+        "modelScore": 42.2,
         "signals": []
       },
       "800325": {
@@ -12042,7 +12025,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 1.6,
-        "modelScore": 29,
+        "modelScore": 28.9,
         "signals": []
       },
       "801501": {
@@ -12072,7 +12055,7 @@
         "opposingPitcherId": "547179",
         "opposingPitcher": "Michael Lorenzen",
         "probability": 12.3,
-        "modelScore": 46.4,
+        "modelScore": 46.3,
         "signals": []
       },
       "802415": {
@@ -12087,7 +12070,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 1.6,
-        "modelScore": 27.7,
+        "modelScore": 27.9,
         "signals": []
       },
       "803011": {
@@ -12102,7 +12085,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 6.2,
-        "modelScore": 34,
+        "modelScore": 33.9,
         "signals": []
       },
       "804668": {
@@ -12117,7 +12100,7 @@
         "opposingPitcherId": "640455",
         "opposingPitcher": "Sean Manaea",
         "probability": 4.7,
-        "modelScore": 34.5,
+        "modelScore": 34.4,
         "signals": []
       },
       "805300": {
@@ -12132,7 +12115,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 1.3,
-        "modelScore": 27.5,
+        "modelScore": 27.4,
         "signals": []
       },
       "805347": {
@@ -12179,7 +12162,7 @@
         "opposingPitcherId": "669062",
         "opposingPitcher": "Erik Miller",
         "probability": 3.9,
-        "modelScore": 32.6,
+        "modelScore": 32.5,
         "signals": []
       },
       "805808": {
@@ -12193,8 +12176,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
-        "probability": 16.4,
-        "modelScore": 41.1,
+        "probability": 16.3,
+        "modelScore": 40.6,
         "signals": []
       },
       "805811": {
@@ -12208,8 +12191,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 18,
-        "modelScore": 42.4,
+        "probability": 18.2,
+        "modelScore": 42.3,
         "signals": []
       },
       "805999": {
@@ -12224,7 +12207,7 @@
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
         "probability": 6.5,
-        "modelScore": 37.6,
+        "modelScore": 37.5,
         "signals": []
       },
       "806068": {
@@ -12238,8 +12221,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "693855",
         "opposingPitcher": "Ian Seymour",
-        "probability": 4.7,
-        "modelScore": 30.8,
+        "probability": 4.6,
+        "modelScore": 30.7,
         "signals": []
       },
       "806146": {
@@ -12254,7 +12237,7 @@
         "opposingPitcherId": "656550",
         "opposingPitcher": "Grant Holmes",
         "probability": 22.3,
-        "modelScore": 43,
+        "modelScore": 42.9,
         "signals": [
           "hotLately"
         ]
@@ -12303,7 +12286,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 24,
-        "modelScore": 57.6,
+        "modelScore": 57.5,
         "signals": [
           "hotLately",
           "hotLook"
@@ -12320,8 +12303,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 10.3,
-        "modelScore": 39.2,
+        "probability": 10.2,
+        "modelScore": 39,
         "signals": [
           "hotLately"
         ]
@@ -12338,7 +12321,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 3.5,
-        "modelScore": 32.1,
+        "modelScore": 31.1,
         "signals": []
       },
       "823550": {
@@ -12380,7 +12363,7 @@
         "team": "Arizona Diamondbacks",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 825050,
-        "vulnerability": 25
+        "vulnerability": 24
       },
       "640455": {
         "id": "640455",
