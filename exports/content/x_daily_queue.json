@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-09T10:59:51.995Z",
+  "updatedAt": "2026-08-09T16:45:44.764Z",
   "date": "2026-08-09",
-  "slot": "overnight",
+  "slot": "midday",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "midday",
+    "selected": "midday",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,71 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-09T10:59:51.995Z",
+    "checkedAt": "2026-08-09T16:45:44.764Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-09T10:59:51.646Z",
+        "timestamp": "2026-08-09T16:45:44.411Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-09T10:59:50.879Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-09T16:42:32.452Z",
+        "ageSeconds": 192
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-09T07:35:49.114Z",
-        "players": 541,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-09T16:41:05.899Z",
+        "ageSeconds": 278
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-09T16:45:44.046Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-09T10:59:50.926Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-08",
-        "archivedPlayers": 391,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-09T16:43:33.361Z",
+        "ageSeconds": 131
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-09_MIDDAY_WEATHER_NOTE",
+      "date": "2026-08-09",
+      "type": "weather_note",
+      "slot": "midday",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-09T16:45:44.764Z",
+      "text": "Weather note—not a pick by itself:\n\nChicago Cubs at Kansas City Royals at Kauffman Stadium is the environment I am watching most closely.\n\n84° | 15.2 mph S\n\nWeather can amplify a good power matchup. It cannot rescue a bad one. Which park conditions are you watching today?",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-09T16:45:44.411Z"
+    }
+  ]
 }
