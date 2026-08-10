@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-10T11:29:13.647Z",
+  "updatedAt": "2026-08-10T19:57:57.947Z",
   "date": "2026-08-10",
-  "slot": "overnight",
+  "slot": "afternoon",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "afternoon",
+    "selected": "afternoon",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,74 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-10T11:29:13.647Z",
+    "checkedAt": "2026-08-10T19:57:57.947Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-10T11:29:13.285Z",
+        "timestamp": "2026-08-10T19:57:57.543Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-10T11:29:12.489Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-10T19:44:33.165Z",
+        "ageSeconds": 804
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-10T08:13:58.386Z",
-        "players": 544,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-10T19:44:10.642Z",
+        "ageSeconds": 827
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-10T19:57:57.080Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-10T11:29:12.533Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-09",
-        "archivedPlayers": 392,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-10T19:45:09.466Z",
+        "ageSeconds": 768
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-10_AFTERNOON_VALUE_THOUGHT",
+      "date": "2026-08-10",
+      "type": "value_thought",
+      "slot": "afternoon",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-10T19:57:57.947Z",
+      "text": "A less obvious name on my board today: Tyler Locklear.\n\nThe model is not calling this a safe play. It is saying the matchup may be better than the market perception: Crushes this pitch mix and good HR weather conditions.\n\nHR confidence 45.9 | Pitch edge 87.7 | Opponent Gabriel Hughes\n\nWould you rather play the stronger name or the better price?",
+      "players": [
+        "Tyler Locklear"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-10T19:57:58.421Z",
+      "x_post_id": "2086904911027925254",
+      "created_at": "2026-08-10T19:57:57.543Z",
+      "error": null
+    }
+  ]
 }
