@@ -1,17 +1,141 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-12T21:50:45.437Z",
+  "generatedAt": "2026-08-12T21:53:02.763Z",
   "date": "2026-08-12",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-08-12T21:48:20.067Z",
-    "mlb_player_pool.json": "2026-08-12T21:48:22.254Z",
-    "game_pitcher_matchups.json": "2026-08-12T21:49:37.673Z",
-    "player_card_data.json": "2026-08-12T21:50:45.364Z",
-    "hr_probability_tracking.json": "2026-08-12T21:49:36.280Z",
-    "pitcher_vulnerability.json": "2026-08-12T21:49:37.682Z"
+    "mlb_games_today.json": "2026-08-12T21:51:38.807Z",
+    "mlb_player_pool.json": "2026-08-12T21:51:39.740Z",
+    "game_pitcher_matchups.json": "2026-08-12T21:52:05.789Z",
+    "player_card_data.json": "2026-08-12T21:53:02.670Z",
+    "hr_probability_tracking.json": "2026-08-12T21:52:04.729Z",
+    "pitcher_vulnerability.json": "2026-08-12T21:52:05.800Z"
   },
   "alerts": [
+    {
+      "id": "2ed32b4e948b65df6859",
+      "createdAt": "2026-08-12T21:53:02.763Z",
+      "date": "2026-08-12",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "642715",
+      "entityName": "Willy Adames",
+      "team": "San Francisco Giants",
+      "gamePk": 823187,
+      "title": "Willy Adames removed from the confirmed lineup",
+      "message": "Willy Adames's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "233a0ae856f243cc8e40",
+      "createdAt": "2026-08-12T21:53:02.763Z",
+      "date": "2026-08-12",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642715",
+      "entityName": "Willy Adames",
+      "team": "San Francisco Giants",
+      "gamePk": 823187,
+      "title": "Willy Adames's HR probability fell",
+      "message": "Tracked HR probability fell from 15.3% to 0%.",
+      "previous": {
+        "probability": 15.3
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "0c8edac2c3e6195c7314",
+      "createdAt": "2026-08-12T21:53:02.763Z",
+      "date": "2026-08-12",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642715",
+      "entityName": "Willy Adames",
+      "team": "San Francisco Giants",
+      "gamePk": 823187,
+      "title": "Willy Adames's model score fell",
+      "message": "The live model score fell from 40.4 to 0.",
+      "previous": {
+        "modelScore": 40.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5fb21bfeb0543023cd12",
+      "createdAt": "2026-08-12T21:53:02.763Z",
+      "date": "2026-08-12",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671083",
+      "entityName": "Buddy Kennedy",
+      "team": "San Francisco Giants",
+      "gamePk": 823187,
+      "title": "Buddy Kennedy confirmed in the lineup",
+      "message": "Buddy Kennedy is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2b8123ce1b6577ccc9d2",
+      "createdAt": "2026-08-12T21:53:02.763Z",
+      "date": "2026-08-12",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671083",
+      "entityName": "Buddy Kennedy",
+      "team": "San Francisco Giants",
+      "gamePk": 823187,
+      "title": "Buddy Kennedy's model score rose",
+      "message": "The live model score rose from 0 to 27.5.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 27.5
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "946e5079751a6e625ad2",
       "createdAt": "2026-08-12T21:50:45.437Z",
@@ -6183,136 +6307,6 @@
       "sourceFiles": [
         "mlb_player_pool.json"
       ]
-    },
-    {
-      "id": "efeaafa2f818d313c9c9",
-      "createdAt": "2026-08-12T19:53:38.234Z",
-      "date": "2026-08-12",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "695670",
-      "entityName": "Harry Ford",
-      "team": "Washington Nationals",
-      "gamePk": 822698,
-      "title": "Harry Ford confirmed in the lineup",
-      "message": "Harry Ford is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "090ed3b800b93f5c2b4f",
-      "createdAt": "2026-08-12T19:53:38.234Z",
-      "date": "2026-08-12",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "695731",
-      "entityName": "Braden Montgomery",
-      "team": "Chicago White Sox",
-      "gamePk": 824562,
-      "title": "Braden Montgomery confirmed in the lineup",
-      "message": "Braden Montgomery is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "8688b1db474858aa55df",
-      "createdAt": "2026-08-12T19:53:38.234Z",
-      "date": "2026-08-12",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "695734",
-      "entityName": "Daylen Lile",
-      "team": "Washington Nationals",
-      "gamePk": 822698,
-      "title": "Daylen Lile confirmed in the lineup",
-      "message": "Daylen Lile is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "bf36095bb3ba580f483d",
-      "createdAt": "2026-08-12T19:53:38.234Z",
-      "date": "2026-08-12",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "696285",
-      "entityName": "Jacob Young",
-      "team": "Washington Nationals",
-      "gamePk": 822698,
-      "title": "Jacob Young confirmed in the lineup",
-      "message": "Jacob Young is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "19d292f0f522e01ce778",
-      "createdAt": "2026-08-12T19:53:38.234Z",
-      "date": "2026-08-12",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "699013",
-      "entityName": "Esmerlyn Valdez",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823833,
-      "title": "Esmerlyn Valdez confirmed in the lineup",
-      "message": "Esmerlyn Valdez is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
     }
   ],
   "snapshot": {
@@ -6657,7 +6651,7 @@
         "lineupSpot": 5,
         "opposingPitcherId": "605288",
         "opposingPitcher": "Adrian Houser",
-        "probability": 22.8,
+        "probability": 24,
         "modelScore": 48.5,
         "signals": []
       },
@@ -6797,7 +6791,7 @@
         "lineupSpot": 8,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 1.9,
+        "probability": 1.8,
         "modelScore": 25.9,
         "signals": []
       },
@@ -7435,13 +7429,13 @@
         "team": "San Francisco Giants",
         "opponent": "Houston Astros",
         "gamePk": 823187,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 2,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "687911",
         "opposingPitcher": "Bryan King",
-        "probability": 15.3,
-        "modelScore": 40.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "642851": {
@@ -7607,7 +7601,7 @@
         "lineupSpot": 1,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 5.5,
+        "probability": 6.4,
         "modelScore": 38.8,
         "signals": []
       },
@@ -7948,8 +7942,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
-        "probability": 7.7,
-        "modelScore": 33.2,
+        "probability": 7.1,
+        "modelScore": 32.9,
         "signals": []
       },
       "662139": {
@@ -8743,7 +8737,7 @@
         "lineupSpot": 9,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 1.4,
+        "probability": 1.3,
         "modelScore": 19,
         "signals": []
       },
@@ -8942,8 +8936,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "592662",
         "opposingPitcher": "Robbie Ray",
-        "probability": 8.1,
-        "modelScore": 33.4,
+        "probability": 7.8,
+        "modelScore": 33.3,
         "signals": []
       },
       "669016": {
@@ -9276,13 +9270,13 @@
         "team": "San Francisco Giants",
         "opponent": "Houston Astros",
         "gamePk": 823187,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "687911",
         "opposingPitcher": "Bryan King",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 27.5,
         "signals": []
       },
       "671218": {
@@ -9933,7 +9927,7 @@
         "lineupSpot": 7,
         "opposingPitcherId": "518876",
         "opposingPitcher": "Merrill Kelly",
-        "probability": 3.7,
+        "probability": 3.6,
         "modelScore": 30.9,
         "signals": []
       },
@@ -9963,7 +9957,7 @@
         "lineupSpot": 5,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 18,
+        "probability": 19,
         "modelScore": 45.6,
         "signals": []
       },
@@ -11275,7 +11269,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 22.8,
+        "probability": 24,
         "modelScore": 51,
         "signals": [
           "hotLately"
@@ -11741,7 +11735,7 @@
         "lineupSpot": 6,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 2.6,
+        "probability": 2.7,
         "modelScore": 29.1,
         "signals": []
       },
@@ -11835,7 +11829,7 @@
         "lineupSpot": 4,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 6.7,
+        "probability": 7.4,
         "modelScore": 38.9,
         "signals": []
       },
@@ -11987,7 +11981,7 @@
         "lineupSpot": 7,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 7.9,
+        "probability": 7.7,
         "modelScore": 38.9,
         "signals": [
           "due"
@@ -12186,7 +12180,7 @@
         "lineupSpot": 3,
         "opposingPitcherId": "656492",
         "opposingPitcher": "Foster Griffin",
-        "probability": 14.1,
+        "probability": 15.7,
         "modelScore": 41.7,
         "signals": []
       },
@@ -12327,7 +12321,7 @@
         "opposingPitcherId": "687911",
         "opposingPitcher": "Bryan King",
         "probability": 10.4,
-        "modelScore": 38.8,
+        "modelScore": 37.1,
         "signals": []
       },
       "814439": {
