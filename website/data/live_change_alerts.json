@@ -1,17 +1,141 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-13T20:50:45.949Z",
+  "generatedAt": "2026-08-13T21:52:19.850Z",
   "date": "2026-08-13",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-08-13T20:49:07.732Z",
-    "mlb_player_pool.json": "2026-08-13T20:49:08.679Z",
-    "game_pitcher_matchups.json": "2026-08-13T20:49:57.795Z",
-    "player_card_data.json": "2026-08-13T20:50:45.891Z",
-    "hr_probability_tracking.json": "2026-08-13T20:49:56.533Z",
-    "pitcher_vulnerability.json": "2026-08-13T20:49:57.801Z"
+    "mlb_games_today.json": "2026-08-13T21:51:23.549Z",
+    "mlb_player_pool.json": "2026-08-13T21:51:23.806Z",
+    "game_pitcher_matchups.json": "2026-08-13T21:51:42.774Z",
+    "player_card_data.json": "2026-08-13T21:52:19.767Z",
+    "hr_probability_tracking.json": "2026-08-13T21:51:41.749Z",
+    "pitcher_vulnerability.json": "2026-08-13T21:51:42.783Z"
   },
   "alerts": [
+    {
+      "id": "8288a57d22edec6057b1",
+      "createdAt": "2026-08-13T21:52:19.850Z",
+      "date": "2026-08-13",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669701",
+      "entityName": "Josh Smith",
+      "team": "Toronto Blue Jays",
+      "gamePk": 822776,
+      "title": "Josh Smith confirmed in the lineup",
+      "message": "Josh Smith is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "9ac48fd0a88cdd0f7266",
+      "createdAt": "2026-08-13T21:52:19.850Z",
+      "date": "2026-08-13",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669701",
+      "entityName": "Josh Smith",
+      "team": "Toronto Blue Jays",
+      "gamePk": 822776,
+      "title": "Josh Smith's model score rose",
+      "message": "The live model score rose from 0 to 28.4.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 28.4
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "87870d44c5775f4d2701",
+      "createdAt": "2026-08-13T21:52:19.850Z",
+      "date": "2026-08-13",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "807727",
+      "entityName": "Charles McAdoo",
+      "team": "Toronto Blue Jays",
+      "gamePk": 822776,
+      "title": "Charles McAdoo removed from the confirmed lineup",
+      "message": "Charles McAdoo's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d34f79bac7bd27f63c7e",
+      "createdAt": "2026-08-13T21:52:19.850Z",
+      "date": "2026-08-13",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "807727",
+      "entityName": "Charles McAdoo",
+      "team": "Toronto Blue Jays",
+      "gamePk": 822776,
+      "title": "Charles McAdoo's HR probability fell",
+      "message": "Tracked HR probability fell from 5.6% to 0%.",
+      "previous": {
+        "probability": 5.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "7f3a01400be5b354aab8",
+      "createdAt": "2026-08-13T21:52:19.850Z",
+      "date": "2026-08-13",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "807727",
+      "entityName": "Charles McAdoo",
+      "team": "Toronto Blue Jays",
+      "gamePk": 822776,
+      "title": "Charles McAdoo's model score fell",
+      "message": "The live model score fell from 39.8 to 0.",
+      "previous": {
+        "modelScore": 39.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "4553c99976594cea93d4",
       "createdAt": "2026-08-13T20:50:45.949Z",
@@ -6186,132 +6310,6 @@
       "sourceFiles": [
         "mlb_player_pool.json"
       ]
-    },
-    {
-      "id": "867f60731bc61b518376",
-      "createdAt": "2026-08-13T14:24:30.588Z",
-      "date": "2026-08-13",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "595879",
-      "entityName": "Javier Báez",
-      "team": "Detroit Tigers",
-      "gamePk": 824238,
-      "title": "Javier Báez confirmed in the lineup",
-      "message": "Javier Báez is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "0e2c38825e6eb6639002",
-      "createdAt": "2026-08-13T14:24:30.588Z",
-      "date": "2026-08-13",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "595978",
-      "entityName": "Austin Hedges",
-      "team": "Cleveland Guardians",
-      "gamePk": 824238,
-      "title": "Austin Hedges confirmed in the lineup",
-      "message": "Austin Hedges is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "30bf3a81ceaa727b536e",
-      "createdAt": "2026-08-13T14:24:30.588Z",
-      "date": "2026-08-13",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "608070",
-      "entityName": "José Ramírez",
-      "team": "Cleveland Guardians",
-      "gamePk": 824238,
-      "title": "José Ramírez confirmed in the lineup",
-      "message": "José Ramírez is confirmed batting 3.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "a13a0b6244144834fe1e",
-      "createdAt": "2026-08-13T14:24:30.588Z",
-      "date": "2026-08-13",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "624431",
-      "entityName": "Jose Trevino",
-      "team": "Cincinnati Reds",
-      "gamePk": 824561,
-      "title": "Jose Trevino's HR probability fell",
-      "message": "Tracked HR probability fell from 5.8% to 0%.",
-      "previous": {
-        "probability": 5.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "96686d49aa33f90d90f7",
-      "createdAt": "2026-08-13T14:24:30.588Z",
-      "date": "2026-08-13",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "624431",
-      "entityName": "Jose Trevino",
-      "team": "Cincinnati Reds",
-      "gamePk": 824561,
-      "title": "Jose Trevino's model score fell",
-      "message": "The live model score fell from 34.9 to 0.",
-      "previous": {
-        "modelScore": 34.9
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
     }
   ],
   "snapshot": {
@@ -6328,7 +6326,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 4.8,
-        "modelScore": 29.4,
+        "modelScore": 29.6,
         "signals": []
       },
       "502671": {
@@ -6358,7 +6356,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 1.4,
-        "modelScore": 17.4,
+        "modelScore": 17.6,
         "signals": []
       },
       "518692": {
@@ -6373,7 +6371,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 19.5,
-        "modelScore": 36.8,
+        "modelScore": 37,
         "signals": [
           "due"
         ]
@@ -6390,7 +6388,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 10.1,
-        "modelScore": 43.5,
+        "modelScore": 43.7,
         "signals": [
           "sleeper"
         ]
@@ -6424,7 +6422,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 22.8,
-        "modelScore": 40.4,
+        "modelScore": 40.6,
         "signals": [
           "hotLately"
         ]
@@ -6440,8 +6438,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 22.8,
-        "modelScore": 53.3,
+        "probability": 24,
+        "modelScore": 53.5,
         "signals": [
           "hotLook"
         ]
@@ -6458,7 +6456,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 7,
-        "modelScore": 38.2,
+        "modelScore": 38.3,
         "signals": []
       },
       "553993": {
@@ -6473,7 +6471,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 22.7,
-        "modelScore": 46.4,
+        "modelScore": 46.6,
         "signals": [
           "hotLately"
         ]
@@ -6490,7 +6488,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 8.3,
-        "modelScore": 27.7,
+        "modelScore": 27.9,
         "signals": [
           "due"
         ]
@@ -6507,7 +6505,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 22.8,
-        "modelScore": 40.9,
+        "modelScore": 41.1,
         "signals": []
       },
       "575929": {
@@ -6522,7 +6520,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 24,
-        "modelScore": 52.4,
+        "modelScore": 52.7,
         "signals": [
           "hotLook"
         ]
@@ -6539,7 +6537,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 22.8,
-        "modelScore": 45,
+        "modelScore": 45.1,
         "signals": [
           "hotLately"
         ]
@@ -6555,8 +6553,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 3.1,
-        "modelScore": 30.2,
+        "probability": 2.9,
+        "modelScore": 30.4,
         "signals": []
       },
       "592885": {
@@ -6571,7 +6569,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 6.8,
-        "modelScore": 35.6,
+        "modelScore": 35.8,
         "signals": []
       },
       "595879": {
@@ -6586,7 +6584,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 1.9,
-        "modelScore": 25.4,
+        "modelScore": 25.6,
         "signals": []
       },
       "595978": {
@@ -6631,7 +6629,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 21.2,
-        "modelScore": 38.2,
+        "modelScore": 38.4,
         "signals": [
           "hotLately"
         ]
@@ -6647,8 +6645,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 14,
-        "modelScore": 43.4,
+        "probability": 15.3,
+        "modelScore": 43.6,
         "signals": [
           "hotLately"
         ]
@@ -6665,7 +6663,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 8.3,
-        "modelScore": 31.6,
+        "modelScore": 31.8,
         "signals": [
           "hotLately"
         ]
@@ -6697,7 +6695,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 5.8,
-        "modelScore": 29.8,
+        "modelScore": 30,
         "signals": []
       },
       "607043": {
@@ -6712,7 +6710,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 14.6,
-        "modelScore": 37.9,
+        "modelScore": 38,
         "signals": [
           "hotLately"
         ]
@@ -6728,8 +6726,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 8.4,
-        "modelScore": 38.6,
+        "probability": 9.5,
+        "modelScore": 38.8,
         "signals": []
       },
       "608070": {
@@ -6744,7 +6742,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 7.4,
-        "modelScore": 40,
+        "modelScore": 40.2,
         "signals": []
       },
       "608324": {
@@ -6759,7 +6757,7 @@
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
         "probability": 12.1,
-        "modelScore": 43.2,
+        "modelScore": 43.4,
         "signals": [
           "hotLately"
         ]
@@ -6791,7 +6789,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 11.5,
-        "modelScore": 36.3,
+        "modelScore": 36.4,
         "signals": [
           "hotLately"
         ]
@@ -6807,8 +6805,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
-        "probability": 13.7,
-        "modelScore": 38.1,
+        "probability": 13.8,
+        "modelScore": 38.3,
         "signals": []
       },
       "621438": {
@@ -6837,8 +6835,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 22.8,
-        "modelScore": 50.5,
+        "probability": 24,
+        "modelScore": 50.7,
         "signals": [
           "due"
         ]
@@ -6870,7 +6868,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 1.4,
-        "modelScore": 16.3,
+        "modelScore": 16.5,
         "signals": []
       },
       "624424": {
@@ -6884,8 +6882,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
-        "probability": 17.2,
-        "modelScore": 40.9,
+        "probability": 16.9,
+        "modelScore": 41,
         "signals": []
       },
       "624428": {
@@ -6900,7 +6898,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 1.7,
-        "modelScore": 22.8,
+        "modelScore": 23,
         "signals": []
       },
       "624431": {
@@ -6960,7 +6958,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 1.3,
-        "modelScore": 25.7,
+        "modelScore": 25.9,
         "signals": []
       },
       "641343": {
@@ -6975,7 +6973,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 22.8,
-        "modelScore": 46.7,
+        "modelScore": 46.9,
         "signals": []
       },
       "641857": {
@@ -6990,7 +6988,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 4.7,
-        "modelScore": 31,
+        "modelScore": 31.2,
         "signals": []
       },
       "642201": {
@@ -7035,7 +7033,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 15.8,
-        "modelScore": 42.2,
+        "modelScore": 42.3,
         "signals": []
       },
       "642708": {
@@ -7065,7 +7063,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 1.4,
-        "modelScore": 15.9,
+        "modelScore": 16.1,
         "signals": []
       },
       "643217": {
@@ -7080,7 +7078,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 12.5,
-        "modelScore": 43.2,
+        "modelScore": 43.4,
         "signals": []
       },
       "645302": {
@@ -7094,8 +7092,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 1.4,
-        "modelScore": 24,
+        "probability": 1.6,
+        "modelScore": 24.2,
         "signals": []
       },
       "645305": {
@@ -7125,7 +7123,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 2.7,
-        "modelScore": 33,
+        "modelScore": 33.2,
         "signals": [
           "hotLately"
         ]
@@ -7141,8 +7139,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 3.4,
-        "modelScore": 32.4,
+        "probability": 3.7,
+        "modelScore": 32.6,
         "signals": []
       },
       "650402": {
@@ -7157,7 +7155,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 7.6,
-        "modelScore": 36.8,
+        "modelScore": 37,
         "signals": []
       },
       "650559": {
@@ -7187,7 +7185,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 6.2,
-        "modelScore": 31.8,
+        "modelScore": 32.2,
         "signals": []
       },
       "656537": {
@@ -7247,7 +7245,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 1.9,
-        "modelScore": 28.4,
+        "modelScore": 28.6,
         "signals": []
       },
       "656941": {
@@ -7261,8 +7259,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 22.8,
-        "modelScore": 52.5,
+        "probability": 24,
+        "modelScore": 52.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7279,8 +7277,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
-        "probability": 1.8,
-        "modelScore": 23.8,
+        "probability": 1.7,
+        "modelScore": 23.9,
         "signals": []
       },
       "660271": {
@@ -7295,7 +7293,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 22.8,
-        "modelScore": 44.5,
+        "modelScore": 44.7,
         "signals": [
           "hotLately"
         ]
@@ -7311,8 +7309,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
-        "probability": 9,
-        "modelScore": 40.1,
+        "probability": 8.8,
+        "modelScore": 40.2,
         "signals": []
       },
       "660821": {
@@ -7357,7 +7355,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 6.4,
-        "modelScore": 33.6,
+        "modelScore": 33.8,
         "signals": []
       },
       "663330": {
@@ -7402,7 +7400,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 1.4,
-        "modelScore": 21.4,
+        "modelScore": 21.6,
         "signals": []
       },
       "663616": {
@@ -7416,8 +7414,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 8.3,
-        "modelScore": 38.3,
+        "probability": 9.6,
+        "modelScore": 38.5,
         "signals": []
       },
       "663647": {
@@ -7432,7 +7430,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 1.3,
-        "modelScore": 19.3,
+        "modelScore": 19.5,
         "signals": []
       },
       "663656": {
@@ -7447,7 +7445,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 6.4,
-        "modelScore": 31.2,
+        "modelScore": 31.4,
         "signals": []
       },
       "663728": {
@@ -7462,7 +7460,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 5.4,
-        "modelScore": 36.3,
+        "modelScore": 36.5,
         "signals": []
       },
       "663757": {
@@ -7477,7 +7475,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 14.5,
-        "modelScore": 42.4,
+        "modelScore": 42.6,
         "signals": [
           "hotLately"
         ]
@@ -7494,7 +7492,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 13.9,
-        "modelScore": 41.5,
+        "modelScore": 41.7,
         "signals": [
           "hotLately"
         ]
@@ -7511,7 +7509,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 1.7,
-        "modelScore": 28.3,
+        "modelScore": 28.5,
         "signals": []
       },
       "663993": {
@@ -7526,7 +7524,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 23.2,
-        "modelScore": 51.2,
+        "modelScore": 51.4,
         "signals": []
       },
       "664023": {
@@ -7540,8 +7538,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
-        "probability": 21.8,
-        "modelScore": 44.9,
+        "probability": 21.6,
+        "modelScore": 45,
         "signals": [
           "hotLately"
         ]
@@ -7558,7 +7556,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 24,
-        "modelScore": 49.6,
+        "modelScore": 49.7,
         "signals": [
           "hotLately"
         ]
@@ -7589,8 +7587,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 6.6,
-        "modelScore": 36.9,
+        "probability": 6.7,
+        "modelScore": 37.1,
         "signals": []
       },
       "664770": {
@@ -7605,7 +7603,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 1.8,
-        "modelScore": 25.5,
+        "modelScore": 25.6,
         "signals": []
       },
       "665019": {
@@ -7619,8 +7617,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 22.8,
-        "modelScore": 49.9,
+        "probability": 23.3,
+        "modelScore": 50,
         "signals": []
       },
       "665052": {
@@ -7651,8 +7649,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 1.7,
-        "modelScore": 28.3,
+        "probability": 1.6,
+        "modelScore": 28.4,
         "signals": []
       },
       "665804": {
@@ -7666,8 +7664,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
-        "probability": 3.3,
-        "modelScore": 31.3,
+        "probability": 3.2,
+        "modelScore": 31.4,
         "signals": []
       },
       "665862": {
@@ -7682,7 +7680,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 9.9,
-        "modelScore": 37.5,
+        "modelScore": 37.7,
         "signals": []
       },
       "665923": {
@@ -7697,7 +7695,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 13.7,
-        "modelScore": 37.5,
+        "modelScore": 37.7,
         "signals": []
       },
       "665926": {
@@ -7712,7 +7710,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 2.6,
-        "modelScore": 27.6,
+        "modelScore": 27.8,
         "signals": []
       },
       "665953": {
@@ -7726,8 +7724,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
-        "probability": 20.1,
-        "modelScore": 41.6,
+        "probability": 20,
+        "modelScore": 41.8,
         "signals": [
           "due"
         ]
@@ -7744,7 +7742,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 3.9,
-        "modelScore": 26.9,
+        "modelScore": 27.1,
         "signals": []
       },
       "666152": {
@@ -7759,7 +7757,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 1.4,
-        "modelScore": 19.5,
+        "modelScore": 19.7,
         "signals": []
       },
       "666163": {
@@ -7774,7 +7772,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 1.4,
-        "modelScore": 15.9,
+        "modelScore": 16.1,
         "signals": []
       },
       "666176": {
@@ -7789,7 +7787,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 12.4,
-        "modelScore": 42.4,
+        "modelScore": 42.6,
         "signals": [
           "hotLately"
         ]
@@ -7821,7 +7819,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 1.5,
-        "modelScore": 25,
+        "modelScore": 25.2,
         "signals": []
       },
       "668227": {
@@ -7836,7 +7834,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 21.7,
-        "modelScore": 42.6,
+        "modelScore": 42.8,
         "signals": [
           "hotLately"
         ]
@@ -7853,7 +7851,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 24,
-        "modelScore": 46.4,
+        "modelScore": 46.6,
         "signals": []
       },
       "668804": {
@@ -7899,8 +7897,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 19.3,
-        "modelScore": 45.8,
+        "probability": 20.4,
+        "modelScore": 46,
         "signals": []
       },
       "668930": {
@@ -7915,7 +7913,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 19.6,
-        "modelScore": 38.3,
+        "modelScore": 38.5,
         "signals": [
           "due"
         ]
@@ -7962,7 +7960,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 8.5,
-        "modelScore": 32.5,
+        "modelScore": 32.7,
         "signals": []
       },
       "669016": {
@@ -7976,8 +7974,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 15.8,
-        "modelScore": 40.5,
+        "probability": 15.4,
+        "modelScore": 40.7,
         "signals": []
       },
       "669224": {
@@ -7991,8 +7989,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 3.5,
-        "modelScore": 31.9,
+        "probability": 3.2,
+        "modelScore": 32.1,
         "signals": []
       },
       "669242": {
@@ -8007,7 +8005,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 5,
-        "modelScore": 34.2,
+        "modelScore": 34.4,
         "signals": []
       },
       "669360": {
@@ -8037,7 +8035,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 2.7,
-        "modelScore": 30.4,
+        "modelScore": 30.6,
         "signals": []
       },
       "669394": {
@@ -8052,7 +8050,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 11.9,
-        "modelScore": 33.7,
+        "modelScore": 33.9,
         "signals": []
       },
       "669701": {
@@ -8061,13 +8059,13 @@
         "team": "Toronto Blue Jays",
         "opponent": "Boston Red Sox",
         "gamePk": 822776,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 28.4,
         "signals": []
       },
       "669707": {
@@ -8082,7 +8080,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 1.3,
-        "modelScore": 24.5,
+        "modelScore": 24.7,
         "signals": []
       },
       "669743": {
@@ -8097,7 +8095,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 1.4,
-        "modelScore": 22.4,
+        "modelScore": 22.6,
         "signals": []
       },
       "669911": {
@@ -8127,7 +8125,22 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 1.4,
-        "modelScore": 16.9,
+        "modelScore": 17.1,
+        "signals": []
+      },
+      "670224": {
+        "id": "670224",
+        "name": "Kameron Misner",
+        "team": "Philadelphia Phillies",
+        "opponent": "Minnesota Twins",
+        "gamePk": 823669,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
+        "opposingPitcherId": "671737",
+        "opposingPitcher": "Taj Bradley",
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "670770": {
@@ -8142,7 +8155,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 1.4,
-        "modelScore": 20.3,
+        "modelScore": 20.5,
         "signals": []
       },
       "671218": {
@@ -8156,8 +8169,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 7.8,
-        "modelScore": 39,
+        "probability": 8.7,
+        "modelScore": 39.1,
         "signals": []
       },
       "671277": {
@@ -8172,7 +8185,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 24,
-        "modelScore": 62.3,
+        "modelScore": 62.4,
         "signals": [
           "due",
           "hotLook"
@@ -8190,7 +8203,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 6.9,
-        "modelScore": 36,
+        "modelScore": 36.1,
         "signals": []
       },
       "672275": {
@@ -8205,7 +8218,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 1.9,
-        "modelScore": 29.6,
+        "modelScore": 29.8,
         "signals": []
       },
       "672284": {
@@ -8220,7 +8233,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 1.4,
-        "modelScore": 21.8,
+        "modelScore": 22,
         "signals": []
       },
       "672386": {
@@ -8250,7 +8263,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 13.1,
-        "modelScore": 40.1,
+        "modelScore": 40.2,
         "signals": [
           "due"
         ]
@@ -8267,7 +8280,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 2.7,
-        "modelScore": 25.8,
+        "modelScore": 26,
         "signals": []
       },
       "672960": {
@@ -8282,7 +8295,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 24,
-        "modelScore": 43.3,
+        "modelScore": 43.5,
         "signals": []
       },
       "673548": {
@@ -8297,7 +8310,7 @@
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
         "probability": 24,
-        "modelScore": 46.8,
+        "modelScore": 46.9,
         "signals": []
       },
       "676391": {
@@ -8312,7 +8325,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 4.2,
-        "modelScore": 30.6,
+        "modelScore": 29.4,
         "signals": []
       },
       "676439": {
@@ -8327,7 +8340,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 2.1,
-        "modelScore": 26,
+        "modelScore": 26.1,
         "signals": []
       },
       "676609": {
@@ -8342,7 +8355,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 7.8,
-        "modelScore": 38,
+        "modelScore": 38.2,
         "signals": [
           "hotLately"
         ]
@@ -8359,7 +8372,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 2.7,
-        "modelScore": 28.8,
+        "modelScore": 29,
         "signals": []
       },
       "677588": {
@@ -8389,7 +8402,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 19.1,
-        "modelScore": 41.1,
+        "modelScore": 41.3,
         "signals": [
           "hotLately"
         ]
@@ -8406,7 +8419,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 16.8,
-        "modelScore": 36.8,
+        "modelScore": 37,
         "signals": []
       },
       "677800": {
@@ -8421,7 +8434,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 24,
-        "modelScore": 47.6,
+        "modelScore": 47.9,
         "signals": []
       },
       "677870": {
@@ -8436,7 +8449,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 1.4,
-        "modelScore": 25,
+        "modelScore": 25.2,
         "signals": []
       },
       "678011": {
@@ -8465,7 +8478,7 @@
         "lineupSpot": 7,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 7.1,
+        "probability": 7,
         "modelScore": 33.8,
         "signals": []
       },
@@ -8481,7 +8494,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 8.1,
-        "modelScore": 34.8,
+        "modelScore": 35,
         "signals": [
           "due"
         ]
@@ -8498,7 +8511,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 24,
-        "modelScore": 47.9,
+        "modelScore": 48.1,
         "signals": []
       },
       "678391": {
@@ -8513,7 +8526,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 1.4,
-        "modelScore": 23.6,
+        "modelScore": 23.8,
         "signals": []
       },
       "678882": {
@@ -8527,8 +8540,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
-        "probability": 23.6,
-        "modelScore": 51.1,
+        "probability": 23.8,
+        "modelScore": 51.4,
         "signals": []
       },
       "679529": {
@@ -8543,7 +8556,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 19.4,
-        "modelScore": 43.3,
+        "modelScore": 43.5,
         "signals": []
       },
       "679822": {
@@ -8558,7 +8571,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 11.9,
-        "modelScore": 34.7,
+        "modelScore": 34.9,
         "signals": []
       },
       "680574": {
@@ -8573,7 +8586,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 6.2,
-        "modelScore": 29.6,
+        "modelScore": 29.8,
         "signals": []
       },
       "680664": {
@@ -8603,7 +8616,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 1.7,
-        "modelScore": 22.5,
+        "modelScore": 22.7,
         "signals": []
       },
       "680776": {
@@ -8618,7 +8631,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 7.1,
-        "modelScore": 34.5,
+        "modelScore": 34.8,
         "signals": []
       },
       "680777": {
@@ -8632,8 +8645,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 20,
-        "modelScore": 43.1,
+        "probability": 22.2,
+        "modelScore": 43.3,
         "signals": [
           "due"
         ]
@@ -8665,7 +8678,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 6.5,
-        "modelScore": 32,
+        "modelScore": 32.2,
         "signals": []
       },
       "681082": {
@@ -8679,8 +8692,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 7.6,
-        "modelScore": 39.9,
+        "probability": 8.1,
+        "modelScore": 40.1,
         "signals": []
       },
       "681624": {
@@ -8695,7 +8708,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 17.5,
-        "modelScore": 34.8,
+        "modelScore": 35,
         "signals": []
       },
       "681715": {
@@ -8740,7 +8753,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 17.2,
-        "modelScore": 43.7,
+        "modelScore": 43.9,
         "signals": []
       },
       "682663": {
@@ -8755,7 +8768,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 2.5,
-        "modelScore": 41.4,
+        "modelScore": 41.6,
         "signals": []
       },
       "682668": {
@@ -8785,7 +8798,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 24,
-        "modelScore": 45.4,
+        "modelScore": 45.5,
         "signals": [
           "hotLately"
         ]
@@ -8817,7 +8830,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 24,
-        "modelScore": 52.7,
+        "modelScore": 52.8,
         "signals": [
           "hotLook"
         ]
@@ -8864,7 +8877,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 15.8,
-        "modelScore": 36.6,
+        "modelScore": 36.8,
         "signals": []
       },
       "683734": {
@@ -8879,7 +8892,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 14,
-        "modelScore": 37.1,
+        "modelScore": 37.3,
         "signals": [
           "due"
         ]
@@ -8896,7 +8909,7 @@
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
         "probability": 9,
-        "modelScore": 38.3,
+        "modelScore": 38.4,
         "signals": []
       },
       "683953": {
@@ -8911,7 +8924,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 6.3,
-        "modelScore": 37.7,
+        "modelScore": 37.9,
         "signals": []
       },
       "685133": {
@@ -8926,7 +8939,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 2.8,
-        "modelScore": 25.6,
+        "modelScore": 25.8,
         "signals": []
       },
       "686527": {
@@ -8955,8 +8968,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
-        "probability": 5.1,
-        "modelScore": 34.5,
+        "probability": 5.5,
+        "modelScore": 35.1,
         "signals": []
       },
       "686668": {
@@ -8986,7 +8999,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 1.7,
-        "modelScore": 30.2,
+        "modelScore": 30.6,
         "signals": []
       },
       "686797": {
@@ -9000,8 +9013,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 16.3,
-        "modelScore": 40.5,
+        "probability": 15.3,
+        "modelScore": 40.7,
         "signals": []
       },
       "687093": {
@@ -9016,7 +9029,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 4.4,
-        "modelScore": 26.9,
+        "modelScore": 27.1,
         "signals": []
       },
       "687263": {
@@ -9031,7 +9044,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 14.6,
-        "modelScore": 36.1,
+        "modelScore": 36.3,
         "signals": []
       },
       "687394": {
@@ -9046,7 +9059,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 1.4,
-        "modelScore": 13.8,
+        "modelScore": 14,
         "signals": []
       },
       "687401": {
@@ -9061,7 +9074,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 2,
-        "modelScore": 22.9,
+        "modelScore": 23.1,
         "signals": []
       },
       "687462": {
@@ -9076,7 +9089,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 10.8,
-        "modelScore": 40.6,
+        "modelScore": 40.8,
         "signals": []
       },
       "687605": {
@@ -9090,8 +9103,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
-        "probability": 14.5,
-        "modelScore": 31,
+        "probability": 14.2,
+        "modelScore": 31.1,
         "signals": []
       },
       "688363": {
@@ -9106,7 +9119,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 1.9,
-        "modelScore": 31.1,
+        "modelScore": 31.3,
         "signals": []
       },
       "690984": {
@@ -9136,7 +9149,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 7.3,
-        "modelScore": 38.2,
+        "modelScore": 38.4,
         "signals": []
       },
       "691011": {
@@ -9150,8 +9163,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
-        "probability": 3.7,
-        "modelScore": 30.4,
+        "probability": 3.6,
+        "modelScore": 30.6,
         "signals": []
       },
       "691373": {
@@ -9166,7 +9179,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 1.6,
-        "modelScore": 25,
+        "modelScore": 25.2,
         "signals": []
       },
       "691594": {
@@ -9181,7 +9194,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 4.4,
-        "modelScore": 32.9,
+        "modelScore": 33.1,
         "signals": []
       },
       "691718": {
@@ -9196,7 +9209,7 @@
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
         "probability": 24,
-        "modelScore": 54.4,
+        "modelScore": 54.6,
         "signals": [
           "hotLook"
         ]
@@ -9212,8 +9225,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
-        "probability": 8.2,
-        "modelScore": 41.6,
+        "probability": 8.1,
+        "modelScore": 41.7,
         "signals": []
       },
       "691788": {
@@ -9243,7 +9256,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 1.6,
-        "modelScore": 28.5,
+        "modelScore": 28.7,
         "signals": []
       },
       "693307": {
@@ -9258,7 +9271,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 24,
-        "modelScore": 49.7,
+        "modelScore": 49.9,
         "signals": []
       },
       "694192": {
@@ -9273,7 +9286,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 21.9,
-        "modelScore": 44.3,
+        "modelScore": 44.5,
         "signals": [
           "hotLately"
         ]
@@ -9290,7 +9303,7 @@
         "opposingPitcherId": "672456",
         "opposingPitcher": "Keider Montero",
         "probability": 7.3,
-        "modelScore": 40.2,
+        "modelScore": 40.4,
         "signals": []
       },
       "694203": {
@@ -9305,7 +9318,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 3.1,
-        "modelScore": 29,
+        "modelScore": 29.2,
         "signals": []
       },
       "694208": {
@@ -9320,7 +9333,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 2.9,
-        "modelScore": 28.2,
+        "modelScore": 28.4,
         "signals": []
       },
       "694378": {
@@ -9350,7 +9363,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 2.5,
-        "modelScore": 26.2,
+        "modelScore": 26.3,
         "signals": []
       },
       "694497": {
@@ -9365,7 +9378,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 3.1,
-        "modelScore": 25.1,
+        "modelScore": 25.3,
         "signals": []
       },
       "694671": {
@@ -9380,7 +9393,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 22.8,
-        "modelScore": 45.4,
+        "modelScore": 45.6,
         "signals": [
           "sleeper"
         ]
@@ -9397,7 +9410,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 24,
-        "modelScore": 45.9,
+        "modelScore": 47.8,
         "signals": [
           "hotLately"
         ]
@@ -9414,7 +9427,7 @@
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 2.5,
-        "modelScore": 23,
+        "modelScore": 23.2,
         "signals": []
       },
       "695657": {
@@ -9429,7 +9442,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 23.3,
-        "modelScore": 48.1,
+        "modelScore": 48.3,
         "signals": []
       },
       "695670": {
@@ -9459,7 +9472,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 5.1,
-        "modelScore": 39.5,
+        "modelScore": 39.7,
         "signals": []
       },
       "695734": {
@@ -9474,7 +9487,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 10.9,
-        "modelScore": 42.1,
+        "modelScore": 42.3,
         "signals": []
       },
       "696285": {
@@ -9504,7 +9517,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 24,
-        "modelScore": 49,
+        "modelScore": 49.2,
         "signals": [
           "due"
         ]
@@ -9535,8 +9548,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "676917",
         "opposingPitcher": "Cade Cavalli",
-        "probability": 8.1,
-        "modelScore": 41.2,
+        "probability": 7.9,
+        "modelScore": 41.3,
         "signals": []
       },
       "700250": {
@@ -9551,7 +9564,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 24,
-        "modelScore": 56.4,
+        "modelScore": 56.6,
         "signals": [
           "hotLook"
         ]
@@ -9583,7 +9596,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 1.8,
-        "modelScore": 22.4,
+        "modelScore": 22.6,
         "signals": []
       },
       "701398": {
@@ -9598,7 +9611,7 @@
         "opposingPitcherId": "663436",
         "opposingPitcher": "Davis Martin",
         "probability": 24,
-        "modelScore": 46.2,
+        "modelScore": 46.3,
         "signals": [
           "hotLately"
         ]
@@ -9644,8 +9657,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 6.9,
-        "modelScore": 32.4,
+        "probability": 6.3,
+        "modelScore": 32.6,
         "signals": []
       },
       "702176": {
@@ -9674,8 +9687,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 1.4,
-        "modelScore": 23.1,
+        "probability": 1.3,
+        "modelScore": 23.3,
         "signals": []
       },
       "702284": {
@@ -9690,7 +9703,7 @@
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
         "probability": 7.8,
-        "modelScore": 32.8,
+        "modelScore": 33,
         "signals": []
       },
       "702332": {
@@ -9704,8 +9717,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
-        "probability": 7.7,
-        "modelScore": 34.8,
+        "probability": 9.4,
+        "modelScore": 36.1,
         "signals": []
       },
       "703520": {
@@ -9735,7 +9748,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 5,
-        "modelScore": 35.6,
+        "modelScore": 35.8,
         "signals": []
       },
       "800050": {
@@ -9765,7 +9778,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 1.4,
-        "modelScore": 20.6,
+        "modelScore": 20.8,
         "signals": []
       },
       "803011": {
@@ -9780,7 +9793,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 5.7,
-        "modelScore": 33.9,
+        "modelScore": 34.1,
         "signals": []
       },
       "804668": {
@@ -9795,7 +9808,7 @@
         "opposingPitcherId": "663969",
         "opposingPitcher": "Tyler Phillips",
         "probability": 21,
-        "modelScore": 42.2,
+        "modelScore": 42.3,
         "signals": [
           "hotLately"
         ]
@@ -9812,7 +9825,7 @@
         "opposingPitcherId": "677952",
         "opposingPitcher": "Braxton Ashcraft",
         "probability": 1.7,
-        "modelScore": 26.3,
+        "modelScore": 26.5,
         "signals": []
       },
       "805367": {
@@ -9827,7 +9840,7 @@
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
         "probability": 12.3,
-        "modelScore": 41.6,
+        "modelScore": 41.8,
         "signals": [
           "hotLately"
         ]
@@ -9844,7 +9857,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 14.4,
-        "modelScore": 39.9,
+        "modelScore": 40.1,
         "signals": []
       },
       "806068": {
@@ -9858,8 +9871,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 4.3,
-        "modelScore": 30,
+        "probability": 4.2,
+        "modelScore": 30.1,
         "signals": []
       },
       "806146": {
@@ -9874,7 +9887,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 12.2,
-        "modelScore": 49.8,
+        "modelScore": 50,
         "signals": []
       },
       "807712": {
@@ -9888,8 +9901,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 1.9,
-        "modelScore": 28.4,
+        "probability": 1.8,
+        "modelScore": 28.6,
         "signals": []
       },
       "807727": {
@@ -9898,13 +9911,13 @@
         "team": "Toronto Blue Jays",
         "opponent": "Boston Red Sox",
         "gamePk": 822776,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 5.6,
-        "modelScore": 39.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "807799": {
@@ -9919,7 +9932,7 @@
         "opposingPitcherId": "453286",
         "opposingPitcher": "Max Scherzer",
         "probability": 3.5,
-        "modelScore": 34.1,
+        "modelScore": 34.4,
         "signals": []
       },
       "808959": {
@@ -9933,8 +9946,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "671096",
         "opposingPitcher": "Andrew Abbott",
-        "probability": 22.8,
-        "modelScore": 57.3,
+        "probability": 24,
+        "modelScore": 57.5,
         "signals": [
           "hotLately",
           "hotLook"
@@ -9956,7 +9969,7 @@
         "team": "Chicago Cubs",
         "opponent": "Washington Nationals",
         "gamePk": 822696,
-        "vulnerability": 36
+        "vulnerability": 41
       },
       "594798": {
         "id": "594798",
@@ -10044,7 +10057,7 @@
         "team": "Washington Nationals",
         "opponent": "Chicago Cubs",
         "gamePk": 822696,
-        "vulnerability": 34
+        "vulnerability": 31
       },
       "677952": {
         "id": "677952",
@@ -10076,7 +10089,7 @@
         "team": "Boston Red Sox",
         "opponent": "Toronto Blue Jays",
         "gamePk": 822776,
-        "vulnerability": 21
+        "vulnerability": 20
       },
       "808963": {
         "id": "808963",
