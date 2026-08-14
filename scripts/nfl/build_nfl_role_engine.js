@@ -63,8 +63,10 @@ function main() {
   const depth = read("nfl_depth_charts.json");
   const injuries = read("nfl_injuries.json");
   const usage = read("nfl_usage_baselines.json");
+  const preseason = read("nfl_preseason_usage.json");
   const health = read("nfl_data_health.json");
   const usageByPlayer = new Map(usage.profiles.map(profile => [profile.playerId, profile]));
+  const preseasonByPlayer = new Map(preseason.players.map(profile => [profile.playerId, profile]));
   const injuryByPlayer = new Map(injuries.injuries.map(injury => [injury.playerId, injury]));
   const depthByPlayer = new Map();
   for (const entry of depth.entries.filter(entry => entry.canonicalPlayerMatch)) {
@@ -76,6 +78,7 @@ function main() {
     const depthEntry = depthByPlayer.get(player.playerId) || null;
     const history = usageByPlayer.get(player.playerId) || null;
     const injury = injuryByPlayer.get(player.playerId) || null;
+    const preseasonUsage = preseasonByPlayer.get(player.playerId) || null;
     const readiness = injuryReadiness(injury);
     const rank = Number(depthEntry?.rank || 0);
     const depthScore = rank ? ({ 1: 100, 2: 65, 3: 35, 4: 15 }[rank] ?? 5) : 0;
@@ -88,6 +91,11 @@ function main() {
     const recentRatio = baselineOpportunity > 0 ? recentOpportunity / baselineOpportunity : null;
     const continuityKnown = Boolean(history?.mostRecentHistoricalTeam);
     const confidenceResult = confidence({ depth: depthEntry, history, continuityKnown });
+    if (preseasonUsage) {
+      confidenceResult.components.preseasonUsage = Math.min(10, preseasonUsage.gameCount * 5);
+      confidenceResult.score = Math.min(confidenceResult.ceiling, clamp(confidenceResult.score + confidenceResult.components.preseasonUsage));
+      confidenceResult.missing = confidenceResult.missing.filter(item => item !== "preseasonUsage");
+    }
 
     return {
       playerId: player.playerId,
@@ -112,6 +120,13 @@ function main() {
         weightedPerGame: history.weightedPerGame,
         recentSixGamesPerGame: history.recentSixGamesPerGame
       } : null,
+      preseasonUsage: preseasonUsage ? {
+        gameCount: preseasonUsage.gameCount,
+        totals: preseasonUsage.totals,
+        latestGame: preseasonUsage.latestGame,
+        previousGame: preseasonUsage.previousGame,
+        roleSignal: preseasonUsage.roleSignal
+      } : null,
       confidence: confidenceResult,
       modelEligibility: readiness.status !== "unavailable" && Boolean(depthEntry) && Boolean(history),
       projectionStatus: "disabled_pending_preseason_usage_and_market_lines"
@@ -126,7 +141,7 @@ function main() {
     methodology: {
       roleScore: "Depth-chart score blended with position-normalized historical opportunity, then availability-adjusted.",
       confidenceCeiling: 90,
-      confidenceCeilingReason: "No verified 2026 preseason snap/route signal is included yet.",
+      confidenceCeilingReason: "Verified preseason box-score opportunity is included, but snap and route data remain unavailable.",
       injuryCoverage: "Partial preseason roster coverage; absence of an injury is not a confirmed healthy designation."
     },
     playerCount: roles.length,
@@ -139,7 +154,7 @@ function main() {
 
   health.generatedAt = generatedAt;
   health.sources.roleEngine = { status: "available", provider: "The Slip Lab", roleCount: roles.length, type: "role_estimation_only" };
-  health.sources.preseasonUsage = { status: "pending", provider: null, reason: "Verified 2026 snap and participation samples are not yet integrated." };
+  health.sources.preseasonUsage = { status: preseason.processedGameCount ? "available" : "waiting", provider: "ESPN completed-game box scores", finalGameGate: true, processedGames: preseason.processedGameCount, playerProfiles: preseason.playerCount };
   health.status = "role_engine_ready_projections_gated";
   write("nfl_data_health.json", health);
 }

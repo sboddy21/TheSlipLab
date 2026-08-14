@@ -233,6 +233,7 @@ const pool = readJson("nfl_player_pool.json");
 const depth = readJson("nfl_depth_charts.json");
 const injuries = readJson("nfl_injuries.json");
 const usage = readJson("nfl_usage_baselines.json");
+const preseason = readJson("nfl_preseason_usage.json");
 const roles = readJson("nfl_role_engine.json");
 const health = readJson("nfl_data_health.json");
 writeJson("nfl_public_status.json", {
@@ -247,7 +248,16 @@ writeJson("nfl_public_status.json", {
     depthEntries: depth.entryCount,
     injuryReports: injuries.injuryCount,
     usageProfiles: usage.profileCount,
+    completedPreseasonGames: preseason.processedGameCount,
+    preseasonUsageProfiles: preseason.playerCount,
     roleEligible: roles.modelEligibleCount
+  },
+  preseasonUsage: {
+    status: preseason.status,
+    finalGameGate: preseason.finalGameGate,
+    completedGames: preseason.processedGameCount,
+    playerProfiles: preseason.playerCount,
+    unavailableFields: preseason.coverage.unavailable
   },
   weekOneGames: schedule.games.filter(game => game.week === 1).map(game => ({
     gameId: game.gameId,

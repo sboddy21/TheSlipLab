@@ -1,0 +1,40 @@
+name: The Slip Lab NFL Refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Three lean daily passes: after late games, morning reconciliation, and pregame roster refresh.
+    # The final-game gate prevents live games from changing usage conclusions.
+    - cron: "17 5,14,22 * 1-2,8-12 *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-data-writers
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Refresh NFL foundation and final-game usage
+        run: node scripts/run_nfl_refresh.js
+      - name: Commit refreshed NFL data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add website/data/nfl_*.json
+          git commit -m "Refresh NFL data" || echo "No changes to commit"
+          git pull origin "$GITHUB_REF_NAME" --rebase
+          git push origin "HEAD:$GITHUB_REF_NAME"

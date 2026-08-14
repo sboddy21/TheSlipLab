@@ -154,14 +154,28 @@ async function main() {
     .sort((a, b) => Date.parse(a.kickoffUTC) - Date.parse(b.kickoffUTC));
   if (games.length < 272) throw new Error(`Expected at least 272 regular-season games, received ${games.length}`);
 
+  const cachedPoolPath = path.join(DATA_DIR, "nfl_player_pool.json");
+  const cachedPool = fs.existsSync(cachedPoolPath) ? JSON.parse(fs.readFileSync(cachedPoolPath, "utf8")) : { players: [] };
+  const cachedByTeam = new Map(teams.map(team => [team.teamId, (cachedPool.players || []).filter(player => player.teamId === team.teamId)]));
+  const rosterWarnings = [];
   const rosterResults = [];
   for (let index = 0; index < teams.length; index += 4) {
     const batch = teams.slice(index, index + 4);
     const results = await Promise.all(batch.map(async team => {
-      const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${team.teamId}/roster`;
-      const raw = await fetchJson(url);
-      const athletes = (raw.athletes || []).flatMap(group => group.items || []);
-      return athletes.map(player => normalizePlayer(player, team));
+      const identifiers = [team.teamId, team.abbreviation.toLowerCase(), team.slug].filter(Boolean);
+      let lastError;
+      for (const identifier of [...new Set(identifiers)]) {
+        const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/${identifier}/roster`;
+        try {
+          const raw = await fetchJson(url);
+          const athletes = (raw.athletes || []).flatMap(group => group.items || []);
+          if (athletes.length) return athletes.map(player => normalizePlayer(player, team));
+        } catch (error) { lastError = error; }
+      }
+      const cached = cachedByTeam.get(team.teamId) || [];
+      if (!cached.length) throw lastError || new Error(`No roster available for ${team.abbreviation}`);
+      rosterWarnings.push({ team: team.abbreviation, status: "cached_fallback", playerCount: cached.length, reason: lastError?.message || "empty live roster" });
+      return cached;
     }));
     rosterResults.push(...results);
   }
@@ -193,7 +207,7 @@ async function main() {
   writeJson("nfl_player_pool.json", {
     ...common, source: "ESPN NFL roster feeds", eligibility: ["QB", "RB", "WR", "TE"],
     playerCount: players.length, teamCount: new Set(players.map(player => player.teamId)).size,
-    availability: players.length ? "rosters_available_roles_pending" : "unavailable", players
+    availability: players.length ? "rosters_available_roles_pending" : "unavailable", warnings: rosterWarnings, players
   });
   writeJson("nfl_data_health.json", {
     ...common, status: "foundation_ready", startedAt,
@@ -202,7 +216,7 @@ async function main() {
     sources: {
       schedule: { status: "available", provider: "ESPN" },
       teams: { status: "available", provider: "ESPN" },
-      rosters: { status: "available", provider: "ESPN" },
+      rosters: { status: rosterWarnings.length ? "available_with_cached_team_fallback" : "available", provider: "ESPN", warnings: rosterWarnings },
       depthCharts: { status: "pending", provider: null },
       injuries: { status: "partial", provider: "ESPN roster feed" },
       historicalPlayByPlay: { status: "pending", provider: null },
