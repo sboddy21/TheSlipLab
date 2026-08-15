@@ -22,7 +22,9 @@ const elements = {
   emailDisplay: document.getElementById("accountEmailDisplay"),
   signOut: document.getElementById("signOutButton"),
   membership: document.querySelector(".account-membership"),
+  membershipHeading: document.getElementById("accountMembershipHeading"),
   membershipStatus: document.getElementById("accountMembershipStatus"),
+  conversionPanel: document.getElementById("accountConversionPanel"),
   subscribeOptions: document.getElementById("accountSubscribeOptions"),
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
@@ -46,6 +48,7 @@ const elements = {
 let catalog = [];
 let favorites = [];
 let recoveryMode = false;
+let membershipViewTracked = false;
 let detailData = {
   playerCards: [],
   decisionPlayers: [],
@@ -68,6 +71,35 @@ function escapeHtml(value) {
 function setMessage(message, isError = false) {
   elements.message.textContent = message;
   elements.message.classList.toggle("error", isError);
+}
+
+function trackConversion(name, properties = {}) {
+  const safeProperties = Object.fromEntries(Object.entries(properties)
+    .filter(([, value]) => ["string", "number", "boolean"].includes(typeof value))
+    .map(([key, value]) => [key, String(value).slice(0, 80)]));
+  if (typeof window.va === "function") window.va("event", name, safeProperties);
+  window.dispatchEvent(new CustomEvent("tsl:conversion", { detail: { name, properties: safeProperties } }));
+}
+
+function selectedPlan() {
+  const plan = new URLSearchParams(window.location.search).get("plan");
+  return ["weekly", "monthly", "annual"].includes(plan) ? plan : "monthly";
+}
+
+function highlightSelectedPlan() {
+  const plan = selectedPlan();
+  document.querySelectorAll("[data-account-plan]").forEach(card => {
+    card.classList.toggle("highlighted", card.dataset.accountPlan === plan);
+  });
+}
+
+function trackCompletedCheckout(status) {
+  const checkout = new URLSearchParams(window.location.search).get("checkout");
+  if (checkout !== "success" || !status?.active) return;
+  const eventKey = `tsl-checkout-completed:${status.priceId || "active"}`;
+  if (window.sessionStorage.getItem(eventKey)) return;
+  trackConversion("checkout_completed", { plan: status.plan || "active", source: "stripe_return" });
+  window.sessionStorage.setItem(eventKey, "1");
 }
 
 function redirectTarget() {
@@ -675,17 +707,21 @@ async function refreshFavorites() {
 async function renderMembership() {
   if (!elements.membership || !elements.membershipStatus || !elements.subscribeOptions) return;
   elements.membership.classList.remove("active", "pending");
+  if (elements.conversionPanel) elements.conversionPanel.hidden = true;
   elements.subscribeOptions.hidden = true;
   elements.membershipStatus.textContent = "Checking your membership status…";
   try {
     const status = await window.TSLAccount.subscriptionStatus();
     if (!status.required) {
       elements.membership.classList.add("active");
-      elements.membershipStatus.textContent = "Your account is active. Paid enforcement is wired in but not flipped on yet.";
+      if (elements.membershipHeading) elements.membershipHeading.textContent = "Your Slip Lab membership is active.";
+      elements.membershipStatus.textContent = "Your account is active. All current Slip Lab boards and tools are unlocked.";
       return;
     }
     if (status.active) {
       elements.membership.classList.add("active");
+      if (elements.membershipHeading) elements.membershipHeading.textContent = "Your Slip Lab membership is active.";
+      trackCompletedCheckout(status);
       const periodEnd = status.currentPeriodEnd ? new Date(status.currentPeriodEnd).toLocaleDateString() : "";
       elements.membershipStatus.textContent = status.cancelAtPeriodEnd && periodEnd
         ? `Active through ${periodEnd}. Your subscription is set to cancel after this period.`
@@ -693,8 +729,15 @@ async function renderMembership() {
       return;
     }
     elements.membership.classList.add("pending");
-    elements.membershipStatus.textContent = "No active subscription yet. Choose a membership plan to unlock the premium MLB boards and tools.";
+    if (elements.membershipHeading) elements.membershipHeading.textContent = "Turn your account into a daily edge desk.";
+    elements.membershipStatus.textContent = "Your free account is ready. Choose a plan to unlock the ranked boards, pitcher vulnerability, AI analysis, saved-player alerts, and every active sport.";
+    if (elements.conversionPanel) elements.conversionPanel.hidden = false;
     elements.subscribeOptions.hidden = false;
+    highlightSelectedPlan();
+    if (!membershipViewTracked) {
+      trackConversion("pricing_viewed", { source: "account", selected_plan: selectedPlan() });
+      membershipViewTracked = true;
+    }
   } catch (error) {
     elements.membership.classList.add("pending");
     elements.membershipStatus.textContent = error.message || "Membership status is temporarily unavailable.";
@@ -753,6 +796,7 @@ elements.signInForm.addEventListener("submit", async event => {
   setMessage("Signing in securely…");
   try {
     await window.TSLAccount.signInWithPassword(email, password);
+    trackConversion("account_signed_in", { source: "account" });
     elements.signInForm.reset();
   } catch (error) {
     setMessage(authErrorMessage(error), true);
@@ -770,6 +814,7 @@ elements.signUpForm.addEventListener("submit", async event => {
   setMessage("Creating your private Slip Lab account…");
   try {
     const data = await window.TSLAccount.signUpWithPassword(email, password);
+    trackConversion("account_created", { confirmation_required: !data.session });
     elements.signUpForm.reset();
     if (data.session) {
       setMessage("Account created. You are signed in.");
@@ -832,10 +877,12 @@ elements.subscribeOptions?.addEventListener("click", async event => {
   if (!button) return;
   const plan = button.dataset.accountCheckout || "monthly";
   const originalLabel = button.textContent;
+  trackConversion("checkout_clicked", { plan, source: "account" });
   button.disabled = true;
   button.textContent = "Opening checkout…";
   try {
     const checkout = await window.TSLAccount.createCheckoutSession(plan);
+    trackConversion("checkout_opened", { plan, source: "account" });
     window.location.href = checkout.url;
   } catch (error) {
     setMessage(error.message || "Checkout is temporarily unavailable.", true);
