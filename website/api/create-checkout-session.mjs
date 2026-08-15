@@ -103,6 +103,9 @@ async function createStripeCheckoutSession({ user, request, returnTo, plan }) {
     "metadata[plan]": plan,
     "subscription_data[metadata][user_id]": user.id,
     "subscription_data[metadata][plan]": plan,
+    // Lets Stripe show its native "Add promotion code" control. The code is
+    // validated and applied by Stripe, so discount rules never live in the browser.
+    allow_promotion_codes: "true",
     expires_at: String(Math.floor(Date.now() / 1000) + 60 * 60),
     "after_expiration[recovery][enabled]": "true"
   });
