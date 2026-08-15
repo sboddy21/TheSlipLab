@@ -132,7 +132,7 @@ function signInPrompt() {
 function authErrorMessage(error) {
   const message = String(error?.message || "Account request failed");
   if (/invalid login credentials/i.test(message)) return "That email and password combination was not recognized.";
-  if (/email not confirmed/i.test(message)) return "Confirm your email address before signing in.";
+  if (/email not confirmed/i.test(message)) return "Confirm your email address before signing in. Check your spam or junk folder if you do not see the verification email.";
   if (/user already registered/i.test(message)) return "An account already exists for that email. Sign in or reset the password.";
   if (/rate limit/i.test(message)) return "Too many authentication emails were requested. Please wait before trying again.";
   return message;
@@ -773,7 +773,7 @@ elements.signInTab.addEventListener("click", () => {
 
 elements.signUpTab.addEventListener("click", () => {
   showAuthView("signup");
-  setMessage("Create a Slip Lab account. You may be asked to confirm your email before signing in.");
+  setMessage("Create a Slip Lab account. We’ll email a verification link—check your spam or junk folder if it does not appear.");
 });
 
 elements.showReset.addEventListener("click", () => {
@@ -821,7 +821,7 @@ elements.signUpForm.addEventListener("submit", async event => {
     } else {
       showAuthView("signin");
       elements.signInEmail.value = email;
-      setMessage(`Account created. Check ${email} to confirm the address, then sign in.`);
+      setMessage(`Account created. Check ${email} for the verification link, including your spam or junk folder, then sign in.`);
     }
   } catch (error) {
     setMessage(authErrorMessage(error), true);
@@ -838,7 +838,7 @@ elements.resetRequestForm.addEventListener("submit", async event => {
   setMessage("Sending a secure password recovery link…");
   try {
     await window.TSLAccount.requestPasswordReset(email);
-    setMessage(`If an account exists for ${email}, a recovery link has been sent.`);
+    setMessage(`If an account exists for ${email}, a recovery link has been sent. Check your spam or junk folder if it does not arrive.`);
   } catch (error) {
     setMessage(authErrorMessage(error), true);
   } finally {
