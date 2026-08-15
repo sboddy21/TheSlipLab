@@ -42,6 +42,10 @@ Create three recurring subscription prices in Stripe:
 - Monthly → `STRIPE_PRICE_ID_MONTHLY`
 - Annual → `STRIPE_PRICE_ID_ANNUAL`
 
+### Promotion codes
+
+Checkout supports Stripe promotion codes. Create a coupon and promotion code in the Stripe Dashboard, then choose which products or prices it can apply to. Eligible customers will see Stripe's **Add promotion code** link during checkout.
+
 Add a webhook endpoint:
 
 ```text
