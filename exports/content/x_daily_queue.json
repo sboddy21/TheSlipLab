@@ -1,16 +1,17 @@
 {
-  "updatedAt": "2026-08-15T05:52:39.176Z",
+  "updatedAt": "2026-08-15T07:07:31.042Z",
   "date": "2026-08-15",
-  "slot": "overnight",
+  "slot": "closed",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": null,
+  "emptyReason": "closed_window",
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "closed",
+    "selected": "closed",
     "available": [
       "morning",
+      "midday",
       "afternoon",
       "pregame",
       "evening",
@@ -24,70 +25,17 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-15T05:52:39.176Z",
+    "checkedAt": "2026-08-15T07:07:31.042Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-15T05:52:38.788Z",
+        "timestamp": "2026-08-15T07:07:30.632Z",
         "ageSeconds": 0
-      },
-      {
-        "file": "mlb_results_previous.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-08-15T05:52:37.862Z",
-        "ageSeconds": 1,
-        "scheduledGames": 14,
-        "totalScheduledGames": 14,
-        "finalGames": 14
-      },
-      {
-        "file": "hr_ai_history.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-08-15T05:50:34.663Z",
-        "players": 552,
-        "mode": "historical pregame archive"
-      },
-      {
-        "file": "hr_calibration_report.json",
-        "timestampField": "generatedAt",
-        "timestamp": "2026-08-15T05:52:37.907Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-14",
-        "archivedPlayers": 368,
-        "mode": "verified daily model report"
       }
     ]
   },
-  "count": 1,
-  "posts": [
-    {
-      "id": "2026-08-15_OVERNIGHT_VERIFIED_DAILY_RECAP",
-      "date": "2026-08-15",
-      "type": "verified_daily_recap",
-      "slot": "overnight",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-15T05:52:39.176Z",
-      "text": "The verified MLB model report for 2026-08-14 is in.\n\n32 home runs landed against 27.7 expected (+4.3).\nTop 10: 2 hits from 12 archived players.\n\n• Yordan Alvarez: pregame rank #1 | 24.0% model probability | 368 ft\n• Munetaka Murakami: pregame rank #4 | 24.0% model probability | 392 ft\n• Miguel Vargas: pregame rank #19 | 24.0% model probability | 392 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
-      "players": [
-        "Yordan Alvarez",
-        "Munetaka Murakami",
-        "Miguel Vargas"
-      ],
-      "graphic": "exports/content/graphics/2026-08-15_VERIFIED_MODEL_REPORT.png",
-      "graphicType": "verified_model_report",
-      "reportDate": "2026-08-14",
-      "resultsDate": "2026-08-14",
-      "verifiedPregame": true,
-      "verifiedResults": true,
-      "eventPost": false,
-      "event": null,
-      "ai": null,
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-15T05:52:38.788Z"
-    }
-  ]
+  "count": 0,
+  "posts": []
 }
