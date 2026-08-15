@@ -79,7 +79,11 @@ async function signInWithPassword(email, password) {
 
 async function signUpWithPassword(email, password) {
   const client = await getClient();
-  const emailRedirectTo = `${window.location.origin}/account.html`;
+  const requestedPlan = new URLSearchParams(window.location.search).get("plan");
+  const planQuery = ["weekly", "monthly", "annual"].includes(requestedPlan)
+    ? `?plan=${encodeURIComponent(requestedPlan)}`
+    : "";
+  const emailRedirectTo = `${window.location.origin}/account.html${planQuery}`;
   const { data, error } = await client.auth.signUp({
     email,
     password,
