@@ -67,6 +67,7 @@ function main() {
   const health = read("nfl_data_health.json");
   const usageByPlayer = new Map(usage.profiles.map(profile => [profile.playerId, profile]));
   const preseasonByPlayer = new Map(preseason.players.map(profile => [profile.playerId, profile]));
+  const teamsWithFinalGames = new Set(preseason.teamsWithFinalGames || []);
   const injuryByPlayer = new Map(injuries.injuries.map(injury => [injury.playerId, injury]));
   const depthByPlayer = new Map();
   for (const entry of depth.entries.filter(entry => entry.canonicalPlayerMatch)) {
@@ -96,6 +97,8 @@ function main() {
       confidenceResult.score = Math.min(confidenceResult.ceiling, clamp(confidenceResult.score + confidenceResult.components.preseasonUsage));
       confidenceResult.missing = confidenceResult.missing.filter(item => item !== "preseasonUsage");
     }
+    const participationStatus = preseasonUsage ? "box_score_opportunity_recorded" : teamsWithFinalGames.has(player.team) ? "no_box_score_opportunity" : "team_without_final_game";
+    const signalPublication = !preseasonUsage ? "not_available" : preseasonUsage.signalEligibility !== "eligible_for_role_review" ? preseasonUsage.signalEligibility : rank > 1 ? "context_only_backup_or_depth_role" : "eligible_starter_context";
 
     return {
       playerId: player.playerId,
@@ -125,8 +128,13 @@ function main() {
         totals: preseasonUsage.totals,
         latestGame: preseasonUsage.latestGame,
         previousGame: preseasonUsage.previousGame,
-        roleSignal: preseasonUsage.roleSignal
+        roleSignal: preseasonUsage.roleSignal,
+        signalPublication,
+        ownershipStatus: preseasonUsage.ownershipStatus,
+        teamsAtGame: preseasonUsage.teamsAtGame,
+        startingUnitStatus: preseasonUsage.startingUnitStatus
       } : null,
+      preseasonParticipationStatus: participationStatus,
       confidence: confidenceResult,
       modelEligibility: readiness.status !== "unavailable" && Boolean(depthEntry) && Boolean(history),
       projectionStatus: "disabled_pending_preseason_usage_and_market_lines"
@@ -149,6 +157,8 @@ function main() {
     playersWithHistory: roles.filter(role => role.historicalOpportunity).length,
     modelEligibleCount: roles.filter(role => role.modelEligibility).length,
     unavailableCount: roles.filter(role => role.readiness.status === "unavailable").length,
+    preseasonParticipationCount: roles.filter(role => role.preseasonUsage).length,
+    noBoxScoreOpportunityCount: roles.filter(role => role.preseasonParticipationStatus === "no_box_score_opportunity").length,
     roles
   });
 

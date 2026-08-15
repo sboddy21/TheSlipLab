@@ -379,6 +379,18 @@
     .health-row{padding:14px;background:#fffdf7;display:flex;justify-content:space-between;gap:10px;align-items:center}
     .health-row strong{font-size:11px;text-transform:uppercase;color:#12633d}
     .health-row strong.pending{color:#996315}
+    .role-controls{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+    .role-controls button{padding:9px 12px;border:1px solid #1a3045;background:#fffdf7;color:#071d36;font:900 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+    .role-controls button.active{background:#071d36;color:#fffdf7}
+    .role-table-wrap{overflow:auto;border:1px solid #1a3045;background:#fffdf7}
+    .role-table{width:100%;border-collapse:collapse;min-width:920px}
+    .role-table th,.role-table td{padding:12px 14px;border-bottom:1px solid #d7d2c5;text-align:left;font-size:12px}
+    .role-table th{background:#071d36;color:#fffdf7;font-size:9px;letter-spacing:.12em;text-transform:uppercase;position:sticky;top:0}
+    .role-table td strong{display:block;font-family:Georgia,"Times New Roman",serif;font-size:16px}
+    .role-table td small{color:#607285}
+    .signal{display:inline-block;padding:5px 7px;border:1px solid #1a3045;font-weight:950;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+    .signal.rising{background:#dff3e6;color:#12633d}.signal.falling{background:#f7e2dd;color:#9d321e}.signal.stable{background:#eaf2ff;color:#0757d6}.signal.initial_sample,.signal.no_box_score_opportunity{color:#735a19;background:#f8efcf}
+    .role-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.role-summary span{padding:8px 10px;background:#eaf2ff;border:1px solid #1a3045;font-size:10px;font-weight:900;text-transform:uppercase}
     @media(max-width:1150px){
       .hero{grid-template-columns:1fr}
       .build-grid,.contract-grid,.slate-grid,.health-board{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -446,9 +458,19 @@
       <div class="health-board" id="healthBoard"></div>
     </section>
 
+    <section aria-labelledby="roleBoardTitle">
+      <div class="section-head">
+        <div><span class="section-kicker">03 / Private review</span><h2 class="section-title" id="roleBoardTitle">Preseason role board.</h2></div>
+        <p>Final-game box-score opportunity only. Two samples are required for movement review; rest, first-team snaps, and routes are never inferred.</p>
+      </div>
+      <div class="role-summary" id="roleSummary"></div>
+      <div class="role-controls" id="roleFilters"></div>
+      <div class="role-table-wrap"><table class="role-table"><thead><tr><th>Player</th><th>Role</th><th>Games</th><th>Opportunity</th><th>Usage</th><th>Signal</th><th>Review status</th></tr></thead><tbody id="roleRows"><tr><td colspan="7">Loading private role board.</td></tr></tbody></table></div>
+    </section>
+
     <section aria-labelledby="marketTitle">
       <div class="section-head">
-        <div><span class="section-kicker">03 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
+        <div><span class="section-kicker">04 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
         <p>These are the first markets worth supporting because they connect cleanly to usage, role, game environment, and sportsbook lines.</p>
       </div>
       <div class="market-grid" id="marketGrid"></div>
@@ -456,7 +478,7 @@
 
     <section aria-labelledby="contractTitle">
       <div class="section-head">
-        <div><span class="section-kicker">04 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
+        <div><span class="section-kicker">05 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
         <p>The first JSON files are placeholders by design. They tell every future page and script where the NFL truth should live.</p>
       </div>
       <div class="contract-grid" id="contractGrid"></div>
@@ -464,7 +486,7 @@
 
     <section aria-labelledby="rulesTitle">
       <div class="section-head">
-        <div><span class="section-kicker">05 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
+        <div><span class="section-kicker">06 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
         <p>Football is role-driven. The first version should handle unknowns cleanly instead of pretending camp noise is a finished model.</p>
       </div>
       <div class="rules-grid">
@@ -565,11 +587,41 @@
       }).join("");
     }
 
+    function usageLabel(row){
+      if(row.position === "QB") return `${row.passAttempts} pass att`;
+      return `${row.carries} car · ${row.targets} tgt`;
+    }
+
+    function renderRoleRows(board, filter = "all"){
+      const rows = (board.rows || []).filter(row => filter === "all" || (filter === "review" ? row.signalPublication === "eligible_starter_context" : row.roleSignal === filter));
+      document.getElementById("roleRows").innerHTML = rows.length ? rows.slice(0, 150).map(row => `<tr>
+        <td><strong>${escapeHtml(row.playerName)}</strong><small>${escapeHtml(row.team)} · ${escapeHtml(row.position)}</small></td>
+        <td>${escapeHtml(row.roleLabel)}<small>Depth ${escapeHtml(row.depthRank || "—")}</small></td>
+        <td>${escapeHtml(row.games)}</td><td>${escapeHtml(row.opportunities)}</td><td>${escapeHtml(usageLabel(row))}</td>
+        <td><span class="signal ${escapeHtml(row.roleSignal)}">${escapeHtml(row.roleSignal.replaceAll("_", " "))}</span></td>
+        <td>${escapeHtml(row.signalPublication.replaceAll("_", " "))}</td>
+      </tr>`).join("") : `<tr><td colspan="7">No players match this review filter.</td></tr>`;
+    }
+
+    function renderRoleBoard(board){
+      const counts = board.counts || {};
+      document.getElementById("roleSummary").innerHTML = `<span>${escapeHtml(counts.withUsage || 0)} with usage</span><span>${escapeHtml(counts.reviewEligible || 0)} review eligible</span><span>${escapeHtml(counts.noBoxScoreOpportunity || 0)} without box-score opportunity</span><span>Projections disabled</span>`;
+      const filters = [["all","All"],["review","Review eligible"],["rising","Rising"],["stable","Stable"],["falling","Falling"],["initial_sample","Initial sample"],["no_box_score_opportunity","No opportunity"]];
+      document.getElementById("roleFilters").innerHTML = filters.map(([value,label], index) => `<button type="button" data-role-filter="${value}" class="${index === 0 ? "active" : ""}">${label}</button>`).join("");
+      document.getElementById("roleFilters").addEventListener("click", event => {
+        const button = event.target.closest("button[data-role-filter]"); if(!button) return;
+        document.querySelectorAll("[data-role-filter]").forEach(item => item.classList.toggle("active", item === button));
+        renderRoleRows(board, button.dataset.roleFilter);
+      });
+      renderRoleRows(board);
+    }
+
     async function init(){
-      const [foundation, markets, publicStatus] = await Promise.all([
+      const [foundation, markets, publicStatus, roleBoard] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
         loadJson("./data/nfl_markets.json", fallbackMarkets),
-        loadJson("./data/nfl_public_status.json", fallbackStatus)
+        loadJson("./data/nfl_public_status.json", fallbackStatus),
+        loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] })
       ]);
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
@@ -597,6 +649,7 @@
       const weekOne = publicStatus.weekOneGames || [];
       document.getElementById("weekOneGrid").innerHTML = weekOne.length ? weekOne.map(renderGame).join("") : `<article class="game-card"><p>Week 1 schedule data is unavailable.</p></article>`;
       document.getElementById("healthBoard").innerHTML = renderHealth(publicStatus.sources);
+      renderRoleBoard(roleBoard);
     }
 
     init();

@@ -88,8 +88,11 @@ function summarizePlayers(gameRows, pool) {
     const previous = sorted.at(-2) || null;
     const latestOpportunities = opportunities(latest);
     const previousOpportunities = previous ? opportunities(previous) : null;
+    const teamsAtGame = [...new Set(sorted.map(game => game.team).filter(Boolean))];
+    const currentTeam = current?.team || latest.team;
+    const ownershipStatus = teamsAtGame.every(team => team === currentTeam) ? "current_team_match" : "team_changed_or_stale_game_team";
     return {
-      playerId, playerName: current?.fullName || latest.playerName, team: current?.team || latest.team,
+      playerId, playerName: current?.fullName || latest.playerName, team: currentTeam, teamsAtGame, ownershipStatus,
       position: current?.position || "", gameCount: sorted.length,
       totals: {
         passAttempts: totals("passAttempts"), carries: totals("carries"), targets: totals("targets"),
@@ -99,6 +102,8 @@ function summarizePlayers(gameRows, pool) {
       latestGame: { gameId: latest.gameId, week: latest.week, opportunities: latestOpportunities },
       previousGame: previous ? { gameId: previous.gameId, week: previous.week, opportunities: previousOpportunities } : null,
       roleSignal: previousOpportunities === null ? "initial_sample" : latestOpportunities >= previousOpportunities + 3 ? "rising" : latestOpportunities <= previousOpportunities - 3 ? "falling" : "stable",
+      signalEligibility: ownershipStatus !== "current_team_match" ? "withheld_team_change" : previousOpportunities === null ? "withheld_single_sample" : "eligible_for_role_review",
+      startingUnitStatus: "unknown_not_in_box_score_source",
       games: sorted
     };
   }).sort((a, b) => b.latestGame.opportunities - a.latestGame.opportunities || a.playerName.localeCompare(b.playerName));
@@ -124,7 +129,9 @@ async function main() {
     status: completedGames.length ? "final_games_processed" : "waiting_for_final_games",
     source: "ESPN NFL completed-game box scores", sourceUrl: SCHEDULE_URL,
     finalGameGate: true, completedGameCount: completedGames.length, processedGameCount: completedGames.length - failures.length,
-    playerGameCount: gameRows.length, playerCount: players.length, completedGames, failures,
+    playerGameCount: gameRows.length, playerCount: players.length,
+    teamsWithFinalGames: [...new Set(completedGames.flatMap(game => game.matchup.split(/\s+(?:@|VS)\s+/)).filter(Boolean))].sort(),
+    completedGames, failures,
     coverage: {
       verified: ["passing attempts", "carries", "targets", "box-score production"],
       unavailable: ["offensive snap counts", "first-team snaps", "routes run"],
