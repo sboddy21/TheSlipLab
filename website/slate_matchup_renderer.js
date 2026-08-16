@@ -557,18 +557,29 @@
     return 0;
   }
 
-  function handMatchupLabel(row) {
-    const pitcherHand =
+  function normalizedPitcherHand(value) {
+    const raw = String(value || "").trim().toUpperCase();
+    if (!raw) return "";
+    if (raw === "L" || raw === "LH" || raw === "LHP" || raw.includes("LEFT")) return "LHP";
+    if (raw === "R" || raw === "RH" || raw === "RHP" || raw.includes("RIGHT")) return "RHP";
+    return "";
+  }
+
+  function pitcherHandFor(row) {
+    return normalizedPitcherHand(
       row.opposingPitcherHand ||
       row.pitcherHand ||
       row.stats?.pitcher?.hand ||
       row.stats?.pitcher?.throws ||
-      "";
+      row.pitcherThrows ||
+      row.throws ||
+      row.vsHand
+    );
+  }
 
-    if (!pitcherHand) return "";
-
-    const hand = String(pitcherHand).toUpperCase().startsWith("L") ? "LHP" : "RHP";
-    return "vs " + hand;
+  function handMatchupLabel(row) {
+    const hand = pitcherHandFor(row);
+    return hand ? "vs " + hand : "";
   }
 
   function recentLabel(row) {
@@ -657,18 +668,53 @@
   }
 
   function pitcherHandTag(row) {
-    const raw = String(
-      row.pitcherHand ??
-      row.opposingPitcherHand ??
-      row.pitcherThrows ??
-      row.throws ??
-      row.vsHand ??
-      ""
-    ).toUpperCase();
+    const hand = pitcherHandFor(row);
+    return hand ? "TONIGHT VS " + hand : "";
+  }
 
-    if (raw.includes("L")) return "VS LHP";
-    if (raw.includes("R")) return "VS RHP";
-    return "";
+  function opsText(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed.toFixed(3).replace(/^0/, "") : "";
+  }
+
+  function playerFormSignal(row) {
+    const card = playerCardFor(row);
+    const last7 = card?.last7 || state.last7[String(row?.playerId || "")] || {};
+    const games = num(last7.games);
+    const homeRuns = num(last7.hr);
+    const ops = num(last7.ops);
+
+    if (!games && !ops) return { tier: "neutral", label: "FORM PENDING", detail: "Recent form" };
+    if (homeRuns >= 2 || ops >= 0.9) return { tier: "hot", label: "HOT", detail: games ? `${homeRuns} HR / ${games}G` : `OPS ${opsText(ops)}` };
+    if (homeRuns >= 1 || ops >= 0.7) return { tier: "medium", label: "MEDIUM", detail: games ? `${homeRuns} HR / ${games}G` : `OPS ${opsText(ops)}` };
+    return { tier: "cold", label: "COLD", detail: games ? `0 HR / ${games}G` : `OPS ${opsText(ops)}` };
+  }
+
+  function playerSplitSignals(row) {
+    const splits = playerCardFor(row)?.splits;
+    const edges = [];
+    for (const split of [splits?.bestHand, splits?.bestTime]) {
+      const ops = Number(split?.ops);
+      const atBats = Number(split?.ab);
+      if (!split?.label || !Number.isFinite(ops) || !Number.isFinite(atBats) || atBats < 20) continue;
+      edges.push({
+        label: split.label,
+        detail: `${opsText(ops)} OPS`,
+        title: `Season split • ${Math.round(atBats)} AB`
+      });
+    }
+    return edges;
+  }
+
+  function playerSignalStrip(row) {
+    const form = playerFormSignal(row);
+    const hand = pitcherHandFor(row);
+    const splits = playerSplitSignals(row);
+    return `<div class="player-signal-strip">
+      <span class="player-form-chip form-${esc(form.tier)}" title="Last seven-game form"><i></i>${esc(form.label)}<b>${esc(form.detail)}</b></span>
+      ${hand ? `<span class="player-signal-chip pitcher-matchup">TONIGHT VS ${esc(hand)}</span>` : ""}
+      ${splits.map(split => `<span class="player-signal-chip split-edge" title="${esc(split.title)}">${esc(split.label)} <b>${esc(split.detail)}</b></span>`).join("")}
+    </div>`;
   }
 
   function weatherForVenue(venue) {
@@ -1175,7 +1221,8 @@
     const s = statsOf(row);
     const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "matchup context warrants monitoring");
     const signals = slateSignalsFor(row);
-    const signalClasses = signals.map(signal => signalClassName(signal.key)).join(" ");
+    const form = playerFormSignal(row);
+    const signalClasses = [...signals.map(signal => signalClassName(signal.key)), `player-form-${form.tier}`].join(" ");
     const signalIcons = signals.map(signal => `<span class="slate-signal-icon ${signalClassName(signal.key)}" title="${esc(signal.label)}" aria-label="${esc(signal.label)}">${esc(signal.emoji)}</span>`).join("");
     const signalLabels = signals.map(signal => `<span class="slate-signal-label ${signalClassName(signal.key)}"><span aria-hidden="true">${esc(signal.emoji)}</span>${esc(signal.label)}</span>`).join("");
     const normalizedName = playerNameOf(row);
@@ -1191,6 +1238,7 @@
         <div class="face">${esc(initials(row.player))}</div>
         <div class="sweet-main">
           <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(displayName)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
+          ${playerSignalStrip(row)}
           ${signalLabels ? `<div class="slate-signal-labels">${signalLabels}</div>` : ""}
           <div class="sweet-lineup">${esc(lineupSpotLabel(row))}</div>
           ${matchupBadges(row)}
@@ -1216,7 +1264,7 @@
     const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
     const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("CONFIRMED") ? "Posted" : hitters.length ? "Projected" : "Pending");
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
-    const hand = pitcher?.side || pitcher?.throws || "";
+    const hand = normalizedPitcherHand(pitcher?.side || pitcher?.throws || pitcher?.hand);
     const vuln = pitcherVulnerability(game, side);
     const vulnClass = vulnerabilityTier(vuln).className;
     const pitcherStats = pitcherStatsFor(game, side);
@@ -1230,8 +1278,8 @@
     return `
       <article class="side ${vulnClass}">
         <div class="side-top"><div>
-          <div class="pitcher">${esc(pitcherLabel)}</div>
-          <div class="pitcher-sub">${esc(code(pitcherTeam))}${hand ? " • " + esc(hand) : ""} • vs ${esc(code(hitterTeam))}</div>
+          <div class="pitcher-line"><div class="pitcher">${esc(pitcherLabel)}</div>${hand ? `<span class="pitcher-hand ${hand === "LHP" ? "left" : "right"}">${esc(hand)}</span>` : ""}</div>
+          <div class="pitcher-sub">${esc(code(pitcherTeam))} • vs ${esc(code(hitterTeam))}</div>
           <div class="mini"><div><label>Team</label><b>${esc(code(pitcherTeam))}</b></div><div><label>Bats</label><b>${hitters.length}</b></div><div><label>Lineup</label><b>${esc(lineupText)}</b></div><div><label>Risk</label><b>${whole(vuln)}</b></div></div>
         </div><div class="vbox"><b>${whole(vuln)}</b><span>RISK INDEX</span></div></div>
         <div class="pitcher-intel">
@@ -2015,8 +2063,50 @@ body.tsl-closed-slate #games{display:block;max-width:1500px;margin:0 auto;paddin
 })();
 
 
+/* Slate player signal hierarchy */
+function injectPlayerSignalStyles(){
+  if (document.getElementById("tsl-player-signal-styles")) return;
+  const style = document.createElement("style");
+  style.id = "tsl-player-signal-styles";
+  style.textContent = `
+    .pitcher-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+    .pitcher-hand{display:inline-flex;align-items:center;border:1px solid;font-size:10px;font-weight:950;letter-spacing:.08em;padding:3px 7px;border-radius:999px;line-height:1}
+    .pitcher-hand.left{background:#eaf3ff;border-color:#2e75c9;color:#073a71}
+    .pitcher-hand.right{background:#fff0ec;border-color:#d35a40;color:#762313}
+    .player-signal-strip{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0 5px}
+    .player-form-chip,.player-signal-chip{display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:3px 7px;border:1px solid;border-radius:999px;font-size:9px;line-height:1;letter-spacing:.06em;font-weight:950;white-space:nowrap}
+    .player-form-chip i{width:6px;height:6px;border-radius:99px;display:inline-block;background:currentColor;box-shadow:0 0 8px currentColor}
+    .player-form-chip b,.player-signal-chip b{font-size:9px;letter-spacing:0;margin-left:1px}
+    .form-hot{background:#fff0e8;border-color:#d7582b;color:#7a270f}
+    .form-medium{background:#fff8dc;border-color:#d99b1a;color:#694500}
+    .form-cold{background:#eef5ff;border-color:#2774c8;color:#124a7e}
+    .form-neutral{background:#f3f5f7;border-color:#9aa8b8;color:#526173}
+    .player-signal-chip.pitcher-matchup{background:#edf4ff;border-color:#8eb8e8;color:#104e86}
+    .player-signal-chip.split-edge{background:#edfff5;border-color:#66be91;color:#08613f}
+    .sweet-bat.player-form-hot{border-left:4px solid #d7582b!important;background:linear-gradient(90deg,#fff7f2 0,#fffdf9 42%)!important}
+    .sweet-bat.player-form-medium{border-left:4px solid #d99b1a!important;background:linear-gradient(90deg,#fffced 0,#fffdf9 42%)!important}
+    .sweet-bat.player-form-cold{border-left:4px solid #2774c8!important;background:linear-gradient(90deg,#f3f8ff 0,#fffdf9 42%)!important}
+    .sweet-bat.player-form-neutral{border-left:4px solid #8b9caf!important}
+    body.tsl-editorial .pitcher-hand{font-size:10px!important;font-weight:950!important}
+    body.tsl-editorial .sweet-bat.player-form-hot{border-left:5px solid #d7582b!important;background:linear-gradient(90deg,#fff1e9 0,#fffdf9 44%)!important}
+    body.tsl-editorial .sweet-bat.player-form-medium{border-left:5px solid #d99b1a!important;background:linear-gradient(90deg,#fff8dc 0,#fffdf9 44%)!important}
+    body.tsl-editorial .sweet-bat.player-form-cold{border-left:5px solid #2774c8!important;background:linear-gradient(90deg,#eef5ff 0,#fffdf9 44%)!important}
+    body.tsl-editorial .sweet-bat.player-form-neutral{border-left:5px solid #8b9caf!important;background:#fffdf9!important}
+    body.tsl-editorial .form-hot{background:#fff0e8!important;border-color:#d7582b!important;color:#7a270f!important}
+    body.tsl-editorial .form-medium{background:#fff8dc!important;border-color:#d99b1a!important;color:#694500!important}
+    body.tsl-editorial .form-cold{background:#eef5ff!important;border-color:#2774c8!important;color:#124a7e!important}
+    body.tsl-editorial .form-neutral{background:#f3f5f7!important;border-color:#9aa8b8!important;color:#526173!important}
+    body.tsl-editorial .player-signal-chip.pitcher-matchup{background:#edf4ff!important;border-color:#8eb8e8!important;color:#104e86!important}
+    body.tsl-editorial .player-signal-chip.split-edge{background:#edfff5!important;border-color:#66be91!important;color:#08613f!important}
+    @media(max-width:640px){.player-signal-strip{gap:4px}.player-form-chip,.player-signal-chip{font-size:8px;padding:3px 6px}.pitcher-hand{font-size:9px}}
+  `;
+  document.head.appendChild(style);
+}
+
+
   async function load() {
     injectStyles();
+    injectPlayerSignalStyles();
     injectShell();
     restoreGameComparison();
     indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));

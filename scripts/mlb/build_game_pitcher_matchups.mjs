@@ -29,6 +29,14 @@ function norm(v = "") {
   return clean(v).toLowerCase().replace(/[^a-z0-9]/g, "");
 }
 
+function normalizePitcherHand(value) {
+  const raw = clean(value).trim().toUpperCase();
+  if (!raw) return "";
+  if (raw === "L" || raw === "LH" || raw === "LHP" || raw.includes("LEFT")) return "LHP";
+  if (raw === "R" || raw === "RH" || raw === "RHP" || raw.includes("RIGHT")) return "RHP";
+  return "";
+}
+
 function pendingPitcherSlotId(game, side) {
   const gameId = clean(game.gamePk || game.id || game.matchup || `${game.awayTeam || game.away || "away"}-${game.homeTeam || game.home || "home"}`);
   return `pending:${norm(gameId) || "game"}:${side}`;
@@ -91,6 +99,18 @@ async function getPitcherStats(playerId) {
     hPer9: Number(((hits / innings) * 9).toFixed(2)),
     hrPer9: Number(((homeRuns / innings) * 9).toFixed(2))
   };
+}
+
+async function getPitcherHand(playerId) {
+  if (!playerId) return "";
+  try {
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${playerId}`);
+    if (!res.ok) return "";
+    const person = (await res.json())?.people?.[0];
+    return normalizePitcherHand(person?.pitchHand?.code || person?.pitchHand?.description);
+  } catch {
+    return "";
+  }
 }
 
 function rawPitcherVulnerability(stats) {
@@ -346,11 +366,13 @@ const probablePitcherIds = [...new Set(slateGames.flatMap(game => [
 ]).filter(Boolean).map(String))];
 
 const pitcherStatsById = new Map();
+const pitcherHandById = new Map();
 const unavailablePitcherIds = new Set();
 for (const id of probablePitcherIds) {
-  const stats = await getPitcherStats(id);
+  const [stats, hand] = await Promise.all([getPitcherStats(id), getPitcherHand(id)]);
   if (stats) pitcherStatsById.set(id, stats);
   else unavailablePitcherIds.add(id);
+  if (hand) pitcherHandById.set(id, hand);
 }
 
 function unavailableVulnerability(status = "pending") {
@@ -395,6 +417,8 @@ for (const slateGame of slateGames) {
   const homePitcherId = slateGame.homeProbablePitcherId || pendingPitcherSlotId(slateGame, "home");
   const awayPitcherMlbId = slateGame.awayProbablePitcherId || null;
   const homePitcherMlbId = slateGame.homeProbablePitcherId || null;
+  const awayPitcherHand = normalizePitcherHand(slateGame.awayPitcherHand || slateGame.awayProbablePitcherHand || pitcherHandById.get(String(awayPitcherMlbId || "")));
+  const homePitcherHand = normalizePitcherHand(slateGame.homePitcherHand || slateGame.homeProbablePitcherHand || pitcherHandById.get(String(homePitcherMlbId || "")));
 
   const awayVuln = await getVulnerability(awayPitcherMlbId);
   const homeVuln = await getVulnerability(homePitcherMlbId);
@@ -410,6 +434,7 @@ for (const slateGame of slateGames) {
       opposingPitcher: clean(slateGame.homeProbablePitcher, "TBD"),
       opposingPitcherId: homePitcherId,
       opposingPitcherMlbId: homePitcherMlbId,
+      opposingPitcherHand: homePitcherHand,
       pitcherRisk: homeVuln.score,
       pitcherVulnerability: homeVuln.score,
       pitcherRiskAvailable: homeVuln.available
@@ -424,6 +449,7 @@ for (const slateGame of slateGames) {
       opposingPitcher: clean(slateGame.awayProbablePitcher, "TBD"),
       opposingPitcherId: awayPitcherId,
       opposingPitcherMlbId: awayPitcherMlbId,
+      opposingPitcherHand: awayPitcherHand,
       pitcherRisk: awayVuln.score,
       pitcherVulnerability: awayVuln.score,
       pitcherRiskAvailable: awayVuln.available
@@ -436,7 +462,7 @@ for (const slateGame of slateGames) {
     id: awayPitcherId,
     mlbId: awayPitcherMlbId,
     pendingSlot: !awayPitcherMlbId,
-    side: clean(slateGame.awayPitcherHand || slateGame.awayProbablePitcherHand),
+    side: awayPitcherHand,
     team: awayTeam,
     opponent: homeTeam,
     vulnerability: awayVuln.score,
@@ -454,7 +480,7 @@ for (const slateGame of slateGames) {
     id: homePitcherId,
     mlbId: homePitcherMlbId,
     pendingSlot: !homePitcherMlbId,
-    side: clean(slateGame.homePitcherHand || slateGame.homeProbablePitcherHand),
+    side: homePitcherHand,
     team: homeTeam,
     opponent: awayTeam,
     vulnerability: homeVuln.score,
