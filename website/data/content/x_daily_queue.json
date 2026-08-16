@@ -1,16 +1,18 @@
 {
-  "updatedAt": "2026-08-16T10:46:13.779Z",
+  "updatedAt": "2026-08-16T22:27:27.854Z",
   "date": "2026-08-16",
-  "slot": "overnight",
+  "slot": "pregame",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "pregame",
+    "selected": "pregame",
     "available": [
+      "live",
       "morning",
+      "midday",
       "afternoon",
       "pregame",
       "evening",
@@ -18,48 +20,1758 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
-    "candidates": 0,
+    "enabled": true,
+    "candidates": 10,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-16T10:46:13.779Z",
+    "checkedAt": "2026-08-16T22:27:27.854Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-16T10:46:13.414Z",
+        "timestamp": "2026-08-16T22:27:27.044Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-16T10:46:12.482Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-16T22:26:00.474Z",
+        "ageSeconds": 87
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-16T07:47:20.385Z",
-        "players": 554,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-16T22:25:41.544Z",
+        "ageSeconds": 106
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-16T22:27:26.642Z",
+        "ageSeconds": 1
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-16T10:46:12.526Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-15",
-        "archivedPlayers": 392,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-16T22:27:02.308Z",
+        "ageSeconds": 25
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 11,
+  "posts": [
+    {
+      "id": "called_it_home_run_2026-08-16_822774_700250_69",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nBen Rice just left the yard.\n\nAI Says: TOP 30 #2 · ELITE SMASH #2 · HOMER AI #2\nNew York Yankees @ Toronto Blue Jays\nTop 10\n438 ft · 108.5 mph EV · 27° LA\nOff Braydon Fisher\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Ben Rice"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 822774,
+        "playId": 69,
+        "playerId": 700250,
+        "player": "Ben Rice",
+        "team": "New York Yankees",
+        "opponent": "Toronto Blue Jays",
+        "inning": "Top 10",
+        "distance": 438,
+        "exitVelocity": 108.5,
+        "launchAngle": 27
+      },
+      "ai": {
+        "primarySection": "TOP 30",
+        "primaryRank": 2,
+        "sections": [
+          {
+            "section": "TOP 30",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          },
+          {
+            "section": "ELITE SMASH",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          },
+          {
+            "section": "HOMER AI",
+            "rank": 2,
+            "confidence": 0.815,
+            "aiScore": 0.815
+          }
+        ],
+        "archiveGrade": "A",
+        "archiveRank": 6,
+        "qualifiedBy": [
+          "verified_pregame_archive",
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:28.315Z",
+      "x_post_id": "2089116860687978632",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_824236_808959_55",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nMunetaka Murakami just left the yard.\n\nAI Says: TOP 30 #3 · ELITE SMASH #3 · HOMER AI #3\nChicago White Sox @ Detroit Tigers\nTop 7\n393 ft · 102.4 mph EV · 33° LA\nOff Tyler Holton\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Munetaka Murakami"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 824236,
+        "playId": 55,
+        "playerId": 808959,
+        "player": "Munetaka Murakami",
+        "team": "Chicago White Sox",
+        "opponent": "Detroit Tigers",
+        "inning": "Top 7",
+        "distance": 393,
+        "exitVelocity": 102.4,
+        "launchAngle": 33
+      },
+      "ai": {
+        "primarySection": "TOP 30",
+        "primaryRank": 3,
+        "sections": [
+          {
+            "section": "TOP 30",
+            "rank": 3,
+            "confidence": 0.812,
+            "aiScore": 0.812
+          },
+          {
+            "section": "ELITE SMASH",
+            "rank": 3,
+            "confidence": 0.812,
+            "aiScore": 0.812
+          },
+          {
+            "section": "HOMER AI",
+            "rank": 3,
+            "confidence": 0.812,
+            "aiScore": 0.812
+          }
+        ],
+        "archiveGrade": "A",
+        "archiveRank": 3,
+        "qualifiedBy": [
+          "verified_pregame_archive",
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:28.519Z",
+      "x_post_id": "2089116861577183630",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_824880_621566_56",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nMatt Olson just left the yard.\n\nAI Says: TOP 30 #7 · ELITE SMASH #7 · HOMER AI #7\nArizona Diamondbacks @ Atlanta Braves\nBottom 7\n437 ft · 109.5 mph EV · 24° LA\nOff Brandyn Garcia\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Matt Olson"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 824880,
+        "playId": 56,
+        "playerId": 621566,
+        "player": "Matt Olson",
+        "team": "Atlanta Braves",
+        "opponent": "Arizona Diamondbacks",
+        "inning": "Bottom 7",
+        "distance": 437,
+        "exitVelocity": 109.5,
+        "launchAngle": 24
+      },
+      "ai": {
+        "primarySection": "TOP 30",
+        "primaryRank": 7,
+        "sections": [
+          {
+            "section": "TOP 30",
+            "rank": 7,
+            "confidence": 0.791,
+            "aiScore": 0.791
+          },
+          {
+            "section": "ELITE SMASH",
+            "rank": 7,
+            "confidence": 0.791,
+            "aiScore": 0.791
+          },
+          {
+            "section": "HOMER AI",
+            "rank": 7,
+            "confidence": 0.791,
+            "aiScore": 0.791
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:28.736Z",
+      "x_post_id": "2089116862432866639",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_823182_646240_20",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nRafael Devers just left the yard.\n\nAI Says: TOP 30 #10\nColorado Rockies @ San Francisco Giants\nBottom 2\n380 ft · 105.5 mph EV · 25° LA\nOff Gabriel Hughes\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Rafael Devers"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823182,
+        "playId": 20,
+        "playerId": 646240,
+        "player": "Rafael Devers",
+        "team": "San Francisco Giants",
+        "opponent": "Colorado Rockies",
+        "inning": "Bottom 2",
+        "distance": 380,
+        "exitVelocity": 105.5,
+        "launchAngle": 25
+      },
+      "ai": {
+        "primarySection": "TOP 30",
+        "primaryRank": 10,
+        "sections": [
+          {
+            "section": "TOP 30",
+            "rank": 10,
+            "confidence": 53,
+            "aiScore": 0.53,
+            "row": {
+              "player": "Rafael Devers",
+              "playerId": 646240,
+              "mlbId": 646240,
+              "team": "San Francisco Giants",
+              "teamId": 137,
+              "opponent": "Colorado Rockies",
+              "game": "Colorado Rockies at San Francisco Giants",
+              "ownershipVerification": {
+                "status": "VERIFIED",
+                "verifiedAt": "2026-08-16T22:25:27.855Z",
+                "source": "MLB_ACTIVE_ROSTER",
+                "playerId": 646240,
+                "teamId": 137
+              },
+              "hrConfidence": 53,
+              "baseHrConfidence": 48.97,
+              "lineupBoost": 11.1,
+              "lineupImpactScore": 100,
+              "lineupRole": "Premium HR Slot",
+              "lineupSpot": 2,
+              "lineupStatus": "CONFIRMED",
+              "lineupSource": "MLB_STATS_API",
+              "confirmedLineup": true,
+              "projectedPlateAppearances": 4.65,
+              "protectionScore": 100,
+              "recentStatcastAdjustment": 0.29,
+              "recentStatcastForm": {
+                "schemaVersion": "1.0",
+                "status": "HIGH_CONFIDENCE",
+                "sampleWindow": 15,
+                "reliability": 1,
+                "trendIndex": 52.9,
+                "modelAdjustment": 0.29,
+                "deltas": {
+                  "avgExitVelocity": 3,
+                  "hardHitRate": 0.07,
+                  "barrelRate": -0.01,
+                  "xwobaOnContact": -0.057
+                },
+                "season": {
+                  "days": 400,
+                  "pitches": 2138,
+                  "battedBalls": 657,
+                  "reliability": 1,
+                  "avgExitVelocity": 85,
+                  "avgLaunchAngle": 21.2,
+                  "hardHitRate": 0.292,
+                  "barrelRate": 0.053,
+                  "sweetSpotRate": 0.309,
+                  "xwobaOnContact": 0.324
+                },
+                "last7": {
+                  "days": 7,
+                  "pitches": 70,
+                  "battedBalls": 14,
+                  "reliability": 0.933,
+                  "avgExitVelocity": 85.4,
+                  "avgLaunchAngle": 33.2,
+                  "hardHitRate": 0.286,
+                  "barrelRate": 0,
+                  "sweetSpotRate": 0.214,
+                  "xwobaOnContact": 0.26
+                },
+                "last15": {
+                  "days": 15,
+                  "pitches": 181,
+                  "battedBalls": 47,
+                  "reliability": 1,
+                  "avgExitVelocity": 88,
+                  "avgLaunchAngle": 21.9,
+                  "hardHitRate": 0.362,
+                  "barrelRate": 0.043,
+                  "sweetSpotRate": 0.191,
+                  "xwobaOnContact": 0.267
+                },
+                "last30": {
+                  "days": 30,
+                  "pitches": 459,
+                  "battedBalls": 139,
+                  "reliability": 1,
+                  "avgExitVelocity": 86,
+                  "avgLaunchAngle": 20.7,
+                  "hardHitRate": 0.309,
+                  "barrelRate": 0.036,
+                  "sweetSpotRate": 0.237,
+                  "xwobaOnContact": 0.321
+                }
+              },
+              "hitterBefore": "Drew Gilbert",
+              "hitterAfter": "Bryce Eldridge",
+              "powerScore": 71.3,
+              "pitchEdge": 49.91,
+              "pitcherRisk": 27.22,
+              "weather": 25.17,
+              "bullpen": 73.4,
+              "bullpenContext": {
+                "team": "Colorado Rockies",
+                "relieverCount": 8,
+                "bullpenRiskScore": 73.4,
+                "sampleInnings": 303,
+                "confidence": "HIGH",
+                "leftHandedRelievers": 2,
+                "rightHandedRelievers": 6,
+                "highestRiskRelievers": [
+                  {
+                    "playerId": 623474,
+                    "pitcher": "Jimmy Herget",
+                    "hand": "R",
+                    "adjustedRisk": 100,
+                    "inningsPitched": "34.0"
+                  },
+                  {
+                    "playerId": 685299,
+                    "pitcher": "Tanner Gordon",
+                    "hand": "R",
+                    "adjustedRisk": 97.2,
+                    "inningsPitched": "71.1"
+                  },
+                  {
+                    "playerId": 688642,
+                    "pitcher": "Zach Agnos",
+                    "hand": "R",
+                    "adjustedRisk": 80.7,
+                    "inningsPitched": "68.2"
+                  }
+                ]
+              },
+              "pitchingExposure": {
+                "starterPlateAppearances": 2.7,
+                "bullpenPlateAppearances": 1.95,
+                "starterShare": 0.58,
+                "bullpenShare": 0.42,
+                "starterRisk": 27.2,
+                "bullpenRisk": 73.4,
+                "blendedPitchingRisk": 46.6
+              },
+              "due": 12.83,
+              "seasonHr": 25,
+              "ceilingScore": 47.59,
+              "volatilityScore": 5.87,
+              "bestPitch": "4 Seam",
+              "tier": "Strong",
+              "reasons": [
+                "strong power profile",
+                "good HR weather conditions",
+                "Lineup role: Premium HR Slot",
+                "strong lineup slot boost",
+                "protection boost"
+              ],
+              "zoneOverlap": 27.22,
+              "hitterZonePower": 32.44,
+              "pitcherLeak": 27.14,
+              "zoneSignalAvailable": true,
+              "hotZoneCount": 1,
+              "zoneCells": [
+                {
+                  "index": 0,
+                  "hitter": 69.8,
+                  "pitcher": 69.8,
+                  "overlap": 69.79,
+                  "qualified": true
+                },
+                {
+                  "index": 1,
+                  "hitter": 0,
+                  "pitcher": 0,
+                  "overlap": 0,
+                  "qualified": false
+                },
+                {
+                  "index": 2,
+                  "hitter": 10.8,
+                  "pitcher": 6.4,
+                  "overlap": 6.38,
+                  "qualified": true
+                },
+                {
+                  "index": 3,
+                  "hitter": 53.5,
+                  "pitcher": 69.8,
+                  "overlap": 53.54,
+                  "qualified": true
+                },
+                {
+                  "index": 4,
+                  "hitter": 0,
+                  "pitcher": 0,
+                  "overlap": 0,
+                  "qualified": false
+                },
+                {
+                  "index": 5,
+                  "hitter": 38,
+                  "pitcher": 70.8,
+                  "overlap": 38.02,
+                  "qualified": true
+                },
+                {
+                  "index": 6,
+                  "hitter": 24.6,
+                  "pitcher": 0,
+                  "overlap": 0,
+                  "qualified": true
+                },
+                {
+                  "index": 7,
+                  "hitter": 32.3,
+                  "pitcher": 32.7,
+                  "overlap": 32.28,
+                  "qualified": true
+                },
+                {
+                  "index": 8,
+                  "hitter": 15,
+                  "pitcher": 22.1,
+                  "overlap": 14.99,
+                  "qualified": true
+                },
+                {
+                  "index": 9,
+                  "hitter": 0,
+                  "pitcher": 0,
+                  "overlap": 0,
+                  "qualified": false
+                },
+                {
+                  "index": 10,
+                  "hitter": 0,
+                  "pitcher": 0,
+                  "overlap": 0,
+                  "qualified": false
+                },
+                {
+                  "index": 11,
+                  "hitter": 26.9,
+                  "pitcher": 30.2,
+                  "overlap": 26.88,
+                  "qualified": true
+                },
+                {
+                  "index": 12,
+                  "hitter": 42.8,
+                  "pitcher": 27.8,
+                  "overlap": 27.77,
+                  "qualified": true
+                },
+                {
+                  "index": 13,
+                  "hitter": 31.3,
+                  "pitcher": 30,
+                  "overlap": 29.95,
+                  "qualified": true
+                },
+                {
+                  "index": 14,
+                  "hitter": 34.9,
+                  "pitcher": 13.1,
+                  "overlap": 13.1,
+                  "qualified": true
+                },
+                {
+                  "index": 15,
+                  "hitter": 19.9,
+                  "pitcher": 69.8,
+                  "overlap": 19.93,
+                  "qualified": true
+                },
+                {
+                  "index": 16,
+                  "hitter": 25.1,
+                  "pitcher": 17.9,
+                  "overlap": 17.94,
+                  "qualified": true
+                },
+                {
+                  "index": 17,
+                  "hitter": 36.3,
+                  "pitcher": 27.5,
+                  "overlap": 27.48,
+                  "qualified": true
+                },
+                {
+                  "index": 18,
+                  "hitter": 33.8,
+                  "pitcher": 35.9,
+                  "overlap": 33.78,
+                  "qualified": true
+                },
+                {
+                  "index": 19,
+                  "hitter": 31.9,
+                  "pitcher": 0.8,
+                  "overlap": 0.8,
+                  "qualified": true
+                },
+                {
+                  "index": 20,
+                  "hitter": 27.2,
+                  "pitcher": 8.3,
+                  "overlap": 8.3,
+                  "qualified": true
+                },
+                {
+                  "index": 21,
+                  "hitter": 23.8,
+                  "pitcher": 21.4,
+                  "overlap": 21.35,
+                  "qualified": true
+                },
+                {
+                  "index": 22,
+                  "hitter": 30.1,
+                  "pitcher": 23.5,
+                  "overlap": 23.53,
+                  "qualified": true
+                },
+                {
+                  "index": 23,
+                  "hitter": 31.2,
+                  "pitcher": 8.7,
+                  "overlap": 8.72,
+                  "qualified": true
+                },
+                {
+                  "index": 24,
+                  "hitter": 44.4,
+                  "pitcher": 18.2,
+                  "overlap": 18.22,
+                  "qualified": true
+                }
+              ],
+              "avgZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 0.17
+                },
+                {
+                  "index": 7,
+                  "value": 0.23
+                },
+                {
+                  "index": 8,
+                  "value": 0.08
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 0.2
+                },
+                {
+                  "index": 12,
+                  "value": 0.39
+                },
+                {
+                  "index": 13,
+                  "value": 0.31
+                },
+                {
+                  "index": 14,
+                  "value": 0.33
+                },
+                {
+                  "index": 15,
+                  "value": 0.17
+                },
+                {
+                  "index": 16,
+                  "value": 0.22
+                },
+                {
+                  "index": 17,
+                  "value": 0.32
+                },
+                {
+                  "index": 18,
+                  "value": 0.29
+                },
+                {
+                  "index": 19,
+                  "value": 0.5
+                },
+                {
+                  "index": 20,
+                  "value": 0.13
+                },
+                {
+                  "index": 21,
+                  "value": 0.06
+                },
+                {
+                  "index": 22,
+                  "value": 0.2
+                },
+                {
+                  "index": 23,
+                  "value": 0.43
+                },
+                {
+                  "index": 24,
+                  "value": 0
+                }
+              ],
+              "isoZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 0.17
+                },
+                {
+                  "index": 7,
+                  "value": 0.33
+                },
+                {
+                  "index": 8,
+                  "value": 0.23
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 0.18
+                },
+                {
+                  "index": 12,
+                  "value": 0.41
+                },
+                {
+                  "index": 13,
+                  "value": 0.19
+                },
+                {
+                  "index": 14,
+                  "value": 0
+                },
+                {
+                  "index": 15,
+                  "value": 0
+                },
+                {
+                  "index": 16,
+                  "value": 0.06
+                },
+                {
+                  "index": 17,
+                  "value": 0.36
+                },
+                {
+                  "index": 18,
+                  "value": 0.26
+                },
+                {
+                  "index": 19,
+                  "value": 0.5
+                },
+                {
+                  "index": 20,
+                  "value": 0
+                },
+                {
+                  "index": 21,
+                  "value": 0
+                },
+                {
+                  "index": 22,
+                  "value": 0.2
+                },
+                {
+                  "index": 23,
+                  "value": 0.29
+                },
+                {
+                  "index": 24,
+                  "value": 0
+                }
+              ],
+              "slgZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 0.35
+                },
+                {
+                  "index": 7,
+                  "value": 0.55
+                },
+                {
+                  "index": 8,
+                  "value": 0.31
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 0.38
+                },
+                {
+                  "index": 12,
+                  "value": 0.8
+                },
+                {
+                  "index": 13,
+                  "value": 0.5
+                },
+                {
+                  "index": 14,
+                  "value": 0.33
+                },
+                {
+                  "index": 15,
+                  "value": 0.17
+                },
+                {
+                  "index": 16,
+                  "value": 0.27
+                },
+                {
+                  "index": 17,
+                  "value": 0.68
+                },
+                {
+                  "index": 18,
+                  "value": 0.54
+                },
+                {
+                  "index": 19,
+                  "value": 1
+                },
+                {
+                  "index": 20,
+                  "value": 0.13
+                },
+                {
+                  "index": 21,
+                  "value": 0.06
+                },
+                {
+                  "index": 22,
+                  "value": 0.4
+                },
+                {
+                  "index": 23,
+                  "value": 0.71
+                },
+                {
+                  "index": 24,
+                  "value": 0
+                }
+              ],
+              "hrZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 1
+                },
+                {
+                  "index": 7,
+                  "value": 4
+                },
+                {
+                  "index": 8,
+                  "value": 1
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 2
+                },
+                {
+                  "index": 12,
+                  "value": 9
+                },
+                {
+                  "index": 13,
+                  "value": 1
+                },
+                {
+                  "index": 14,
+                  "value": 0
+                },
+                {
+                  "index": 15,
+                  "value": 0
+                },
+                {
+                  "index": 16,
+                  "value": 0
+                },
+                {
+                  "index": 17,
+                  "value": 4
+                },
+                {
+                  "index": 18,
+                  "value": 2
+                },
+                {
+                  "index": 19,
+                  "value": 0
+                },
+                {
+                  "index": 20,
+                  "value": 0
+                },
+                {
+                  "index": 21,
+                  "value": 0
+                },
+                {
+                  "index": 22,
+                  "value": 0
+                },
+                {
+                  "index": 23,
+                  "value": 0
+                },
+                {
+                  "index": 24,
+                  "value": 0
+                }
+              ],
+              "kZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0.8
+                },
+                {
+                  "index": 2,
+                  "value": 0.91
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0.5
+                },
+                {
+                  "index": 6,
+                  "value": 0.7
+                },
+                {
+                  "index": 7,
+                  "value": 0.4
+                },
+                {
+                  "index": 8,
+                  "value": 0.46
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 0.28
+                },
+                {
+                  "index": 12,
+                  "value": 0.16
+                },
+                {
+                  "index": 13,
+                  "value": 0.14
+                },
+                {
+                  "index": 14,
+                  "value": 0.17
+                },
+                {
+                  "index": 15,
+                  "value": 0.17
+                },
+                {
+                  "index": 16,
+                  "value": 0.25
+                },
+                {
+                  "index": 17,
+                  "value": 0.26
+                },
+                {
+                  "index": 18,
+                  "value": 0.23
+                },
+                {
+                  "index": 19,
+                  "value": 0
+                },
+                {
+                  "index": 20,
+                  "value": 0.5
+                },
+                {
+                  "index": 21,
+                  "value": 0.39
+                },
+                {
+                  "index": 22,
+                  "value": 0.2
+                },
+                {
+                  "index": 23,
+                  "value": 0
+                },
+                {
+                  "index": 24,
+                  "value": 1
+                }
+              ],
+              "hardHitZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0.5
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 0.5
+                },
+                {
+                  "index": 7,
+                  "value": 0.29
+                },
+                {
+                  "index": 8,
+                  "value": 0.15
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0.2
+                },
+                {
+                  "index": 11,
+                  "value": 0.35
+                },
+                {
+                  "index": 12,
+                  "value": 0.37
+                },
+                {
+                  "index": 13,
+                  "value": 0.2
+                },
+                {
+                  "index": 14,
+                  "value": 0.2
+                },
+                {
+                  "index": 15,
+                  "value": 0
+                },
+                {
+                  "index": 16,
+                  "value": 0.31
+                },
+                {
+                  "index": 17,
+                  "value": 0.29
+                },
+                {
+                  "index": 18,
+                  "value": 0.29
+                },
+                {
+                  "index": 19,
+                  "value": 0.14
+                },
+                {
+                  "index": 20,
+                  "value": 0.14
+                },
+                {
+                  "index": 21,
+                  "value": 0.22
+                },
+                {
+                  "index": 22,
+                  "value": 0.37
+                },
+                {
+                  "index": 23,
+                  "value": 0.45
+                },
+                {
+                  "index": 24,
+                  "value": 0.2
+                }
+              ],
+              "barrelZones": [
+                {
+                  "index": 0,
+                  "value": 0
+                },
+                {
+                  "index": 1,
+                  "value": 0
+                },
+                {
+                  "index": 2,
+                  "value": 0
+                },
+                {
+                  "index": 3,
+                  "value": 0
+                },
+                {
+                  "index": 4,
+                  "value": 0
+                },
+                {
+                  "index": 5,
+                  "value": 0
+                },
+                {
+                  "index": 6,
+                  "value": 0.06
+                },
+                {
+                  "index": 7,
+                  "value": 0.06
+                },
+                {
+                  "index": 8,
+                  "value": 0.04
+                },
+                {
+                  "index": 9,
+                  "value": 0
+                },
+                {
+                  "index": 10,
+                  "value": 0
+                },
+                {
+                  "index": 11,
+                  "value": 0.01
+                },
+                {
+                  "index": 12,
+                  "value": 0.11
+                },
+                {
+                  "index": 13,
+                  "value": 0.06
+                },
+                {
+                  "index": 14,
+                  "value": 0
+                },
+                {
+                  "index": 15,
+                  "value": 0
+                },
+                {
+                  "index": 16,
+                  "value": 0.05
+                },
+                {
+                  "index": 17,
+                  "value": 0.06
+                },
+                {
+                  "index": 18,
+                  "value": 0.03
+                },
+                {
+                  "index": 19,
+                  "value": 0
+                },
+                {
+                  "index": 20,
+                  "value": 0
+                },
+                {
+                  "index": 21,
+                  "value": 0.06
+                },
+                {
+                  "index": 22,
+                  "value": 0.04
+                },
+                {
+                  "index": 23,
+                  "value": 0
+                },
+                {
+                  "index": 24,
+                  "value": 0
+                }
+              ],
+              "tags": [
+                "STRONG",
+                "WEATHER",
+                "BULLPEN",
+                "POWER",
+                "LINEUP BOOST",
+                "CONFIRMED",
+                "DATA VERIFIED"
+              ],
+              "pitcher": "Gabriel Hughes",
+              "opposingPitcher": "Gabriel Hughes",
+              "probablePitcher": "Gabriel Hughes",
+              "pitcherStatus": "Probable",
+              "marketAvailable": false,
+              "marketQuoteCount": 0,
+              "marketBooks": [],
+              "bestOverPrice": null,
+              "promotionEligible": true,
+              "availabilityOverride": null,
+              "rawModelConfidence": 53.48,
+              "dataQuality": {
+                "score": 93.6,
+                "grade": "A",
+                "penaltyFactor": 0.9904,
+                "flags": [
+                  "MARKET_AGING"
+                ],
+                "components": {
+                  "lineup": 100,
+                  "pitcher": 100,
+                  "statcast": 100,
+                  "bullpen": 100,
+                  "market": 60,
+                  "marketFreshness": 60
+                }
+              },
+              "movement": {
+                "status": "STABLE",
+                "direction": "UNCHANGED",
+                "confidenceDelta": 0.1,
+                "previousConfidence": 52.9,
+                "currentConfidence": 53,
+                "reasons": []
+              }
+            }
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:28.933Z",
+      "x_post_id": "2089116863313645747",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_824642_691718_23",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nPete Crow-Armstrong just left the yard.\n\nAI Says: ELITE SMASH #10 · HOMER AI #10\nSt. Louis Cardinals @ Chicago Cubs\nBottom 3\n408 ft · 110.3 mph EV · 22° LA\nOff Hunter Dobbins\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Pete Crow-Armstrong"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 824642,
+        "playId": 23,
+        "playerId": 691718,
+        "player": "Pete Crow-Armstrong",
+        "team": "Chicago Cubs",
+        "opponent": "St. Louis Cardinals",
+        "inning": "Bottom 3",
+        "distance": 408,
+        "exitVelocity": 110.3,
+        "launchAngle": 22
+      },
+      "ai": {
+        "primarySection": "ELITE SMASH",
+        "primaryRank": 10,
+        "sections": [
+          {
+            "section": "ELITE SMASH",
+            "rank": 10,
+            "confidence": 0.775,
+            "aiScore": 0.775
+          },
+          {
+            "section": "HOMER AI",
+            "rank": 10,
+            "confidence": 0.775,
+            "aiScore": 0.775
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:29.165Z",
+      "x_post_id": "2089116864320335941",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_822940_681297_44",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nColton Cowser just left the yard.\n\nAI Says: SMASH + PARK #17\nBaltimore Orioles @ Tampa Bay Rays\nTop 6\n392 ft · 103.6 mph EV · 39° LA\nOff Steven Matz\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Colton Cowser"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 822940,
+        "playId": 44,
+        "playerId": 681297,
+        "player": "Colton Cowser",
+        "team": "Baltimore Orioles",
+        "opponent": "Tampa Bay Rays",
+        "inning": "Top 6",
+        "distance": 392,
+        "exitVelocity": 103.6,
+        "launchAngle": 39
+      },
+      "ai": {
+        "primarySection": "SMASH + PARK",
+        "primaryRank": 17,
+        "sections": [
+          {
+            "section": "SMASH + PARK",
+            "rank": 17,
+            "confidence": 0.393,
+            "aiScore": 0.393
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:29.375Z",
+      "x_post_id": "2089116865184342253",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_824236_678246_74",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nMiguel Vargas just left the yard.\n\nAI Says: HOMER AI #16 · LIVE LONGSHOTS #5\nChicago White Sox @ Detroit Tigers\nTop 9\n381 ft · 98.0 mph EV · 30° LA\nOff Jacob Waguespack\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Miguel Vargas"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 824236,
+        "playId": 74,
+        "playerId": 678246,
+        "player": "Miguel Vargas",
+        "team": "Chicago White Sox",
+        "opponent": "Detroit Tigers",
+        "inning": "Top 9",
+        "distance": 381,
+        "exitVelocity": 98,
+        "launchAngle": 30
+      },
+      "ai": {
+        "primarySection": "HOMER AI",
+        "primaryRank": 16,
+        "sections": [
+          {
+            "section": "HOMER AI",
+            "rank": 16,
+            "confidence": 0.739,
+            "aiScore": 0.739
+          },
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 5,
+            "confidence": 0.739,
+            "aiScore": 0.739
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:29.586Z",
+      "x_post_id": "2089116865985479081",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_823912_571970_30",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB CALLED IT\n\nMax Muncy just left the yard.\n\nAI Says: HOMER AI #19 · LIVE LONGSHOTS #7\nMilwaukee Brewers @ Los Angeles Dodgers\nBottom 4\n370 ft · 101.6 mph EV · 32° LA\nOff Logan Henderson\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Max Muncy"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823912,
+        "playId": 30,
+        "playerId": 571970,
+        "player": "Max Muncy",
+        "team": "Los Angeles Dodgers",
+        "opponent": "Milwaukee Brewers",
+        "inning": "Bottom 4",
+        "distance": 370,
+        "exitVelocity": 101.6,
+        "launchAngle": 32
+      },
+      "ai": {
+        "primarySection": "HOMER AI",
+        "primaryRank": 19,
+        "sections": [
+          {
+            "section": "HOMER AI",
+            "rank": 19,
+            "confidence": 0.736,
+            "aiScore": 0.736
+          },
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 7,
+            "confidence": 0.736,
+            "aiScore": 0.736
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board",
+          "decision_center_top_30"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:29.798Z",
+      "x_post_id": "2089116866945884340",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_823590_694673_19",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nAbimelec Ortiz just left the yard.\n\nAI Says: LIVE LONGSHOTS #10\nWashington Nationals @ New York Mets\nTop 3\n389 ft · 103.5 mph EV · 25° LA\nOff Christian Scott\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Abimelec Ortiz"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823590,
+        "playId": 19,
+        "playerId": 694673,
+        "player": "Abimelec Ortiz",
+        "team": "Washington Nationals",
+        "opponent": "New York Mets",
+        "inning": "Top 3",
+        "distance": 389,
+        "exitVelocity": 103.5,
+        "launchAngle": 25
+      },
+      "ai": {
+        "primarySection": "LIVE LONGSHOTS",
+        "primaryRank": 10,
+        "sections": [
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 10,
+            "confidence": 0.727,
+            "aiScore": 0.727
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:30.004Z",
+      "x_post_id": "2089116867826704415",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "called_it_home_run_2026-08-16_823670_665019_24",
+      "date": "2026-08-16",
+      "type": "called_it_home_run",
+      "slot": "live",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nKody Clemens just left the yard.\n\nAI Says: LIVE LONGSHOTS #15\nPhiladelphia Phillies @ Minnesota Twins\nBottom 3\n400 ft · 104.9 mph EV · 35° LA\nOff Andrew Painter\n\nBoard: https://thesliplab.com/ai-says.html",
+      "players": [
+        "Kody Clemens"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": true,
+      "event": {
+        "gamePk": 823670,
+        "playId": 24,
+        "playerId": 665019,
+        "player": "Kody Clemens",
+        "team": "Minnesota Twins",
+        "opponent": "Philadelphia Phillies",
+        "inning": "Bottom 3",
+        "distance": 400,
+        "exitVelocity": 104.9,
+        "launchAngle": 35
+      },
+      "ai": {
+        "primarySection": "LIVE LONGSHOTS",
+        "primaryRank": 15,
+        "sections": [
+          {
+            "section": "LIVE LONGSHOTS",
+            "rank": 15,
+            "confidence": 0.665,
+            "aiScore": 0.665
+          }
+        ],
+        "archiveGrade": null,
+        "archiveRank": null,
+        "qualifiedBy": [
+          "ai_says_current_board"
+        ]
+      },
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:30.194Z",
+      "x_post_id": "2089116868648792493",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    },
+    {
+      "id": "2026-08-16_PREGAME_FINAL_READ",
+      "date": "2026-08-16",
+      "type": "final_read",
+      "slot": "pregame",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-16T22:27:27.854Z",
+      "text": "Final HR board check: if I had to narrow the entire slate to one profile, I keep coming back to Eduardo Valencia.\n\nStrong power profile, crushes this pitch mix and good HR weather conditions.\n\nHR confidence 58.7\nPower 74.2\nPitch edge 76.9\nBullpen context 44.6\n\nFull player breakdown: https://thesliplab.com/mlb.html\n\nOne lean—not a guarantee.",
+      "players": [
+        "Eduardo Valencia"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-16T22:27:30.468Z",
+      "x_post_id": "2089116869747749181",
+      "created_at": "2026-08-16T22:27:27.044Z",
+      "error": null
+    }
+  ]
 }
