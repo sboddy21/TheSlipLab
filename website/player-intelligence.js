@@ -220,16 +220,16 @@ style.innerHTML = `
 
   .player-grid {
     display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(360px,1fr));
-    gap:20px;
-    padding:0 28px 60px;
+    grid-template-columns:repeat(auto-fill,minmax(290px,1fr));
+    gap:10px;
+    padding:0 22px 48px;
   }
 
   .player-card {
-    background:#0d0d0d;
-    border:2px solid #222;
-    border-radius:22px;
-    padding:20px;
+    background:#101827;
+    border:1px solid #31445d;
+    border-radius:10px;
+    padding:13px;
   }
 
   .top {
@@ -240,70 +240,72 @@ style.innerHTML = `
 
   h2 {
     margin:0 0 6px;
-    font-size:22px;
+    font-size:17px;
+    line-height:1.1;
   }
 
   p {
     margin:0;
-    color:#8e8e93;
+    color:#b7c5d4;
+    font-size:11px;
   }
 
   .score {
-    font-size:42px;
+    font-size:28px;
     font-weight:900;
   }
 
   .grade {
-    font-size:13px;
+    font-size:10px;
     font-weight:900;
-    margin:14px 0;
+    margin:10px 0;
     letter-spacing:1px;
   }
 
   .tags {
     display:flex;
     flex-wrap:wrap;
-    gap:8px;
-    margin-bottom:18px;
+    gap:5px;
+    margin-bottom:10px;
   }
 
   .tags span {
     border:1px solid #333;
     border-radius:999px;
-    padding:6px 10px;
-    font-size:11px;
-    color:#30d158;
+    padding:4px 7px;
+    font-size:9px;
+    color:#6ee7a5;
   }
 
   .grid {
     display:grid;
     grid-template-columns:repeat(2,1fr);
-    gap:10px;
+    gap:6px;
   }
 
   .grid div {
     background:#111;
     border:1px solid #202020;
-    border-radius:14px;
-    padding:12px;
+    border-radius:7px;
+    padding:7px;
   }
 
   label {
     display:block;
-    color:#8e8e93;
-    font-size:10px;
-    margin-bottom:6px;
+    color:#b7c5d4;
+    font-size:9px;
+    margin-bottom:4px;
     letter-spacing:1px;
     text-transform:uppercase;
   }
 
   strong {
-    font-size:15px;
+    font-size:13px;
   }
 
   .matchup {
-    margin-top:16px;
-    padding-top:16px;
+    margin-top:10px;
+    padding-top:10px;
     border-top:1px solid #202020;
     display:flex;
     justify-content:space-between;
@@ -311,8 +313,8 @@ style.innerHTML = `
   }
 
   .matchup span {
-    color:#8e8e93;
-    font-size:12px;
+    color:#b7c5d4;
+    font-size:10px;
     text-transform:uppercase;
   }
 
