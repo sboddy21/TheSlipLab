@@ -98,6 +98,69 @@ async function fetchGameLog(playerId) {
   }
 }
 
+function splitStat(stat = {}) {
+  const ab = num(stat.atBats);
+  if (!ab) return null;
+  const hits = num(stat.hits);
+  const bb = num(stat.baseOnBalls);
+  const hbp = num(stat.hitByPitch);
+  const sf = num(stat.sacFlies);
+  const totalBases = num(stat.totalBases);
+  const avg = hits / ab;
+  const obp = (hits + bb + hbp) / (ab + bb + hbp + sf || 1);
+  const slg = totalBases / ab;
+  return { ab, hr: num(stat.homeRuns), avg: Number(avg.toFixed(3)), obp: Number(obp.toFixed(3)), slg: Number(slg.toFixed(3)), ops: Number((obp + slg).toFixed(3)) };
+}
+
+function splitBucket(split) {
+  const raw = `${split?.split?.code || ""} ${split?.split?.description || ""} ${split?.split?.name || ""}`.toLowerCase();
+  if (/(^|\\W)(vl|vslhp|vs left|vsleft|left-handed|left handed)(\\W|$)/.test(raw)) return "vsLhp";
+  if (/(^|\\W)(vr|vsrhp|vs right|vsright|right-handed|right handed)(\\W|$)/.test(raw)) return "vsRhp";
+  if (/(^|\\W)day(\\W|$)/.test(raw)) return "day";
+  if (/(^|\\W)night(\\W|$)/.test(raw)) return "night";
+  return "";
+}
+
+async function fetchSeasonSplits(playerId) {
+  const season = new Date().getFullYear();
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting&season=${season}&sitCodes=vl,vr,day,night`;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return {};
+    const data = await res.json();
+    const splits = {};
+    for (const group of data?.stats || []) {
+      for (const split of group?.splits || []) {
+        const bucket = splitBucket(split);
+        const line = splitStat(split?.stat);
+        if (bucket && line) splits[bucket] = line;
+      }
+    }
+    return splits;
+  } catch {
+    return {};
+  }
+}
+
+function bestSplit(first, firstLabel, second, secondLabel) {
+  const eligible = value => value && value.ab >= 20 && Number.isFinite(value.ops);
+  if (!eligible(first) && !eligible(second)) return null;
+  if (eligible(first) && (!eligible(second) || first.ops >= second.ops + 0.025)) return { label: firstLabel, ops: first.ops, ab: first.ab };
+  if (eligible(second) && (!eligible(first) || second.ops >= first.ops + 0.025)) return { label: secondLabel, ops: second.ops, ab: second.ab };
+  return null;
+}
+
+function buildSplits(raw) {
+  return {
+    vsLhp: raw?.vsLhp || null,
+    vsRhp: raw?.vsRhp || null,
+    day: raw?.day || null,
+    night: raw?.night || null,
+    bestHand: bestSplit(raw?.vsLhp, "BEST VS LHP", raw?.vsRhp, "BEST VS RHP"),
+    bestTime: bestSplit(raw?.day, "DAY EDGE", raw?.night, "NIGHT EDGE")
+  };
+}
+
 function collectPlayers() {
   const map = new Map();
   const playerIdByName = new Map();
@@ -235,7 +298,7 @@ async function main() {
     i++;
     console.log(`[${i}/${players.length}] ${player.player}`);
 
-    const logs = await fetchGameLog(player.playerId);
+    const [logs, seasonSplits] = await Promise.all([fetchGameLog(player.playerId), fetchSeasonSplits(player.playerId)]);
     if (logs === null) {
       throw new Error(`MLB game log unavailable for ${player.player}; refusing to write incomplete recent-form data`);
     }
@@ -271,6 +334,7 @@ async function main() {
             ? "MEDIUM"
             : "LOW",
       recentStatcast: player.recentStatcastForm || null,
+      splits: buildSplits(seasonSplits),
       pitchingExposure: player.pitchingExposure || null,
       dataQuality: player.dataQuality || null,
       rawModelConfidence: num(player.rawModelConfidence),
