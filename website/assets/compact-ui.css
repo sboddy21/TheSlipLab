@@ -68,51 +68,80 @@ body.tsl-editorial .lede {
   line-height: 1.45;
 }
 
-/* AI Says: cards stay informative but stop reading like a full-page report. */
+/* AI Says: intentionally compact, high-contrast scan cards.
+ * These rules use explicit light values because this page's panels are dark.
+ * The earlier shared editorial colors were designed for light panels and made
+ * some of this page's metadata unnecessarily hard to read. */
 body.tsl-ai-page .section { margin-bottom: 14px; }
-body.tsl-ai-page .section-head { padding: 11px 13px; }
-body.tsl-ai-page .section-head h3 { font-size: 20px; }
-body.tsl-ai-page .section-head p { font-size: 11px; }
+body.tsl-ai-page .section {
+  border-radius: 12px;
+  border-color: #29435e;
+  background: #091628;
+  box-shadow: none;
+}
+body.tsl-ai-page .section-head {
+  padding: 11px 13px;
+  background: #0d213a;
+  border-bottom-color: #29435e;
+}
+body.tsl-ai-page .section-head h3 { color: #f8fbff; font-size: 19px; }
+body.tsl-ai-page .section-head p { color: #bfcedd; font-size: 11px; }
 body.tsl-ai-page .players {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1px;
-  padding: 1px;
+  grid-template-columns: repeat(auto-fill, minmax(244px, 1fr));
+  gap: 8px;
+  padding: 9px;
 }
 body.tsl-ai-page .player {
   min-height: 0;
-  padding: 12px;
+  padding: 11px;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #14243a, #0e192a);
+  border-color: #36516d;
+  box-shadow: none;
+}
+body.tsl-ai-page .player:hover {
+  border-color: #78f1b0;
+  background: linear-gradient(145deg, #172d46, #102036);
 }
 body.tsl-ai-page .player h4 {
+  color: #ffffff;
   font-size: 17px;
-  line-height: 1.08;
+  line-height: 1.15;
   margin: 0;
 }
 body.tsl-ai-page .player .sub {
-  color: var(--tsl-compact-muted);
+  color: #c4d2df;
   font-size: 10px;
   line-height: 1.35;
   margin-top: 4px;
 }
 body.tsl-ai-page .player .take {
-  color: var(--tsl-compact-ink);
-  font-size: 12px;
+  color: #e5edf5;
+  font-size: 11px;
   line-height: 1.4;
-  margin-top: 8px;
+  margin-top: 7px;
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
 }
-body.tsl-ai-page .player .balance { gap: 5px; margin-top: 9px; }
+body.tsl-ai-page .player .balance { gap: 5px; margin-top: 8px; }
 body.tsl-ai-page .player .balance span { font-size: 9px; padding: 4px 6px; }
-body.tsl-ai-page .player .mini { gap: 5px; margin-top: 9px; }
-body.tsl-ai-page .player .mini div { padding: 6px 7px; }
+body.tsl-ai-page .player .balance .support { color: #d5ffe7; }
+body.tsl-ai-page .player .balance .caution { color: #ffe2b2; }
+body.tsl-ai-page .player .mini { gap: 5px; margin-top: 8px; }
+body.tsl-ai-page .player .mini div {
+  padding: 6px 7px;
+  border-radius: 7px;
+  background: #0a1524;
+  border-color: #29435e;
+}
 body.tsl-ai-page .player .mini small {
-  color: var(--tsl-compact-muted);
+  color: #b8c7d7;
   font-size: 9px;
   opacity: 1;
 }
-body.tsl-ai-page .player .mini b { color: var(--tsl-compact-ink); font-size: 13px; }
+body.tsl-ai-page .player .mini b { color: #ffffff; font-size: 13px; }
 
 /* The shared decision, power, and matchup player cards use the same compact rhythm. */
 body.tsl-decision-page .grid,
