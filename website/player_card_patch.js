@@ -8034,6 +8034,105 @@
   document.head.appendChild(style);
 })();
 
+// The compact player panel now uses a light editorial surface.  The original
+// pitch-vulnerability components were designed for the old dark panel, so give
+// every nested value an explicit light-surface color instead of inheriting the
+// old near-white text tokens.
+(() => {
+  const style = document.createElement("style");
+  style.id = "pcPitchReadabilityFix";
+  style.textContent = `
+    body.tsl-editorial #pcBox .pcvuln{
+      margin:0 0 12px!important;
+      padding:13px!important;
+      border:1px solid #f0c69d!important;
+      border-radius:8px!important;
+      background:#fff8ef!important;
+      color:#19324d!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln .pcsection-head{margin:0 0 10px!important}
+    body.tsl-editorial #pcBox .pcvuln .pcsection-head h3{color:#0b2542!important}
+    body.tsl-editorial #pcBox .pcvuln .pcsection-head p{color:#50647a!important}
+    body.tsl-editorial #pcBox .pcvuln .pcsection-head span{
+      border-color:#d6a040!important;
+      background:#fff7e7!important;
+      color:#8a531a!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-grid{gap:8px!important;margin-bottom:9px!important}
+    body.tsl-editorial #pcBox .pcvuln-card{
+      padding:10px!important;
+      border:1px solid #d9e0e6!important;
+      border-radius:5px!important;
+      background:#fff!important;
+      color:#19324d!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-card span{
+      color:#60748a!important;
+      font-size:8px!important;
+      line-height:1.25!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-card strong{
+      color:#152f4b!important;
+      font-size:17px!important;
+      line-height:1.14!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-card.main strong{color:#d86f20!important}
+    body.tsl-editorial #pcBox .pcvuln-card em{
+      color:#aa5a1a!important;
+      font-size:10px!important;
+      font-style:normal!important;
+      opacity:1!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-zones{
+      gap:7px!important;
+      padding-top:8px!important;
+      border-top:1px solid #ead7c2!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-zone{
+      padding:7px 9px!important;
+      border:1px solid #dfe5ea!important;
+      border-radius:4px!important;
+      background:#fffdf8!important;
+    }
+    body.tsl-editorial #pcBox .pcvuln-zone b{color:#536a80!important;font-size:11px!important}
+    body.tsl-editorial #pcBox .pcvuln-zone span{color:#267451!important;font-size:12px!important}
+    body.tsl-editorial #pcBox .pcvuln-note{
+      margin-top:9px!important;
+      padding:9px 10px!important;
+      border:1px solid #dfe5ea!important;
+      border-radius:4px!important;
+      background:#fffdf8!important;
+      color:#3e556c!important;
+      font-size:11px!important;
+      line-height:1.42!important;
+      opacity:1!important;
+    }
+    body.tsl-editorial #pcBox .pcpitchtable{
+      border-color:#ccd6df!important;
+      border-radius:5px!important;
+      background:#fff!important;
+    }
+    body.tsl-editorial #pcBox .pcpitchrow{
+      border-color:#dce3e9!important;
+      background:#fff!important;
+      color:#19324d!important;
+    }
+    body.tsl-editorial #pcBox .pcpitchrow.head{
+      background:#0b2542!important;
+      color:#fff!important;
+    }
+    body.tsl-editorial #pcBox .pcpitchrow strong{color:#9b3219!important}
+    body.tsl-editorial #pcBox .pcpitchrow .good{color:#19775b!important}
+    body.tsl-editorial #pcBox .pcpitchrow .hot{color:#9b3219!important}
+    body.tsl-editorial #pcBox .pcpitchrow i{opacity:1!important}
+    @media(max-width:720px){
+      body.tsl-editorial #pcBox .pcvuln-grid{grid-template-columns:1fr!important}
+      body.tsl-editorial #pcBox .pcvuln-zones{grid-template-columns:1fr!important}
+    }
+  `;
+  document.head.appendChild(style);
+})();
+
 /* Clean Zone Map CSS Injection */
 (function(){
   const s = document.createElement("style");
