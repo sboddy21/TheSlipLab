@@ -1298,14 +1298,12 @@
   }
 
   function renderHero(row) {
-    const h = stats(row);
     const conf = hrChance(row);
-    const prob = Math.max(3, Math.min(25, conf / 4));
     const theme = pcTheme(row);
 
     return `
-      <div class="pcheader pctheme-${theme}">
-        <div>
+      <div class="pcheader pccompact-hero pctheme-${theme}">
+        <div class="pccompact-identity">
           <h2>${esc(row.player)}</h2>
           <p>${esc(row.team)} vs ${esc(row.opponent)}${row.opposingPitcher ? " • vs " + esc(row.opposingPitcher) : ""}</p>
           <div class="pcchips">${chips(row)}</div>
@@ -1316,28 +1314,11 @@
         </div>
       </div>
 
-      <div class="pcbiggrid">
-        ${metric("ISO", dec(num(h.SLG) - num(h.AVG)))}
-        ${metric("SLG", dec(h.SLG))}
-        ${metric("HR", h.HR)}
-        ${metric("OPS", dec(h.OPS))}
-        ${metric("HR Confidence", one(conf))}
+      <div class="pcbiggrid pccompact-metrics">
+        ${metric("HR confidence", one(conf))}
         ${metric("Power", one(row.powerScore))}
         ${metric("Pitch Edge", one(row.pitchEdge))}
-        ${metric("Weather", one(row.weather))}
-      </div>
-
-      ${renderDecisionVerdict(row)}
-      ${renderBullpenRiskSnapshot(row)}
-      ${renderParkAttackProfile(row)}
-      ${renderHrCase(row)}
-      ${renderMatchupIntel(row)}
-
-      <div class="pcbars">
-        ${bar("HR Chance", conf, 24, "%")}
-        ${bar("Power Score", row.powerScore, 100)}
-        ${bar("Zone Power", row.hitterZonePower, 100)}
-        ${bar("Pitcher Risk", row.pitcherRisk, 100)}
+        ${metric("Weather edge", one(row.pullWindHrScore || row.weather))}
       </div>
     `;
   }
@@ -1495,7 +1476,7 @@
     });
 
     modal.classList.add("on");
-    renderTab("zones", activePlayer);
+    renderTab("why", activePlayer);
   }
 
   function css() {
@@ -8552,4 +8533,251 @@
 (function(){
   const editorial = document.getElementById("pcEditorialCss");
   if (editorial) document.head.appendChild(editorial);
+})();
+
+/* Compact, high-contrast Slate player detail redesign.  This stays last so it
+   deliberately replaces the older, dashboard-sized visual treatments above. */
+(function(){
+  if (document.getElementById("pcCompactProfileRedesign")) return;
+
+  const style = document.createElement("style");
+  style.id = "pcCompactProfileRedesign";
+  style.textContent = `
+    body.tsl-editorial #pcFull{
+      display:none!important;
+      align-items:flex-start!important;
+      justify-content:center!important;
+      padding:20px!important;
+      overflow:auto!important;
+      background:rgba(5,20,38,.72)!important;
+      backdrop-filter:blur(5px)!important;
+    }
+    body.tsl-editorial #pcFull.on{display:flex!important}
+    body.tsl-editorial #pcBox{
+      position:relative!important;
+      width:min(900px,100%)!important;
+      max-width:900px!important;
+      max-height:calc(100vh - 40px)!important;
+      margin:0!important;
+      padding:18px!important;
+      overflow:auto!important;
+      border:1px solid #cfd7df!important;
+      border-radius:12px!important;
+      background:#fffdf8!important;
+      color:#132a43!important;
+      box-shadow:0 24px 70px rgba(0,0,0,.36)!important;
+    }
+    body.tsl-editorial #pcBox *{text-shadow:none!important}
+    body.tsl-editorial #pcBox h2,
+    body.tsl-editorial #pcBox h3{color:#0b2542!important}
+    body.tsl-editorial #pcBox p{color:#50647a!important}
+    body.tsl-editorial #pcClose{
+      position:absolute!important;
+      top:14px!important;
+      right:14px!important;
+      z-index:5!important;
+      padding:7px 10px!important;
+      border:1px solid #aebcca!important;
+      border-radius:6px!important;
+      background:#fffdf8!important;
+      color:#183552!important;
+      font-size:10px!important;
+      line-height:1!important;
+      letter-spacing:.06em!important;
+      text-transform:uppercase!important;
+    }
+    body.tsl-editorial .pccompact-hero{
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr) 110px!important;
+      align-items:start!important;
+      gap:18px!important;
+      min-height:0!important;
+      margin:0 0 12px!important;
+      padding:2px 48px 13px 0!important;
+      border:0!important;
+      border-bottom:1px solid #d7dee5!important;
+      border-radius:0!important;
+      background:transparent!important;
+      overflow:visible!important;
+    }
+    body.tsl-editorial .pccompact-hero::before{display:none!important}
+    body.tsl-editorial .pccompact-hero h2{
+      margin:0!important;
+      font-family:Georgia,"Times New Roman",serif!important;
+      font-size:28px!important;
+      line-height:1.05!important;
+      letter-spacing:-.02em!important;
+    }
+    body.tsl-editorial .pccompact-hero p{
+      margin:5px 0 0!important;
+      font-size:12px!important;
+      font-weight:700!important;
+      line-height:1.35!important;
+    }
+    body.tsl-editorial .pcprob{
+      width:auto!important;
+      height:auto!important;
+      min-height:74px!important;
+      padding:10px!important;
+      border:1px solid #1268f3!important;
+      border-radius:8px!important;
+      background:#f4f8ff!important;
+      align-items:flex-end!important;
+    }
+    body.tsl-editorial .pcprob b{color:#1268f3!important;font-size:27px!important;line-height:1!important}
+    body.tsl-editorial .pcprob span{margin-top:5px!important;color:#49647f!important;font-size:9px!important}
+    body.tsl-editorial .pcchips{
+      gap:5px!important;
+      max-height:49px!important;
+      margin-top:9px!important;
+      overflow:hidden!important;
+    }
+    body.tsl-editorial .pcchip{
+      padding:4px 6px!important;
+      border:1px solid #c6d0db!important;
+      border-radius:4px!important;
+      background:#fffdf8!important;
+      color:#39526c!important;
+      box-shadow:none!important;
+      font-size:8px!important;
+      line-height:1.1!important;
+      letter-spacing:.035em!important;
+    }
+    body.tsl-editorial .pcchip-top,
+    body.tsl-editorial .pcchip-gold{border-color:#d5aa22!important;background:#fff8df!important;color:#806100!important}
+    body.tsl-editorial .pcchip-strong{border-color:#43a47a!important;background:#edfbf3!important;color:#126846!important}
+    body.tsl-editorial .pcchip-power{border-color:#db7759!important;background:#fff1ec!important;color:#a33b25!important}
+    body.tsl-editorial .pcchip-pitch{border-color:#67a6df!important;background:#eef7ff!important;color:#216296!important}
+    body.tsl-editorial .pcchip-zone{border-color:#dda057!important;background:#fff5e7!important;color:#94551a!important}
+    body.tsl-editorial .pcchip-weather{border-color:#79b8df!important;background:#eef9ff!important;color:#27749f!important}
+    body.tsl-editorial .pcchip-bullpen{border-color:#a58ace!important;background:#f6f0ff!important;color:#65449a!important}
+    body.tsl-editorial .pcbiggrid.pccompact-metrics{
+      grid-template-columns:repeat(4,minmax(0,1fr))!important;
+      gap:8px!important;
+      margin:0 0 12px!important;
+    }
+    body.tsl-editorial .pcbiggrid.pccompact-metrics .pcm,
+    body.tsl-editorial .pcintel-grid .pcm{
+      min-height:0!important;
+      padding:9px 10px!important;
+      border:1px solid #d5dde5!important;
+      border-radius:5px!important;
+      background:#fff!important;
+    }
+    body.tsl-editorial .pcm label{color:#60748a!important;font-size:8px!important;letter-spacing:.055em!important}
+    body.tsl-editorial .pcm b{color:#1268f3!important;font-size:16px!important}
+    body.tsl-editorial .pctabs{
+      gap:5px!important;
+      margin:0 0 13px!important;
+      padding:0 0 8px!important;
+      overflow-x:auto!important;
+      border:0!important;
+      border-bottom:1px solid #d7dee5!important;
+      border-radius:0!important;
+      background:transparent!important;
+    }
+    body.tsl-editorial .pctab{
+      flex:0 0 auto!important;
+      padding:7px 10px!important;
+      border:1px solid #bfcbd5!important;
+      border-radius:4px!important;
+      background:#fffdf8!important;
+      color:#314a63!important;
+      font-size:11px!important;
+      line-height:1!important;
+    }
+    body.tsl-editorial .pctab.on{
+      border:1px solid #1268f3!important;
+      background:#1268f3!important;
+      color:#fff!important;
+    }
+    body.tsl-editorial #pcTabBody{min-height:0!important}
+    body.tsl-editorial .pcwhy,
+    body.tsl-editorial .pcintel,
+    body.tsl-editorial .pccase,
+    body.tsl-editorial .pcverdict,
+    body.tsl-editorial .pcpark-profile,
+    body.tsl-editorial .pcbp-snapshot,
+    body.tsl-editorial .pcrecent{
+      margin:0 0 12px!important;
+      padding:13px!important;
+      border:1px solid #d5dde5!important;
+      border-radius:8px!important;
+      background:#fff!important;
+      color:#19324d!important;
+      box-shadow:none!important;
+    }
+    body.tsl-editorial .pcwhy-hero,
+    body.tsl-editorial .pccase-main,
+    body.tsl-editorial .pcverdict-top{gap:14px!important}
+    body.tsl-editorial .pcwhy h3,
+    body.tsl-editorial .pcintel h3,
+    body.tsl-editorial .pccase h3,
+    body.tsl-editorial .pcverdict h3,
+    body.tsl-editorial .pcpark-profile h3,
+    body.tsl-editorial .pcbp-snapshot h3,
+    body.tsl-editorial .pcrecent h3{
+      margin:0 0 4px!important;
+      font-family:Georgia,"Times New Roman",serif!important;
+      font-size:17px!important;
+      letter-spacing:0!important;
+      line-height:1.15!important;
+      text-transform:none!important;
+    }
+    body.tsl-editorial .pcwhy p,
+    body.tsl-editorial .pccase p,
+    body.tsl-editorial .pcverdict p{font-size:13px!important;line-height:1.45!important}
+    body.tsl-editorial .pcwhy-score,
+    body.tsl-editorial .pccase-score,
+    body.tsl-editorial .pcverdict-score{
+      flex:0 0 78px!important;
+      min-height:66px!important;
+      padding:9px!important;
+      border:1px solid #c9d8eb!important;
+      border-radius:7px!important;
+      background:#f4f8ff!important;
+    }
+    body.tsl-editorial .pcwhy-score strong,
+    body.tsl-editorial .pccase-score strong,
+    body.tsl-editorial .pcverdict-score strong{color:#1268f3!important;font-size:23px!important}
+    body.tsl-editorial .pcwhy-score span,
+    body.tsl-editorial .pccase-score small,
+    body.tsl-editorial .pcverdict-score small{color:#60748a!important;font-size:8px!important}
+    body.tsl-editorial .pcwhy-list{gap:6px!important;margin-top:12px!important}
+    body.tsl-editorial .pcwhy-row{
+      padding:8px!important;
+      border:1px solid #e0e6eb!important;
+      border-radius:5px!important;
+      background:#fbfcfd!important;
+      color:#29435c!important;
+      font-size:12px!important;
+    }
+    body.tsl-editorial .pcwhy-row b{background:#eaf2ff!important;color:#1268f3!important}
+    body.tsl-editorial .pcsection-head{margin-bottom:10px!important}
+    body.tsl-editorial .pcsection-head span{border-color:#d6a040!important;background:#fff7e7!important;color:#8a5a13!important}
+    body.tsl-editorial .pcintel-grid{gap:7px!important}
+    body.tsl-editorial .pcbars,
+    body.tsl-editorial .pcprofile{gap:7px!important}
+    body.tsl-editorial .pcbar{padding:8px!important;border-color:#d5dde5!important;background:#fff!important}
+    body.tsl-editorial .pcbar-top{color:#3b536b!important;font-size:10px!important}
+    body.tsl-editorial .pcbar-track{height:7px!important;background:#e5eaf0!important}
+    body.tsl-editorial .pcbar-fill{background:linear-gradient(90deg,#1268f3,#68ba33)!important}
+    body.tsl-editorial .pctable{border-color:#d5dde5!important;background:#d5dde5!important}
+    body.tsl-editorial .pctable div{background:#fff!important;color:#29435c!important;font-size:11px!important}
+    @media(max-width:720px){
+      body.tsl-editorial #pcFull{padding:8px!important}
+      body.tsl-editorial #pcBox{max-height:calc(100vh - 16px)!important;padding:13px!important}
+      body.tsl-editorial .pccompact-hero{grid-template-columns:minmax(0,1fr) 82px!important;gap:10px!important;padding-right:40px!important}
+      body.tsl-editorial .pccompact-hero h2{font-size:23px!important}
+      body.tsl-editorial .pcprob{min-height:63px!important;padding:8px!important}
+      body.tsl-editorial .pcprob b{font-size:22px!important}
+      body.tsl-editorial .pcbiggrid.pccompact-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      body.tsl-editorial .pcintel-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+      body.tsl-editorial .pcwhy-hero,
+      body.tsl-editorial .pccase-main,
+      body.tsl-editorial .pcverdict-top{display:flex!important}
+      body.tsl-editorial .pcchips{max-height:43px!important}
+    }
+  `;
+  document.head.appendChild(style);
 })();
