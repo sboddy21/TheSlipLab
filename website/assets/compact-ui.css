@@ -1,0 +1,178 @@
+/*
+ * Compact UI system
+ *
+ * This file deliberately loads after each page's older page-specific CSS.
+ * It gives the site one readable, scan-first type scale without relying on
+ * low-opacity text or ultra-small metadata.
+ */
+:root {
+  --tsl-compact-ink: #071d36;
+  --tsl-compact-muted: #40576d;
+  --tsl-compact-line: #1a3045;
+  --tsl-compact-panel: #fffdf7;
+  --tsl-compact-soft: #edf3fa;
+}
+
+body.tsl-editorial {
+  font-size: 14px;
+  line-height: 1.42;
+}
+
+body.tsl-editorial .tsl-site-header {
+  border-top-width: 30px;
+}
+
+body.tsl-editorial .tsl-site-header-inner {
+  min-height: 76px;
+  padding: 12px 0;
+  gap: 26px;
+}
+
+body.tsl-editorial .tsl-brand {
+  font-size: 27px;
+}
+
+body.tsl-editorial .tsl-nav {
+  gap: 18px;
+}
+
+body.tsl-editorial .tsl-nav a,
+body.tsl-editorial .tsl-more-trigger {
+  font-size: 11px;
+  letter-spacing: .1em;
+}
+
+body.tsl-editorial .wrap,
+body.tsl-editorial main {
+  width: min(1460px, calc(100% - 40px));
+  padding-top: 20px;
+  padding-bottom: 64px;
+}
+
+/* Consistent editorial hierarchy — compact display type, readable body type. */
+@media (min-width: 901px) {
+  body.tsl-slate-page h1 { font-size: clamp(42px, 4.8vw, 68px); }
+  body.tsl-tool-page .title,
+  body.tsl-ai-page .hero h1,
+  body.tsl-hof-page .hero h1,
+  body.tsl-pitcher-page .hero h1 { font-size: clamp(36px, 4vw, 54px); }
+  body.tsl-home-page .hero h1 { font-size: clamp(46px, 5vw, 72px); }
+}
+
+body.tsl-editorial .title + p,
+body.tsl-editorial .hero p,
+body.tsl-editorial .subtitle,
+body.tsl-editorial .lede {
+  color: var(--tsl-compact-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* AI Says: cards stay informative but stop reading like a full-page report. */
+body.tsl-ai-page .section { margin-bottom: 14px; }
+body.tsl-ai-page .section-head { padding: 11px 13px; }
+body.tsl-ai-page .section-head h3 { font-size: 20px; }
+body.tsl-ai-page .section-head p { font-size: 11px; }
+body.tsl-ai-page .players {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1px;
+  padding: 1px;
+}
+body.tsl-ai-page .player {
+  min-height: 0;
+  padding: 12px;
+}
+body.tsl-ai-page .player h4 {
+  font-size: 17px;
+  line-height: 1.08;
+  margin: 0;
+}
+body.tsl-ai-page .player .sub {
+  color: var(--tsl-compact-muted);
+  font-size: 10px;
+  line-height: 1.35;
+  margin-top: 4px;
+}
+body.tsl-ai-page .player .take {
+  color: var(--tsl-compact-ink);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 8px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+body.tsl-ai-page .player .balance { gap: 5px; margin-top: 9px; }
+body.tsl-ai-page .player .balance span { font-size: 9px; padding: 4px 6px; }
+body.tsl-ai-page .player .mini { gap: 5px; margin-top: 9px; }
+body.tsl-ai-page .player .mini div { padding: 6px 7px; }
+body.tsl-ai-page .player .mini small {
+  color: var(--tsl-compact-muted);
+  font-size: 9px;
+  opacity: 1;
+}
+body.tsl-ai-page .player .mini b { color: var(--tsl-compact-ink); font-size: 13px; }
+
+/* The shared decision, power, and matchup player cards use the same compact rhythm. */
+body.tsl-decision-page .grid,
+body.tsl-power-page .grid,
+body.tsl-matchup-page .grid {
+  gap: 1px;
+  padding: 1px;
+}
+body.tsl-decision-page .card,
+body.tsl-power-page .card,
+body.tsl-matchup-page .card {
+  padding: 12px;
+}
+body.tsl-decision-page .name,
+body.tsl-power-page .name,
+body.tsl-matchup-page .name { font-size: 17px; line-height: 1.08; }
+body.tsl-decision-page .meta,
+body.tsl-power-page .meta,
+body.tsl-matchup-page .meta {
+  color: var(--tsl-compact-muted);
+  font-size: 10px;
+  opacity: 1;
+}
+body.tsl-decision-page .score,
+body.tsl-power-page .score,
+body.tsl-matchup-page .score { font-size: 23px; }
+body.tsl-decision-page .metric,
+body.tsl-power-page .metric,
+body.tsl-matchup-page .metric { padding: 7px; }
+body.tsl-decision-page .metric small,
+body.tsl-power-page .metric small,
+body.tsl-matchup-page .metric small {
+  color: var(--tsl-compact-muted);
+  font-size: 9px;
+  opacity: 1;
+}
+
+/* Slate and board rows: compact enough to scan, never below readable data size. */
+body.tsl-slate-page .game-card { margin-bottom: 12px; }
+body.tsl-slate-page .game-head { padding: 10px 12px; }
+body.tsl-slate-page .matchup-grid { gap: 8px; padding: 8px; }
+body.tsl-slate-page .side-top { padding: 9px; }
+body.tsl-slate-page .danger { padding: 9px; }
+body.tsl-slate-page .bat { min-height: 60px; padding: 7px; }
+body.tsl-slate-page .bat .name { font-size: 14px; }
+body.tsl-slate-page .bat .meta,
+body.tsl-slate-page .bat small { color: var(--tsl-compact-muted); opacity: 1; }
+
+body.tsl-weather-page .weather-summary-card,
+body.tsl-weather-page .weather-card { padding: 12px; }
+body.tsl-weather-page .weather-card h3 { font-size: 17px; }
+body.tsl-weather-page .weather-card p,
+body.tsl-weather-page .weather-card small { color: var(--tsl-compact-muted); opacity: 1; }
+
+/* Mobile keeps the same hierarchy without a crowded header or oversized cards. */
+@media (max-width: 900px) {
+  body.tsl-editorial .tsl-site-header { border-top-width: 26px; }
+  body.tsl-editorial .tsl-site-header-inner { min-height: 66px; padding: 10px 0; }
+  body.tsl-editorial .tsl-brand { font-size: 23px; }
+  body.tsl-editorial .wrap,
+  body.tsl-editorial main { width: min(100% - 28px, 1460px); padding-top: 16px; }
+  body.tsl-ai-page .players { grid-template-columns: 1fr; }
+}

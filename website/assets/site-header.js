@@ -1,4 +1,17 @@
 (function(){
+  // Load the shared compact UI layer after each page's legacy stylesheet.
+  // A versioned filename keeps visual updates from being held by an old browser cache.
+  function initCompactUi(){
+    if (document.getElementById("tsl-compact-ui")) return;
+    const link = document.createElement("link");
+    link.id = "tsl-compact-ui";
+    link.rel = "stylesheet";
+    link.href = "./assets/compact-ui.css?v=20260816";
+    document.head.appendChild(link);
+  }
+
+  initCompactUi();
+
   function initAnalytics(){
     if (document.querySelector('script[data-tsl-vercel-analytics]')) return;
 
