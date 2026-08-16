@@ -6,7 +6,7 @@
     const link = document.createElement("link");
     link.id = "tsl-compact-ui";
     link.rel = "stylesheet";
-    link.href = "./assets/compact-ui.css?v=20260816";
+    link.href = "./assets/compact-ui.css?v=20260816b";
     document.head.appendChild(link);
   }
 
