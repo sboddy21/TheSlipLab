@@ -577,10 +577,35 @@
     );
   }
 
-  function handMatchupLabel(row) {
-    const hand = pitcherHandFor(row);
-    return hand ? "vs " + hand : "";
-  }
+function handMatchupLabel(row) {
+  const hand = pitcherHandFor(row);
+  return hand ? "vs " + hand : "";
+}
+
+function normalizedBatterHand(value) {
+  const raw = String(value || "").trim().toUpperCase();
+  if (!raw) return "";
+  if (raw === "L" || raw === "LH" || raw === "LHB" || raw.includes("LEFT")) return "LHB";
+  if (raw === "R" || raw === "RH" || raw === "RHB" || raw.includes("RIGHT")) return "RHB";
+  if (raw === "S" || raw === "SH" || raw === "SHB" || raw.includes("SWITCH")) return "SHB";
+  return "";
+}
+
+function batterHandFor(row) {
+  const card = playerCardFor(row);
+  return normalizedBatterHand(
+    row.batterHand ||
+    row.batSide ||
+    row.bats ||
+    row.stats?.hitter?.batSide ||
+    row.stats?.hitter?.bats ||
+    card?.batterHand ||
+    card?.batSide ||
+    card?.bats ||
+    card?.stats?.hitter?.batSide ||
+    card?.stats?.hitter?.bats
+  );
+}
 
   function recentLabel(row) {
     const recentHr =
@@ -1217,8 +1242,8 @@
     return `<div class="player-stat"><label>${esc(label)}</label><b>${esc(show(value))}</b></div>`;
   }
 
-  function renderBat(row, index) {
-    const s = statsOf(row);
+function renderBat(row, index) {
+  const s = statsOf(row);
     const note = row.note || (Array.isArray(row.reasons) ? row.reasons.join(" + ") : "matchup context warrants monitoring");
     const signals = slateSignalsFor(row);
     const form = playerFormSignal(row);
@@ -1232,13 +1257,19 @@
         .map(player => String(player.playerId || ""))
         .filter(Boolean)
     );
-    const displayName = sameNamePlayerIds.size > 1 ? `${row.player} · ${code(row.team)}` : row.player;
-    return `
+  const displayName = sameNamePlayerIds.size > 1 ? `${row.player} · ${code(row.team)}` : row.player;
+  const batterHand = batterHandFor(row);
+  const pitcherHand = pitcherHandFor(row);
+  return `
       <article class="bat sweet-bat ${signalClasses}" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
         <div class="face">${esc(initials(row.player))}</div>
         <div class="sweet-main">
-          <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(displayName)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
-          ${playerSignalStrip(row)}
+        <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(displayName)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
+        ${batterHand || pitcherHand ? `<div class="slate-handedness" aria-label="Handedness matchup">
+          ${batterHand ? `<span class="slate-hand-badge slate-batter-hand">${esc(batterHand)}</span>` : ""}
+          ${pitcherHand ? `<span class="slate-hand-badge slate-pitcher-hand">VS ${esc(pitcherHand)}</span>` : ""}
+        </div>` : ""}
+        ${playerSignalStrip(row)}
           ${signalLabels ? `<div class="slate-signal-labels">${signalLabels}</div>` : ""}
           <div class="sweet-lineup">${esc(lineupSpotLabel(row))}</div>
           ${matchupBadges(row)}
@@ -1257,14 +1288,18 @@
     const pitcherTeam = away ? game.awayTeam : game.homeTeam;
     const hitterTeam = away ? game.homeTeam : game.awayTeam;
     const pitcher = away ? game.awayPitcher : game.homePitcher;
+    const hand = normalizedPitcherHand(pitcher?.side || pitcher?.throws || pitcher?.hand);
     const hitters = (away ? game.hitters?.home || [] : game.hitters?.away || [])
       .filter(isLineupEligible)
-      .sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)));
+      .sort((a, b) => num(scoreOf(b)) - num(scoreOf(a)))
+      .map(row => ({
+        ...row,
+        opposingPitcherHand: row.opposingPitcherHand || hand
+      }));
     const lineup = away ? game.homeBattingOrder || [] : game.awayBattingOrder || [];
     const lineupStatus = away ? game.homeLineupStatus : game.awayLineupStatus;
     const lineupText = lineup.length ? lineup.length + "/9" : (String(lineupStatus || "").includes("CONFIRMED") ? "Posted" : hitters.length ? "Projected" : "Pending");
     const pitcherLabel = pitcher?.name || pitcher?.pitcher || "TBD";
-    const hand = normalizedPitcherHand(pitcher?.side || pitcher?.throws || pitcher?.hand);
     const vuln = pitcherVulnerability(game, side);
     const vulnClass = vulnerabilityTier(vuln).className;
     const pitcherStats = pitcherStatsFor(game, side);
@@ -2073,6 +2108,10 @@ function injectPlayerSignalStyles(){
     .pitcher-hand{display:inline-flex;align-items:center;border:1px solid;font-size:10px;font-weight:950;letter-spacing:.08em;padding:3px 7px;border-radius:999px;line-height:1}
     .pitcher-hand.left{background:#eaf3ff;border-color:#2e75c9;color:#073a71}
     .pitcher-hand.right{background:#fff0ec;border-color:#d35a40;color:#762313}
+    .slate-handedness{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:5px 0 4px}
+    .slate-hand-badge{display:inline-flex;align-items:center;min-height:21px;padding:3px 7px;border:1px solid;border-radius:999px;font-size:9px;line-height:1;font-weight:950;letter-spacing:.07em;white-space:nowrap}
+    .slate-batter-hand{background:#f3f5f7;border-color:#9aa8b8;color:#324458}
+    .slate-pitcher-hand{background:#edf4ff;border-color:#8eb8e8;color:#104e86}
     .player-signal-strip{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin:6px 0 5px}
     .player-form-chip,.player-signal-chip{display:inline-flex;align-items:center;gap:5px;min-height:22px;padding:3px 7px;border:1px solid;border-radius:999px;font-size:9px;line-height:1;letter-spacing:.06em;font-weight:950;white-space:nowrap}
     .player-form-chip i{width:6px;height:6px;border-radius:99px;display:inline-block;background:currentColor;box-shadow:0 0 8px currentColor}
