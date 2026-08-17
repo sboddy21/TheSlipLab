@@ -1,16 +1,17 @@
 {
-  "updatedAt": "2026-08-17T10:55:00.844Z",
+  "updatedAt": "2026-08-17T16:40:14.399Z",
   "date": "2026-08-17",
-  "slot": "overnight",
+  "slot": "midday",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "midday",
+    "selected": "midday",
     "available": [
       "morning",
+      "midday",
       "afternoon",
       "pregame",
       "evening",
@@ -18,48 +19,74 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-17T10:55:00.844Z",
+    "checkedAt": "2026-08-17T16:40:14.399Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-17T10:55:00.445Z",
+        "timestamp": "2026-08-17T16:40:13.987Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-17T10:54:59.451Z",
-        "ageSeconds": 1,
-        "scheduledGames": 15,
-        "totalScheduledGames": 15,
-        "finalGames": 15
+        "timestamp": "2026-08-17T16:34:05.806Z",
+        "ageSeconds": 368
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-17T07:17:54.274Z",
-        "players": 556,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-17T16:32:50.136Z",
+        "ageSeconds": 444
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-17T16:40:13.534Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-17T10:54:59.499Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-16",
-        "archivedPlayers": 393,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-17T16:35:07.466Z",
+        "ageSeconds": 306
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-17_MIDDAY_LINEUP_SPOTLIGHT",
+      "date": "2026-08-17",
+      "type": "lineup_spotlight",
+      "slot": "midday",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-17T16:40:14.399Z",
+      "text": "The confirmed lineups gave me one profile worth revisiting: Joshua Báez.\n\nBatting 1 for St. Louis Cardinals against Rhett Lowder.\n\nStrong power profile, crushes this pitch mix and good HR weather conditions. Projected plate appearances: 4.8.\n\nThat is the kind of lineup context that can turn an interesting profile into a playable one.",
+      "players": [
+        "Joshua Báez"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-17T16:40:15.051Z",
+      "x_post_id": "2089391867498553359",
+      "created_at": "2026-08-17T16:40:13.987Z",
+      "error": null
+    }
+  ]
 }
