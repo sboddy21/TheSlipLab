@@ -1,16 +1,27 @@
 (function(){
-  // Load the shared compact UI layer after each page's legacy stylesheet.
-  // A versioned filename keeps visual updates from being held by an old browser cache.
-  function initCompactUi(){
-    if (document.getElementById("tsl-compact-ui")) return;
-    const link = document.createElement("link");
-    link.id = "tsl-compact-ui";
-    link.rel = "stylesheet";
-    link.href = "./assets/compact-ui.css?v=20260816b";
-    document.head.appendChild(link);
+  const THEME_KEY = "tsl-theme";
+
+  function preferredTheme(){
+    try {
+      const saved = localStorage.getItem(THEME_KEY);
+      if (saved === "light" || saved === "dark") return saved;
+    } catch {}
+    return document.body?.classList.contains("tsl-editorial") ? "light" : "dark";
   }
 
-  initCompactUi();
+  function applyTheme(theme){
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    document.querySelectorAll("[data-tsl-theme-toggle]").forEach(button => {
+      const next = theme === "dark" ? "light" : "dark";
+      button.setAttribute("aria-label", `Switch to ${next} mode`);
+      button.setAttribute("title", `Switch to ${next} mode`);
+      button.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
+      button.innerHTML = `<span aria-hidden="true">${theme === "dark" ? "☀" : "☾"}</span><span class="tsl-theme-label">${next === "dark" ? "Dark" : "Light"}</span>`;
+    });
+  }
+
+  applyTheme(preferredTheme());
 
   function initAnalytics(){
     if (document.querySelector('script[data-tsl-vercel-analytics]')) return;
@@ -212,6 +223,17 @@
     menu.appendChild(panel);
     nav.appendChild(menu);
 
+    const themeButton = document.createElement("button");
+    themeButton.type = "button";
+    themeButton.className = "tsl-theme-toggle";
+    themeButton.dataset.tslThemeToggle = "true";
+    themeButton.addEventListener("click", () => {
+      const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      try { localStorage.setItem(THEME_KEY, theme); } catch {}
+      applyTheme(theme);
+    });
+    nav.appendChild(themeButton);
+
     inner.appendChild(brand);
     inner.appendChild(nav);
     header.appendChild(inner);
@@ -254,6 +276,7 @@
     hideOldHeaders();
     const header = buildHeader();
     document.body.insertBefore(header, document.body.firstChild);
+    applyTheme(document.documentElement.dataset.theme || preferredTheme());
     header.insertAdjacentElement("afterend", buildLegalNotice());
     if (!document.querySelector(".tsl-site-footer")) {
       document.body.appendChild(buildFooter());

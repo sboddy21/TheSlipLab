@@ -98,67 +98,50 @@ async function fetchGameLog(playerId) {
   }
 }
 
-function splitStat(stat = {}) {
-  const ab = num(stat.atBats);
-  if (!ab) return null;
-  const hits = num(stat.hits);
-  const bb = num(stat.baseOnBalls);
-  const hbp = num(stat.hitByPitch);
-  const sf = num(stat.sacFlies);
-  const totalBases = num(stat.totalBases);
-  const avg = hits / ab;
-  const obp = (hits + bb + hbp) / (ab + bb + hbp + sf || 1);
-  const slg = totalBases / ab;
-  return { ab, hr: num(stat.homeRuns), avg: Number(avg.toFixed(3)), obp: Number(obp.toFixed(3)), slg: Number(slg.toFixed(3)), ops: Number((obp + slg).toFixed(3)) };
-}
-
-function splitBucket(split) {
-  const raw = `${split?.split?.code || ""} ${split?.split?.description || ""} ${split?.split?.name || ""}`.toLowerCase();
-  if (/(^|\\W)(vl|vslhp|vs left|vsleft|left-handed|left handed)(\\W|$)/.test(raw)) return "vsLhp";
-  if (/(^|\\W)(vr|vsrhp|vs right|vsright|right-handed|right handed)(\\W|$)/.test(raw)) return "vsRhp";
-  if (/(^|\\W)day(\\W|$)/.test(raw)) return "day";
-  if (/(^|\\W)night(\\W|$)/.test(raw)) return "night";
-  return "";
-}
-
 async function fetchSeasonSplits(playerId) {
   const season = new Date().getFullYear();
-  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting&season=${season}&sitCodes=vl,vr,day,night`;
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return {};
-    const data = await res.json();
-    const splits = {};
-    for (const group of data?.stats || []) {
-      for (const split of group?.splits || []) {
-        const bucket = splitBucket(split);
-        const line = splitStat(split?.stat);
-        if (bucket && line) splits[bucket] = line;
-      }
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=statSplits&group=hitting&season=${season}&sitCodes=vl,vr,d,n`;
+
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`MLB splits returned ${res.status}`);
+
+      const json = await res.json();
+      const rows = json?.stats?.[0]?.splits || [];
+      return Object.fromEntries(rows.map(row => {
+        const stat = row.stat || {};
+        return [row.split?.code, {
+          pa: num(stat.plateAppearances),
+          ab: num(stat.atBats),
+          hits: num(stat.hits),
+          hr: num(stat.homeRuns),
+          avg: num(stat.avg),
+          obp: num(stat.obp),
+          slg: num(stat.slg),
+          ops: num(stat.ops)
+        }];
+      }));
+    } catch (error) {
+      if (attempt === 2) return null;
+      await new Promise(resolve => setTimeout(resolve, 250));
     }
-    return splits;
-  } catch {
-    return {};
   }
 }
 
-function bestSplit(first, firstLabel, second, secondLabel) {
-  const eligible = value => value && value.ab >= 20 && Number.isFinite(value.ops);
-  if (!eligible(first) && !eligible(second)) return null;
-  if (eligible(first) && (!eligible(second) || first.ops >= second.ops + 0.025)) return { label: firstLabel, ops: first.ops, ab: first.ab };
-  if (eligible(second) && (!eligible(first) || second.ops >= first.ops + 0.025)) return { label: secondLabel, ops: second.ops, ab: second.ab };
-  return null;
-}
+const pitcherHandCache = new Map();
 
-function buildSplits(raw) {
-  return {
-    vsLhp: raw?.vsLhp || null,
-    vsRhp: raw?.vsRhp || null,
-    day: raw?.day || null,
-    night: raw?.night || null,
-    bestHand: bestSplit(raw?.vsLhp, "BEST VS LHP", raw?.vsRhp, "BEST VS RHP"),
-    bestTime: bestSplit(raw?.day, "DAY EDGE", raw?.night, "NIGHT EDGE")
-  };
+async function fetchPitcherHand(playerId) {
+  if (!playerId) return "";
+  const id = String(playerId);
+  if (!pitcherHandCache.has(id)) {
+    pitcherHandCache.set(id, (async () => {
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${id}`);
+      if (!res.ok) throw new Error(`MLB player bio returned ${res.status}`);
+      return (await res.json())?.people?.[0]?.pitchHand?.code || "";
+    })());
+  }
+  return pitcherHandCache.get(id);
 }
 
 function collectPlayers() {
@@ -168,6 +151,7 @@ function collectPlayers() {
   const homeRuns = arr(readJSON(path.join(DATA, "mlb_home_runs.json"), []));
   const decision = arr(readJSON(path.join(DATA, "hr_decision_center.json"), {}));
   const matchups = arr(readJSON(path.join(DATA, "game_pitcher_matchups.json"), {}));
+  const liveGames = arr(readJSON(path.join(DATA, "mlb_games_live.json"), {}));
 
   function add(row, extra = {}) {
     const player = row.player || row.name;
@@ -188,6 +172,17 @@ function collectPlayers() {
 
   for (const row of homeRuns) add(row);
 
+  for (const game of liveGames) {
+    for (const side of ["away", "home"]) {
+      const pitcher = side === "away" ? game.homePitcher : game.awayPitcher;
+      for (const row of game?.hitters?.[side] || []) add(row, {
+        opposingPitcher: row.opposingPitcher || pitcher?.name,
+        opposingPitcherId: pitcher?.id || row.opposingPitcherId,
+        opposingPitcherHand: pitcher?.side || pitcher?.throws || row.opposingPitcherHand
+      });
+    }
+  }
+
   for (const game of matchups) {
     for (const row of game.hitters?.away || []) {
       add(row, {
@@ -195,6 +190,7 @@ function collectPlayers() {
         gameDate: game.gameDate,
         lineupStatus: game.awayLineupStatus,
         opposingPitcher: row.opposingPitcher || game.homePitcher?.name,
+        opposingPitcherId: game.homePitcher?.id || row.opposingPitcherId,
         opposingPitcherHand: game.homePitcher?.side || game.homePitcher?.throws || row.opposingPitcherHand
       });
     }
@@ -205,6 +201,7 @@ function collectPlayers() {
         gameDate: game.gameDate,
         lineupStatus: game.homeLineupStatus,
         opposingPitcher: row.opposingPitcher || game.awayPitcher?.name,
+        opposingPitcherId: game.awayPitcher?.id || row.opposingPitcherId,
         opposingPitcherHand: game.awayPitcher?.side || game.awayPitcher?.throws || row.opposingPitcherHand
       });
     }
@@ -298,9 +295,13 @@ async function main() {
     i++;
     console.log(`[${i}/${players.length}] ${player.player}`);
 
-    const [logs, seasonSplits] = await Promise.all([fetchGameLog(player.playerId), fetchSeasonSplits(player.playerId)]);
-    if (logs === null) {
-      throw new Error(`MLB game log unavailable for ${player.player}; refusing to write incomplete recent-form data`);
+    const [logs, splits, opposingPitcherHand] = await Promise.all([
+      fetchGameLog(player.playerId),
+      fetchSeasonSplits(player.playerId),
+      player.opposingPitcherHand ? player.opposingPitcherHand : fetchPitcherHand(player.opposingPitcherId)
+    ]);
+    if (logs === null || splits === null) {
+      throw new Error(`MLB stats unavailable for ${player.player}; refusing to write incomplete player-card data`);
     }
     const last7Games = logs.slice(0, 7);
     const last15Games = logs.slice(0, 15);
@@ -314,32 +315,20 @@ async function main() {
       player: player.player,
       playerId: player.playerId,
       team: player.team,
-      teamId: player.teamId || player.ownershipVerification?.teamId || null,
       opponent: player.opponent,
       game: player.game,
       venue: player.venue,
       opposingPitcher: player.opposingPitcher,
-      opposingPitcherHand: player.opposingPitcherHand,
+      opposingPitcherHand,
+      batSide: player.batSide || player.bats || player.batHand,
       lineupStatus: player.lineupStatus,
-      lineupSpot: player.lineupSpot || null,
-      confirmedLineup: Boolean(player.confirmedLineup),
-      expectedPlateAppearances: String(player.lineupStatus || "").toUpperCase() === "NOT IN LINEUP"
-        ? 0
-        : num(player.projectedPlateAppearances) || 4.05,
-      lineupConfidence: String(player.lineupStatus || "").toUpperCase() === "NOT IN LINEUP"
-        ? "OUT"
-        : player.confirmedLineup && num(player.lineupSpot) > 0
-          ? "HIGH"
-          : num(player.lineupSpot) > 0
-            ? "MEDIUM"
-            : "LOW",
-      recentStatcast: player.recentStatcastForm || null,
-      splits: buildSplits(seasonSplits),
-      pitchingExposure: player.pitchingExposure || null,
-      dataQuality: player.dataQuality || null,
-      rawModelConfidence: num(player.rawModelConfidence),
-      movement: player.movement || null,
-      ownershipVerification: player.ownershipVerification || null,
+
+      splits: {
+        vsLhp: splits.vl || null,
+        vsRhp: splits.vr || null,
+        day: splits.d || null,
+        night: splits.n || null
+      },
 
       season: {
         hr: num(h.hr),
