@@ -25,6 +25,13 @@
   const whole = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Math.round(Number(value)) : "N/A";
   const dec = value => Number.isFinite(Number(value)) ? Number(value).toFixed(3).replace(/^0/, "") : "N/A";
   const initials = value => String(value || "").split(" ").map(x => x[0]).join("").slice(0, 2).toUpperCase();
+  const previewHeadshot = row => {
+    const id = String(row?.playerId || "").replace(/\D/g, "");
+    const fallback = `<span aria-hidden="true">${esc(initials(row?.player))}</span>`;
+    if (!id) return fallback;
+    const src = `https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_auto:best,f_auto/v1/people/${id}/headshot/67/current`;
+    return `${fallback}<img src="${src}" alt="${esc(row?.player)} headshot" loading="lazy" onerror="this.remove()">`;
+  };
   const playerNameKey = value => String(value || "").trim().toLowerCase();
   const comparisonStorageKey = "the-slip-lab:five-game-comparison:v1";
 
@@ -1262,7 +1269,7 @@ function renderBat(row, index) {
   const pitcherHand = pitcherHandFor(row);
   return `
       <article class="bat sweet-bat ${signalClasses}" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
-        <div class="face">${esc(initials(row.player))}</div>
+        <div class="face">${previewHeadshot(row)}</div>
         <div class="sweet-main">
         <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(displayName)}${signalIcons ? `<span class="slate-signal-icons">${signalIcons}</span>` : ""}</div>
         ${batterHand || pitcherHand ? `<div class="slate-handedness" aria-label="Handedness matchup">
@@ -1525,7 +1532,7 @@ function renderBat(row, index) {
     const team = row.team || "";
     return `
       <article class="bat sweet-bat market-player-card" data-player-id="${esc(row.playerId || "")}" data-player="${esc(row.player || "")}">
-        <div class="face">${esc(initials(row.player))}</div>
+        <div class="face">${previewHeadshot(row)}</div>
         <div class="sweet-main">
           <div class="bat-name">#${esc(row.rank || index + 1)} ${esc(row.player)}</div>
           <div class="sweet-lineup">${esc(team)}${opponent ? " vs " + esc(opponent) : ""}</div>
