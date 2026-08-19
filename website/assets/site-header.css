@@ -5,6 +5,8 @@
 .tsl-nav{display:flex;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;flex:1 1 auto;justify-content:flex-end;min-width:0}
 .tsl-nav a,
 .tsl-nav-menu-button{color:#f4fff8;text-decoration:none;background:#101719;border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:10px 17px;font:950 14px/1 Arial,Helvetica,sans-serif;cursor:pointer}
+.tsl-theme-toggle{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-width:86px;color:#f4fff8;background:#101719;border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:9px 13px;font:950 13px/1 Arial,Helvetica,sans-serif;cursor:pointer}
+.tsl-theme-toggle:hover,.tsl-theme-toggle:focus-visible{border-color:#7cff24;outline:none}
 .tsl-nav a.active{background:#7cff24;border-color:#7cff24;color:#061006}
 .tsl-nav a.tsl-account-link{border-color:#7cff24;color:#7cff24}
 .tsl-nav-menu{position:relative;flex:0 0 auto}
@@ -91,6 +93,57 @@
   text-transform:uppercase;
 }
 .tsl-site-footer-links a:hover{color:#7cff24}
+
+html[data-theme="light"] body:not(.tsl-editorial){background:#f3f0e6!important;color:#071d36!important}
+html[data-theme="light"] .tsl-site-header,
+html[data-theme="light"] .tsl-site-footer{background:#fffdf7;color:#071d36;border-color:rgba(7,29,54,.18)}
+html[data-theme="light"] .tsl-brand,
+html[data-theme="light"] .tsl-site-footer-brand,
+html[data-theme="light"] .tsl-site-footer-links a{color:#071d36}
+html[data-theme="light"] .tsl-nav a,
+html[data-theme="light"] .tsl-nav-menu-button,
+html[data-theme="light"] .tsl-theme-toggle{background:#fffdf7;color:#071d36;border-color:rgba(7,29,54,.24)}
+html[data-theme="light"] .tsl-nav a.active,
+html[data-theme="light"] .tsl-nav-menu-button.active,
+html[data-theme="light"] .tsl-nav-menu.open .tsl-nav-menu-button{background:#1268f3;border-color:#1268f3;color:#fff}
+html[data-theme="light"] .tsl-nav-menu-panel{background:#fffdf7;border-color:rgba(7,29,54,.2);box-shadow:0 24px 70px rgba(7,29,54,.2)}
+html[data-theme="light"] .tsl-legal-notice{background:#e9e4d7;color:#31465a;border-color:rgba(7,29,54,.16)}
+html[data-theme="light"] .tsl-legal-notice strong{color:#075d4c}
+html[data-theme="light"] .tsl-legal-notice a{color:#071d36}
+
+html[data-theme="dark"] body.tsl-editorial{
+  --paper:#050909;
+  --paper-deep:#101719;
+  --ink:#f4fff8;
+  --ink-soft:#aebcb6;
+  --rule:#506071;
+  --blue:#6da5ff;
+  --orange:#ff6b45;
+  --white:#0b1218;
+  background:#050909!important;
+  color:#f4fff8!important;
+}
+html[data-theme="dark"] body.tsl-editorial .tsl-site-header,
+html[data-theme="dark"] body.tsl-editorial .tsl-site-footer{background:#050909!important;border-color:rgba(255,255,255,.1)!important}
+html[data-theme="dark"] body.tsl-editorial .tsl-brand,
+html[data-theme="dark"] body.tsl-editorial .tsl-site-footer-brand,
+html[data-theme="dark"] body.tsl-editorial .tsl-site-footer-links a{color:#f4fff8!important}
+html[data-theme="dark"] body.tsl-editorial .tsl-nav a,
+html[data-theme="dark"] body.tsl-editorial .tsl-nav-menu-button,
+html[data-theme="dark"] body.tsl-editorial .tsl-theme-toggle{background:#101719!important;color:#f4fff8!important;border-color:rgba(255,255,255,.14)!important}
+html[data-theme="dark"] body.tsl-editorial .tsl-nav a.active{background:#7cff24!important;border-color:#7cff24!important;color:#061006!important}
+html[data-theme="dark"] body.tsl-editorial .tsl-legal-notice{background:#101719!important;color:#dce8e3!important;border-color:rgba(255,255,255,.12)!important}
+html[data-theme="dark"] body.tsl-editorial main,
+html[data-theme="dark"] body.tsl-editorial .wrap{color:#f4fff8!important}
+html[data-theme="dark"] body.tsl-editorial #pcBox{background:#0b1218!important;color:#f4fff8!important;border-color:rgba(255,255,255,.18)!important}
+html[data-theme="dark"] body.tsl-editorial #pcBox h2,
+html[data-theme="dark"] body.tsl-editorial #pcBox h3{color:#f4fff8!important}
+html[data-theme="dark"] body.tsl-editorial #pcBox p{color:#b8c4ce!important}
+html[data-theme="dark"] body.tsl-editorial .pcheader{background:#101719!important;color:#f4fff8!important;border-color:rgba(255,255,255,.18)!important}
+html[data-theme="dark"] body.tsl-editorial .pc-headshot{background:#182329!important;border-color:rgba(255,255,255,.2)!important}
+html[data-theme="dark"] body.tsl-editorial .pc-headshot-fallback{color:#f4fff8!important}
+
+@media(max-width:720px){.tsl-theme-toggle{min-width:40px;padding:9px}.tsl-theme-label{display:none}}
 .tsl-access-checking > :not(.tsl-site-header):not(.tsl-access-gate){visibility:hidden!important}
 .tsl-access-gate{
   position:fixed;
