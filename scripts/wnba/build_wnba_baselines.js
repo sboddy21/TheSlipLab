@@ -8,7 +8,9 @@ const ROOT = path.resolve(__dirname, "../..");
 const PLAYER_OUT = path.join(ROOT, "website/data/wnba_player_baselines.json");
 const TEAM_OUT = path.join(ROOT, "website/data/wnba_team_baselines.json");
 const SEASON = Number(process.env.WNBA_SEASON || new Date().getUTCFullYear());
-const MAX_CACHED_BASELINE_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+const STALE_BASELINE_AGE_MS = 24 * 60 * 60 * 1000;
+const FETCH_ATTEMPTS = 3;
+const FETCH_TIMEOUT_MS = 15_000;
 
 const TEAM_URL = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams";
 const rosterUrl = slug => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams/${slug}/roster`;
@@ -18,11 +20,32 @@ const statsUrl = id => `https://site.web.api.espn.com/apis/common/v3/sports/bask
 const gameLogUrl = id => `https://site.web.api.espn.com/apis/common/v3/sports/basketball/wnba/athletes/${id}/gamelog?region=us&lang=en&season=${SEASON}`;
 
 async function fetchJson(url) {
-  const response = await fetch(url, {
-    headers: { "Accept": "application/json,text/plain,*/*", "User-Agent": "TheSlipLab/1.0 (+https://www.thesliplab.com/)" }
-  });
-  if (!response.ok) throw new Error(`${response.status} ${url}`);
-  return response.json();
+  let lastError;
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+    try {
+      const response = await fetch(url, {
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+        headers: { "Accept": "application/json,text/plain,*/*", "User-Agent": "TheSlipLab/1.0 (+https://www.thesliplab.com/)" }
+      });
+      if (response.ok) return response.json();
+      const error = new Error(`${response.status} ${url}`);
+      // Authentication/denial responses do not improve with rapid retries. The
+      // validated baseline snapshot below is the reliable fallback for those.
+      if (response.status !== 429 && response.status < 500) throw error;
+      lastError = error;
+    } catch (error) {
+      lastError = error;
+      if (error.message?.startsWith("4") && !error.message.startsWith("429")) throw error;
+    }
+    if (attempt < FETCH_ATTEMPTS) await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
+  }
+  throw lastError;
+}
+
+function writeJson(file, value) {
+  const temporary = `${file}.tmp`;
+  fs.writeFileSync(temporary, `${JSON.stringify(value, null, 2)}\n`);
+  fs.renameSync(temporary, file);
 }
 
 async function mapLimit(items, limit, mapper) {
@@ -215,30 +238,42 @@ async function main() {
   const common = { sport: "WNBA", season: SEASON, phase: "independent_baselines", source: "ESPN WNBA rosters, season statistics, and player game logs", generatedAt: new Date().toISOString() };
   const playerOutput = { ...common, playerCount: players.length, rotationHistoryCount: players.filter(player => player.recent).length, warnings: [...statFailures, ...logFailures], players };
   const teamOutput = { ...common, teamCount: teamBaselines.length, teams: teamBaselines };
-  fs.writeFileSync(PLAYER_OUT, `${JSON.stringify(playerOutput, null, 2)}\n`);
-  fs.writeFileSync(TEAM_OUT, `${JSON.stringify(teamOutput, null, 2)}\n`);
+  writeJson(PLAYER_OUT, playerOutput);
+  writeJson(TEAM_OUT, teamOutput);
   console.log(`WNBA BASELINES COMPLETE: ${teamBaselines.length} teams, ${players.length} players, ${playerOutput.rotationHistoryCount} recent histories`);
   console.log(`Started: ${startedAt}`);
 }
 
 function useCachedBaselines(error) {
   if (!fs.existsSync(PLAYER_OUT) || !fs.existsSync(TEAM_OUT)) throw error;
-  const playerOutput = JSON.parse(fs.readFileSync(PLAYER_OUT, "utf8"));
-  const teamOutput = JSON.parse(fs.readFileSync(TEAM_OUT, "utf8"));
+  let playerOutput;
+  let teamOutput;
+  try {
+    playerOutput = JSON.parse(fs.readFileSync(PLAYER_OUT, "utf8"));
+    teamOutput = JSON.parse(fs.readFileSync(TEAM_OUT, "utf8"));
+  } catch {
+    throw error;
+  }
   const dataAsOf = playerOutput.dataAsOf || playerOutput.generatedAt;
   const age = Date.now() - Date.parse(dataAsOf || "");
   if (playerOutput.sport !== "WNBA" || teamOutput.sport !== "WNBA" ||
-      !playerOutput.players?.length || !teamOutput.teams?.length ||
-      !Number.isFinite(age) || age < 0 || age > MAX_CACHED_BASELINE_AGE_MS) throw error;
+      playerOutput.players?.length < 50 || teamOutput.teams?.length < 10 ||
+      !Number.isFinite(age) || age < 0) throw error;
   const generatedAt = new Date().toISOString();
-  const warning = `Live baseline refresh unavailable; using validated data from ${dataAsOf}: ${error.message}`;
+  const ageHours = Math.round(age / (60 * 60 * 1000));
+  const stale = age > STALE_BASELINE_AGE_MS;
+  const warning = `Live baseline refresh unavailable; using validated data from ${dataAsOf} (${ageHours}h old): ${error.message}`;
   const markCached = output => ({
     ...output, generatedAt, dataAsOf, sourceStatus: "cached_fallback",
-    warnings: [...new Set([...(output.warnings || []), warning])]
+    stale, staleAgeHours: ageHours,
+    warnings: [...new Set([
+      ...(output.warnings || []).filter(item => !String(item).startsWith("Live baseline refresh unavailable;")),
+      warning
+    ])]
   });
-  fs.writeFileSync(PLAYER_OUT, `${JSON.stringify(markCached(playerOutput), null, 2)}\n`);
-  fs.writeFileSync(TEAM_OUT, `${JSON.stringify(markCached(teamOutput), null, 2)}\n`);
-  console.warn(`WNBA BASELINES CACHED FALLBACK: ${playerOutput.players.length} players and ${teamOutput.teams.length} teams; data as of ${dataAsOf}`);
+  writeJson(PLAYER_OUT, markCached(playerOutput));
+  writeJson(TEAM_OUT, markCached(teamOutput));
+  console.warn(`WNBA BASELINES CACHED FALLBACK: ${playerOutput.players.length} players and ${teamOutput.teams.length} teams; data as of ${dataAsOf} (${ageHours}h old)`);
 }
 
 main().catch(error => {
