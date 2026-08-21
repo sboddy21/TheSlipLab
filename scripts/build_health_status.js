@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { isFreshForRefresh } from "./mlb/refresh_freshness.mjs";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
@@ -8,6 +9,10 @@ const MAX_REFRESH_AGE_MS = 15 * 60 * 1000;
 const MAX_MODEL_AGE_MS = 70 * 60 * 1000;
 const CLOCK_TOLERANCE_MS = 1000;
 const requestedState = String(process.env.SL_HEALTH_STATE || "").trim().toLowerCase();
+const requestedRefreshStart = Number(process.env.MLB_REFRESH_STARTED_AT);
+const refreshStartedAt = Number.isFinite(requestedRefreshStart) && requestedRefreshStart > 0
+  ? requestedRefreshStart
+  : null;
 
 function previousSuccessfulAt() {
   try {
@@ -163,7 +168,11 @@ const payload = {
     lastSuccessfulAt: generatedAt,
     freshUntil: new Date(generatedAtMs + MAX_REFRESH_AGE_MS).toISOString(),
     refreshWindowSeconds: Math.round(MAX_REFRESH_AGE_MS / 1000),
-    productionAgeSeconds: null
+    productionAgeSeconds: null,
+    refreshStartedAt: Number.isFinite(refreshStartedAt) ? new Date(refreshStartedAt).toISOString() : null,
+    refreshDurationSeconds: Number.isFinite(refreshStartedAt)
+      ? Math.max(0, Math.round((generatedAtMs - refreshStartedAt) / 1000))
+      : null
   },
   delays: [],
   errors: []
@@ -178,7 +187,7 @@ if (!Number.isFinite(gamesAnchor)) {
   payload.errors.push("mlb_games_today.json has no valid updatedAt");
 } else {
   payload.monitoring.productionAgeSeconds = Math.max(0, Math.round((generatedAtMs - gamesAnchor) / 1000));
-  if (Date.now() - gamesAnchor > MAX_REFRESH_AGE_MS) {
+  if (!isFreshForRefresh({ timestamp: gamesAnchor, generatedAt: generatedAtMs, maxAgeMs: MAX_REFRESH_AGE_MS, refreshStartedAt, toleranceMs: CLOCK_TOLERANCE_MS })) {
     payload.delays.push("MLB production chain is older than 15 minutes");
   }
 
@@ -193,7 +202,7 @@ if (!Number.isFinite(gamesAnchor)) {
       payload.errors.push(`${artifact.file} has no valid ${fields.join(" or ") || "filesystem timestamp"}`);
     } else if (cadence === "live" && timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) {
       payload.errors.push(`${artifact.file} predates the current production chain`);
-    } else if (generatedAtMs - timestamp > maxAge) {
+    } else if (!isFreshForRefresh({ timestamp, generatedAt: generatedAtMs, maxAgeMs: maxAge, refreshStartedAt, toleranceMs: CLOCK_TOLERANCE_MS })) {
       payload.errors.push(`${artifact.file} exceeded its ${cadence} refresh window`);
     } else if (timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) {
       payload.errors.push(`${artifact.file} timestamp is in the future`);
@@ -214,7 +223,7 @@ for (const [key, definition] of Object.entries(artifactDefinitions)) {
   else if (!Number.isFinite(details.timestamp)) freshness = "invalid";
   else if (details.timestamp > generatedAtMs + CLOCK_TOLERANCE_MS) freshness = "future";
   else if (definition.required && definition.cadence !== "model" && Number.isFinite(gamesAnchor) && details.timestamp < gamesAnchor - CLOCK_TOLERANCE_MS) freshness = "stale_chain";
-  else if (ageSeconds > maxAge / 1000) freshness = "delayed";
+  else if (!isFreshForRefresh({ timestamp: details.timestamp, generatedAt: generatedAtMs, maxAgeMs: maxAge, refreshStartedAt, toleranceMs: CLOCK_TOLERANCE_MS })) freshness = "delayed";
 
   payload.artifacts[key] = {
     file: artifact.file,

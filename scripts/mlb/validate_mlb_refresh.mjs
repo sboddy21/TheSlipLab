@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
+import { isFreshForRefresh } from "./refresh_freshness.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,6 +10,10 @@ const __dirname = path.dirname(__filename);
 const DATA = path.join(__dirname, "../../website/data");
 const MAX_REFRESH_AGE_MS = 15 * 60 * 1000;
 const CLOCK_TOLERANCE_MS = 1000;
+const requestedRefreshStart = Number(process.env.MLB_REFRESH_STARTED_AT);
+const refreshStartedAt = Number.isFinite(requestedRefreshStart) && requestedRefreshStart > 0
+  ? requestedRefreshStart
+  : null;
 
 function read(file) {
   return JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -849,7 +854,13 @@ const noGamesScheduled = games.date === today
   && games.games.length === 0;
 
 if (!Number.isFinite(refreshAnchor)) fail("mlb_games_today.json has invalid or missing updatedAt");
-if (Date.now() - refreshAnchor > MAX_REFRESH_AGE_MS) {
+if (!isFreshForRefresh({
+  timestamp: refreshAnchor,
+  generatedAt: Date.now(),
+  maxAgeMs: MAX_REFRESH_AGE_MS,
+  refreshStartedAt,
+  toleranceMs: CLOCK_TOLERANCE_MS
+})) {
   fail(`mlb_games_today.json is older than ${MAX_REFRESH_AGE_MS / 60000} minutes`);
 }
 
