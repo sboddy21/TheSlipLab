@@ -1,69 +1,69 @@
 {
   "sport": "NFL",
   "version": "0.1.0",
-  "status": "foundation",
+  "status": "usage_model",
   "season": "2026",
   "date": "2026-08-21",
-  "updatedAt": "2026-08-21T05:52:58.327Z",
-  "headline": "NFL Lab foundation is underway.",
-  "summary": "The 2026 schedule, teams, and eligible player pool are now wired. Depth charts, usage, odds, and projections remain intentionally gated.",
+  "updatedAt": "2026-08-21T12:06:24.888Z",
+  "headline": "NFL Lab usage engine is underway.",
+  "summary": "Schedule, identity, depth charts, historical usage, finalized preseason opportunity, and role review are wired. Matchup, weather, market lines, and projections remain intentionally gated.",
   "currentPhase": {
-    "id": "foundation",
-    "label": "Data Foundation",
-    "window": "August 7 – August 13",
-    "objective": "Stabilize schedule, roster, identity, availability, and source-health contracts before modeling usage."
+    "id": "usage_model",
+    "label": "Usage Engine",
+    "window": "August 21 – August 27",
+    "objective": "Add matchup, environment, and market inputs around the validated role and opportunity foundation."
   },
   "phases": [
     {
       "id": "foundation",
       "label": "Data Foundation",
       "window": "August 7 – August 13",
-      "status": "active",
       "tasks": [
         "Load 2026 regular-season schedule",
         "Normalize all 32 teams",
         "Build QB/RB/WR/TE player pool",
         "Validate canonical provider IDs"
-      ]
+      ],
+      "status": "complete"
     },
     {
       "id": "camp",
       "label": "Training Camp Inputs",
       "window": "August 14 – August 20",
-      "status": "queued",
       "tasks": [
-        "Depth charts",
-        "Injury reports",
-        "Position battles",
-        "Beat-writer role notes",
-        "Preseason snap counts"
-      ]
+        "Normalize depth charts",
+        "Track roster-reported injuries",
+        "Process finalized preseason opportunity",
+        "Audit player identity and ownership",
+        "Keep unavailable snaps and routes explicitly gated"
+      ],
+      "status": "complete"
     },
     {
       "id": "usage_model",
       "label": "Usage Engine",
       "window": "August 21 – August 27",
-      "status": "queued",
       "tasks": [
-        "Expected usage",
-        "Target share",
-        "Red-zone opportunities",
-        "Pace of play",
-        "Defensive matchup context",
-        "Weather and sportsbook lines"
-      ]
+        "Expected usage framework",
+        "Target and carry opportunity context",
+        "Red-zone opportunity context",
+        "Pace and defensive matchup context",
+        "Weather and sportsbook line contracts"
+      ],
+      "status": "active"
     },
     {
       "id": "dress_rehearsal",
       "label": "Dress Rehearsal",
       "window": "August 28 – September 8",
-      "status": "queued",
       "tasks": [
         "Automated updates",
-        "Test picks",
+        "Shadow projections",
         "Results framework",
+        "Market freshness tests",
         "Bug sweep before Week 1"
-      ]
+      ],
+      "status": "queued"
     }
   ],
   "dataContracts": [
@@ -119,9 +119,9 @@
     "Every market must eventually connect to a result-tracking path."
   ],
   "nextBuildSteps": [
-    "Select and normalize the depth-chart source.",
-    "Add a dedicated injury-report contract with freshness rules.",
-    "Load historical play-by-play for usage baselines and backtesting.",
-    "Select the sportsbook provider and define quote-age rejection rules."
+    "Build pace and defensive matchup context with source-health validation.",
+    "Add the game-level weather contract and freshness rules.",
+    "Select the sportsbook provider and enforce quote-age rejection rules.",
+    "Define shadow-projection gates without publishing recommendations."
   ]
 }

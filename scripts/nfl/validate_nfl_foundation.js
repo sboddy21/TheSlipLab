@@ -32,6 +32,7 @@ const preseasonBoard = payloads["nfl_preseason_role_board.json"];
 const roles = payloads["nfl_role_engine.json"];
 const health = payloads["nfl_data_health.json"];
 const publicStatus = payloads["nfl_public_status.json"];
+const foundation = JSON.parse(fs.readFileSync(path.join(DATA, "nfl_foundation.json"), "utf8"));
 
 if (teams.teamCount !== 32 || teams.teams?.length !== 32) fail("team contract must contain 32 teams");
 if (new Set(teams.teams.map(team => team.teamId)).size !== 32) fail("team IDs must be unique");
@@ -61,5 +62,8 @@ if (health.sources?.usageBaselines?.status !== "available" || health.sources?.ro
 if (health.sources?.roleEngine?.status !== "available" || !["available", "waiting"].includes(health.sources?.preseasonUsage?.status) || !health.sources?.preseasonUsage?.finalGameGate) fail("health contract must report final-gated preseason usage");
 if (publicStatus.weekOneGames?.length !== 16 || publicStatus.counts?.roleEligible !== roles.modelEligibleCount || publicStatus.counts?.completedPreseasonGames !== preseason.processedGameCount || !publicStatus.preseasonUsage?.finalGameGate) fail("public NFL status is incomplete");
 if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
+if (foundation.currentPhase?.id === "foundation" && foundation.date >= "2026-08-21") fail("roadmap regressed to the completed foundation phase");
+if (foundation.phases?.filter(phase => phase.status === "active").length > 1) fail("roadmap contains multiple active phases");
+if (health.sources?.depthCharts?.status === "available" && foundation.nextBuildSteps?.some(step => /select.*depth-chart/i.test(step))) fail("roadmap contains a completed depth-chart task");
 
 console.log(`NFL VALIDATION PASSED: ${teams.teamCount} teams, ${schedule.gameCount} games, ${pool.playerCount} eligible players, ${depth.entryCount} depth entries, ${injuries.injuryCount} injuries, ${usage.profileCount} usage profiles, ${roles.modelEligibleCount} role-eligible players`);

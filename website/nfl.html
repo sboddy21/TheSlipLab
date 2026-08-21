@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Slip Lab | NFL Foundation</title>
-  <meta name="description" content="The Slip Lab NFL foundation: launch markets, build phases, and data contracts for football intelligence." />
+  <title>The Slip Lab | NFL Build</title>
+  <meta name="description" content="The private Slip Lab NFL build: usage intelligence, launch phases, and verified data contracts." />
   <style>
     *{box-sizing:border-box}
     body{
@@ -411,7 +411,7 @@
 </head>
 <body class="tsl-editorial tsl-tool-page tsl-nfl-page">
   <main class="nfl-wrap">
-    <div class="nfl-report-line"><span>NFL foundation</span><span>Phase one build</span></div>
+    <div class="nfl-report-line"><span id="reportPhase">NFL usage engine</span><span id="reportStep">Phase three build</span></div>
 
     <section class="hero" aria-labelledby="pageTitle">
       <div class="hero-copy">
@@ -502,8 +502,8 @@
 
   <script>
     const fallbackFoundation = {
-      summary: "Phase one establishes the NFL build surface.",
-      currentPhase: { label: "Data Foundation", window: "August 7 – August 13", objective: "Stabilize schedule, roster, identity, and source-health contracts." },
+      summary: "The verified NFL foundation is complete and the usage engine is active.",
+      currentPhase: { label: "Usage Engine", window: "August 21 – August 27", objective: "Add matchup, environment, and market inputs around validated role and opportunity data." },
       phases: [],
       dataContracts: [],
       integrityRules: [],
@@ -629,8 +629,11 @@
       const contracts = Array.isArray(foundation.dataContracts) ? foundation.dataContracts : [];
 
       document.getElementById("foundationSummary").textContent = foundation.summary || fallbackFoundation.summary;
-      document.getElementById("phaseLabel").textContent = current.label || "Foundation";
-      document.getElementById("phaseWindow").textContent = current.window || "July 24 – July 31";
+      const phaseNumber = Math.max(1, (foundation.phases || []).findIndex(phase => phase.id === current.id) + 1);
+      document.getElementById("reportPhase").textContent = `NFL ${String(current.label || "build").toLowerCase()}`;
+      document.getElementById("reportStep").textContent = `Phase ${phaseNumber} build`;
+      document.getElementById("phaseLabel").textContent = current.label || "Usage Engine";
+      document.getElementById("phaseWindow").textContent = current.window || "August 21 – August 27";
       document.getElementById("phaseObjective").textContent = current.objective || fallbackFoundation.currentPhase.objective;
       document.getElementById("marketCount").textContent = launchMarkets.length;
       document.getElementById("contractCount").textContent = contracts.length;

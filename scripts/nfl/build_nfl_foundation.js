@@ -22,11 +22,44 @@ function readJson(filename) {
 
 const now = new Date();
 const date = isoDate(now);
+const phaseDefinitions = [
+  {
+    id: "foundation", label: "Data Foundation", window: "August 7 – August 13", start: "2026-08-07", end: "2026-08-13",
+    objective: "Stabilize schedule, roster, identity, availability, and source-health contracts before modeling usage.",
+    tasks: ["Load 2026 regular-season schedule", "Normalize all 32 teams", "Build QB/RB/WR/TE player pool", "Validate canonical provider IDs"]
+  },
+  {
+    id: "camp", label: "Training Camp Inputs", window: "August 14 – August 20", start: "2026-08-14", end: "2026-08-20",
+    objective: "Join depth, injury, historical usage, and finalized preseason opportunity while preserving explicit source gaps.",
+    tasks: ["Normalize depth charts", "Track roster-reported injuries", "Process finalized preseason opportunity", "Audit player identity and ownership", "Keep unavailable snaps and routes explicitly gated"]
+  },
+  {
+    id: "usage_model", label: "Usage Engine", window: "August 21 – August 27", start: "2026-08-21", end: "2026-08-27",
+    objective: "Add matchup, environment, and market inputs around the validated role and opportunity foundation.",
+    tasks: ["Expected usage framework", "Target and carry opportunity context", "Red-zone opportunity context", "Pace and defensive matchup context", "Weather and sportsbook line contracts"]
+  },
+  {
+    id: "dress_rehearsal", label: "Dress Rehearsal", window: "August 28 – September 8", start: "2026-08-28", end: "2026-09-08",
+    objective: "Run shadow projections, automated updates, result grading, and the final Week 1 integrity sweep.",
+    tasks: ["Automated updates", "Shadow projections", "Results framework", "Market freshness tests", "Bug sweep before Week 1"]
+  }
+];
+const phaseStatus = phase => date < phase.start ? "queued" : date > phase.end ? "complete" : "active";
+const phases = phaseDefinitions.map(({ start, end, objective, ...phase }) => ({ ...phase, status: phaseStatus({ start, end }) }));
+const activePhaseDefinition = phaseDefinitions.find(phase => phaseStatus(phase) === "active")
+  || [...phaseDefinitions].reverse().find(phase => date >= phase.start)
+  || phaseDefinitions[0];
+const phaseHeadline = {
+  foundation: "NFL Lab data foundation is underway.",
+  camp: "NFL Lab training-camp inputs are underway.",
+  usage_model: "NFL Lab usage engine is underway.",
+  dress_rehearsal: "NFL Lab dress rehearsal is underway."
+}[activePhaseDefinition.id];
 
 const markets = {
   sport: "NFL",
   version: "0.1.0",
-  status: "foundation",
+  status: activePhaseDefinition.id,
   updatedAt: now.toISOString(),
   launchMarkets: [
     {
@@ -87,72 +120,20 @@ const markets = {
 const foundation = {
   sport: "NFL",
   version: "0.1.0",
-  status: "foundation",
+  status: activePhaseDefinition.id,
   season: "2026",
   date,
   updatedAt: now.toISOString(),
-  headline: "NFL Lab foundation is underway.",
+  headline: phaseHeadline,
   summary:
-    "The 2026 schedule, teams, and eligible player pool are now wired. Depth charts, usage, odds, and projections remain intentionally gated.",
+    "Schedule, identity, depth charts, historical usage, finalized preseason opportunity, and role review are wired. Matchup, weather, market lines, and projections remain intentionally gated.",
   currentPhase: {
-    id: "foundation",
-    label: "Data Foundation",
-    window: "August 7 – August 13",
-    objective: "Stabilize schedule, roster, identity, availability, and source-health contracts before modeling usage."
+    id: activePhaseDefinition.id,
+    label: activePhaseDefinition.label,
+    window: activePhaseDefinition.window,
+    objective: activePhaseDefinition.objective
   },
-  phases: [
-    {
-      id: "foundation",
-      label: "Data Foundation",
-      window: "August 7 – August 13",
-      status: "active",
-      tasks: [
-        "Load 2026 regular-season schedule",
-        "Normalize all 32 teams",
-        "Build QB/RB/WR/TE player pool",
-        "Validate canonical provider IDs"
-      ]
-    },
-    {
-      id: "camp",
-      label: "Training Camp Inputs",
-      window: "August 14 – August 20",
-      status: "queued",
-      tasks: [
-        "Depth charts",
-        "Injury reports",
-        "Position battles",
-        "Beat-writer role notes",
-        "Preseason snap counts"
-      ]
-    },
-    {
-      id: "usage_model",
-      label: "Usage Engine",
-      window: "August 21 – August 27",
-      status: "queued",
-      tasks: [
-        "Expected usage",
-        "Target share",
-        "Red-zone opportunities",
-        "Pace of play",
-        "Defensive matchup context",
-        "Weather and sportsbook lines"
-      ]
-    },
-    {
-      id: "dress_rehearsal",
-      label: "Dress Rehearsal",
-      window: "August 28 – September 8",
-      status: "queued",
-      tasks: [
-        "Automated updates",
-        "Test picks",
-        "Results framework",
-        "Bug sweep before Week 1"
-      ]
-    }
-  ],
+  phases,
   dataContracts: [
     {
       file: "nfl_schedule.json",
@@ -206,10 +187,10 @@ const foundation = {
     "Every market must eventually connect to a result-tracking path."
   ],
   nextBuildSteps: [
-    "Select and normalize the depth-chart source.",
-    "Add a dedicated injury-report contract with freshness rules.",
-    "Load historical play-by-play for usage baselines and backtesting.",
-    "Select the sportsbook provider and define quote-age rejection rules."
+    "Build pace and defensive matchup context with source-health validation.",
+    "Add the game-level weather contract and freshness rules.",
+    "Select the sportsbook provider and enforce quote-age rejection rules.",
+    "Define shadow-projection gates without publishing recommendations."
   ]
 };
 
@@ -218,13 +199,13 @@ writeJson("nfl_markets.json", markets);
 writeJson("nfl_decision_center.json", {
   sport: "NFL",
   version: "0.1.0",
-  status: "foundation",
+  status: "projections_gated",
   season: "2026",
   date,
   updatedAt: now.toISOString(),
   marketCount: 0,
   playerCount: 0,
-  disclaimer: "NFL recommendations are not live yet. This file is a foundation contract for the upcoming model.",
+  disclaimer: "NFL recommendations are not live yet. This private decision-center shell remains gated until usage, matchup, weather, and market inputs pass validation.",
   sections: []
 });
 
