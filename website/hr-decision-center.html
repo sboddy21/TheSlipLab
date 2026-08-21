@@ -237,7 +237,7 @@ let data = null;
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
 function score(v){return num(v).toFixed(1)}
-function isConfirmedLineupPlayer(row){const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot);const status=String(row.lineupStatus||"").trim().toUpperCase();const source=String(row.lineupSource||"").trim().toUpperCase();return(row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;}
+function isConfirmedLineupPlayer(row){const status=String(row.lineupStatus||"").trim().toUpperCase();const source=String(row.lineupSource||"").trim().toUpperCase();return ![status,source].some(value=>["NOT IN LINEUP","NOT_IN_LINEUP","BENCH","NOT STARTING","NOT_STARTING"].includes(value));}
 function playerLineupKey(row){return `${String(row?.player||row?.name||"").trim().toLowerCase()}|${String(row?.team||"").trim().toLowerCase()}`;}
 
 function allRows(){
@@ -585,7 +585,7 @@ load();
 </script>
 
 <script src="/js/player-tags.js"></script>
-<script src="./player_card_patch.js?v=confirmed-lineups-20260821"></script>
+<script src="./player_card_patch.js?v=lineup-fallback-20260821"></script>
   <script src="./health-widget.js?v=2"></script>
 </body>
 </html>

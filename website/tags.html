@@ -676,7 +676,7 @@
 
       state.registry = await registryRes.json();
       if (cardsRes.ok) {
-        const confirmed = row => {const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot),status=String(row.lineupStatus||"").toUpperCase(),source=String(row.lineupSource||"").toUpperCase();return(row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;};
+        const confirmed = row => {const status=String(row.lineupStatus||"").trim().toUpperCase(),source=String(row.lineupSource||"").trim().toUpperCase();return ![status,source].some(value=>["NOT IN LINEUP","NOT_IN_LINEUP","BENCH","NOT STARTING","NOT_STARTING"].includes(value));};
         state.cards = getRows(await cardsRes.json()).filter(confirmed);
       }
 
