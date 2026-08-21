@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Platoon Edge | The Slip Lab</title>
+  <meta name="description" content="Today’s strongest right-handed bats versus left-handed pitchers and left-handed bats versus right-handed pitchers.">
+  <link rel="stylesheet" href="./assets/site-header.css">
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif}
+    .platoon-wrap{width:min(1460px,calc(100% - 36px));margin:0 auto;padding:34px 0 72px}
+    .platoon-kicker{color:var(--orange,#a93419);font-size:11px;font-weight:950;letter-spacing:.18em;text-transform:uppercase}
+    .platoon-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,430px);gap:30px;align-items:end;padding:38px 0;border-bottom:5px solid var(--ink,#071d36)}
+    .platoon-hero h1{max-width:850px;margin:8px 0 12px;color:var(--ink,#071d36);font:700 clamp(44px,6vw,82px)/.95 Georgia,"Times New Roman",serif;letter-spacing:-.055em}
+    .platoon-hero p{max-width:760px;margin:0;color:var(--ink-soft,#506071);font:700 16px/1.55 Georgia,"Times New Roman",serif}
+    .method{padding:18px;border:1px solid var(--rule,#1a3045);background:var(--white,#fffdf7);color:var(--ink,#071d36)}
+    .method strong{display:block;margin-bottom:8px;text-transform:uppercase;letter-spacing:.12em;font-size:10px}
+    .method span{color:var(--ink-soft,#506071);font-size:12px;line-height:1.5}
+    .platoon-status{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:20px 0;color:var(--ink-soft,#506071);font-size:12px;font-weight:900}
+    .platoon-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+    .platoon-column{min-width:0}
+    .column-head{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:16px 0;border-bottom:2px solid var(--ink,#071d36)}
+    .column-head h2{margin:0;color:var(--ink,#071d36);font:700 30px/1 Georgia,"Times New Roman",serif}
+    .column-head span{color:var(--blue,#0757d6);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+    .edge-list{display:grid;gap:1px;padding:1px;background:var(--rule,#1a3045)}
+    .edge-card{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:13px;align-items:start;padding:16px;border:0;background:var(--white,#fffdf7);color:var(--ink,#071d36);text-align:left;cursor:pointer}
+    .edge-card:hover{background:var(--paper-deep,#e9e4d7)}
+    .headshot{position:relative;width:58px;height:58px;overflow:hidden;border:1px solid color-mix(in srgb,var(--ink,#071d36) 24%,transparent);border-radius:50%;display:grid;place-items:center;background:var(--paper-deep,#e9e4d7);font-weight:950}
+    .headshot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+    .edge-rank{color:var(--orange,#a93419);font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}
+    .edge-name{margin:3px 0 5px;font:700 21px/1.05 Georgia,"Times New Roman",serif}
+    .edge-matchup{color:var(--ink-soft,#506071);font-size:11px;font-weight:800}
+    .edge-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .edge-stats span{padding:5px 7px;border:1px solid color-mix(in srgb,var(--ink,#071d36) 18%,transparent);font-size:9px;font-weight:950;text-transform:uppercase}
+    .edge-score{text-align:right;white-space:nowrap}
+    .edge-score b{display:block;color:var(--blue,#0757d6);font:950 28px/1 Arial,sans-serif}
+    .edge-score small{color:var(--ink-soft,#506071);font-size:9px;font-weight:950;text-transform:uppercase}
+    .empty{padding:24px;background:var(--white,#fffdf7);color:var(--ink-soft,#506071)}
+    html[data-theme="dark"] .method,html[data-theme="dark"] .edge-card{background:#101719}
+    html[data-theme="dark"] .edge-card:hover,html[data-theme="dark"] .headshot{background:#182329}
+    @media(max-width:900px){.platoon-hero,.platoon-grid{grid-template-columns:1fr}.platoon-hero{align-items:start}.edge-card{grid-template-columns:50px minmax(0,1fr) auto}.headshot{width:50px;height:50px}}
+  </style>
+  <script src="./assets/member-data.js"></script>
+  <script defer src="./assets/site-header.js"></script>
+</head>
+<body class="tsl-editorial tsl-tool-page">
+  <main class="platoon-wrap">
+    <section class="platoon-hero">
+      <div>
+        <div class="platoon-kicker">Today’s handedness edge</div>
+        <h1>Platoon Advantage</h1>
+        <p>The strongest opposite-handed matchups on today’s slate—ranked with season split production, sample size, lineup context, and the live model.</p>
+      </div>
+      <aside class="method"><strong>How the board works</strong><span>Opposite-handedness is the entry point, not the final answer. Split OPS and SLG lead the ranking, with plate appearances controlling confidence and the model score breaking close calls.</span></aside>
+    </section>
+    <div class="platoon-status"><span id="updated">Loading live player data…</span><span>Click any player for the complete card</span></div>
+    <section class="platoon-grid">
+      <div class="platoon-column"><header class="column-head"><h2>RHB vs LHP</h2><span>Right-handed bats</span></header><div class="edge-list" id="rhbList"></div></div>
+      <div class="platoon-column"><header class="column-head"><h2>LHB vs RHP</h2><span>Left-handed bats</span></header><div class="edge-list" id="lhbList"></div></div>
+    </section>
+  </main>
+  <script src="./platoon-edge.js?v=1"></script>
+  <script src="./player_card_patch.js?v=platoon-edge-20260821"></script>
+  <script src="./health-widget.js?v=2"></script>
+</body>
+</html>

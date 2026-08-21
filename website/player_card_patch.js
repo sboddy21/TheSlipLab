@@ -263,6 +263,16 @@
     return "WATCH";
   }
 
+  function hasPlatoonAdvantage(row) {
+    const batter = String(row.batSide || row.bats || "").trim().toUpperCase();
+    const pitcher = String(row.opposingPitcherHand || row.pitcherHand || "").trim().toUpperCase();
+    const isRightBatter = batter === "R" || batter === "RH" || batter === "RHB" || batter.includes("RIGHT");
+    const isLeftBatter = batter === "L" || batter === "LH" || batter === "LHB" || batter.includes("LEFT");
+    const isLeftPitcher = pitcher === "L" || pitcher === "LH" || pitcher === "LHP" || pitcher.includes("LEFT");
+    const isRightPitcher = pitcher === "R" || pitcher === "RH" || pitcher === "RHP" || pitcher.includes("RIGHT");
+    return (isRightBatter && isLeftPitcher) || (isLeftBatter && isRightPitcher);
+  }
+
   function chips(row) {
     const h = stats(row);
     const out = [grade(row)];
@@ -294,6 +304,7 @@
     if (num(row.zoneOverlap) >= 55) add("ZONE OVERLAP");
     if (num(row.powerScore) >= 70) add("BARREL KING");
     if (num(row.protectionScore) >= 75) add("PROTECTION BOOST");
+    if (hasPlatoonAdvantage(row)) add("PLATOON ADVANTAGE");
 
     const priority = [
       "TOP 10",
@@ -329,6 +340,7 @@
       if (t.includes("DANGER") || t.includes("LEAK")) return "pcchip pcchip-danger";
       if (t.includes("STRONG") || t.includes("ELITE")) return "pcchip pcchip-strong";
       if (t.includes("POWER")) return "pcchip pcchip-power";
+      if (t.includes("PLATOON")) return "pcchip pcchip-split";
       if (t.includes("PITCH")) return "pcchip pcchip-pitch";
       if (t.includes("ZONE") || t.includes("OVERLAP")) return "pcchip pcchip-zone";
       if (t.includes("WEATHER")) return "pcchip pcchip-weather";
@@ -1592,6 +1604,7 @@
       .pcchip-danger{color:#ff79c8;border-color:#ff3fb4;background:rgba(255,63,180,.14);box-shadow:0 0 18px rgba(255,63,180,.38), inset 0 0 12px rgba(255,63,180,.10)}
       .pcchip-strong{color:#00f0a8;border-color:#00d084;background:rgba(0,208,132,.14);box-shadow:0 0 16px rgba(0,208,132,.34)}
       .pcchip-power{color:#ff6b5f;border-color:#ff342a;background:rgba(255,52,42,.14);box-shadow:0 0 18px rgba(255,52,42,.38)}
+      .pcchip-split{color:#d9b8ff;border-color:#b36cff;background:rgba(179,108,255,.18);box-shadow:0 0 16px rgba(179,108,255,.24)}
       .pcchip-pitch{color:#20e7ff;border-color:#00cfff;background:rgba(0,207,255,.14);box-shadow:0 0 16px rgba(0,207,255,.35)}
       .pcchip-zone{color:#ff9d2e;border-color:#ff7a00;background:rgba(255,122,0,.15);box-shadow:0 0 16px rgba(255,122,0,.35)}
       .pcchip-weather{color:#54c7ff;border-color:#2196ff;background:rgba(33,150,255,.14);box-shadow:0 0 16px rgba(33,150,255,.34)}
@@ -7898,6 +7911,7 @@
     body.tsl-editorial .pcprob span{color:#506071!important}
     body.tsl-editorial .pcchip{border-radius:0!important;box-shadow:none!important}
     body.tsl-editorial .pcchip-base{border-color:rgba(7,29,54,.2)!important;background:#fffdf7!important;color:#071d36!important}
+    body.tsl-editorial .pcchip-split{border-color:#6b3fa0!important;background:#efe5ff!important;color:#4a1f78!important}
     body.tsl-editorial .pctabs{border-color:#071d36!important;background:transparent!important}
     body.tsl-editorial .pctab{border:1px solid #071d36!important;border-radius:0!important;background:transparent!important;color:#071d36!important}
     body.tsl-editorial .pctab.on,body.tsl-editorial .pctab.active{border-color:#1268f3!important;background:#1268f3!important;color:#fff!important}

@@ -614,6 +614,12 @@ function batterHandFor(row) {
   );
 }
 
+function hasPlatoonAdvantage(row) {
+  const batter = batterHandFor(row);
+  const pitcher = pitcherHandFor(row);
+  return (batter === "RHB" && pitcher === "LHP") || (batter === "LHB" && pitcher === "RHP");
+}
+
   function recentLabel(row) {
     const recentHr =
       row.last7Hr ??
@@ -936,6 +942,7 @@ function batterHandFor(row) {
 
     const chips = [
       [level, "level-" + level.toLowerCase()],
+      ...(hasPlatoonAdvantage(row) ? [["PLATOON ADVANTAGE", "tag-split tag-glow"]] : []),
       ...(previous > 0 ? [["CRUSHER", "crusher tag-glow"]] : []),
       [barrelLabel(row), "barrel"],
       [hardHitLabel(row), "hardhit"],
