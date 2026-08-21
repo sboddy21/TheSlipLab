@@ -402,14 +402,21 @@
 
     async function init(){
       try {
-        const [aiRes, reasoningRes] = await Promise.all([
+        const [aiRes, reasoningRes, cardsRes] = await Promise.all([
           fetch(DATA_URL, {cache:"no-store"}),
-          fetch(REASONING_URL, {cache:"no-store"})
+          fetch(REASONING_URL, {cache:"no-store"}),
+          fetch("/data/player_card_data.json?v=" + Date.now(), {cache:"no-store"})
         ]);
         if (!aiRes.ok) throw new Error("Missing ai_2.json");
         if (!reasoningRes.ok) throw new Error("Missing ai_reasoning_engine.json");
 
         [AI, REASONING] = await Promise.all([aiRes.json(), reasoningRes.json()]);
+        const cardPayload = cardsRes.ok ? await cardsRes.json() : {players:[]};
+        const confirmed = row => {const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot),status=String(row.lineupStatus||"").toUpperCase(),source=String(row.lineupSource||"").toUpperCase();return(row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;};
+        const confirmedIds = new Set((cardPayload.players||[]).filter(confirmed).map(row=>String(row.playerId||"")));
+        const confirmedNames = new Set((cardPayload.players||[]).filter(confirmed).map(row=>playerKey(row.player)));
+        AI.sections = (AI.sections||[]).map(section=>({...section,players:(section.players||[]).filter(row=>confirmedIds.has(String(row.playerId||""))||confirmedNames.has(playerKey(row.name))),count:(section.players||[]).filter(row=>confirmedIds.has(String(row.playerId||""))||confirmedNames.has(playerKey(row.name))).length}));
+        AI.summary = {...(AI.summary||{}),players:new Set(AI.sections.flatMap(section=>section.players.map(row=>String(row.playerId||playerKey(row.name))))).size};
 
         if (!AI.canonical || !Array.isArray(AI.sections)) {
           throw new Error("Invalid AI 2.0 data");

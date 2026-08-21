@@ -676,10 +676,14 @@
 
       state.registry = await registryRes.json();
       if (cardsRes.ok) {
-        state.cards = getRows(await cardsRes.json());
+        const confirmed = row => {const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot),status=String(row.lineupStatus||"").toUpperCase(),source=String(row.lineupSource||"").toUpperCase();return(row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;};
+        state.cards = getRows(await cardsRes.json()).filter(confirmed);
       }
 
       state.tags = Array.isArray(state.registry.tags) ? state.registry.tags : [];
+      const confirmedIds = new Set(state.cards.map(row => String(playerId(row) || "")).filter(Boolean));
+      const confirmedNames = new Set(state.cards.map(row => norm(playerName(row))).filter(Boolean));
+      state.tags = state.tags.map(tag => ({...tag,players:(tag.players || []).filter(row => confirmedIds.has(String(row.playerId || "")) || confirmedNames.has(norm(row.name)))})).filter(tag => tag.players.length);
 
       buildPlayerMap();
       renderCategories();

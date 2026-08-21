@@ -273,6 +273,14 @@
     return (isRightBatter && isLeftPitcher) || (isLeftBatter && isRightPitcher);
   }
 
+  function isConfirmedLineupPlayer(row) {
+    const spot = Number(row.confirmedLineupSpot ?? row.actualLineupSpot ?? row.battingOrder ?? row.lineupSpot);
+    const status = String(row.lineupStatus || "").trim().toUpperCase();
+    const source = String(row.lineupSource || "").trim().toUpperCase();
+    const confirmed = row.confirmedLineup === true || status === "CONFIRMED" || status === "OFFICIAL" || source === "CONFIRMED" || source === "OFFICIAL";
+    return confirmed && Number.isInteger(spot) && spot >= 1 && spot <= 9;
+  }
+
   function chips(row) {
     const h = stats(row);
     const out = [grade(row)];
@@ -7870,7 +7878,7 @@
       if (row?.player) map.set(key(row.player), { ...(map.get(key(row.player)) || {}), ...row });
     });
 
-    PLAYERS = [...map.values()];
+    PLAYERS = [...map.values()].filter(isConfirmedLineupPlayer);
 
     document.addEventListener("click", event => {
       const target = event.target.closest(".bat[data-player],tr[data-player],.player-card[data-player-name],.card[data-player-name],[data-player-name]");

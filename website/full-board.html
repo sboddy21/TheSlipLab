@@ -401,6 +401,13 @@ function boardScore(row){
   );
 }
 
+function isConfirmedLineupPlayer(row){
+  const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot);
+  const status=String(row.lineupStatus||"").trim().toUpperCase();
+  const source=String(row.lineupSource||"").trim().toUpperCase();
+  return (row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;
+}
+
 function liveEdge(row){
   const labels = [];
 
@@ -478,7 +485,7 @@ async function load(){
     });
   });
 
-  players = (json.allPlayers || []).map((row, index) => {
+  players = (json.allPlayers || []).filter(isConfirmedLineupPlayer).map((row, index) => {
     const rank = Number(row.modelRank || row.rank || index + 1);
     const nameKey = String(row.player || row.name || "").trim().toLowerCase();
     const aiSections = sectionMap[nameKey] || [];
@@ -520,6 +527,6 @@ document.addEventListener("click", e => {
 load();
 </script>
 
-<script src="./player_card_patch.js?v=platoon-edge-20260821"></script>
+<script src="./player_card_patch.js?v=confirmed-lineups-20260821"></script>
 </body>
 </html>

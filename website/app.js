@@ -25,6 +25,13 @@ function norm(value) {
   return clean(value, "").toLowerCase().trim();
 }
 
+function isConfirmedLineupPlayer(row) {
+  const spot = Number(row?.confirmedLineupSpot ?? row?.actualLineupSpot ?? row?.battingOrder ?? row?.lineupSpot);
+  const status = String(row?.lineupStatus || "").trim().toUpperCase();
+  const source = String(row?.lineupSource || "").trim().toUpperCase();
+  return (row?.confirmedLineup === true || status === "CONFIRMED" || status === "OFFICIAL" || source === "CONFIRMED" || source === "OFFICIAL") && Number.isInteger(spot) && spot >= 1 && spot <= 9;
+}
+
 async function getJSON(file, fallback) {
   try {
     const response = await fetch(file + "?v=" + Date.now());
@@ -83,10 +90,10 @@ async function boot() {
   const matchups = await getJSON(FILES.matchups, null);
   const fallbackGames = await getJSON(FILES.fallbackGames, null);
 
-  state.rows = list(homeRuns);
+  state.rows = list(homeRuns).filter(isConfirmedLineupPlayer);
   state.profiles = list(profiles);
 
-  const primary = list(matchups).map(normalizeGame);
+  const primary = list(matchups).map(game => ({...game,hitters:{away:(game.hitters?.away||[]).filter(isConfirmedLineupPlayer),home:(game.hitters?.home||[]).filter(isConfirmedLineupPlayer)}})).map(normalizeGame);
   const fallback = list(fallbackGames).map(normalizeGame);
   const loadedGames = primary.length ? primary : fallback;
 

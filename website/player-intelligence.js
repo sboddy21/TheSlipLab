@@ -93,9 +93,11 @@ function applySearch() {
 }
 
 async function boot() {
-  const payload = await loadJSON("advanced_player_intelligence.json");
-
-  allPlayers = payload.players || [];
+  const [payload, cardPayload] = await Promise.all([loadJSON("advanced_player_intelligence.json"),loadJSON("player_card_data.json")]);
+  const confirmed = row => {const spot=Number(row.confirmedLineupSpot??row.actualLineupSpot??row.battingOrder??row.lineupSpot),status=String(row.lineupStatus||"").toUpperCase(),source=String(row.lineupSource||"").toUpperCase();return(row.confirmedLineup===true||status==="CONFIRMED"||status==="OFFICIAL"||source==="CONFIRMED"||source==="OFFICIAL")&&Number.isInteger(spot)&&spot>=1&&spot<=9;};
+  const ids = new Set((cardPayload.players||[]).filter(confirmed).map(row=>String(row.playerId||"")));
+  const names = new Set((cardPayload.players||[]).filter(confirmed).map(row=>String(row.player||"").trim().toLowerCase()));
+  allPlayers = (payload.players || []).filter(row=>ids.has(String(row.playerId||""))||names.has(String(row.player||"").trim().toLowerCase()));
 
   render(allPlayers);
 
