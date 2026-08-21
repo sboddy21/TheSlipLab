@@ -975,11 +975,9 @@ function hasPlatoonAdvantage(row) {
   }
 
   function isLineupEligible(row) {
-    const spot = Number(row?.confirmedLineupSpot ?? row?.actualLineupSpot ?? row?.battingOrder ?? row?.lineupSpot);
     const source = normalizedLineupValue(row?.lineupSource);
     const status = normalizedLineupValue(row?.lineupStatus);
-    const confirmed = row?.confirmedLineup === true || source === "CONFIRMED" || source === "OFFICIAL" || status === "CONFIRMED" || status === "OFFICIAL";
-    return confirmed && Number.isInteger(spot) && spot >= 1 && spot <= 9;
+    return ![source, status].some(value => ["NOT_IN_LINEUP", "BENCH", "NOT_STARTING"].includes(value));
   }
 
   function allHitters(game) {

@@ -22,9 +22,8 @@
   function eligible(row) {
     const status = normalized(row.lineupStatus).replace(/[\s-]+/g, "_");
     const source = normalized(row.lineupSource).replace(/[\s-]+/g, "_");
-    const spot = Number(row.confirmedLineupSpot ?? row.actualLineupSpot ?? row.battingOrder ?? row.lineupSpot);
-    const confirmed = row.confirmedLineup === true || status === "CONFIRMED" || status === "OFFICIAL" || source === "CONFIRMED" || source === "OFFICIAL";
-    return confirmed && Number.isInteger(spot) && spot >= 1 && spot <= 9 && Boolean(row.game) && Boolean(row.opposingPitcher);
+    const excluded = [status, source].some(value => ["NOT_IN_LINEUP", "BENCH", "NOT_STARTING"].includes(value));
+    return !excluded && Boolean(row.game) && Boolean(row.opposingPitcher);
   }
 
   function splitFor(row) {

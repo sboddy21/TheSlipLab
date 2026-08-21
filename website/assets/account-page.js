@@ -174,10 +174,9 @@ function passwordsMatch(password, confirmation) {
 }
 
 function isConfirmedLineupPlayer(row) {
-  const spot = Number(row?.confirmedLineupSpot ?? row?.actualLineupSpot ?? row?.battingOrder ?? row?.lineupSpot);
   const status = String(row?.lineupStatus || "").trim().toUpperCase();
   const source = String(row?.lineupSource || "").trim().toUpperCase();
-  return (row?.confirmedLineup === true || status === "CONFIRMED" || status === "OFFICIAL" || source === "CONFIRMED" || source === "OFFICIAL") && Number.isInteger(spot) && spot >= 1 && spot <= 9;
+  return ![status, source].some(value => ["NOT IN LINEUP", "NOT_IN_LINEUP", "BENCH", "NOT STARTING", "NOT_STARTING"].includes(value));
 }
 
 function normalizeCatalog(playerPool, matchups) {
