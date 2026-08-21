@@ -1,10 +1,47 @@
 import fs from "fs";
 import path from "path";
+import { pathToFileURL } from "url";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
 
 const OUT = path.join(DATA, "player_card_data.json");
+const FETCH_ATTEMPTS = 3;
+const FETCH_TIMEOUT_MS = 15_000;
+const MAX_OUTPUT_WARNINGS = 50;
+const warnings = [];
+const warningKeys = new Set();
+let warningCount = 0;
+
+function warn(message) {
+  if (warningKeys.has(message)) return;
+  warningKeys.add(message);
+  warningCount++;
+  if (warnings.length < MAX_OUTPUT_WARNINGS) warnings.push(message);
+  console.warn(`PLAYER CARD WARNING: ${message}`);
+}
+
+async function fetchJson(url, label) {
+  let lastError;
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+      if (res.ok) return res.json();
+      lastError = new Error(`${label} returned ${res.status}`);
+      if (res.status !== 429 && res.status < 500) throw lastError;
+    } catch (error) {
+      lastError = error;
+      if (/ returned 4\d\d$/.test(error.message) && !error.message.endsWith("429")) throw error;
+    }
+    if (attempt < FETCH_ATTEMPTS) await new Promise(resolve => setTimeout(resolve, attempt * 500));
+  }
+  throw lastError || new Error(`${label} failed`);
+}
+
+let gameLogFailureStreak = 0;
+let gameLogCircuitOpen = false;
+let splitsFailureStreak = 0;
+let splitsCircuitOpen = false;
 
 function readJSON(file, fallback) {
   try {
@@ -79,66 +116,76 @@ function calcGames(games) {
 }
 
 async function fetchGameLog(playerId) {
+  if (gameLogCircuitOpen) return null;
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=gameLog&group=hitting&season=${season}`;
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`MLB game log returned ${res.status}`);
-
-      const json = await res.json();
-      return (json?.stats?.[0]?.splits || [])
-        .filter(row => row?.stat)
-        .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
-    } catch (error) {
-      if (attempt === 2) return null;
-      await new Promise(resolve => setTimeout(resolve, 250));
+  try {
+    const json = await fetchJson(url, "MLB game log");
+    gameLogFailureStreak = 0;
+    return (json?.stats?.[0]?.splits || [])
+      .filter(row => row?.stat)
+      .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  } catch {
+    gameLogFailureStreak++;
+    if (gameLogFailureStreak >= 3) {
+      gameLogCircuitOpen = true;
+      warn("MLB game-log circuit opened after 3 consecutive failures; using validated cache for remaining players");
     }
+    return null;
   }
 }
 
 async function fetchSeasonSplits(playerId) {
+  if (splitsCircuitOpen) return null;
   const season = new Date().getFullYear();
   const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=statSplits&group=hitting&season=${season}&sitCodes=vl,vr,d,n`;
 
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`MLB splits returned ${res.status}`);
-
-      const json = await res.json();
-      const rows = json?.stats?.[0]?.splits || [];
-      return Object.fromEntries(rows.map(row => {
-        const stat = row.stat || {};
-        return [row.split?.code, {
-          pa: num(stat.plateAppearances),
-          ab: num(stat.atBats),
-          hits: num(stat.hits),
-          hr: num(stat.homeRuns),
-          avg: num(stat.avg),
-          obp: num(stat.obp),
-          slg: num(stat.slg),
-          ops: num(stat.ops)
-        }];
-      }));
-    } catch (error) {
-      if (attempt === 2) return null;
-      await new Promise(resolve => setTimeout(resolve, 250));
+  try {
+    const json = await fetchJson(url, "MLB splits");
+    splitsFailureStreak = 0;
+    const rows = json?.stats?.[0]?.splits || [];
+    return Object.fromEntries(rows.map(row => {
+      const stat = row.stat || {};
+      return [row.split?.code, {
+        pa: num(stat.plateAppearances),
+        ab: num(stat.atBats),
+        hits: num(stat.hits),
+        hr: num(stat.homeRuns),
+        avg: num(stat.avg),
+        obp: num(stat.obp),
+        slg: num(stat.slg),
+        ops: num(stat.ops)
+      }];
+    }));
+  } catch {
+    splitsFailureStreak++;
+    if (splitsFailureStreak >= 3) {
+      splitsCircuitOpen = true;
+      warn("MLB splits circuit opened after 3 consecutive failures; using validated cache for remaining players");
     }
+    return null;
   }
 }
 
 const pitcherHandCache = new Map();
 
-async function fetchPitcherHand(playerId) {
+export async function fetchPitcherHand(playerId) {
   if (!playerId) return "";
   const id = String(playerId);
+  if (!/^\d+$/.test(id)) {
+    warn(`Ignoring invalid opposing pitcher ID ${JSON.stringify(id)}`);
+    return "";
+  }
   if (!pitcherHandCache.has(id)) {
     pitcherHandCache.set(id, (async () => {
-      const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${id}`);
-      if (!res.ok) throw new Error(`MLB player bio returned ${res.status}`);
-      return (await res.json())?.people?.[0]?.pitchHand?.code || "";
+      try {
+        const json = await fetchJson(`https://statsapi.mlb.com/api/v1/people/${id}`, "MLB player bio");
+        return json?.people?.[0]?.pitchHand?.code || "";
+      } catch (error) {
+        warn(`Pitcher hand unavailable for MLB ID ${id}: ${error.message}`);
+        return "";
+      }
     })());
   }
   return pitcherHandCache.get(id);
@@ -284,7 +331,11 @@ async function main() {
   fs.mkdirSync(DATA, { recursive: true });
 
   const players = collectPlayers();
+  const previous = readJSON(OUT, {});
+  const previousById = new Map(arr(previous).map(player => [String(player.playerId), player]));
   const output = [];
+  let cachedPlayerCount = 0;
+  let skippedPlayerCount = 0;
 
   console.log("PLAYER CARD DATA BUILDER");
   console.log("Players queued:", players.length);
@@ -295,19 +346,39 @@ async function main() {
     i++;
     console.log(`[${i}/${players.length}] ${player.player}`);
 
-    const [logs, splits, opposingPitcherHand] = await Promise.all([
+    const cached = previousById.get(String(player.playerId));
+    const [logs, liveSplits, opposingPitcherHand] = await Promise.all([
       fetchGameLog(player.playerId),
       fetchSeasonSplits(player.playerId),
       player.opposingPitcherHand ? player.opposingPitcherHand : fetchPitcherHand(player.opposingPitcherId)
     ]);
-    if (logs === null || splits === null) {
-      throw new Error(`MLB stats unavailable for ${player.player}; refusing to write incomplete player-card data`);
+    if (logs === null && !cached?.last7) {
+      skippedPlayerCount++;
+      warn(`Skipping ${player.player}: live game log unavailable and no validated cache exists`);
+      continue;
     }
-    const last7Games = logs.slice(0, 7);
-    const last15Games = logs.slice(0, 15);
+    const usingCachedLogs = logs === null;
+    if (usingCachedLogs) {
+      cachedPlayerCount++;
+      warn(`Using cached recent form for ${player.player}: live game log unavailable`);
+    }
+    const last7Games = logs?.slice(0, 7) || [];
+    const last15Games = logs?.slice(0, 15) || [];
 
-    const last7 = calcGames(last7Games);
-    const last15 = calcGames(last15Games);
+    const last7 = usingCachedLogs ? cached.last7 : calcGames(last7Games);
+    const last15 = usingCachedLogs ? cached.last15 : calcGames(last15Games);
+    const splits = liveSplits || {
+      vl: cached?.splits?.vsLhp || null,
+      vr: cached?.splits?.vsRhp || null,
+      d: cached?.splits?.day || null,
+      n: cached?.splits?.night || null
+    };
+    if (liveSplits === null) warn(`Using cached or empty splits for ${player.player}: live splits unavailable`);
+    const cachedPitcherMatches = cached && (
+      (player.opposingPitcherId && String(cached.opposingPitcherId || "") === String(player.opposingPitcherId)) ||
+      (player.opposingPitcher && key(cached.opposingPitcher) === key(player.opposingPitcher))
+    );
+    const resolvedPitcherHand = opposingPitcherHand || (cachedPitcherMatches ? cached.opposingPitcherHand : "") || "";
 
     const h = player.hitterStats || player.stats?.hitter || player.stats || {};
 
@@ -319,7 +390,8 @@ async function main() {
       game: player.game,
       venue: player.venue,
       opposingPitcher: player.opposingPitcher,
-      opposingPitcherHand,
+      opposingPitcherId: player.opposingPitcherId,
+      opposingPitcherHand: resolvedPitcherHand,
       batSide: player.batSide || player.bats || player.batHand,
       lineupStatus: player.lineupStatus,
 
@@ -368,7 +440,7 @@ async function main() {
       slateSignals: buildSlateSignals(player, last7),
 
       tags: buildTags(player, last7, last15),
-      gameLogs: last7Games.map(game => ({
+      gameLogs: usingCachedLogs ? (cached.gameLogs || []) : last7Games.map(game => ({
         date: game.date,
         opponent: game.opponent?.name || "",
         ab: num(game.stat?.atBats),
@@ -383,18 +455,34 @@ async function main() {
     await new Promise(resolve => setTimeout(resolve, 120));
   }
 
-  fs.writeFileSync(OUT, JSON.stringify({
+  const minimumPlayers = Math.max(1, Math.floor(players.length * 0.5));
+  if (output.length < minimumPlayers) {
+    throw new Error(`Player-card output failed minimum coverage: ${output.length}/${players.length} players`);
+  }
+
+  const payload = {
     updatedAt: new Date().toISOString(),
     count: output.length,
+    sourceStatus: warningCount ? "degraded" : "live",
+    cachedPlayerCount,
+    skippedPlayerCount,
+    warningCount,
+    warningsTruncated: warningCount > warnings.length,
+    warnings,
     players: output
-  }, null, 2));
+  };
+  const temporary = `${OUT}.tmp`;
+  fs.writeFileSync(temporary, JSON.stringify(payload, null, 2));
+  fs.renameSync(temporary, OUT);
 
   console.log("PLAYER CARD DATA COMPLETE");
   console.log("Players:", output.length);
   console.log("Saved:", OUT);
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1] || "").href) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}
