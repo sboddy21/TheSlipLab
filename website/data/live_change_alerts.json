@@ -1,17 +1,141 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-21T22:03:39.751Z",
+  "generatedAt": "2026-08-21T22:47:49.463Z",
   "date": "2026-08-21",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-08-21T22:01:33.058Z",
-    "mlb_player_pool.json": "2026-08-21T22:01:34.023Z",
-    "game_pitcher_matchups.json": "2026-08-21T22:02:08.134Z",
-    "player_card_data.json": "2026-08-21T22:03:39.653Z",
-    "hr_probability_tracking.json": "2026-08-21T22:02:06.811Z",
-    "pitcher_vulnerability.json": "2026-08-21T22:02:08.146Z"
+    "mlb_games_today.json": "2026-08-21T22:44:12.963Z",
+    "mlb_player_pool.json": "2026-08-21T22:44:14.911Z",
+    "game_pitcher_matchups.json": "2026-08-21T22:45:46.537Z",
+    "player_card_data.json": "2026-08-21T22:47:49.367Z",
+    "hr_probability_tracking.json": "2026-08-21T22:45:44.790Z",
+    "pitcher_vulnerability.json": "2026-08-21T22:45:46.550Z"
   },
   "alerts": [
+    {
+      "id": "f155b330139548e6ecb4",
+      "createdAt": "2026-08-21T22:47:49.463Z",
+      "date": "2026-08-21",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "573262",
+      "entityName": "Mike Yastrzemski",
+      "team": "Atlanta Braves",
+      "gamePk": 823746,
+      "title": "Mike Yastrzemski removed from the confirmed lineup",
+      "message": "Mike Yastrzemski's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "e99780caf16336002a75",
+      "createdAt": "2026-08-21T22:47:49.463Z",
+      "date": "2026-08-21",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "573262",
+      "entityName": "Mike Yastrzemski",
+      "team": "Atlanta Braves",
+      "gamePk": 823746,
+      "title": "Mike Yastrzemski's model score fell",
+      "message": "The live model score fell from 30.6 to 0.",
+      "previous": {
+        "modelScore": 30.6
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "999fb84847420bb9dcbb",
+      "createdAt": "2026-08-21T22:47:49.463Z",
+      "date": "2026-08-21",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "657041",
+      "entityName": "Lane Thomas",
+      "team": "Atlanta Braves",
+      "gamePk": 823746,
+      "title": "Lane Thomas confirmed in the lineup",
+      "message": "Lane Thomas is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2c8e02ff13691ca14aae",
+      "createdAt": "2026-08-21T22:47:49.463Z",
+      "date": "2026-08-21",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "657041",
+      "entityName": "Lane Thomas",
+      "team": "Atlanta Braves",
+      "gamePk": 823746,
+      "title": "Lane Thomas's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 7.7%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 7.7
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "bd25ab00ca3f530a104e",
+      "createdAt": "2026-08-21T22:47:49.463Z",
+      "date": "2026-08-21",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "657041",
+      "entityName": "Lane Thomas",
+      "team": "Atlanta Braves",
+      "gamePk": 823746,
+      "title": "Lane Thomas's model score rose",
+      "message": "The live model score rose from 0 to 35.6.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 35.6
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "aff990592fab41552064",
       "createdAt": "2026-08-21T22:03:39.751Z",
@@ -6191,132 +6315,6 @@
       "sourceFiles": [
         "player_card_data.json"
       ]
-    },
-    {
-      "id": "92f2182d0806969df826",
-      "createdAt": "2026-08-21T20:36:35.639Z",
-      "date": "2026-08-21",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "680700",
-      "entityName": "Richie Palacios",
-      "team": "Tampa Bay Rays",
-      "gamePk": 824800,
-      "title": "Richie Palacios's model score fell",
-      "message": "The live model score fell from 27.4 to 0.",
-      "previous": {
-        "modelScore": 27.4
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "00b4032fabcd1d1171b2",
-      "createdAt": "2026-08-21T20:36:35.639Z",
-      "date": "2026-08-21",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "681198",
-      "entityName": "TJ Rumfield",
-      "team": "Colorado Rockies",
-      "gamePk": 824317,
-      "title": "TJ Rumfield confirmed in the lineup",
-      "message": "TJ Rumfield is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "1faf2993f85d583a583c",
-      "createdAt": "2026-08-21T20:36:35.639Z",
-      "date": "2026-08-21",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "681393",
-      "entityName": "Connor Norby",
-      "team": "Colorado Rockies",
-      "gamePk": 824317,
-      "title": "Connor Norby's model score fell",
-      "message": "The live model score fell from 27.6 to 0.",
-      "previous": {
-        "modelScore": 27.6
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "41dceda744698d599027",
-      "createdAt": "2026-08-21T20:36:35.639Z",
-      "date": "2026-08-21",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "682987",
-      "entityName": "Spencer Jones",
-      "team": "New York Yankees",
-      "gamePk": 823510,
-      "title": "Spencer Jones confirmed in the lineup",
-      "message": "Spencer Jones is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "48dd41fc696c23779aa9",
-      "createdAt": "2026-08-21T20:36:35.639Z",
-      "date": "2026-08-21",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "683227",
-      "entityName": "Cody Freeman",
-      "team": "Texas Rangers",
-      "gamePk": 822857,
-      "title": "Cody Freeman confirmed in the lineup",
-      "message": "Cody Freeman is confirmed batting 7.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 7
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
     }
   ],
   "snapshot": {
@@ -6394,7 +6392,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 19.8,
+        "probability": 22.3,
         "modelScore": 43,
         "signals": [
           "due"
@@ -6412,7 +6410,7 @@
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 12.6,
-        "modelScore": 42.5,
+        "modelScore": 42.6,
         "signals": []
       },
       "543510": {
@@ -6631,7 +6629,7 @@
         "lineupSpot": 4,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 22.8,
+        "probability": 24,
         "modelScore": 51.6,
         "signals": [
           "hotLately"
@@ -6658,13 +6656,13 @@
         "team": "Atlanta Braves",
         "opponent": "Milwaukee Brewers",
         "gamePk": 823746,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 4.5,
-        "modelScore": 30.6,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "575929": {
@@ -6834,7 +6832,7 @@
         "lineupSpot": 6,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 19.5,
+        "probability": 19.4,
         "modelScore": 38.7,
         "signals": []
       },
@@ -6879,7 +6877,7 @@
         "lineupSpot": 5,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 9.2,
+        "probability": 9.7,
         "modelScore": 38.4,
         "signals": []
       },
@@ -6909,7 +6907,7 @@
         "lineupSpot": 8,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 6.4,
+        "probability": 6,
         "modelScore": 32.4,
         "signals": []
       },
@@ -6985,7 +6983,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 3.4,
-        "modelScore": 28.3,
+        "modelScore": 28.4,
         "signals": []
       },
       "608369": {
@@ -7083,7 +7081,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 24,
-        "modelScore": 50.9,
+        "modelScore": 51,
         "signals": []
       },
       "622268": {
@@ -7145,7 +7143,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 24,
-        "modelScore": 55.9,
+        "modelScore": 56,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7312,8 +7310,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 4,
-        "modelScore": 26.7,
+        "probability": 3.7,
+        "modelScore": 26.4,
         "signals": []
       },
       "642201": {
@@ -7418,7 +7416,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 3.7,
-        "modelScore": 28.6,
+        "modelScore": 28.7,
         "signals": []
       },
       "643376": {
@@ -7448,7 +7446,7 @@
         "opposingPitcherId": "669713",
         "opposingPitcher": "Hayden Wesneski",
         "probability": 2.1,
-        "modelScore": 32.7,
+        "modelScore": 32.8,
         "signals": [
           "hotLately"
         ]
@@ -7464,7 +7462,7 @@
         "lineupSpot": 5,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 12.4,
+        "probability": 12.5,
         "modelScore": 38.8,
         "signals": []
       },
@@ -7738,13 +7736,13 @@
         "team": "Atlanta Braves",
         "opponent": "Milwaukee Brewers",
         "gamePk": 823746,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 7.7,
+        "modelScore": 35.6,
         "signals": []
       },
       "657136": {
@@ -7790,8 +7788,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 22.8,
-        "modelScore": 53.9,
+        "probability": 24,
+        "modelScore": 54,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7808,8 +7806,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 18.8,
-        "modelScore": 41.6,
+        "probability": 18.4,
+        "modelScore": 41.5,
         "signals": []
       },
       "660688": {
@@ -7868,8 +7866,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 8.9,
-        "modelScore": 41.3,
+        "probability": 9,
+        "modelScore": 41.4,
         "signals": []
       },
       "661531": {
@@ -7976,7 +7974,7 @@
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
         "probability": 6.7,
-        "modelScore": 35.8,
+        "modelScore": 35.9,
         "signals": []
       },
       "663616": {
@@ -8020,7 +8018,7 @@
         "lineupSpot": 6,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 5.3,
+        "probability": 5.4,
         "modelScore": 32.6,
         "signals": []
       },
@@ -8081,7 +8079,7 @@
         "opposingPitcherId": "689254",
         "opposingPitcher": "Mason Fluharty",
         "probability": 15.1,
-        "modelScore": 42.8,
+        "modelScore": 42.9,
         "signals": [
           "hotLately"
         ]
@@ -8143,7 +8141,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 18.8,
-        "modelScore": 40.4,
+        "modelScore": 40.5,
         "signals": []
       },
       "664034": {
@@ -8302,7 +8300,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 24,
-        "modelScore": 49.1,
+        "modelScore": 49.2,
         "signals": []
       },
       "665052": {
@@ -8553,7 +8551,7 @@
         "opposingPitcherId": "669713",
         "opposingPitcher": "Hayden Wesneski",
         "probability": 5.8,
-        "modelScore": 33.2,
+        "modelScore": 33.3,
         "signals": []
       },
       "666139": {
@@ -8830,7 +8828,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 19.9,
+        "probability": 19.7,
         "modelScore": 41,
         "signals": []
       },
@@ -8875,8 +8873,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 9.9,
-        "modelScore": 37.7,
+        "probability": 10.9,
+        "modelScore": 37.8,
         "signals": []
       },
       "669016": {
@@ -8950,7 +8948,7 @@
         "lineupSpot": 7,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 6.9,
+        "probability": 6.7,
         "modelScore": 37.5,
         "signals": []
       },
@@ -9179,8 +9177,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
-        "probability": 8.3,
-        "modelScore": 36.8,
+        "probability": 8,
+        "modelScore": 36.6,
         "signals": []
       },
       "671083": {
@@ -9256,8 +9254,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 23.4,
-        "modelScore": 41.3,
+        "probability": 23.5,
+        "modelScore": 41.4,
         "signals": [
           "due"
         ]
@@ -9523,7 +9521,7 @@
         "lineupSpot": 9,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 1.6,
+        "probability": 1.4,
         "modelScore": 25.2,
         "signals": []
       },
@@ -9678,7 +9676,7 @@
         "opposingPitcherId": "672282",
         "opposingPitcher": "Reid Detmers",
         "probability": 16.3,
-        "modelScore": 40.9,
+        "modelScore": 41,
         "signals": []
       },
       "677800": {
@@ -9956,7 +9954,7 @@
         "opposingPitcherId": "702070",
         "opposingPitcher": "Noah Cameron",
         "probability": 24,
-        "modelScore": 58.6,
+        "modelScore": 58.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -10096,7 +10094,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 8.2,
-        "modelScore": 38,
+        "modelScore": 38.1,
         "signals": []
       },
       "681047": {
@@ -10206,7 +10204,7 @@
         "lineupSpot": 3,
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
-        "probability": 20.1,
+        "probability": 22.3,
         "modelScore": 43.8,
         "signals": [
           "hotLately"
@@ -10316,7 +10314,7 @@
         "opposingPitcherId": "640455",
         "opposingPitcher": "Sean Manaea",
         "probability": 1.4,
-        "modelScore": 22.5,
+        "modelScore": 22.6,
         "signals": []
       },
       "682674": {
@@ -10470,7 +10468,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 2.7,
-        "modelScore": 32,
+        "modelScore": 32.1,
         "signals": []
       },
       "683227": {
@@ -10718,7 +10716,7 @@
         "opposingPitcherId": "657277",
         "opposingPitcher": "Logan Webb",
         "probability": 2.8,
-        "modelScore": 34.7,
+        "modelScore": 34.8,
         "signals": []
       },
       "686780": {
@@ -10762,7 +10760,7 @@
         "lineupSpot": 2,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 20.1,
+        "probability": 20,
         "modelScore": 43.3,
         "signals": []
       },
@@ -11125,7 +11123,7 @@
         "opposingPitcherId": "676106",
         "opposingPitcher": "Emerson Hancock",
         "probability": 22.8,
-        "modelScore": 48.5,
+        "modelScore": 48.6,
         "signals": [
           "hotLately"
         ]
@@ -11251,7 +11249,7 @@
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 1.6,
-        "modelScore": 22.9,
+        "modelScore": 23,
         "signals": []
       },
       "693307": {
@@ -11330,7 +11328,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 2.7,
-        "modelScore": 32.7,
+        "modelScore": 32.8,
         "signals": []
       },
       "694212": {
@@ -11345,7 +11343,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 22,
-        "modelScore": 43,
+        "modelScore": 43.1,
         "signals": []
       },
       "694249": {
@@ -11360,7 +11358,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 11.6,
-        "modelScore": 39.3,
+        "modelScore": 39.4,
         "signals": [
           "due"
         ]
@@ -11407,7 +11405,7 @@
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 3.9,
-        "modelScore": 27.6,
+        "modelScore": 27.7,
         "signals": []
       },
       "694384": {
@@ -11981,7 +11979,7 @@
         "opposingPitcherId": "702070",
         "opposingPitcher": "Noah Cameron",
         "probability": 5.4,
-        "modelScore": 37.6,
+        "modelScore": 37.7,
         "signals": []
       },
       "703607": {
@@ -12057,8 +12055,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
-        "probability": 10.5,
-        "modelScore": 42.1,
+        "probability": 9.6,
+        "modelScore": 41.6,
         "signals": []
       },
       "802415": {
@@ -12103,7 +12101,7 @@
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 22.8,
-        "modelScore": 51.3,
+        "modelScore": 51.4,
         "signals": [
           "hotLately"
         ]
@@ -12180,7 +12178,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 22.3,
-        "modelScore": 45.3,
+        "modelScore": 45.4,
         "signals": [
           "hotLately"
         ]
