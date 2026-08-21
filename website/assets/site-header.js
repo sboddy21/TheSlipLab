@@ -46,6 +46,7 @@
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
+    ["Platoon Edge","./platoon-edge.html",["/platoon-edge.html"]],
     ["Pitcher Vulnerability","./pitcher-vulnerability.html",["/pitcher-vulnerability.html"]],
     ["Power Zones","./power-zones.html",["/power-zones.html"]],
     ["Weather","./weather.html",["/weather.html"]],
@@ -94,6 +95,7 @@
     "/wnba-quick-target.html",
     "/nfl.html",
     "/pitcher-vulnerability.html",
+    "/platoon-edge.html",
     "/player-intelligence.html",
     "/power-zones.html",
     "/tags.html"
