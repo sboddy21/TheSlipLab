@@ -173,6 +173,13 @@ function passwordsMatch(password, confirmation) {
   return true;
 }
 
+function isConfirmedLineupPlayer(row) {
+  const spot = Number(row?.confirmedLineupSpot ?? row?.actualLineupSpot ?? row?.battingOrder ?? row?.lineupSpot);
+  const status = String(row?.lineupStatus || "").trim().toUpperCase();
+  const source = String(row?.lineupSource || "").trim().toUpperCase();
+  return (row?.confirmedLineup === true || status === "CONFIRMED" || status === "OFFICIAL" || source === "CONFIRMED" || source === "OFFICIAL") && Number.isInteger(spot) && spot >= 1 && spot <= 9;
+}
+
 function normalizeCatalog(playerPool, matchups) {
   const players = (playerPool.players || []).map(player => ({
     sport: "MLB",
@@ -220,10 +227,10 @@ async function loadCatalog() {
   ]);
   catalog = normalizeCatalog(playerPool, matchups);
   detailData = {
-    playerCards: Array.isArray(playerCards.players) ? playerCards.players : [],
-    decisionPlayers: Array.isArray(decisionCenter.allPlayers) ? decisionCenter.allPlayers : [],
+    playerCards: Array.isArray(playerCards.players) ? playerCards.players.filter(isConfirmedLineupPlayer) : [],
+    decisionPlayers: Array.isArray(decisionCenter.allPlayers) ? decisionCenter.allPlayers.filter(isConfirmedLineupPlayer) : [],
     reasoningReports: Array.isArray(reasoning.reports) ? reasoning.reports : [],
-    homeRunBoard: Array.isArray(homeRunBoard) ? homeRunBoard : [],
+    homeRunBoard: Array.isArray(homeRunBoard) ? homeRunBoard.filter(isConfirmedLineupPlayer) : [],
     matchups: Array.isArray(matchups.games) ? matchups.games : [],
     currentResults,
     previousResults,
