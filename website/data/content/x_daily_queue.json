@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-21T10:55:17.929Z",
+  "updatedAt": "2026-08-21T14:08:19.213Z",
   "date": "2026-08-21",
-  "slot": "overnight",
+  "slot": "morning",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "morning",
+    "selected": "morning",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,76 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-21T10:55:17.929Z",
+    "checkedAt": "2026-08-21T14:08:19.213Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-21T10:55:17.533Z",
+        "timestamp": "2026-08-21T14:08:18.706Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-21T10:55:16.551Z",
-        "ageSeconds": 1,
-        "scheduledGames": 8,
-        "totalScheduledGames": 9,
-        "finalGames": 9
+        "timestamp": "2026-08-21T13:58:24.081Z",
+        "ageSeconds": 595
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-21T03:31:38.846Z",
-        "players": 561,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-21T13:53:37.663Z",
+        "ageSeconds": 881
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-21T14:08:18.283Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-21T10:55:16.595Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-20",
-        "archivedPlayers": 209,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-21T13:59:47.303Z",
+        "ageSeconds": 511
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-21_MORNING_SLATE_READ",
+      "date": "2026-08-21",
+      "type": "slate_read",
+      "slot": "morning",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-21T14:08:19.213Z",
+      "text": "I finished the first pass through today's MLB slate. Three HR profiles separated from the pack:\n\n1. Eduardo Valencia — 52.8 HR confidence | Curveball matchup 76.8\n2. Tyrone Taylor — 50.0 HR confidence | Splitter matchup 100.0\n3. Zac Veen — 51.7 HR confidence | Curveball matchup 95.4\n\nThe important part: Strong power profile and crushes this pitch mix.\n\nWho is your favorite HR look today?",
+      "players": [
+        "Eduardo Valencia",
+        "Tyrone Taylor",
+        "Zac Veen"
+      ],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-21T14:08:19.794Z",
+      "x_post_id": "2090803186764218765",
+      "created_at": "2026-08-21T14:08:18.706Z",
+      "error": null
+    }
+  ]
 }
