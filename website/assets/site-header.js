@@ -64,9 +64,7 @@
     ["Results","./wnba-results.html",["/wnba-results.html"]],
     ["AI Says","./wnba-ai-says.html",["/wnba-ai-says.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
-    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]],
-    ["Full Board","./wnba-full-board.html",["/wnba-full-board.html"]],
-    ["Quick Target","./wnba-quick-target.html",["/wnba-quick-target.html"]]
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const protectedPaths = new Set([

@@ -3,7 +3,8 @@
   const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
   const markets={points:"Points",rebounds:"Rebounds",assists:"Assists",threes:"Threes"};
   const seasonKey={points:"points",rebounds:"rebounds",assists:"assists",threes:"threesMade"};
-  const state={market:"points",query:"",team:"",sort:"signal",savedOnly:false,favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
+  const requestedView=new URLSearchParams(window.location.search).get("view");
+  const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",market:"points",query:"",team:"",sort:"signal",favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
   const fmt=value=>Number.isFinite(Number(value))?Number(value).toFixed(1).replace(/\.0$/,""):"—";
   const changeText=item=>{
     if(item.type==="minutes")return `Expected minutes moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
@@ -27,17 +28,26 @@
     return Math.max(1,Math.min(99,Math.round(row.confidence*.52+row.roleScore*.31+Math.min(row.expectedMinutes,36)*.3+form+context)));
   }
   function enriched(){return state.rows.map(row=>{const player=state.players.get(String(row.playerId));return {...row,playerData:player,signal:signal(row,player,state.market),marketValue:Number(row.projections[state.market]?.value||0)}})}
+  function setView(view){
+    if(view==="saved"&&state.accountReady&&!window.TSLAccount?.session){window.location.href="./account.html";return}
+    state.view=view;
+    document.querySelectorAll("#wdcViews [data-view]").forEach(button=>button.setAttribute("aria-selected",String(button.dataset.view===view)));
+    const url=new URL(window.location.href);url.searchParams.set("view",view);window.history.replaceState({},"",url);
+    render();
+  }
   function render(){
     let rows=enriched().filter(row=>(!state.team||row.team===state.team)&&(!state.query||`${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query)));
-    if(state.savedOnly)rows=window.TSLWnbaPersonalization.filterRows(rows,state.favorites);
+    if(state.view==="saved")rows=window.TSLWnbaPersonalization.filterRows(rows,state.favorites);
     const sorters={signal:(a,b)=>b.signal-a.signal||b.confidence-a.confidence,projection:(a,b)=>b.marketValue-a.marketValue,confidence:(a,b)=>b.confidence-a.confidence||b.signal-a.signal,minutes:(a,b)=>b.expectedMinutes-a.expectedMinutes};
     rows.sort(sorters[state.sort]);
-    $("#wdcStatus").textContent=`${rows.length} ${state.savedOnly?"saved ":""}players · ${markets[state.market]} model signals · Select a player for full context`;
+    const total=rows.length;if(state.view==="top")rows=rows.slice(0,12);
+    const viewLabel=state.view==="top"?`Top ${rows.length} of ${total}`:state.view==="saved"?`${rows.length} saved`:`${rows.length}`;
+    $("#wdcStatus").textContent=`${viewLabel} players · ${markets[state.market]} model signals · Select a player for full context`;
     $("#wdcBoard").innerHTML=rows.length?rows.map((row,index)=>{
       const projection=row.projections[state.market];const player=row.playerData;const d=delta(row,player,state.market);
       const flags=[row.role,row.context?.opponentDefenseRank?`Defense #${row.context.opponentDefenseRank}`:"",player?.injury?.status||""].filter(Boolean);
       return `<button class="wdc-row" type="button" data-player-id="${esc(row.playerId)}"><span class="wdc-rank">${index+1}</span><span class="wdc-player"><strong>${esc(row.player)}</strong><span>${esc(row.team)} vs ${esc(row.opponent)} · ${esc(row.role)}</span></span><span class="wdc-cell wdc-signal"><span>Signal score</span><strong>${row.signal}</strong></span><span class="wdc-cell"><span>${esc(markets[state.market])} projection</span><strong>${fmt(projection.value)}</strong></span><span class="wdc-cell"><span>Expected minutes</span><strong>${fmt(row.expectedMinutes)}</strong></span><span class="wdc-cell wdc-range"><span>Projection range</span><strong>${fmt(projection.floor)}–${fmt(projection.ceiling)}</strong><small>${d>=0?"+":""}${fmt(d)} vs season</small></span><span class="wdc-flags">${flags.map((flag,i)=>`<span class="wdc-flag ${i===flags.length-1&&player?.injury?"alert":""}">${esc(flag)}</span>`).join("")}</span></button>`;
-    }).join(""):`<div class="wdc-empty">${state.savedOnly?"No saved WNBA players or teams are active on this slate.":"No players match the selected filters."}</div>`;
+    }).join(""):`<div class="wdc-empty">${state.view==="saved"?"No saved WNBA players or teams are active on this slate.":"No players match the selected filters."}</div>`;
   }
   const favoriteFor=(type,id)=>window.TSLWnbaPersonalization.find(state.favorites,type,id);
   const saveActions=row=>{const playerSaved=favoriteFor("player",row.playerId),teamSaved=favoriteFor("team",row.team);return `<div class="wdc-save-actions"><button type="button" class="${playerSaved?"saved":""}" data-save-type="player" data-save-id="${esc(row.playerId)}">${playerSaved?"★ Player saved":"☆ Save player"}</button><button type="button" class="${teamSaved?"saved":""}" data-save-type="team" data-save-id="${esc(row.team)}">${teamSaved?"★ Team followed":"☆ Follow team"}</button></div>`};
@@ -73,8 +83,10 @@
     }catch(error){$("#wdcStatus").textContent=error.message;$("#wdcBoard").innerHTML=`<div class="wdc-empty">WNBA Decision Center is temporarily unavailable. Existing site data remains unchanged.</div>`}
   }
   $("#wdcTabs").addEventListener("click",event=>{const button=event.target.closest("button[data-market]");if(!button)return;state.market=button.dataset.market;document.querySelectorAll("#wdcTabs button").forEach(item=>item.setAttribute("aria-selected",String(item===button)));render()});
+  $("#wdcViews").addEventListener("click",event=>{const button=event.target.closest("button[data-view]");if(button)setView(button.dataset.view)});
   $("#wdcSearch").addEventListener("input",event=>{state.query=event.target.value.trim().toLowerCase();render()});$("#wdcTeam").addEventListener("change",event=>{state.team=event.target.value;render()});$("#wdcSort").addEventListener("change",event=>{state.sort=event.target.value;render()});$("#wdcBoard").addEventListener("click",event=>{const row=event.target.closest("[data-player-id]");if(row)openPlayer(row.dataset.playerId)});$("#wdcClose").addEventListener("click",()=>$("#wdcDialog").close());$("#wdcDialog").addEventListener("click",event=>{if(event.target===$("#wdcDialog"))$("#wdcDialog").close()});
-  $("#wdcMySlate").addEventListener("click",()=>{if(!window.TSLAccount?.session){window.location.href="./account.html";return}state.savedOnly=!state.savedOnly;$("#wdcMySlate").setAttribute("aria-pressed",String(state.savedOnly));render()});$("#wdcDialogBody").addEventListener("click",event=>{if(event.target.closest("[data-sign-in]")){window.location.href="./account.html";return}const button=event.target.closest("[data-save-type]");if(button)toggleFavorite(button.dataset.saveType,button.dataset.saveId)});window.addEventListener("tsl-account-changed",loadPersonalization);
+  $("#wdcDialogBody").addEventListener("click",event=>{if(event.target.closest("[data-sign-in]")){window.location.href="./account.html";return}const button=event.target.closest("[data-save-type]");if(button)toggleFavorite(button.dataset.saveType,button.dataset.saveId)});window.addEventListener("tsl-account-changed",loadPersonalization);
+  setView(state.view);
   load();
   loadPersonalization();
 })();
