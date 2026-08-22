@@ -485,9 +485,10 @@ function dashboardStat(label, value, note) {
 
 function renderAccountDashboard() {
   if (!elements.dashboardSummary || !elements.topSavedLook || !elements.nextActions) return;
-  const models = favorites.map(favoriteDailyModel);
-  const players = favorites.filter(favorite => favorite.entity_type === "player").length;
-  const pitchers = favorites.filter(favorite => favorite.entity_type === "pitcher").length;
+  const mlbFavorites = favorites.filter(favorite => favorite.sport === "MLB");
+  const models = mlbFavorites.map(favoriteDailyModel);
+  const players = mlbFavorites.filter(favorite => favorite.entity_type === "player").length;
+  const pitchers = mlbFavorites.filter(favorite => favorite.entity_type === "pitcher").length;
   const onSlate = models.filter(model => model.onSlate).length;
   const alerts = matchingLiveAlerts();
   elements.dashboardSummary.innerHTML = `
@@ -519,14 +520,14 @@ function renderAccountDashboard() {
   } else {
     elements.topSavedLook.innerHTML = `
       <span class="account-command-card-kicker">Best saved look today</span>
-      <h4>${favorites.length ? "No saved hitter is active yet" : "Build your first board"}</h4>
-      <p>${favorites.length ? "Saved off-slate players stay here for future slates. Add hitters from today’s suggestions to unlock this card." : "Save a few hitters or pitchers and this turns into a personalized daily read."}</p>
+      <h4>${mlbFavorites.length ? "No saved hitter is active yet" : "Build your first MLB board"}</h4>
+      <p>${mlbFavorites.length ? "Saved off-slate players stay here for future slates. Add hitters from today’s suggestions to unlock this card." : "Save a few MLB hitters or pitchers and this turns into a personalized daily read."}</p>
       <a class="account-button" href="./hr-decision-center.html">Browse today’s board</a>`;
   }
 
-  const actionItems = favorites.length
+  const actionItems = mlbFavorites.length
     ? [
-      `${onSlate} of ${favorites.length} saved favorites are active on today’s MLB slate.`,
+      `${onSlate} of ${mlbFavorites.length} saved MLB favorites are active on today’s slate.`,
       alerts.length ? `${alerts.length} verified change${alerts.length === 1 ? "" : "s"} need a look.` : "No verified changes have hit your saved board yet.",
       pitchers ? "You have probable pitchers saved for matchup monitoring." : "Add probable pitchers to monitor vulnerability and pitcher-change alerts."
     ]
@@ -537,7 +538,7 @@ function renderAccountDashboard() {
     ];
   elements.nextActions.innerHTML = `
     <span class="account-command-card-kicker">Next best action</span>
-    <h4>${favorites.length ? "Review the saved-board read" : "Start with suggested saves"}</h4>
+    <h4>${mlbFavorites.length ? "Review the saved-board read" : "Start with suggested saves"}</h4>
     <ol>${actionItems.map(item => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`;
 }
 
@@ -608,7 +609,7 @@ function dailyPitcherCard(model) {
 
 function renderDailyLab() {
   if (!elements.dailyLabList || !elements.dailyLabSummary || !elements.dailyLabFreshness) return;
-  const models = favorites.map(favoriteDailyModel).sort((a, b) => Number(b.onSlate) - Number(a.onSlate) || a.favorite.entity_type.localeCompare(b.favorite.entity_type) || a.favorite.display_name.localeCompare(b.favorite.display_name));
+  const models = favorites.filter(favorite => favorite.sport === "MLB").map(favoriteDailyModel).sort((a, b) => Number(b.onSlate) - Number(a.onSlate) || a.favorite.entity_type.localeCompare(b.favorite.entity_type) || a.favorite.display_name.localeCompare(b.favorite.display_name));
   const onSlate = models.filter(model => model.onSlate).length;
   const confirmed = models.filter(model => model.decision?.confirmedLineup || /confirmed/i.test(model.playerCard?.lineupStatus || "")).length;
   const active = models.filter(model => ["live", "final"].includes(String(model.game?.abstractStatus || "").toLowerCase())).length;
@@ -672,6 +673,13 @@ function renderEventRows(rows) {
 }
 
 function openFavoriteDetails(favorite) {
+  if (favorite.sport === "WNBA") {
+    elements.detailTitle.textContent = favorite.display_name;
+    elements.detailBody.innerHTML = `<section class="favorite-detail-summary"><span class="favorite-card-type">WNBA ${escapeHtml(favorite.entity_type)}</span><p>${escapeHtml(favorite.team_name || "WNBA favorite")}</p></section><div class="favorite-detail-definition"><strong>My WNBA Slate</strong><span>Open the WNBA Decision Center to see this favorite’s current projection, role, matchup, recent form, and live changes.</span></div><a class="account-button" href="./wnba-decision-center.html">Open WNBA Decision Center</a>`;
+    if (typeof elements.detailDialog.showModal === "function") elements.detailDialog.showModal();
+    else elements.detailDialog.setAttribute("open", "");
+    return;
+  }
   const isPitcher = favorite.entity_type === "pitcher";
   const allEvents = collectedEvents();
   const rows = allEvents.filter(row => isPitcher ? samePitcher(row, favorite) : samePlayer(row, favorite));
