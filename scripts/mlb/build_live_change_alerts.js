@@ -8,6 +8,8 @@ const DATA = path.join(__dirname, "../../website/data");
 const OUTPUT = path.join(DATA, "live_change_alerts.json");
 const SCHEMA_VERSION = "1.0";
 const MAX_ALERTS = 250;
+const MAX_MODEL_AGE_MS = 70 * 60 * 1000;
+const CLOCK_TOLERANCE_MS = 2000;
 
 const SOURCES = {
   schedule: "mlb_games_today.json",
@@ -17,6 +19,9 @@ const SOURCES = {
   probabilities: "hr_probability_tracking.json",
   vulnerability: "pitcher_vulnerability.json"
 };
+
+const LIVE_SOURCES = new Set([SOURCES.pool, SOURCES.cards]);
+const MODEL_SOURCES = new Set([SOURCES.matchups, SOURCES.probabilities, SOURCES.vulnerability]);
 
 function read(file) {
   return JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -38,6 +43,21 @@ function timestamp(payload, fields) {
   const parsed = Date.parse(value);
   if (!field || !Number.isFinite(parsed)) throw new Error(`Missing or invalid ${fields.join("/")} timestamp`);
   return { value, parsed };
+}
+
+export function validateSourceFreshness({ scheduleTime, sourceTimes, now = Date.now() }) {
+  if (!Number.isFinite(scheduleTime)) throw new Error("mlb_games_today.json has an invalid refresh timestamp");
+  for (const [file, value] of Object.entries(sourceTimes)) {
+    const parsed = Date.parse(value);
+    if (!Number.isFinite(parsed)) throw new Error(`${file} has an invalid refresh timestamp`);
+    if (parsed > now + CLOCK_TOLERANCE_MS) throw new Error(`${file} has a future refresh timestamp`);
+    if (LIVE_SOURCES.has(file) && parsed < scheduleTime - CLOCK_TOLERANCE_MS) {
+      throw new Error(`${file} predates the current live refresh`);
+    }
+    if (MODEL_SOURCES.has(file) && now - parsed > MAX_MODEL_AGE_MS) {
+      throw new Error(`${file} exceeded its model refresh window`);
+    }
+  }
 }
 
 function numberOrNull(value) {
@@ -267,9 +287,7 @@ function main() {
     [SOURCES.probabilities]: timestamp(payloads.probabilities, ["generatedAt"]).value,
     [SOURCES.vulnerability]: timestamp(payloads.vulnerability, ["updatedAt"]).value
   };
-  for (const [file, value] of Object.entries(sourceTimes)) {
-    if (Date.parse(value) < scheduleTime - 2000) throw new Error(`${file} predates the current refresh slate`);
-  }
+  validateSourceFreshness({ scheduleTime, sourceTimes });
 
   const previous = readPrevious();
   const now = new Date().toISOString();
@@ -283,7 +301,9 @@ function main() {
   const status = noGames ? "no_games_scheduled" : sameSlate ? "ready" : "baseline_established";
   const output = { schemaVersion: SCHEMA_VERSION, generatedAt: now, date, status, sources: sourceTimes, alerts, snapshot };
   validateOutput(output);
-  fs.writeFileSync(OUTPUT, `${JSON.stringify(output, null, 2)}\n`);
+  const temporary = `${OUTPUT}.tmp`;
+  fs.writeFileSync(temporary, `${JSON.stringify(output, null, 2)}\n`);
+  fs.renameSync(temporary, OUTPUT);
   console.log("LIVE CHANGE ALERTS COMPLETE");
   console.log("Date:", date);
   console.log("Status:", status);
