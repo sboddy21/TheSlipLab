@@ -3,15 +3,9 @@ function firstAvailable(names) {
 }
 
 const PLAN_ENV_KEYS = {
-  weekly: ["STRIPE_PRICE_ID_WEEKLY", "TSL_STRIPE_PRICE_ID_WEEKLY"],
-  monthly: ["STRIPE_PRICE_ID_MONTHLY", "TSL_STRIPE_PRICE_ID_MONTHLY", "STRIPE_PRICE_ID", "TSL_STRIPE_PRICE_ID"],
-  annual: ["STRIPE_PRICE_ID_ANNUAL", "STRIPE_PRICE_ID_ANNUALLY", "TSL_STRIPE_PRICE_ID_ANNUAL", "TSL_STRIPE_PRICE_ID_ANNUALLY"]
-};
-
-const PLAN_PRICE_FALLBACKS = {
-  weekly: "price_1TxaT7Prg6RnNsu9ntaK7jtd",
-  monthly: "price_1TxaRmPrg6RnNsu9tpSzUb6N",
-  annual: "price_1TxaSSPrg6RnNsu9SdIs3Kk3"
+  weekly: ["STRIPE_PRICE_ID_WEEKLY_CURRENT", "TSL_STRIPE_PRICE_ID_WEEKLY_CURRENT"],
+  monthly: ["STRIPE_PRICE_ID_MONTHLY_CURRENT", "TSL_STRIPE_PRICE_ID_MONTHLY_CURRENT"],
+  annual: ["STRIPE_PRICE_ID_ANNUAL_CURRENT", "TSL_STRIPE_PRICE_ID_ANNUAL_CURRENT"]
 };
 
 function normalizePlan(value) {
@@ -21,7 +15,10 @@ function normalizePlan(value) {
 }
 
 function priceIdForPlan(plan) {
-  return firstAvailable(PLAN_ENV_KEYS[plan] || []) || PLAN_PRICE_FALLBACKS[plan] || "";
+  // Checkout must never fall back to a legacy price. Existing subscriptions keep
+  // renewing against their original Stripe Price ID, while only these explicit
+  // CURRENT variables may be sold to a new subscriber.
+  return firstAvailable(PLAN_ENV_KEYS[plan] || []);
 }
 
 function supabaseConfig() {

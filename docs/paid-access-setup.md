@@ -21,13 +21,13 @@ Required for checkout and subscription verification:
 - `STRIPE_SECRET_KEY`
 - `STRIPE_WEBHOOK_SECRET`
 - `RESEND_API_KEY`
-- `STRIPE_PRICE_ID_WEEKLY`
-- `STRIPE_PRICE_ID_MONTHLY`
-- `STRIPE_PRICE_ID_ANNUAL`
+- `STRIPE_PRICE_ID_WEEKLY_CURRENT`
+- `STRIPE_PRICE_ID_MONTHLY_CURRENT`
+- `STRIPE_PRICE_ID_ANNUAL_CURRENT`
 - `SITE_URL` set to `https://thesliplab.com`
 - `TSL_ADMIN_SYNC_SECRET` set to a long private random value for admin-only Stripe → Supabase subscription backfills
 
-`STRIPE_PRICE_ID` is still supported as a fallback for the monthly plan, but the three explicit plan variables are preferred.
+Legacy `STRIPE_PRICE_ID_WEEKLY`, `STRIPE_PRICE_ID_MONTHLY`, `STRIPE_PRICE_ID_ANNUAL`, and `STRIPE_PRICE_ID` values remain recognized when reading existing subscriptions. They are intentionally never used for new checkout sessions.
 
 Feature flag:
 
@@ -38,9 +38,11 @@ Feature flag:
 
 Create three recurring subscription prices in Stripe:
 
-- Weekly → `STRIPE_PRICE_ID_WEEKLY`
-- Monthly → `STRIPE_PRICE_ID_MONTHLY`
-- Annual → `STRIPE_PRICE_ID_ANNUAL`
+- Weekly ($5/week) → `STRIPE_PRICE_ID_WEEKLY_CURRENT`
+- Monthly ($15/month) → `STRIPE_PRICE_ID_MONTHLY_CURRENT`
+- Annual ($99/year) → `STRIPE_PRICE_ID_ANNUAL_CURRENT`
+
+Never migrate an existing subscription to a current Price ID during a pricing rollout. Stripe will continue renewing it against its original Price ID, which preserves grandfathered pricing while the subscription remains continuously active.
 
 ### Promotion codes
 
