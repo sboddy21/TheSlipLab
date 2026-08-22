@@ -60,6 +60,7 @@
   const primaryOrder = ["Sign In", "Slate", "Results", "Weather", "AI Says"];
   const wnbaItems = [
     ["Slate","./wnba.html",["/wnba.html"]],
+    ["Decision Center","./wnba-decision-center.html",["/wnba-decision-center.html"]],
     ["Results","./wnba-results.html",["/wnba-results.html"]],
     ["AI Says","./wnba-ai-says.html",["/wnba-ai-says.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
@@ -67,7 +68,7 @@
     ["Full Board","./wnba-full-board.html",["/wnba-full-board.html"]],
     ["Quick Target","./wnba-quick-target.html",["/wnba-quick-target.html"]]
   ];
-  const wnbaPrimaryOrder = ["Slate", "Results", "AI Says"];
+  const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const protectedPaths = new Set([
     "/ai-hall-of-fame.html",
     "/ai-says.html",
@@ -89,6 +90,7 @@
     "/nba-rebounds.html",
     "/nba-threes.html",
     "/wnba.html",
+    "/wnba-decision-center.html",
     "/wnba-results.html",
     "/wnba-ai-says.html",
     "/wnba-full-board.html",

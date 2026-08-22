@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>WNBA Decision Center | The Slip Lab</title>
+  <meta name="description" content="Ranked WNBA player signals with projection ranges, role context, recent form, and verified market status.">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="./assets/site-header.css">
+  <link rel="stylesheet" href="./assets/energy.css?v=20260822a">
+  <link rel="stylesheet" href="./assets/wnba-decision-center.css?v=20260822a">
+  <script src="./assets/member-data.js"></script>
+  <script defer src="./assets/site-header.js"></script>
+</head>
+<body class="tsl-editorial tsl-wnba-page tsl-wnba-decision-page">
+  <main class="wdc-shell">
+    <div class="wdc-report"><span>WNBA decision center</span><span id="wdcUpdated">Loading current slate</span></div>
+    <section class="wdc-hero">
+      <div>
+        <div class="wdc-kicker">Today’s ranked model signals</div>
+        <h1>Decision Center.</h1>
+        <p>Compare projections, expected minutes, recent form, role strength, and matchup context. Open any player for the complete evidence behind the number.</p>
+      </div>
+      <div class="wdc-summary" aria-label="Slate summary">
+        <div><strong id="wdcPlayerCount">—</strong><span>Players</span></div>
+        <div><strong id="wdcGameCount">—</strong><span>Games</span></div>
+        <div><strong id="wdcTopConfidence">—</strong><span>Top confidence</span></div>
+      </div>
+    </section>
+
+    <section class="wdc-gate" id="wdcGate" aria-live="polite"></section>
+
+    <section class="wdc-controls" aria-label="Decision Center filters">
+      <div class="wdc-tabs" id="wdcTabs" role="tablist" aria-label="Projection market">
+        <button type="button" role="tab" aria-selected="true" data-market="points">Points</button>
+        <button type="button" role="tab" aria-selected="false" data-market="rebounds">Rebounds</button>
+        <button type="button" role="tab" aria-selected="false" data-market="assists">Assists</button>
+        <button type="button" role="tab" aria-selected="false" data-market="threes">Threes</button>
+      </div>
+      <label class="wdc-search"><span>Search players</span><input id="wdcSearch" type="search" placeholder="Player or team" autocomplete="off"></label>
+      <label class="wdc-select"><span>Team</span><select id="wdcTeam"><option value="">All teams</option></select></label>
+      <label class="wdc-select"><span>Sort</span><select id="wdcSort"><option value="signal">Best signal</option><option value="projection">Highest projection</option><option value="confidence">Highest confidence</option><option value="minutes">Expected minutes</option></select></label>
+    </section>
+
+    <div class="wdc-status" id="wdcStatus" aria-live="polite">Loading WNBA projections…</div>
+    <section class="wdc-board" id="wdcBoard" aria-label="Ranked WNBA model signals"></section>
+  </main>
+
+  <dialog class="wdc-dialog" id="wdcDialog" aria-labelledby="wdcDialogTitle">
+    <button class="wdc-close" id="wdcClose" type="button" aria-label="Close player details">×</button>
+    <div id="wdcDialogBody"></div>
+  </dialog>
+
+  <script src="./assets/wnba-decision-center.js?v=20260822a"></script>
+</body>
+</html>

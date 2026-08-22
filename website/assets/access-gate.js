@@ -20,6 +20,7 @@
     "/nba-rebounds.html",
     "/nba-threes.html",
     "/wnba.html",
+    "/wnba-decision-center.html",
     "/wnba-results.html",
     "/wnba-ai-says.html",
     "/wnba-full-board.html",
