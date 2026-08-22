@@ -3,8 +3,8 @@
   const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
   const markets={points:"Points",rebounds:"Rebounds",assists:"Assists",threes:"Threes"};
   const seasonKey={points:"points",rebounds:"rebounds",assists:"assists",threes:"threesMade"};
-  const requestedView=new URLSearchParams(window.location.search).get("view");
-  const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",market:"points",query:"",team:"",sort:"signal",compared:new Set(),favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
+  const params=new URLSearchParams(window.location.search),requestedView=params.get("view");
+  const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",game:params.get("game")||"",market:"points",query:"",team:"",sort:"signal",compared:new Set(),favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
   const fmt=value=>Number.isFinite(Number(value))?Number(value).toFixed(1).replace(/\.0$/,""):"—";
   const changeText=item=>{
     if(item.type==="minutes")return `Expected minutes moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
@@ -35,8 +35,22 @@
     const url=new URL(window.location.href);url.searchParams.set("view",view);window.history.replaceState({},"",url);
     render();
   }
+  function renderMatchups(){
+    const all=enriched(),activeGames=state.games.filter(game=>all.some(row=>String(row.gameId)===String(game.gameId)));
+    const cards=[`<button class="wdc-matchup-card" type="button" data-game="" aria-pressed="${!state.game}"><small>Complete slate</small><strong>All matchups</strong><span class="wdc-matchup-meta">${activeGames.length} games · ${all.length} players</span><span class="wdc-matchup-signal">Highest signal ${all.length?Math.max(...all.map(row=>row.signal)):"—"}</span></button>`];
+    for(const game of activeGames){
+      const rows=all.filter(row=>String(row.gameId)===String(game.gameId)),top=rows.length?Math.max(...rows.map(row=>row.signal)):"—",pace=rows.length?rows.reduce((sum,row)=>sum+Number(row.context?.paceFactor||1),0)/rows.length:1;
+      const time=game.gameTimeUTC?new Date(game.gameTimeUTC).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):game.statusDetail||"Time pending";
+      cards.push(`<button class="wdc-matchup-card" type="button" data-game="${esc(game.gameId)}" aria-pressed="${String(state.game)===String(game.gameId)}"><small>${esc(time)} · ${esc(game.status||"Scheduled")}</small><strong>${esc(game.awayTeam?.abbreviation||"Away")} @ ${esc(game.homeTeam?.abbreviation||"Home")}</strong><span class="wdc-matchup-meta">${rows.length} players · ${pace>1.01?"Faster":pace<.99?"Slower":"Neutral"} projected pace<br>${esc(game.venue||game.city||"Venue pending")}</span><span class="wdc-matchup-signal">Top ${esc(markets[state.market].toLowerCase())} signal ${top}</span></button>`);
+    }
+    $("#wdcMatchups").innerHTML=cards.join("");
+  }
+  function setGame(gameId){
+    state.game=String(gameId||"");state.team="";$("#wdcTeam").value="";
+    const url=new URL(window.location.href);if(state.game)url.searchParams.set("game",state.game);else url.searchParams.delete("game");window.history.replaceState({},"",url);render();
+  }
   function render(){
-    let rows=enriched().filter(row=>(!state.team||row.team===state.team)&&(!state.query||`${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query)));
+    let rows=enriched().filter(row=>(!state.game||String(row.gameId)===state.game)&&(!state.team||row.team===state.team)&&(!state.query||`${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query)));
     if(state.view==="saved")rows=window.TSLWnbaPersonalization.filterRows(rows,state.favorites);
     const sorters={signal:(a,b)=>b.signal-a.signal||b.confidence-a.confidence,projection:(a,b)=>b.marketValue-a.marketValue,confidence:(a,b)=>b.confidence-a.confidence||b.signal-a.signal,minutes:(a,b)=>b.expectedMinutes-a.expectedMinutes};
     rows.sort(sorters[state.sort]);
@@ -49,6 +63,7 @@
       const selected=state.compared.has(String(row.playerId));
       return `<article class="wdc-row" data-player-id="${esc(row.playerId)}"><span class="wdc-rank">${index+1}</span><span class="wdc-player"><button class="wdc-player-open" type="button" data-open-player="${esc(row.playerId)}">${esc(row.player)}</button><span>${esc(row.team)} vs ${esc(row.opponent)} · ${esc(row.role)}</span></span><span class="wdc-cell wdc-signal"><span>Signal score</span><strong>${row.signal}</strong></span><span class="wdc-cell"><span>${esc(markets[state.market])} projection</span><strong>${fmt(projection.value)}</strong></span><span class="wdc-cell"><span>Expected minutes</span><strong>${fmt(row.expectedMinutes)}</strong></span><span class="wdc-cell wdc-range"><span>Projection range</span><strong>${fmt(projection.floor)}–${fmt(projection.ceiling)}</strong><small>${d>=0?"+":""}${fmt(d)} vs season</small></span><span class="wdc-flags">${flags.map((flag,i)=>`<span class="wdc-flag ${i===flags.length-1&&player?.injury?"alert":""}">${esc(flag)}</span>`).join("")}<button class="wdc-compare-toggle ${selected?"selected":""}" type="button" data-compare-player="${esc(row.playerId)}" aria-pressed="${selected}">${selected?"✓ Comparing":"＋ Compare"}</button></span></article>`;
     }).join(""):`<div class="wdc-empty">${state.view==="saved"?"No saved WNBA players or teams are active on this slate.":"No players match the selected filters."}</div>`;
+    renderMatchups();
     renderCompareDock();
   }
   function selectedRows(){return [...state.compared].map(id=>state.rows.find(row=>String(row.playerId)===id)).filter(Boolean)}
@@ -93,6 +108,7 @@
       if(responses.some(response=>!response.ok))throw new Error("One or more WNBA data files are unavailable.");
       const [board,players,games,verified,changeFeed]=await Promise.all(responses.map(response=>response.json()));
       state.rows=Array.isArray(board.projections)?board.projections:[];state.players=new Map((players.players||[]).map(player=>[String(player.playerId),player]));state.games=games.games||[];state.verified=verified;
+      if(state.game&&!state.rows.some(row=>String(row.gameId)===state.game)){state.game="";const url=new URL(window.location.href);url.searchParams.delete("game");window.history.replaceState({},"",url)}
       $("#wdcPlayerCount").textContent=state.rows.length;$("#wdcGameCount").textContent=state.games.length;$("#wdcTopConfidence").textContent=state.rows.length?`${Math.max(...state.rows.map(row=>Number(row.confidence)||0))}%`:"—";$("#wdcUpdated").textContent=board.generatedAt?`Updated ${new Date(board.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`:"Current slate";
       const teams=[...new Set(state.rows.map(row=>row.team))].sort();$("#wdcTeam").insertAdjacentHTML("beforeend",teams.map(team=>`<option value="${esc(team)}">${esc(team)}</option>`).join(""));
       const unlocked=!verified.locked&&(verified.recommendations||[]).length>0;$("#wdcGate").classList.toggle("unlocked",unlocked);$("#wdcGate").innerHTML=unlocked?`<strong>Verified markets available</strong><span>${verified.recommendations.length} recommendations passed calibration, freshness, and minimum-edge gates.</span>`:`<strong>Model-signal mode</strong><span>Authorized market lines are not currently available, so this board ranks projection evidence without presenting unverified betting edges.</span>`;
@@ -102,6 +118,7 @@
   }
   $("#wdcTabs").addEventListener("click",event=>{const button=event.target.closest("button[data-market]");if(!button)return;state.market=button.dataset.market;document.querySelectorAll("#wdcTabs button").forEach(item=>item.setAttribute("aria-selected",String(item===button)));render()});
   $("#wdcViews").addEventListener("click",event=>{const button=event.target.closest("button[data-view]");if(button)setView(button.dataset.view)});
+  $("#wdcMatchups").addEventListener("click",event=>{const button=event.target.closest("[data-game]");if(button)setGame(button.dataset.game)});
   $("#wdcSearch").addEventListener("input",event=>{state.query=event.target.value.trim().toLowerCase();render()});$("#wdcTeam").addEventListener("change",event=>{state.team=event.target.value;render()});$("#wdcSort").addEventListener("change",event=>{state.sort=event.target.value;render()});$("#wdcBoard").addEventListener("click",event=>{const compare=event.target.closest("[data-compare-player]");if(compare){toggleComparison(compare.dataset.comparePlayer);return}const open=event.target.closest("[data-open-player]");if(open)openPlayer(open.dataset.openPlayer)});$("#wdcCompareDock").addEventListener("click",event=>{if(event.target.closest("[data-clear-compare]")){state.compared.clear();render()}else if(event.target.closest("[data-open-compare]"))openComparison()});$("#wdcClose").addEventListener("click",()=>$("#wdcDialog").close());$("#wdcDialog").addEventListener("click",event=>{if(event.target===$("#wdcDialog"))$("#wdcDialog").close()});$("#wdcCompareClose").addEventListener("click",()=>$("#wdcCompareDialog").close());$("#wdcCompareDialog").addEventListener("click",event=>{if(event.target===$("#wdcCompareDialog"))$("#wdcCompareDialog").close()});
   $("#wdcDialogBody").addEventListener("click",event=>{if(event.target.closest("[data-sign-in]")){window.location.href="./account.html";return}const button=event.target.closest("[data-save-type]");if(button)toggleFavorite(button.dataset.saveType,button.dataset.saveId)});window.addEventListener("tsl-account-changed",loadPersonalization);
   setView(state.view);
