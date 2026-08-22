@@ -23,8 +23,7 @@
   text-align: left;
 }
 
-.wdc-brief-card button { all: unset; display: block; width: 100%; cursor: pointer; }
-.wdc-brief-card button:focus-visible { outline: 3px solid #38d9ff; outline-offset: 3px; border-radius: 5px; }
+.wdc-brief-card:focus-visible { outline: 3px solid #38d9ff; outline-offset: 3px; }
 .wdc-brief-label { display: block; color: #1268f3; font-size: 8px; font-weight: 950; letter-spacing: .1em; text-transform: uppercase; }
 .wdc-brief-card strong { display: block; margin: 11px 0 7px; color: #071d36; font: 900 20px/1.05 Georgia, serif; }
 .wdc-brief-card p { margin: 0; color: #526a83 !important; font-size: 10px; font-weight: 750; line-height: 1.5; }
@@ -37,6 +36,26 @@ html[data-theme="dark"] .wdc-brief-card { background: #0a2240 !important; color:
 html[data-theme="dark"] .wdc-brief-card strong { color: #fff; }
 html[data-theme="dark"] .wdc-brief-card p { color: #b5c7d9 !important; }
 html[data-theme="dark"] .wdc-brief-card.alert { background: #3b2117 !important; }
+
+/* Explicit contrast safeguards keep global button/theme rules from overriding this module. */
+button.wdc-brief-card,
+html[data-theme="light"] button.wdc-brief-card {
+  background: #fff !important;
+  color: #071d36 !important;
+}
+
+button.wdc-brief-card strong,
+html[data-theme="light"] button.wdc-brief-card strong { color: #071d36 !important; }
+button.wdc-brief-card p,
+html[data-theme="light"] button.wdc-brief-card p { color: #405b76 !important; }
+
+html[data-theme="dark"] button.wdc-brief-card {
+  background: #0a2240 !important;
+  color: #fff !important;
+}
+
+html[data-theme="dark"] button.wdc-brief-card strong { color: #fff !important; }
+html[data-theme="dark"] button.wdc-brief-card p { color: #c7d5e3 !important; }
 
 @media (max-width: 980px) { .wdc-brief-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .wdc-brief-grid { grid-template-columns: 1fr; } }
