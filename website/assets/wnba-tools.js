@@ -69,6 +69,24 @@
       mount.innerHTML=fallbackAi(ranked,playerById);
     }
   }
+  function renderResultsDashboard(history,gamesData){
+    const metrics=window.TSLWnbaResultsMetrics?.calculate(history);
+    if(!metrics){mount.innerHTML=`<div class="wnba-empty">WNBA results metrics are unavailable.</div>`;return;}
+    const marketNames={points:"Points",rebounds:"Rebounds",assists:"Assists",threes:"Threes"};
+    const latestDate=metrics.recentSlates[0]?.date||gamesData.date;
+    const finals=(gamesData.games||[]).filter(game=>game.completed);
+    const finalMarkup=finals.length?`<div class="wnba-finals">${finals.map(game=>`<article class="wnba-final"><div class="wnba-final-date">${esc(gamesData.date)} · Final</div><div class="wnba-final-team"><span>${esc(game.awayTeam.name)}</span><b>${esc(game.awayTeam.score)}</b></div><div class="wnba-final-team"><span>${esc(game.homeTeam.name)}</span><b>${esc(game.homeTeam.score)}</b></div></article>`).join("")}</div>`:"";
+    const overview=`<div class="wr-overview"><article><span>Graded player projections</span><strong>${esc(metrics.gradedPlayers)}</strong></article><article><span>Completed slates represented</span><strong>${esc(metrics.gradedSlates)}</strong></article><article><span>Tracking method</span><strong>Frozen</strong></article></div>`;
+    const markets=`<section class="wr-section"><div class="wr-section-head"><h2>Accuracy by market</h2><p>Average absolute error against frozen pregame projections</p></div><div class="wr-market-grid">${Object.entries(metrics.markets).map(([market,row])=>`<article class="wr-market"><span>${esc(marketNames[market])}</span><strong>${row.mae==null?"—":esc(row.mae)}</strong><small>Average error · ${esc(row.samples)} samples<br>${row.withinTarget==null?"—":esc(row.withinTarget)}% within ${esc(row.target)}</small></article>`).join("")}</div></section>`;
+    const tiers=`<section class="wr-section"><div class="wr-section-head"><h2>Confidence audit</h2><p>Does confidence correspond to tighter projections?</p></div><div class="wr-tier-grid">${metrics.confidenceTiers.map(row=>`<article class="wr-tier"><h3>${esc(row.name)} confidence</h3><b>${row.errorVsTarget==null?"—":`${esc(row.errorVsTarget)}×`}</b><span>Error versus target</span><p>${esc(row.players)} graded player projections · Lower is better</p></article>`).join("")}</div></section>`;
+    const trends=`<section class="wr-section"><div class="wr-section-head"><h2>Recent slate trend</h2><p>Points projection error by completed slate</p></div><div class="wr-trend">${metrics.recentSlates.map(row=>`<article class="wr-slate"><time>${esc(new Date(`${row.date}T12:00:00`).toLocaleDateString([], {month:"short",day:"numeric"}))}</time><span>${row.markets.points.mae==null?"—":esc(row.markets.points.mae)} PTS error<br>${esc(row.players)} players</span></article>`).join("")}</div></section>`;
+    const archiveDates=[...new Set(metrics.rows.map(row=>row.slateDate))];
+    const archive=`<section class="wr-section"><div class="wr-section-head"><div><h2>Frozen projection archive</h2><p>Exactly what the model published compared with the verified result</p></div><select class="wr-archive-select" id="wrArchiveDate" aria-label="Select archived WNBA slate">${archiveDates.map(date=>`<option value="${esc(date)}" ${date===latestDate?"selected":""}>${esc(date)}</option>`).join("")}</select></div><div class="wnba-panel wr-ledger" id="wrLedger"></div></section>`;
+    mount.className="";mount.innerHTML=finalMarkup+overview+markets+tiers+trends+archive;
+    const renderLedger=date=>{const rows=metrics.rows.filter(row=>row.slateDate===date);document.getElementById("wrLedger").innerHTML=rows.length?`<div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Player</th><th>Matchup</th><th>Confidence</th>${Object.values(statNames).map(label=>`<th>${label} projected / actual</th>`).join("")}</tr></thead><tbody>${rows.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.confidence)}%</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.projections[key].value)}</span> / <span class="wr-actual">${esc(row.actual[key])}</span><small>Error ${esc(row.errors?.[key]??Math.abs(row.projections[key].value-row.actual[key]).toFixed(1))}</small></td>`).join("")}</tr>`).join("")}</tbody></table></div>`:`<div class="wnba-empty">No graded player projections are available for this slate.</div>`};
+    renderLedger(latestDate);document.getElementById("wrArchiveDate")?.addEventListener("change",event=>renderLedger(event.target.value));
+    status.innerHTML=`<strong>Transparent model tracking</strong><span>${metrics.gradedPlayers} graded player projections across ${metrics.gradedSlates} completed slates</span>`;
+  }
   async function load(){
     try{
       const files=["wnba_projection_board.json","wnba_projection_history.json","wnba_calibration.json","wnba_games_today.json","wnba_player_baselines.json"];
@@ -93,15 +111,7 @@
         await renderAi(board,rows,playerById);
       }
       if(view==="results"){
-        const resultsDate=gamesData.date||board.date;
-        const resultsSlate=(history.slates||[]).find(slate=>slate.date===resultsDate);
-        const graded=(resultsSlate?.projections||[]).filter(row=>row.actual).map(row=>({...row,slateDate:resultsSlate.date}));
-        const finals=(gamesData.games||[]).filter(game=>game.completed);
-        status.innerHTML=`<strong>WNBA results only</strong><span>${finals.length} final games · ${graded.length} player results graded</span>`;
-        const finalMarkup=finals.length?`<div class="wnba-finals">${finals.map(game=>`<article class="wnba-final"><div class="wnba-final-date">${esc(gamesData.date)} · Final</div><div class="wnba-final-team"><span>${esc(game.awayTeam.name)}</span><b>${esc(game.awayTeam.score)}</b></div><div class="wnba-final-team"><span>${esc(game.homeTeam.name)}</span><b>${esc(game.homeTeam.score)}</b></div></article>`).join("")}</div>`:"";
-        const playerMarkup=graded.length?`<h2 class="wnba-results-heading">Player results</h2><div class="wnba-panel"><div class="wnba-table-wrap"><table class="wnba-table"><thead><tr><th>Date</th><th>Player</th><th>Matchup</th><th>Minutes</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody>${graded.map(row=>`<tr><td>${esc(row.slateDate)}</td><td>${esc(row.player)}<small>${esc(row.team)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td>${esc(row.actual.minutes)}</td>${Object.keys(statNames).map(key=>`<td><span class="wnba-value">${esc(row.actual[key])}</span><small>Proj. ${esc(row.projections[key].value)}</small></td>`).join("")}</tr>`).join("")}</tbody></table></div></div>`:`<div class="wnba-panel"><div class="wnba-empty">Player results for ${esc(resultsDate)} will appear as completed stat lines are verified.</div></div>`;
-        mount.className="";
-        mount.innerHTML=finalMarkup+playerMarkup||`<div class="wnba-panel"><div class="wnba-empty">No WNBA games are final yet. Results will update automatically when today’s games finish.</div></div>`;
+        renderResultsDashboard(history,gamesData);
       }
     }catch(error){status.innerHTML="<strong>Data unavailable</strong><span>Please check back shortly.</span>";mount.innerHTML=`<div class="wnba-empty">WNBA data is temporarily unavailable.</div>`}
   }

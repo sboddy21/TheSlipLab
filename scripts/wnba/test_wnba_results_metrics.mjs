@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+await import("../../website/assets/wnba-results-metrics.js");
+const row=(confidence,pointError)=>({confidence,projections:{points:{value:10},rebounds:{value:5},assists:{value:4},threes:{value:1}},actual:{points:10+pointError,rebounds:6,assists:3,threes:1},errors:{points:Math.abs(pointError),rebounds:1,assists:1,threes:0}});
+const result=globalThis.TSLWnbaResultsMetrics.calculate({slates:[{date:"2026-08-20",projections:[row(85,2),row(75,8)]},{date:"2026-08-21",projections:[row(65,4)]}]});
+assert.equal(result.gradedPlayers,3);
+assert.equal(result.gradedSlates,2);
+assert.equal(result.markets.points.mae,4.7);
+assert.equal(result.markets.points.withinTarget,66.7);
+assert.equal(result.confidenceTiers.find(item=>item.name==="High").players,1);
+assert.equal(result.recentSlates[0].date,"2026-08-21");
+const empty=globalThis.TSLWnbaResultsMetrics.calculate({slates:[{date:"2026-08-22",status:"partial",projections:[{confidence:85}]}]});
+assert.equal(empty.gradedPlayers,0);
+assert.equal(empty.gradedSlates,0);
+assert.equal(empty.markets.points.mae,null);
+console.log("WNBA RESULTS METRICS TEST PASSED");
