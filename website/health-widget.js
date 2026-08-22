@@ -2,7 +2,7 @@
   const CSS = `
   .sl-health-widget{
     --sl-state:#25ff7a;--sl-state-soft:rgba(37,255,122,.14);
-    position:fixed;top:14px;right:14px;z-index:99999;
+    position:fixed;top:4px;right:14px;z-index:100000;
     font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   }
   .sl-health-widget[data-state="closed"]{--sl-state:#8db6ff;--sl-state-soft:rgba(141,182,255,.16)}
@@ -10,17 +10,18 @@
   .sl-health-widget[data-state="delayed"]{--sl-state:#ffb323;--sl-state-soft:rgba(255,179,35,.17)}
   .sl-health-widget[data-state="check"]{--sl-state:#ff5b57;--sl-state-soft:rgba(255,91,87,.17)}
   .sl-health-pill{
+    display:flex;align-items:center;gap:9px;
     cursor:pointer;border:1px solid color-mix(in srgb,var(--sl-state) 42%,transparent);
     background:rgba(8,14,24,.92);backdrop-filter:blur(14px);
-    color:#fff;border-radius:16px;padding:9px 12px;min-width:138px;
-    box-shadow:0 14px 40px rgba(0,0,0,.38),0 0 28px var(--sl-state-soft);
+    color:#fff;border-radius:999px;padding:5px 10px;min-width:0;min-height:28px;
+    box-shadow:0 8px 22px rgba(0,0,0,.28),0 0 20px var(--sl-state-soft);
   }
-  .sl-health-top{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:1000;letter-spacing:.08em}
-  .sl-dot{width:9px;height:9px;border-radius:999px;background:var(--sl-state);box-shadow:0 0 14px var(--sl-state)}
-  .sl-health-sub{margin-top:3px;font-size:10px;color:rgba(255,255,255,.72);font-weight:800}
+  .sl-health-top{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:1000;letter-spacing:.08em;white-space:nowrap}
+  .sl-dot{width:7px;height:7px;border-radius:999px;background:var(--sl-state);box-shadow:0 0 12px var(--sl-state)}
+  .sl-health-sub{margin:0;padding-left:9px;border-left:1px solid rgba(255,255,255,.16);font-size:9px;color:rgba(255,255,255,.78);font-weight:800;white-space:nowrap}
   .sl-health-widget:hover .sl-health-tip{opacity:1;transform:translateY(0);pointer-events:auto}
   .sl-health-tip{
-    position:absolute;right:0;top:58px;width:238px;opacity:0;pointer-events:none;
+    position:absolute;right:0;top:36px;width:238px;opacity:0;pointer-events:none;
     transform:translateY(-4px);transition:.18s ease;
     border:1px solid rgba(255,255,255,.14);border-radius:16px;
     background:rgba(8,14,24,.96);backdrop-filter:blur(14px);
@@ -52,7 +53,7 @@
   .sl-health-artifact strong{color:#fff;overflow-wrap:anywhere}.sl-health-fresh{color:var(--sl-state)!important;text-align:right;text-transform:uppercase}
   .sl-health-errors{margin-top:12px;padding:10px 12px;border:1px solid rgba(255,91,87,.35);border-radius:14px;background:rgba(255,91,87,.1);font-size:11px;color:#ffd2d0}
   .sl-health-close{margin-top:14px;width:100%;border:0;border-radius:14px;padding:11px;background:var(--sl-state);color:#07110a;font-weight:1000;cursor:pointer}
-  @media(max-width:700px){.sl-health-widget{top:auto;right:10px;bottom:12px}.sl-health-tip{top:auto;bottom:58px}.sl-health-pill{min-width:116px;padding:8px 10px}.sl-health-grid{grid-template-columns:repeat(2,1fr)}.sl-health-artifact{grid-template-columns:1fr 72px}.sl-health-artifact span:nth-child(2){display:none}}
+  @media(max-width:900px){.sl-health-widget{top:3px;right:8px;bottom:auto}.sl-health-pill{min-height:24px;padding:3px 8px}.sl-health-top{font-size:9px}.sl-health-sub{display:none}.sl-health-tip{top:31px;bottom:auto}.sl-health-grid{grid-template-columns:repeat(2,1fr)}.sl-health-artifact{grid-template-columns:1fr 72px}.sl-health-artifact span:nth-child(2){display:none}}
   `;
   const style = document.createElement("style");
   style.textContent = CSS;
