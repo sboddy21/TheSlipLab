@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { buildWnbaChangeFeed } from "./wnba_change_feed_core.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,8 @@ const TEAMS_FILE = path.join(DATA, "wnba_team_baselines.json");
 const BOARD_FILE = path.join(DATA, "wnba_projection_board.json");
 const HISTORY_FILE = path.join(DATA, "wnba_projection_history.json");
 const CALIBRATION_FILE = path.join(DATA, "wnba_calibration.json");
+const LIVE_SNAPSHOT_FILE = path.join(DATA, "wnba_live_snapshot.json");
+const CHANGE_FEED_FILE = path.join(DATA, "wnba_change_feed.json");
 
 const read = file => JSON.parse(fs.readFileSync(file, "utf8"));
 const readOr = (file, fallback) => fs.existsSync(file) ? read(file) : fallback;
@@ -123,6 +126,9 @@ function main() {
     excludedGames, projections,
     disclaimer: "Experimental shadow projections for calibration. Not verified recommendations, sportsbook odds, or guarantees."
   };
+  const liveSnapshot = structuredClone(snapshot);
+  const previousLiveSnapshot = readOr(LIVE_SNAPSHOT_FILE, null);
+  const changeFeed = buildWnbaChangeFeed(previousLiveSnapshot, liveSnapshot);
 
   const existingIndex = history.slates.findIndex(slate => slate.date === snapshot.date);
   if (existingIndex < 0 && projections.length) history.slates.push({ date: snapshot.date, createdAt: snapshot.generatedAt, status: "pending", projections: structuredClone(projections) });
@@ -138,7 +144,14 @@ function main() {
   fs.writeFileSync(BOARD_FILE, `${JSON.stringify(snapshot, null, 2)}\n`);
   fs.writeFileSync(HISTORY_FILE, `${JSON.stringify(history, null, 2)}\n`);
   fs.writeFileSync(CALIBRATION_FILE, `${JSON.stringify(calibrationOutput, null, 2)}\n`);
+  const liveTemporary = `${LIVE_SNAPSHOT_FILE}.tmp`;
+  const changesTemporary = `${CHANGE_FEED_FILE}.tmp`;
+  fs.writeFileSync(liveTemporary, `${JSON.stringify(liveSnapshot, null, 2)}\n`);
+  fs.writeFileSync(changesTemporary, `${JSON.stringify(changeFeed, null, 2)}\n`);
+  fs.renameSync(liveTemporary, LIVE_SNAPSHOT_FILE);
+  fs.renameSync(changesTemporary, CHANGE_FEED_FILE);
   console.log(`WNBA PROJECTION BOARD COMPLETE: ${projections.length} shadow projections, ${excludedGames.length} excluded games`);
+  console.log(`WNBA CHANGE FEED COMPLETE: ${changeFeed.count} material change(s), status ${changeFeed.status}`);
   console.log(`Calibration: ${calibrationOutput.gradedProjections} graded, status ${calibrationOutput.releaseStatus}`);
 }
 

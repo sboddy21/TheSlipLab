@@ -2,7 +2,7 @@ import { spawnSync } from "child_process";
 import fs from "fs";
 
 const steps = ["scripts/wnba/fetch_wnba_today.js", "scripts/wnba/build_wnba_baselines.js", "scripts/wnba/build_wnba_projection_board.js", "scripts/wnba/build_wnba_verified_markets.js"];
-const outputFiles = ["website/data/wnba_games_today.json", "website/data/wnba_player_baselines.json", "website/data/wnba_team_baselines.json", "website/data/wnba_projection_board.json", "website/data/wnba_projection_history.json", "website/data/wnba_calibration.json", "website/data/wnba_verified_markets.json"];
+const outputFiles = ["website/data/wnba_games_today.json", "website/data/wnba_player_baselines.json", "website/data/wnba_team_baselines.json", "website/data/wnba_projection_board.json", "website/data/wnba_projection_history.json", "website/data/wnba_calibration.json", "website/data/wnba_live_snapshot.json", "website/data/wnba_change_feed.json", "website/data/wnba_verified_markets.json"];
 const startedAt = Date.now();
 for (const step of steps) {
   const result = spawnSync(process.execPath, [step], { stdio: "inherit", env: process.env });

@@ -5,6 +5,19 @@
   const seasonKey={points:"points",rebounds:"rebounds",assists:"assists",threes:"threesMade"};
   const state={market:"points",query:"",team:"",sort:"signal",rows:[],players:new Map(),games:[],verified:null};
   const fmt=value=>Number.isFinite(Number(value))?Number(value).toFixed(1).replace(/\.0$/,""):"—";
+  const changeText=item=>{
+    if(item.type==="minutes")return `Expected minutes moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
+    if(item.type==="projection")return `${markets[item.market]} projection moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
+    if(item.type==="role")return `Role changed from ${item.previousValue} to ${item.currentValue}`;
+    if(item.type==="injury")return `Availability changed from ${item.previousValue} to ${item.currentValue}`;
+    if(item.type==="board_entry")return "Entered the active projection board";
+    return "Left the active projection board";
+  };
+  function renderChanges(feed){
+    const changes=feed?.changes||[];
+    $("#wdcChangesMeta").textContent=feed?.status==="baseline_established"?"Baseline captured—movement will appear after the next refresh":`${changes.length} material change${changes.length===1?"":"s"} · Updated ${feed?.generatedAt?new Date(feed.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}):"now"}`;
+    $("#wdcChanges").innerHTML=changes.length?changes.slice(0,9).map(item=>`<article class="wdc-change ${esc(item.direction)} ${esc(item.type)}"><strong>${esc(item.player)} · ${esc(item.team)}</strong><span>${esc(changeText(item))}</span></article>`).join(""):`<div class="wdc-change-empty">No material projection, minutes, role, or availability changes since the previous refresh.</div>`;
+  }
   const delta=(row,player,market)=>Number((Number(row.projections[market]?.value||0)-Number(player?.season?.[seasonKey[market]]||0)).toFixed(1));
   function signal(row,player,market){
     const recent=Number(player?.recent?.[seasonKey[market]]);
@@ -33,14 +46,15 @@
   }
   async function load(){
     try{
-      const files=["wnba_projection_board.json","wnba_player_baselines.json","wnba_games_today.json","wnba_verified_markets.json"];
+      const files=["wnba_projection_board.json","wnba_player_baselines.json","wnba_games_today.json","wnba_verified_markets.json","wnba_change_feed.json"];
       const responses=await Promise.all(files.map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
       if(responses.some(response=>!response.ok))throw new Error("One or more WNBA data files are unavailable.");
-      const [board,players,games,verified]=await Promise.all(responses.map(response=>response.json()));
+      const [board,players,games,verified,changeFeed]=await Promise.all(responses.map(response=>response.json()));
       state.rows=Array.isArray(board.projections)?board.projections:[];state.players=new Map((players.players||[]).map(player=>[String(player.playerId),player]));state.games=games.games||[];state.verified=verified;
       $("#wdcPlayerCount").textContent=state.rows.length;$("#wdcGameCount").textContent=state.games.length;$("#wdcTopConfidence").textContent=state.rows.length?`${Math.max(...state.rows.map(row=>Number(row.confidence)||0))}%`:"—";$("#wdcUpdated").textContent=board.generatedAt?`Updated ${new Date(board.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`:"Current slate";
       const teams=[...new Set(state.rows.map(row=>row.team))].sort();$("#wdcTeam").insertAdjacentHTML("beforeend",teams.map(team=>`<option value="${esc(team)}">${esc(team)}</option>`).join(""));
       const unlocked=!verified.locked&&(verified.recommendations||[]).length>0;$("#wdcGate").classList.toggle("unlocked",unlocked);$("#wdcGate").innerHTML=unlocked?`<strong>Verified markets available</strong><span>${verified.recommendations.length} recommendations passed calibration, freshness, and minimum-edge gates.</span>`:`<strong>Model-signal mode</strong><span>Authorized market lines are not currently available, so this board ranks projection evidence without presenting unverified betting edges.</span>`;
+      renderChanges(changeFeed);
       render();
     }catch(error){$("#wdcStatus").textContent=error.message;$("#wdcBoard").innerHTML=`<div class="wdc-empty">WNBA Decision Center is temporarily unavailable. Existing site data remains unchanged.</div>`}
   }
