@@ -1,5 +1,5 @@
 (() => {
-  const state = { games: [], schedule: null, health: null, spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 }, selectedGameKeys: new Set(), comparisonOpen: false, selectionMessage: "" };
+  const state = { games: [], schedule: null, health: null, spray: {}, weather: [], bullpen: [], probabilitiesByName: new Map(), statcastById: new Map(), statcastByName: new Map(), aiSays: {}, active: "all", last7: {}, playerCardsById: new Map(), playerCardsByName: new Map(), market: "hr", marketRows: { hits: [], tb: [], rbis: [], pitcherKs: [] }, filters: { search: "", team: "all", minProjection: 0, minScore: 0 }, guideFilter: "all", beginnerMode: true, selectedGameKeys: new Set(), comparisonOpen: false, selectionMessage: "" };
 
   const teamCodes = {
     "Arizona Diamondbacks": "ARI", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -506,12 +506,14 @@
   }
 
   function barrelLabel(row) {
+    const statcast = statcastProfileFor(row);
     const value =
       row.barrelRate ??
       row.barrelPct ??
       row.stats?.hitter?.barrelRate ??
       row.stats?.hitter?.barrelPct ??
       row.recentStatcastForm?.season?.barrelRate ??
+      statcast?.recentStatcastForm?.season?.barrelRate ??
       row.brl ??
       row.brlPct;
 
@@ -524,12 +526,14 @@
   }
 
   function hardHitLabel(row) {
+    const statcast = statcastProfileFor(row);
     const value =
       row.hardHitRate ??
       row.hardHitPct ??
       row.stats?.hitter?.hardHitRate ??
       row.stats?.hitter?.hardHitPct ??
       row.recentStatcastForm?.season?.hardHitRate ??
+      statcast?.recentStatcastForm?.season?.hardHitRate ??
       row.hh ??
       row.hhPct;
 
@@ -993,6 +997,146 @@ function hasPlatoonAdvantage(row) {
       .filter(isLineupEligible);
   }
 
+  function guideRate(row, metric) {
+    const statcast = statcastProfileFor(row);
+    const value = metric === "barrel"
+      ? (row.barrelRate ?? row.barrelPct ?? row.recentStatcastForm?.season?.barrelRate ?? statcast?.recentStatcastForm?.season?.barrelRate)
+      : (row.hardHitRate ?? row.hardHitPct ?? row.recentStatcastForm?.season?.hardHitRate ?? statcast?.recentStatcastForm?.season?.hardHitRate);
+    if (!Number.isFinite(Number(value))) return null;
+    return Number(value) <= 1 ? Number(value) * 100 : Number(value);
+  }
+
+  function statcastProfileFor(row) {
+    return state.statcastById.get(String(row?.playerId || "")) || state.statcastByName.get(playerNameKey(row?.player)) || null;
+  }
+
+  function guideConfirmed(row) {
+    const status = normalizedLineupValue(row.lineupStatus);
+    const source = normalizedLineupValue(row.lineupSource);
+    return row.confirmedLineup === true || [status, source].some(value => ["CONFIRMED", "OFFICIAL", "POSTED"].includes(value)) || /^Confirmed #/.test(lineupSpotLabel(row));
+  }
+
+  function guideRows() {
+    const seen = new Set();
+    return state.games.flatMap(game => allHitters(game).map(row => ({ ...row, __guideGame: game })))
+      .filter(row => {
+        const key = String(row.playerId || playerNameKey(row.player));
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .map(row => {
+        const probability = probabilityForRow(row);
+        const barrel = guideRate(row, "barrel");
+        const hardHit = guideRate(row, "hardHit");
+        const score = num(scoreOf(row));
+        const pitcherRisk = num(row.pitcherRisk || row.pitcherVulnerability || row.stats?.pitcher?.vulnerability);
+        const contact = (barrel ?? 0) * 2.2 + (hardHit ?? 0);
+        const overall = (probability ?? Math.min(25, score / 4)) * 3 + score * .42 + pitcherRisk * .18 + (hasPlatoonAdvantage(row) ? 6 : 0) + (guideConfirmed(row) ? 4 : 0);
+        return { row, probability, barrel, hardHit, score, pitcherRisk, contact, overall };
+      });
+  }
+
+  function guideReasons(item) {
+    const { row, barrel, hardHit, pitcherRisk } = item;
+    const plain = [];
+    const advanced = [];
+    if (barrel !== null && barrel >= 10) { plain.push("Creates ideal power contact"); advanced.push(`${barrel.toFixed(1)}% barrel rate`); }
+    if (hardHit !== null && hardHit >= 40) { plain.push("Hits the ball hard consistently"); advanced.push(`${hardHit.toFixed(1)}% hard-hit rate`); }
+    if (hasPlatoonAdvantage(row)) { plain.push("Bats from the favorable side"); advanced.push("Platoon advantage"); }
+    if (pitcherRisk >= 55) { plain.push("Faces a vulnerable pitcher"); advanced.push(`${Math.round(pitcherRisk)} pitcher-risk index`); }
+    const weatherTags = weatherTagsForRow(row).map(([label]) => label);
+    if (weatherTags.some(label => /WIND|WARM|CARRY|WEATHER/.test(label))) { plain.push("The environment can help carry"); advanced.push(weatherTags[0]); }
+    if (guideConfirmed(row)) { plain.push(`Confirmed ${lineupSpotLabel(row).replace("Confirmed ", "batting ")}`); advanced.push(lineupSpotLabel(row)); }
+    const reasons = state.beginnerMode ? plain : advanced;
+    return reasons.slice(0, 3).length ? reasons.slice(0, 3) : [state.beginnerMode ? "Strong overall model profile" : `${Math.round(item.score)} model score`];
+  }
+
+  function guideRisk(item) {
+    const { row, probability, barrel, hardHit } = item;
+    if (!guideConfirmed(row)) return "Lineup is projected—verify before locking a pick.";
+    if (probability !== null && probability < 10) return "Home-run probability is still low; treat this as a long shot.";
+    if ((barrel ?? 0) < 7 || (hardHit ?? 0) < 35) return "Contact quality is weaker than the top power profiles.";
+    const form = playerFormSignal(row);
+    if (form.tier === "cold") return "Recent results are cold, even though the matchup grades well.";
+    return "Home runs are low-frequency outcomes; a strong profile is never a guarantee.";
+  }
+
+  function guidedSelections(items) {
+    const eligible = items.filter(item => {
+      if (state.guideFilter === "confirmed") return guideConfirmed(item.row);
+      if (state.guideFilter === "platoon") return hasPlatoonAdvantage(item.row);
+      if (state.guideFilter === "contact") return item.barrel >= 10 || item.hardHit >= 42;
+      return true;
+    });
+    const sorted = eligible.slice().sort((a, b) => b.overall - a.overall);
+    const confirmed = sorted.filter(item => guideConfirmed(item.row));
+    const pending = sorted.filter(item => !guideConfirmed(item.row));
+    const platoon = sorted.filter(item => hasPlatoonAdvantage(item.row));
+    const longShots = sorted.filter(item => item.probability !== null && item.probability < 12).sort((a, b) => b.overall - a.overall);
+    const contact = sorted.slice().sort((a, b) => b.contact - a.contact);
+    const candidates = [
+      ["Best Overall", sorted[0], "The strongest complete HR case on the current slate."],
+      ["Safest Confirmed", confirmed[0], "The best profile already locked into an official batting order."],
+      ["Best Matchup Edge", platoon[0] || sorted[1], "The clearest handedness and pitcher matchup advantage."],
+      ["Best Long Shot", longShots[0] || sorted[Math.min(2, sorted.length - 1)], "A lower-probability option whose supporting signals still stand out."],
+      [pending.length ? "Wait for Lineup" : "Best Contact", pending[0] || contact[0], pending.length ? "Interesting profile, but confirmation is still required." : "The slate’s strongest Barrel % and Hard-Hit % combination."]
+    ];
+    const used = new Set();
+    const selections = candidates.filter(([, item]) => {
+      if (!item) return false;
+      const key = String(item.row.playerId || playerNameKey(item.row.player));
+      if (used.has(key)) return false;
+      used.add(key);
+      return true;
+    });
+    for (const item of sorted) {
+      if (selections.length >= 5) break;
+      const key = String(item.row.playerId || playerNameKey(item.row.player));
+      if (used.has(key)) continue;
+      used.add(key);
+      selections.push(["Strong Alternative", item, "Another well-rounded profile worth comparing with the featured picks."]);
+    }
+    return selections;
+  }
+
+  function renderGuidedPicker() {
+    const host = document.getElementById("guidedPicker");
+    if (!host) return;
+    const selections = guidedSelections(guideRows());
+    host.innerHTML = `
+      <div class="guide-head">
+        <div><span class="guide-kicker">START HERE</span><h2>Today’s guided HR picks</h2><p>Five different ways to approach the slate, explained in plain English.</p></div>
+        <button class="guide-mode" type="button" data-guide-mode aria-pressed="${state.beginnerMode}">${state.beginnerMode ? "Beginner explanations" : "Advanced explanations"}</button>
+      </div>
+      <div class="guide-filters" aria-label="Filter guided picks">
+        ${[["all","All picks"],["confirmed","Confirmed only"],["platoon","Platoon edge"],["contact","Strong contact"]].map(([key,label]) => `<button type="button" data-guide-filter="${key}" class="${state.guideFilter===key?"active":""}">${label}</button>`).join("")}
+      </div>
+      <div class="guide-grid">
+        ${selections.map(([label, item, description]) => {
+          const row = item.row;
+          const probability = item.probability === null ? "Estimate pending" : `${item.probability.toFixed(1)}% estimated HR chance`;
+          return `<button class="guide-card" type="button" data-guide-player="${esc(row.player)}" data-guide-player-id="${esc(row.playerId || "")}">
+            <span class="guide-label">${esc(label)}</span>
+            <span class="guide-player">${esc(row.player)}</span>
+            <span class="guide-matchup">${esc(row.team || "")} vs ${esc(row.opponent || "")} · ${esc(lineupSpotLabel(row))}</span>
+            <strong>${esc(probability)}</strong>
+            <small>${esc(description)}</small>
+            <span class="guide-why"><b>Why:</b> ${guideReasons(item).map(esc).join(" · ")}</span>
+            <span class="guide-risk"><b>Risk:</b> ${esc(guideRisk(item))}</span>
+          </button>`;
+        }).join("") || `<div class="guide-empty">No players match this filter yet. Try “All picks” while lineups update.</div>`}
+      </div>
+      <details class="guide-help"><summary>What should a beginner look for?</summary><div><b>Barrel %</b> measures ideal power contact. <b>Hard-Hit %</b> measures balls hit at least 95 mph. <b>Platoon advantage</b> means the hitter bats from the favorable side against the starting pitcher. Look for several independent strengths—not several labels describing the same contact skill.</div></details>
+      <p class="guide-disclaimer">Model estimates are informational, not guarantees. “Best Long Shot” and “model value” do not account for sportsbook odds.</p>`;
+    host.querySelector("[data-guide-mode]")?.addEventListener("click", () => { state.beginnerMode = !state.beginnerMode; renderGuidedPicker(); });
+    host.querySelectorAll("[data-guide-filter]").forEach(button => button.addEventListener("click", () => { state.guideFilter = button.dataset.guideFilter; renderGuidedPicker(); }));
+    host.querySelectorAll("[data-guide-player]").forEach(button => button.addEventListener("click", () => {
+      const row = state.games.flatMap(allHitters).find(player => String(player.playerId || "") === String(button.dataset.guidePlayerId || "") || player.player === button.dataset.guidePlayer);
+      if (row) openModal(row);
+    }));
+  }
+
   function pitcherObj(game, side) {
     return side === "away" ? game.awayPitcher : game.homePitcher;
   }
@@ -1049,7 +1193,7 @@ function hasPlatoonAdvantage(row) {
   function injectShell() {
     const wrap = document.querySelector("main.wrap");
     if (!wrap) return;
-    for (const id of ["hero", "tabs", "games", "grid", "topVulnPanel", "marketTabs", "gameComparison"]) {
+    for (const id of ["hero", "guidedPicker", "tabs", "games", "grid", "topVulnPanel", "marketTabs", "gameComparison"]) {
       const el = document.getElementById(id);
       if (el) el.remove();
     }
@@ -1067,6 +1211,7 @@ function hasPlatoonAdvantage(row) {
         <button data-market="pitcherKs" type="button">Pitcher Ks<small>Board</small></button>
       </div>
       <section class="hero" id="hero">Loading today’s live slate</section>
+      <section id="guidedPicker" aria-live="polite"></section>
       <div class="tabs" id="tabs"></div>
       <section class="game-comparison" id="gameComparison" aria-live="polite"></section>
       <section class="games" id="games"></section>
@@ -1744,6 +1889,8 @@ function renderBat(row, index) {
 
     const comparison = document.getElementById("gameComparison");
     if (comparison) comparison.innerHTML = "";
+    const guide = document.getElementById("guidedPicker");
+    if (guide) guide.innerHTML = "";
 
     document.getElementById("games").innerHTML = `
       <section class="closed-slate-dashboard" aria-labelledby="closedSlateTitle">
@@ -1799,6 +1946,7 @@ function renderBat(row, index) {
       renderTopVulnerabilities();
       renderTabs();
       document.getElementById("hero").innerHTML = `<b>${state.games.length}</b> games loaded today from the daily matchup engine`;
+      renderGuidedPicker();
       const visible = state.active === "all" ? state.games : state.games.filter((_, index) => String(index) === String(state.active));
       document.getElementById("games").innerHTML = visible.map(renderGame).join("") || '<div class="error">The current slate could not be verified. Live matchup cards are unavailable until the next successful refresh.</div>';
       renderGameComparison();
@@ -1813,6 +1961,8 @@ function renderBat(row, index) {
     if (aiPanel) aiPanel.style.display = "none";
     const comparison = document.getElementById("gameComparison");
     if (comparison) comparison.innerHTML = "";
+    const guide = document.getElementById("guidedPicker");
+    if (guide) guide.innerHTML = "";
     renderTabs();
     renderMarketBoard();
   }
@@ -1879,8 +2029,9 @@ function renderBat(row, index) {
     const confidence = Math.round(num(row.hrConfidence || row.score || 0));
     const barrel = Math.round(num(row.barrelScore || 0));
     const hardHit = Math.round(num(row.hardHitScore || 0));
-    const barrelRateRaw = row.barrelRate ?? row.barrelPct ?? row.recentStatcastForm?.season?.barrelRate;
-    const hardHitRateRaw = row.hardHitRate ?? row.hardHitPct ?? row.recentStatcastForm?.season?.hardHitRate;
+    const statcast = statcastProfileFor(row);
+    const barrelRateRaw = row.barrelRate ?? row.barrelPct ?? row.recentStatcastForm?.season?.barrelRate ?? statcast?.recentStatcastForm?.season?.barrelRate;
+    const hardHitRateRaw = row.hardHitRate ?? row.hardHitPct ?? row.recentStatcastForm?.season?.hardHitRate ?? statcast?.recentStatcastForm?.season?.hardHitRate;
     const barrelRate = Number.isFinite(Number(barrelRateRaw)) ? `${(Number(barrelRateRaw) <= 1 ? Number(barrelRateRaw) * 100 : Number(barrelRateRaw)).toFixed(1)}%` : "N/A";
     const hardHitRate = Number.isFinite(Number(hardHitRateRaw)) ? `${(Number(hardHitRateRaw) <= 1 ? Number(hardHitRateRaw) * 100 : Number(hardHitRateRaw)).toFixed(1)}%` : "N/A";
     const power = Math.round(num(row.truePowerScore || 0));
@@ -2171,10 +2322,56 @@ function injectPlayerSignalStyles(){
   document.head.appendChild(style);
 }
 
+function injectGuidedPickerStyles(){
+  if (document.getElementById("tsl-guided-picker-styles")) return;
+  const style = document.createElement("style");
+  style.id = "tsl-guided-picker-styles";
+  style.textContent = `
+    #guidedPicker{margin:16px 0 20px;border:1px solid #17395d;background:linear-gradient(135deg,#071b31,#0a1220 62%,#12200d);padding:18px}
+    .guide-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+    .guide-kicker{display:block;color:#8cff32;font-size:10px;font-weight:1000;letter-spacing:.18em;margin-bottom:7px}
+    .guide-head h2{margin:0;color:#fff;font-family:Georgia,"Times New Roman",serif;font-size:28px;line-height:1.05}
+    .guide-head p{margin:7px 0 0;color:#aebed0;font-size:12px}
+    .guide-mode{border:1px solid #6ea6dd;background:#102b47;color:#e8f4ff;padding:10px 13px;font-size:10px;font-weight:950;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+    .guide-filters{display:flex;gap:7px;overflow:auto;margin:16px 0 12px;padding-bottom:3px}
+    .guide-filters button{white-space:nowrap;border:1px solid #39536f;background:#0a1725;color:#afbed0;padding:8px 11px;font-size:10px;font-weight:950;cursor:pointer}
+    .guide-filters button.active{border-color:#8cff32;background:#17351c;color:#caffaa}
+    .guide-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+    .guide-card{min-width:0;text-align:left;border:1px solid #2e4b69;border-top:3px solid #2e78cb;background:#0b1826;color:#eef6ff;padding:13px;cursor:pointer;transition:transform .15s ease,border-color .15s ease}
+    .guide-card:hover{transform:translateY(-2px);border-color:#8cff32}
+    .guide-label{display:block;color:#8cff32;font-size:9px;font-weight:1000;letter-spacing:.12em;text-transform:uppercase}
+    .guide-player{display:block;margin-top:8px;color:#fff;font-family:Georgia,"Times New Roman",serif;font-size:20px;font-weight:800;line-height:1.05}
+    .guide-matchup{display:block;margin-top:5px;color:#9fb1c5;font-size:10px;line-height:1.35}
+    .guide-card>strong{display:block;margin-top:12px;color:#5aa0ff;font-size:15px}
+    .guide-card>small{display:block;margin-top:5px;color:#b9c7d5;font-size:10px;line-height:1.35;min-height:41px}
+    .guide-why,.guide-risk{display:block;margin-top:9px;border-top:1px solid #263b51;padding-top:8px;color:#d7e2ed;font-size:10px;line-height:1.45}
+    .guide-risk{color:#ffc0a8}.guide-why b{color:#8cff32}.guide-risk b{color:#ff7950}
+    .guide-disclaimer{margin:12px 0 0;color:#8294a8;font-size:9px;line-height:1.45}
+    .guide-help{margin-top:12px;border-top:1px solid #263b51;padding-top:10px;color:#aebed0;font-size:10px;line-height:1.55}
+    .guide-help summary{color:#dcecff;font-weight:950;cursor:pointer}.guide-help div{margin-top:8px}.guide-help b{color:#8cff32}
+    .guide-empty{grid-column:1/-1;border:1px dashed #39536f;padding:18px;color:#aebed0;font-size:12px}
+    body.tsl-editorial #guidedPicker{background:#f8fbff;border-color:#9fb5cb}
+    body.tsl-editorial .guide-head h2,body.tsl-editorial .guide-player{color:#071d36}
+    body.tsl-editorial .guide-head p,body.tsl-editorial .guide-matchup,body.tsl-editorial .guide-card>small{color:#53677d}
+    body.tsl-editorial .guide-mode{background:#eaf3ff;border-color:#2e75c9;color:#073a71}
+    body.tsl-editorial .guide-filters button{background:#fff;border-color:#9fb0c2;color:#344b62}
+    body.tsl-editorial .guide-filters button.active{background:#e7f8d9;border-color:#4b9425;color:#245d0b}
+    body.tsl-editorial .guide-card{background:#fff;border-color:#b9c7d5;border-top-color:#1268f3;color:#071d36}
+    body.tsl-editorial .guide-card>strong{color:#075bc7}
+    body.tsl-editorial .guide-why,body.tsl-editorial .guide-risk{border-color:#d7e0e8;color:#334a61}
+    body.tsl-editorial .guide-risk{color:#7e2d16}
+    body.tsl-editorial .guide-help{border-color:#d7e0e8;color:#526579}body.tsl-editorial .guide-help summary{color:#071d36}body.tsl-editorial .guide-help b{color:#245d0b}
+    @media(max-width:1150px){.guide-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:680px){#guidedPicker{padding:14px}.guide-head{flex-direction:column}.guide-mode{width:100%}.guide-grid{grid-template-columns:1fr}.guide-card>small{min-height:0}}
+  `;
+  document.head.appendChild(style);
+}
+
 
   async function load() {
     injectStyles();
     injectPlayerSignalStyles();
+    injectGuidedPickerStyles();
     injectShell();
     restoreGameComparison();
     indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));
@@ -2189,6 +2386,11 @@ function injectPlayerSignalStyles(){
     state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
     state.marketRows.pitcherKs = rows(await json("./data/mlb_pitcher_strikeouts.json", []));
     state.bullpen = rows(await json("./data/bullpen_relievers.json", []));
+    const decisionPayload = await json("./data/hr_decision_center.json", { allPlayers: [] });
+    for (const row of rows(decisionPayload)) {
+      if (row.playerId) state.statcastById.set(String(row.playerId), row);
+      if (row.player) state.statcastByName.set(playerNameKey(row.player), row);
+    }
     const probabilityPayload = await json("./data/hr_probability_tracking.json", { players: [] });
     state.probabilitiesByName = new Map(rows(probabilityPayload).map(row => [playerNameKey(row.player), Number(row.realHrProbability)]));
     const weatherPayload = await json("./data/mlb_weather.json", []);
