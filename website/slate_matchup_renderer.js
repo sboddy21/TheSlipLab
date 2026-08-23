@@ -511,10 +511,14 @@
       row.barrelPct ??
       row.stats?.hitter?.barrelRate ??
       row.stats?.hitter?.barrelPct ??
+      row.recentStatcastForm?.season?.barrelRate ??
       row.brl ??
       row.brlPct;
 
-    if (Number.isFinite(Number(value))) return "BBL " + Math.round(Number(value)) + "%";
+    if (Number.isFinite(Number(value))) {
+      const rate = Number(value) <= 1 ? Number(value) * 100 : Number(value);
+      return "BBL " + rate.toFixed(1) + "%";
+    }
 
     return "";
   }
@@ -525,10 +529,14 @@
       row.hardHitPct ??
       row.stats?.hitter?.hardHitRate ??
       row.stats?.hitter?.hardHitPct ??
+      row.recentStatcastForm?.season?.hardHitRate ??
       row.hh ??
       row.hhPct;
 
-    if (Number.isFinite(Number(value))) return "HH " + Math.round(Number(value)) + "%";
+    if (Number.isFinite(Number(value))) {
+      const rate = Number(value) <= 1 ? Number(value) * 100 : Number(value);
+      return "HH " + rate.toFixed(1) + "%";
+    }
 
     return "";
   }
@@ -1871,6 +1879,10 @@ function renderBat(row, index) {
     const confidence = Math.round(num(row.hrConfidence || row.score || 0));
     const barrel = Math.round(num(row.barrelScore || 0));
     const hardHit = Math.round(num(row.hardHitScore || 0));
+    const barrelRateRaw = row.barrelRate ?? row.barrelPct ?? row.recentStatcastForm?.season?.barrelRate;
+    const hardHitRateRaw = row.hardHitRate ?? row.hardHitPct ?? row.recentStatcastForm?.season?.hardHitRate;
+    const barrelRate = Number.isFinite(Number(barrelRateRaw)) ? `${(Number(barrelRateRaw) <= 1 ? Number(barrelRateRaw) * 100 : Number(barrelRateRaw)).toFixed(1)}%` : "N/A";
+    const hardHitRate = Number.isFinite(Number(hardHitRateRaw)) ? `${(Number(hardHitRateRaw) <= 1 ? Number(hardHitRateRaw) * 100 : Number(hardHitRateRaw)).toFixed(1)}%` : "N/A";
     const power = Math.round(num(row.truePowerScore || 0));
     const trend = Math.round(num(row.recentHRTrend || 0));
     const volatility = Math.round(num(row.hrVolatilityScore || 0));
@@ -1897,8 +1909,10 @@ function renderBat(row, index) {
       <div class="metric-grid">
         <div class="metric"><label>Confidence</label><b>${confidence}</b></div>
         <div class="metric"><label>Power</label><b>${power}</b></div>
-        <div class="metric"><label>Barrel</label><b>${barrel}</b></div>
-        <div class="metric"><label>Hard Hit</label><b>${hardHit}</b></div>
+        <div class="metric"><label>Barrel %</label><b>${barrelRate}</b></div>
+        <div class="metric"><label>Hard-Hit %</label><b>${hardHitRate}</b></div>
+        <div class="metric"><label>Barrel Score</label><b>${barrel}</b></div>
+        <div class="metric"><label>Hard-Hit Score</label><b>${hardHit}</b></div>
         <div class="metric"><label>Trend</label><b>${trend}</b></div>
         <div class="metric"><label>Volatility</label><b>${volatility}</b></div>
       </div>

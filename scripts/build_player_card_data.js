@@ -381,6 +381,9 @@ async function main() {
     const resolvedPitcherHand = opposingPitcherHand || (cachedPitcherMatches ? cached.opposingPitcherHand : "") || "";
 
     const h = player.hitterStats || player.stats?.hitter || player.stats || {};
+    const recentStatcastForm = player.recentStatcastForm || cached?.recentStatcastForm || null;
+    const barrelRate = recentStatcastForm?.season?.barrelRate ?? cached?.barrelRate ?? null;
+    const hardHitRate = recentStatcastForm?.season?.hardHitRate ?? cached?.hardHitRate ?? null;
 
     output.push({
       player: player.player,
@@ -394,6 +397,9 @@ async function main() {
       opposingPitcherHand: resolvedPitcherHand,
       batSide: player.batSide || player.bats || player.batHand,
       lineupStatus: player.lineupStatus,
+      barrelRate,
+      hardHitRate,
+      recentStatcastForm,
 
       splits: {
         vsLhp: splits.vl || null,
