@@ -168,6 +168,10 @@ const foundation = {
       purpose: "Availability-adjusted 2026 role certainty using current depth rank, historical opportunity, and team continuity."
     },
     {
+      file: "nfl_matchup_context.json",
+      purpose: "Verified weekly player-to-game assignments plus historical team scoring, pace, and defense-versus-position touchdown context."
+    },
+    {
       file: "nfl_td_decision_center.json",
       purpose: "Private Anytime TD shadow rankings built from verified goal-line, red-zone, touchdown, role, and recent-opportunity inputs."
     },
@@ -191,7 +195,7 @@ const foundation = {
     "Every market must eventually connect to a result-tracking path."
   ],
   nextBuildSteps: [
-    "Build pace and defensive matchup context with source-health validation.",
+    "Add official weekly practice-report availability and role-confirmation gates.",
     "Add the game-level weather contract and freshness rules.",
     "Select the sportsbook provider and enforce quote-age rejection rules.",
     "Run the private TD shadow board through preseason and Week 1 role validation without publishing recommendations."

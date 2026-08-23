@@ -605,10 +605,10 @@
     }
 
     function renderHealth(sources){
-      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
       return Object.entries(labels).map(([key, label]) => {
         const status = sources?.[key]?.status || "pending";
-        const ready = status === "available";
+        const ready = status === "available" || status.startsWith("available_");
         return `<article class="health-row"><span>${escapeHtml(label)}</span><strong class="${ready ? "" : "pending"}">${escapeHtml(status)}</strong></article>`;
       }).join("");
     }
@@ -650,16 +650,16 @@
       const rows = (section.playerIds || []).map(id => byId.get(id)).filter(Boolean).slice(0, sectionId === "all" ? 30 : 12);
       document.getElementById("tdDescription").textContent = section.description || board.scoreDisclaimer || "";
       document.getElementById("tdGrid").innerHTML = rows.length ? rows.map(row => `<article class="td-card">
-        <div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.tdSignalScore)}</strong><span>TD signal</span></div></div>
-        <div class="td-metrics"><div><span>Inside 10</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.inside10Carries + row.historicalPerGame?.inside10Targets))}</strong></div><div><span>Red zone</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.redZoneCarries + row.historicalPerGame?.redZoneTargets))}</strong></div><div><span>TD/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.touchdowns))}</strong></div></div>
+        <div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} ${escapeHtml(row.homeAway === "home" ? "vs" : "at")} ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.tdSignalScore)}</strong><span>TD signal</span></div></div>
+        <div class="td-metrics"><div><span>Inside 10</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.inside10Carries + row.historicalPerGame?.inside10Targets))}</strong></div><div><span>Team TD base</span><strong>${escapeHtml(tdMetric(row.matchup?.projectedTeamTouchdownsBaseline))}</strong></div><div><span>Defense vuln.</span><strong>${escapeHtml(tdMetric(row.matchup?.defensiveVulnerabilityPercentile))}%</strong></div></div>
         <p class="td-reason">${(row.strengths || []).slice(0,2).map(escapeHtml).join(" · ")}</p>
-        <div class="td-gate">Private shadow signal · Opponent and price gated</div>
+        <div class="td-gate">Verified Week ${escapeHtml(board.week || 1)} matchup · Market and role gated</div>
       </article>`).join("") : `<div class="td-empty">${sectionId === "td_longshots" ? "Longshots stay empty until verified Anytime TD prices and quote freshness are available." : "No players currently meet this private review filter."}</div>`;
     }
 
     function renderTdBoard(board){
       const counts = board.counts || {};
-      document.getElementById("tdStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(counts.rankedPlayers || 0)} ranked</span><span>${escapeHtml(counts.verifiedSportsbookPrices || 0)} verified prices</span><span>${escapeHtml(counts.publishableRecommendations || 0)} publishable</span><span>Not a probability</span>`;
+      document.getElementById("tdStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(counts.matchupAdjustedPlayers || 0)} matchup adjusted</span><span>${escapeHtml(counts.verifiedSportsbookPrices || 0)} verified prices</span><span>${escapeHtml(counts.publishableRecommendations || 0)} publishable</span><span>Not a probability</span>`;
       const sections = board.sections || [];
       document.getElementById("tdFilters").innerHTML = sections.map((section,index) => `<button type="button" data-td-filter="${escapeHtml(section.id)}" class="${index === 0 ? "active" : ""}">${escapeHtml(section.label)}</button>`).join("");
       document.getElementById("tdFilters").addEventListener("click", event => {
