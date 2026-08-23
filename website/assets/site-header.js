@@ -50,14 +50,16 @@
     ["Pitcher Vulnerability","./pitcher-vulnerability.html",["/pitcher-vulnerability.html"]],
     ["Power Zones","./power-zones.html",["/power-zones.html"]],
     ["Weather","./weather.html",["/weather.html"]],
-    ["Results","./results.html",["/results.html"]],
+    ["HR Tracker","./live-home-runs.html",["/live-home-runs.html"]],
+    ["Near HR Tracker","./live-near-home-runs.html",["/live-near-home-runs.html"]],
+    ["Results Archive","./results.html",["/results.html"]],
     ["Decision Center","./hr-decision-center.html",["/hr-decision-center.html","/decision-center.html"]],
     ["AI Says","./ai-says.html",["/ai-says.html"]],
     ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
-  const primaryLabels = new Set(["Sign In", "Slate", "Results", "Weather", "AI Says"]);
-  const primaryOrder = ["Sign In", "Slate", "Results", "Weather", "AI Says"];
+  const primaryLabels = new Set(["Sign In", "Slate", "HR Tracker", "Weather", "AI Says"]);
+  const primaryOrder = ["Sign In", "Slate", "HR Tracker", "Weather", "AI Says"];
   const wnbaItems = [
     ["Slate","./wnba.html",["/wnba.html"]],
     ["Decision Center","./wnba-decision-center.html",["/wnba-decision-center.html"]],
