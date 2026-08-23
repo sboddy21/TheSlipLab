@@ -1116,7 +1116,7 @@ function hasPlatoonAdvantage(row) {
         ${selections.map(([label, item, description]) => {
           const row = item.row;
           const probability = item.probability === null ? "Estimate pending" : `${item.probability.toFixed(1)}% estimated HR chance`;
-          return `<button class="guide-card" type="button" data-guide-player="${esc(row.player)}" data-guide-player-id="${esc(row.playerId || "")}">
+          return `<button class="guide-card tsl-content-card" type="button" data-guide-player="${esc(row.player)}" data-guide-player-id="${esc(row.playerId || "")}">
             <span class="guide-label">${esc(label)}</span>
             <span class="guide-player">${esc(row.player)}</span>
             <span class="guide-matchup">${esc(row.team || "")} vs ${esc(row.opponent || "")} · ${esc(lineupSpotLabel(row))}</span>

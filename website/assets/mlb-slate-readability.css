@@ -46,3 +46,82 @@ body.tsl-editorial button.vuln:focus-visible {
   outline: 3px solid #38d9ff;
   outline-offset: -4px;
 }
+
+/*
+ * Interactive content-card contrast contract.
+ * Global button treatments must never determine a content card's surface or
+ * typography. Keep every foreground color paired with the owned dark surface.
+ */
+body.tsl-editorial button.tsl-content-card,
+html[data-theme="light"] body.tsl-editorial button.tsl-content-card,
+html[data-theme="dark"] body.tsl-editorial button.tsl-content-card,
+body.tsl-editorial button.guide-card,
+html[data-theme="light"] body.tsl-editorial button.guide-card,
+html[data-theme="dark"] body.tsl-editorial button.guide-card {
+  background: linear-gradient(145deg, #0a2a4e, #071d36) !important;
+  color: #f7fbff !important;
+  border-color: #4779a8 !important;
+  border-top-color: #58a6ff !important;
+  font: inherit !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  box-shadow: 0 10px 24px rgba(7, 29, 54, .18) !important;
+}
+
+body.tsl-editorial button.tsl-content-card * {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+body.tsl-editorial button.guide-card:hover,
+html[data-theme="light"] body.tsl-editorial button.guide-card:hover,
+html[data-theme="dark"] body.tsl-editorial button.guide-card:hover {
+  background: linear-gradient(145deg, #0d3768, #082746) !important;
+  border-color: #8cff32 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-label {
+  color: #9cff52 !important;
+  line-height: 1.25 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-player {
+  color: #fff !important;
+  line-height: 1.08 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-matchup,
+body.tsl-editorial button.guide-card > small {
+  color: #c7d5e3 !important;
+  line-height: 1.45 !important;
+}
+
+body.tsl-editorial button.guide-card > strong {
+  color: #64a9ff !important;
+  line-height: 1.2 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-why {
+  color: #e6eef7 !important;
+  border-color: #6f8daa !important;
+  line-height: 1.5 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-why b {
+  color: #9cff52 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-risk {
+  color: #ff9b76 !important;
+  border-color: #6f8daa !important;
+  line-height: 1.5 !important;
+}
+
+body.tsl-editorial button.guide-card .guide-risk b {
+  color: #ffb092 !important;
+}
+
+body.tsl-editorial button.guide-card:focus-visible {
+  outline: 3px solid #38d9ff !important;
+  outline-offset: 3px !important;
+}
