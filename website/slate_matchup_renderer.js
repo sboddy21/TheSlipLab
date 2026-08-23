@@ -30,7 +30,7 @@
     const fallback = `<span aria-hidden="true">${esc(initials(row?.player))}</span>`;
     if (!id) return fallback;
     const src = `https://img.mlbstatic.com/mlb-photos/image/upload/w_120,q_auto:best,f_auto/v1/people/${id}/headshot/67/current`;
-    return `${fallback}<img src="${src}" alt="${esc(row?.player)} headshot" loading="lazy" onerror="this.remove()">`;
+    return `${fallback}<img src="${src}" alt="${esc(row?.player)} headshot" loading="lazy" decoding="async" onerror="this.remove()">`;
   };
   const playerNameKey = value => String(value || "").trim().toLowerCase();
   const comparisonStorageKey = "the-slip-lab:five-game-comparison:v1";

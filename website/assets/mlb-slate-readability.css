@@ -125,3 +125,33 @@ body.tsl-editorial button.guide-card:focus-visible {
   outline: 3px solid #38d9ff !important;
   outline-offset: 3px !important;
 }
+
+/* Keep the long slate cheap to scroll. Decorative effects should never
+   compete with dozens of game cards and player headshots for paint time. */
+body.tsl-slate-page::before,
+body.tsl-slate-page::after,
+body.tsl-slate-page .hero::before {
+  display: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+body.tsl-slate-page > .topbar {
+  display: none !important;
+}
+
+body.tsl-slate-page .tsl-site-header {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.tsl-slate-page .game-card {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto 3000px;
+}
+
+body.tsl-slate-page .dot,
+body.tsl-slate-page .status-pill.live::before,
+body.tsl-slate-page .live-state::before {
+  animation: none !important;
+}
