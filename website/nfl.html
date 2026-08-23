@@ -391,10 +391,21 @@
     .signal{display:inline-block;padding:5px 7px;border:1px solid #1a3045;font-weight:950;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
     .signal.rising{background:#dff3e6;color:#12633d}.signal.falling{background:#f7e2dd;color:#9d321e}.signal.stable{background:#eaf2ff;color:#0757d6}.signal.initial_sample,.signal.no_box_score_opportunity{color:#735a19;background:#f8efcf}
     .role-summary{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.role-summary span{padding:8px 10px;background:#eaf2ff;border:1px solid #1a3045;font-size:10px;font-weight:900;text-transform:uppercase}
+    .td-shell{border:1px solid #1a3045;background:#071d36;color:#fffdf7;padding:18px}
+    .td-status{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:15px}.td-status span{padding:8px 10px;border:1px solid rgba(255,255,255,.22);color:#c9d9cf;font-size:9px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.td-status span:first-child{border-color:#c6ff65;color:#c6ff65}
+    .td-controls{display:flex;gap:8px;overflow-x:auto;padding-bottom:12px}.td-controls button{flex:0 0 auto;padding:10px 12px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#dce8df;font:900 9px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.td-controls button.active{background:#c6ff65;border-color:#c6ff65;color:#071d36}
+    .td-description{margin:2px 0 14px;color:#afc3b7;font:15px/1.45 Georgia,"Times New Roman",serif}
+    .td-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .td-card{min-height:248px;padding:16px;border:1px solid rgba(255,255,255,.18);background:#0d2a46;display:flex;flex-direction:column;gap:12px}
+    .td-card-head{display:flex;justify-content:space-between;gap:14px}.td-card-rank{color:#8fb2a0;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.td-card h3{margin:5px 0 0;font-family:Georgia,"Times New Roman",serif;font-size:23px;line-height:1}.td-score{text-align:right}.td-score strong{display:block;color:#c6ff65;font:700 31px Georgia,"Times New Roman",serif}.td-score span{display:block;color:#8fb2a0;font-size:8px;font-weight:950;text-transform:uppercase}
+    .td-metrics{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid rgba(255,255,255,.14)}.td-metrics div{padding:9px;border-left:1px solid rgba(255,255,255,.14)}.td-metrics div:first-child{border-left:0}.td-metrics span{display:block;color:#8fb2a0;font-size:8px;text-transform:uppercase}.td-metrics strong{display:block;margin-top:4px;font-size:13px}
+    .td-reason{margin:0;color:#dce8df;font-size:11px;line-height:1.45}.td-gate{margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.13);color:#f1bd72;font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
+    .td-empty{grid-column:1/-1;padding:28px;border:1px solid rgba(255,255,255,.18);color:#c9d9cf;text-align:center}
     @media(max-width:1150px){
       .hero{grid-template-columns:1fr}
       .build-grid,.contract-grid,.slate-grid,.health-board{grid-template-columns:repeat(2,minmax(0,1fr))}
       .market-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .td-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
     @media(max-width:680px){
       .nfl-wrap{width:min(100% - 28px,1460px);padding-top:18px}
@@ -402,6 +413,7 @@
       .hero-copy{min-height:390px;padding:22px}
       .hero-copy:after{font-size:24px;word-spacing:18px}
       .panel-stat,.build-grid,.market-grid,.contract-grid,.rules-grid,.slate-grid,.health-board{grid-template-columns:1fr}
+      .td-grid{grid-template-columns:1fr}
       .section-head p{text-align:left;margin-top:8px}
     }
   </style>
@@ -469,9 +481,22 @@
       <div class="role-table-wrap"><table class="role-table"><thead><tr><th>Player</th><th>Role</th><th>Games</th><th>Opportunity</th><th>Usage</th><th>Signal</th><th>Review status</th></tr></thead><tbody id="roleRows"><tr><td colspan="7">Loading private role board.</td></tr></tbody></table></div>
     </section>
 
+    <section aria-labelledby="tdTitle">
+      <div class="section-head">
+        <div><span class="section-kicker">04 / Private shadow board</span><h2 class="section-title" id="tdTitle">TD Decision Center.</h2></div>
+        <p>The MLB-style decision workflow, rebuilt around goal-line work, red-zone opportunity, touchdown history, and role certainty. Scores remain private and are not probabilities.</p>
+      </div>
+      <div class="td-shell">
+        <div class="td-status" id="tdStatus"><span>Loading TD signals</span></div>
+        <div class="td-controls" id="tdFilters"></div>
+        <p class="td-description" id="tdDescription"></p>
+        <div class="td-grid" id="tdGrid"><div class="td-empty">Loading private TD opportunity board.</div></div>
+      </div>
+    </section>
+
     <section aria-labelledby="marketTitle">
       <div class="section-head">
-        <div><span class="section-kicker">04 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
+        <div><span class="section-kicker">05 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
         <p>These are the first markets worth supporting because they connect cleanly to usage, role, game environment, and sportsbook lines.</p>
       </div>
       <div class="market-grid" id="marketGrid"></div>
@@ -479,7 +504,7 @@
 
     <section aria-labelledby="contractTitle">
       <div class="section-head">
-        <div><span class="section-kicker">05 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
+        <div><span class="section-kicker">06 / Data contracts</span><h2 class="section-title" id="contractTitle">The files we build around.</h2></div>
         <p>The first JSON files are placeholders by design. They tell every future page and script where the NFL truth should live.</p>
       </div>
       <div class="contract-grid" id="contractGrid"></div>
@@ -487,7 +512,7 @@
 
     <section aria-labelledby="rulesTitle">
       <div class="section-head">
-        <div><span class="section-kicker">06 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
+        <div><span class="section-kicker">07 / Integrity rules</span><h2 class="section-title" id="rulesTitle">Keep the lab honest.</h2></div>
         <p>Football is role-driven. The first version should handle unknowns cleanly instead of pretending camp noise is a finished model.</p>
       </div>
       <div class="rules-grid">
@@ -580,7 +605,7 @@
     }
 
     function renderHealth(sources){
-      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", roleEngine: "Role engine", preseasonUsage: "Preseason usage", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
       return Object.entries(labels).map(([key, label]) => {
         const status = sources?.[key]?.status || "pending";
         const ready = status === "available";
@@ -617,12 +642,41 @@
       renderRoleRows(board);
     }
 
+    function tdMetric(value){ return Number(value || 0).toFixed(2).replace(/\.00$/, ""); }
+
+    function renderTdRows(board, sectionId){
+      const section = (board.sections || []).find(item => item.id === sectionId) || board.sections?.[0] || { playerIds: [], description: "" };
+      const byId = new Map((board.rows || []).map(row => [row.playerId, row]));
+      const rows = (section.playerIds || []).map(id => byId.get(id)).filter(Boolean).slice(0, sectionId === "all" ? 30 : 12);
+      document.getElementById("tdDescription").textContent = section.description || board.scoreDisclaimer || "";
+      document.getElementById("tdGrid").innerHTML = rows.length ? rows.map(row => `<article class="td-card">
+        <div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.tdSignalScore)}</strong><span>TD signal</span></div></div>
+        <div class="td-metrics"><div><span>Inside 10</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.inside10Carries + row.historicalPerGame?.inside10Targets))}</strong></div><div><span>Red zone</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.redZoneCarries + row.historicalPerGame?.redZoneTargets))}</strong></div><div><span>TD/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.touchdowns))}</strong></div></div>
+        <p class="td-reason">${(row.strengths || []).slice(0,2).map(escapeHtml).join(" · ")}</p>
+        <div class="td-gate">Private shadow signal · Opponent and price gated</div>
+      </article>`).join("") : `<div class="td-empty">${sectionId === "td_longshots" ? "Longshots stay empty until verified Anytime TD prices and quote freshness are available." : "No players currently meet this private review filter."}</div>`;
+    }
+
+    function renderTdBoard(board){
+      const counts = board.counts || {};
+      document.getElementById("tdStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(counts.rankedPlayers || 0)} ranked</span><span>${escapeHtml(counts.verifiedSportsbookPrices || 0)} verified prices</span><span>${escapeHtml(counts.publishableRecommendations || 0)} publishable</span><span>Not a probability</span>`;
+      const sections = board.sections || [];
+      document.getElementById("tdFilters").innerHTML = sections.map((section,index) => `<button type="button" data-td-filter="${escapeHtml(section.id)}" class="${index === 0 ? "active" : ""}">${escapeHtml(section.label)}</button>`).join("");
+      document.getElementById("tdFilters").addEventListener("click", event => {
+        const button = event.target.closest("button[data-td-filter]"); if(!button) return;
+        document.querySelectorAll("[data-td-filter]").forEach(item => item.classList.toggle("active", item === button));
+        renderTdRows(board, button.dataset.tdFilter);
+      });
+      renderTdRows(board, sections[0]?.id || "all");
+    }
+
     async function init(){
-      const [foundation, markets, publicStatus, roleBoard] = await Promise.all([
+      const [foundation, markets, publicStatus, roleBoard, tdBoard] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
         loadJson("./data/nfl_markets.json", fallbackMarkets),
         loadJson("./data/nfl_public_status.json", fallbackStatus),
-        loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] })
+        loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] }),
+        loadJson("./data/nfl_td_decision_center.json", { counts: {}, sections: [], rows: [], scoreDisclaimer: "TD shadow signals are unavailable." })
       ]);
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
@@ -654,6 +708,7 @@
       document.getElementById("weekOneGrid").innerHTML = weekOne.length ? weekOne.map(renderGame).join("") : `<article class="game-card"><p>Week 1 schedule data is unavailable.</p></article>`;
       document.getElementById("healthBoard").innerHTML = renderHealth(publicStatus.sources);
       renderRoleBoard(roleBoard);
+      renderTdBoard(tdBoard);
     }
 
     init();

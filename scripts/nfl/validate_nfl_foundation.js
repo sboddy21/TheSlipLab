@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_data_health.json", "nfl_public_status.json"];
+const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_td_decision_center.json", "nfl_data_health.json", "nfl_public_status.json"];
 
 function fail(message) {
   throw new Error(`NFL VALIDATION FAILED: ${message}`);
@@ -30,6 +30,7 @@ const preseason = payloads["nfl_preseason_usage.json"];
 const preseasonAudit = payloads["nfl_preseason_audit.json"];
 const preseasonBoard = payloads["nfl_preseason_role_board.json"];
 const roles = payloads["nfl_role_engine.json"];
+const tdBoard = payloads["nfl_td_decision_center.json"];
 const health = payloads["nfl_data_health.json"];
 const publicStatus = payloads["nfl_public_status.json"];
 const foundation = JSON.parse(fs.readFileSync(path.join(DATA, "nfl_foundation.json"), "utf8"));
@@ -56,10 +57,17 @@ if (preseasonBoard.rows.some(row => ["rising", "falling", "stable"].includes(row
 if (roles.status !== "role_estimation_only" || roles.playerCount !== pool.playerCount || roles.roles?.length !== roles.playerCount) fail("role engine is incomplete");
 if (roles.roles.some(role => role.projectionStatus !== "disabled_pending_preseason_usage_and_market_lines")) fail("role engine must keep projections disabled");
 if (roles.roles.some(role => role.confidence?.score > roles.methodology?.confidenceCeiling)) fail("role confidence exceeds the missing-preseason ceiling");
-if (health.status !== "role_engine_ready_projections_gated" || health.sources?.depthCharts?.status !== "available") fail("health contract must report gated role-engine readiness");
+if (tdBoard.status !== "private_shadow_board" || tdBoard.market !== "anytime_touchdown" || tdBoard.recommendationStatus !== "disabled" || tdBoard.projectionStatus !== "disabled") fail("TD Decision Center must remain private and gated");
+if (!tdBoard.rows?.length || tdBoard.rows.length !== tdBoard.counts?.rankedPlayers || tdBoard.counts?.publishableRecommendations !== 0 || tdBoard.counts?.verifiedSportsbookPrices !== 0) fail("TD Decision Center counts are invalid");
+if (new Set(tdBoard.rows.map(row => row.playerId)).size !== tdBoard.rows.length || tdBoard.rows.some((row, index) => row.shadowRank !== index + 1)) fail("TD Decision Center identity or rank order is invalid");
+if (tdBoard.rows.some(row => row.scoreType !== "private_shadow_signal_not_probability" || row.tdSignalScore < 0 || row.tdSignalScore > 100 || row.publicationStatus !== "private_shadow_only")) fail("TD Decision Center contains an invalid shadow score");
+if (tdBoard.rows.some(row => row.sportsbook?.status !== "unavailable" || row.sportsbook?.anytimeTdPrice !== null || row.gates?.verifiedSportsbookPrice || row.gates?.regularSeasonRoleConfirmed)) fail("TD Decision Center bypassed a launch gate");
+if (tdBoard.sections?.find(section => section.id === "td_longshots")?.playerIds?.length) fail("TD longshots cannot populate without verified prices");
+if (health.status !== "td_shadow_board_ready_projections_gated" || health.sources?.depthCharts?.status !== "available") fail("health contract must report gated TD shadow-board readiness");
 if (health.sources?.injuries?.status !== "partial" || health.sources?.projections?.status !== "disabled") fail("health contract must keep partial injuries and disabled projections explicit");
 if (health.sources?.usageBaselines?.status !== "available" || health.sources?.routes?.status !== "unavailable") fail("health contract must distinguish usage baselines from unavailable routes");
 if (health.sources?.roleEngine?.status !== "available" || !["available", "waiting"].includes(health.sources?.preseasonUsage?.status) || !health.sources?.preseasonUsage?.finalGameGate) fail("health contract must report final-gated preseason usage");
+if (health.sources?.tdDecisionCenter?.status !== "private_shadow_only" || health.sources?.tdDecisionCenter?.publishableRecommendations !== 0 || health.sources?.tdDecisionCenter?.verifiedSportsbookPrices !== 0) fail("health contract must keep the TD Decision Center private and gated");
 if (publicStatus.weekOneGames?.length !== 16 || publicStatus.counts?.roleEligible !== roles.modelEligibleCount || publicStatus.counts?.completedPreseasonGames !== preseason.processedGameCount || !publicStatus.preseasonUsage?.finalGameGate) fail("public NFL status is incomplete");
 if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
 if (foundation.currentPhase?.id === "foundation" && foundation.date >= "2026-08-21") fail("roadmap regressed to the completed foundation phase");

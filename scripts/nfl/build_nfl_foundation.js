@@ -168,6 +168,10 @@ const foundation = {
       purpose: "Availability-adjusted 2026 role certainty using current depth rank, historical opportunity, and team continuity."
     },
     {
+      file: "nfl_td_decision_center.json",
+      purpose: "Private Anytime TD shadow rankings built from verified goal-line, red-zone, touchdown, role, and recent-opportunity inputs."
+    },
+    {
       file: "nfl_data_health.json",
       purpose: "Source-by-source availability and gating status; projections remain disabled until required inputs pass validation."
     },
@@ -190,7 +194,7 @@ const foundation = {
     "Build pace and defensive matchup context with source-health validation.",
     "Add the game-level weather contract and freshness rules.",
     "Select the sportsbook provider and enforce quote-age rejection rules.",
-    "Define shadow-projection gates without publishing recommendations."
+    "Run the private TD shadow board through preseason and Week 1 role validation without publishing recommendations."
   ]
 };
 
@@ -205,7 +209,7 @@ writeJson("nfl_decision_center.json", {
   updatedAt: now.toISOString(),
   marketCount: 0,
   playerCount: 0,
-  disclaimer: "NFL recommendations are not live yet. This private decision-center shell remains gated until usage, matchup, weather, and market inputs pass validation.",
+  disclaimer: "NFL recommendations are not live yet. The private TD shadow board remains gated until role, opponent, matchup, weather, and fresh market inputs pass validation.",
   sections: []
 });
 
