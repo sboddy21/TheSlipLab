@@ -1333,6 +1333,16 @@
     return `<div class="pc-headshot">${fallback}<img src="${src}" alt="${esc(row.player)} headshot" loading="lazy" onerror="this.remove()"></div>`;
   }
 
+  function statcastRate(row, metricName) {
+    const direct = metricName === "barrel"
+      ? (row.barrelRate ?? row.barrelPct ?? row.stats?.hitter?.barrelRate ?? row.stats?.hitter?.barrelPct)
+      : (row.hardHitRate ?? row.hardHitPct ?? row.stats?.hitter?.hardHitRate ?? row.stats?.hitter?.hardHitPct);
+    const value = direct ?? row.recentStatcastForm?.season?.[metricName === "barrel" ? "barrelRate" : "hardHitRate"];
+    if (!Number.isFinite(Number(value))) return "N/A";
+    const percentage = Number(value) <= 1 ? Number(value) * 100 : Number(value);
+    return `${percentage.toFixed(1)}%`;
+  }
+
   function renderHero(row) {
     const h = stats(row);
     const conf = hrChance(row);
@@ -1362,6 +1372,8 @@
         ${metric("OPS", dec(h.OPS))}
         ${metric("HR Confidence", one(conf))}
         ${metric("Power", one(row.powerScore))}
+        ${metric("Barrel %", statcastRate(row, "barrel"))}
+        ${metric("Hard-Hit %", statcastRate(row, "hardHit"))}
         ${metric("Pitch Edge", one(row.pitchEdge))}
         ${metric("Weather", one(row.weather))}
       </div>
