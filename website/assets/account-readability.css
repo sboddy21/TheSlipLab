@@ -84,6 +84,68 @@ body.account-page .account-command-card .account-button {
   color: #ffffff !important;
 }
 
+/* Personalized Daily Lab cards are buttons, so the global button skin was
+ * painting the entire card navy while its editorial text remained dark. */
+body.account-page .daily-lab-card {
+  contain: layout paint style;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 390px;
+  background: #fffdf7 !important;
+  box-shadow: 3px 3px 0 rgba(7, 29, 54, 0.06) !important;
+}
+
+body.account-page .daily-lab-card.off-slate {
+  background: #f7f4eb !important;
+}
+
+body.account-page .daily-lab-open,
+body.account-page .daily-lab-open:hover,
+body.account-page .daily-lab-open:active {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #071d36 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.account-page .daily-lab-card h4 {
+  color: #071d36 !important;
+}
+
+body.account-page .daily-lab-card-head p,
+body.account-page .daily-lab-reasons li,
+body.account-page .daily-lab-off-slate {
+  color: #344a5e !important;
+}
+
+body.account-page .daily-lab-type {
+  color: #b93619 !important;
+}
+
+body.account-page .daily-lab-details {
+  color: #0757d6 !important;
+}
+
+/* The Account page can render dozens of saved-player cards. Avoid fixed blur,
+ * animated paint layers, and hover elevation that cause scroll-frame drops. */
+body.account-page::before {
+  display: none !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+body.account-page :is(.account-plan, .account-command-card, .daily-lab-card):hover {
+  transform: none !important;
+}
+
+body.account-page :is(.account-plan, .account-command-card, .daily-lab-card),
+body.account-page :is(.account-plan, .account-command-card, .daily-lab-card)::before,
+body.account-page :is(.account-plan, .account-command-card, .daily-lab-card)::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 body.account-page :is(.account-plan, .account-premium-preview, .account-command-center) a:focus-visible,
 body.account-page :is(.account-plan, .account-premium-preview, .account-command-center) button:focus-visible {
   outline: 3px solid #adff6a !important;
