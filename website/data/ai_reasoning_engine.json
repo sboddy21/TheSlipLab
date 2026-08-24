@@ -2,7 +2,7 @@
   "sport": "MLB",
   "market": "Home Runs",
   "version": "1.3",
-  "updatedAt": "2026-08-24T13:57:20.112Z",
+  "updatedAt": "2026-08-24T15:44:54.376Z",
   "playerCount": 260,
   "sourceDebug": {
     "ai_trust_engine.json": 520,
@@ -876,99 +876,6 @@
       }
     },
     {
-      "player": "Byron Buxton",
-      "team": "Minnesota Twins",
-      "opponent": "Athletics",
-      "game": "Minnesota Twins at Athletics",
-      "sections": [],
-      "aiVerdict": "Playable HR Target",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 77,
-      "stars": 3,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "58 HR Power Index (VIABLE POWER).",
-        "68.8 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "power_profile",
-          "label": "Power support",
-          "detail": "58 HR Power Index (VIABLE POWER).",
-          "value": 58,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "68.8 launch-power score supports home-run damage.",
-          "value": 68.8,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [],
-      "trustBreakdown": {
-        "modelAgreement": 77,
-        "pitchMatch": 70,
-        "powerProfile": 95,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 55,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 58,
-        "truePowerScore": 58.8,
-        "contactDamageScore": 54.9,
-        "launchPowerScore": 68.8,
-        "strikeoutRate": 24.3,
-        "powerTier": "VIABLE_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Andrés Chaparro",
       "team": "Washington Nationals",
       "opponent": "Colorado Rockies",
@@ -1762,22 +1669,23 @@
       }
     },
     {
-      "player": "Rafael Devers",
-      "team": "San Francisco Giants",
-      "opponent": "Cincinnati Reds",
-      "game": "Cincinnati Reds at San Francisco Giants",
+      "player": "Byron Buxton",
+      "team": "Minnesota Twins",
+      "opponent": "Athletics",
+      "game": "Minnesota Twins at Athletics",
       "sections": [],
       "aiVerdict": "Lean / Watch List",
       "oneLine": "22.8% tracked HR probability (NUCLEAR).",
       "probability": 22.8,
-      "confidence": 69,
-      "stars": 2,
+      "confidence": 70,
+      "stars": 3,
       "whyToday": [
         "22.8% tracked HR probability (NUCLEAR).",
-        "62.5 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
+        "58 HR Power Index (VIABLE POWER).",
+        "68.8 launch-power score supports home-run damage."
       ],
       "riskFactors": [
+        "0 recent-form trend score is not helping the profile today.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -1790,43 +1698,52 @@
           "severity": "support"
         },
         {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "62.5 launch-power score supports home-run damage.",
-          "value": 62.5,
+          "key": "power_profile",
+          "label": "Power support",
+          "detail": "58 HR Power Index (VIABLE POWER).",
+          "value": 58,
           "source": "hr_power_profiles.json",
           "severity": "support"
         },
         {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "68.8 launch-power score supports home-run damage.",
+          "value": 68.8,
+          "source": "hr_power_profiles.json",
           "severity": "support"
         }
       ],
-      "counterSignals": [],
+      "counterSignals": [
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
       "trustBreakdown": {
-        "modelAgreement": 69,
+        "modelAgreement": 70,
         "pitchMatch": 70,
-        "powerProfile": 82,
+        "powerProfile": 95,
         "environment": 88,
         "pitchMix": 70,
-        "consensus": 20,
-        "recentForm": 72,
+        "consensus": 55,
+        "recentForm": 0,
         "bullpen": null,
         "market": null,
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 45.6,
-        "truePowerScore": 49.2,
-        "contactDamageScore": 47,
-        "launchPowerScore": 62.5,
-        "strikeoutRate": 26.1,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 72
+        "hrPowerIndex": 58,
+        "truePowerScore": 58.8,
+        "contactDamageScore": 54.9,
+        "launchPowerScore": 68.8,
+        "strikeoutRate": 24.3,
+        "powerTier": "VIABLE_POWER",
+        "recentForm": 0
       },
       "expected": {
         "pitch": null,
@@ -1910,6 +1827,90 @@
         "launchPowerScore": 68.4,
         "strikeoutRate": 17.6,
         "powerTier": "VIABLE_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Rafael Devers",
+      "team": "San Francisco Giants",
+      "opponent": "Cincinnati Reds",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 69,
+      "stars": 2,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "62.5 launch-power score supports home-run damage.",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "62.5 launch-power score supports home-run damage.",
+          "value": 62.5,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [],
+      "trustBreakdown": {
+        "modelAgreement": 69,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 20,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 45.6,
+        "truePowerScore": 49.2,
+        "contactDamageScore": 47,
+        "launchPowerScore": 62.5,
+        "strikeoutRate": 26.1,
+        "powerTier": "LONGSHOT_POWER",
         "recentForm": 72
       },
       "expected": {
@@ -3389,99 +3390,6 @@
       }
     },
     {
-      "player": "Byron Buxton",
-      "team": "Minnesota Twins",
-      "opponent": "Athletics",
-      "game": "Minnesota Twins at Athletics",
-      "sections": [],
-      "aiVerdict": "Playable HR Target",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 77,
-      "stars": 3,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "58 HR Power Index (VIABLE POWER).",
-        "68.8 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "power_profile",
-          "label": "Power support",
-          "detail": "58 HR Power Index (VIABLE POWER).",
-          "value": 58,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "68.8 launch-power score supports home-run damage.",
-          "value": 68.8,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [],
-      "trustBreakdown": {
-        "modelAgreement": 77,
-        "pitchMatch": 70,
-        "powerProfile": 95,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 55,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 58,
-        "truePowerScore": 58.8,
-        "contactDamageScore": 54.9,
-        "launchPowerScore": 68.8,
-        "strikeoutRate": 24.3,
-        "powerTier": "VIABLE_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Andrés Chaparro",
       "team": "Washington Nationals",
       "opponent": "Colorado Rockies",
@@ -4275,22 +4183,23 @@
       }
     },
     {
-      "player": "Rafael Devers",
-      "team": "San Francisco Giants",
-      "opponent": "Cincinnati Reds",
-      "game": "Cincinnati Reds at San Francisco Giants",
+      "player": "Byron Buxton",
+      "team": "Minnesota Twins",
+      "opponent": "Athletics",
+      "game": "Minnesota Twins at Athletics",
       "sections": [],
       "aiVerdict": "Lean / Watch List",
       "oneLine": "22.8% tracked HR probability (NUCLEAR).",
       "probability": 22.8,
-      "confidence": 69,
-      "stars": 2,
+      "confidence": 70,
+      "stars": 3,
       "whyToday": [
         "22.8% tracked HR probability (NUCLEAR).",
-        "62.5 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
+        "58 HR Power Index (VIABLE POWER).",
+        "68.8 launch-power score supports home-run damage."
       ],
       "riskFactors": [
+        "0 recent-form trend score is not helping the profile today.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -4303,43 +4212,52 @@
           "severity": "support"
         },
         {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "62.5 launch-power score supports home-run damage.",
-          "value": 62.5,
+          "key": "power_profile",
+          "label": "Power support",
+          "detail": "58 HR Power Index (VIABLE POWER).",
+          "value": 58,
           "source": "hr_power_profiles.json",
           "severity": "support"
         },
         {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "68.8 launch-power score supports home-run damage.",
+          "value": 68.8,
+          "source": "hr_power_profiles.json",
           "severity": "support"
         }
       ],
-      "counterSignals": [],
+      "counterSignals": [
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
       "trustBreakdown": {
-        "modelAgreement": 69,
+        "modelAgreement": 70,
         "pitchMatch": 70,
-        "powerProfile": 82,
+        "powerProfile": 95,
         "environment": 88,
         "pitchMix": 70,
-        "consensus": 20,
-        "recentForm": 72,
+        "consensus": 55,
+        "recentForm": 0,
         "bullpen": null,
         "market": null,
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 45.6,
-        "truePowerScore": 49.2,
-        "contactDamageScore": 47,
-        "launchPowerScore": 62.5,
-        "strikeoutRate": 26.1,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 72
+        "hrPowerIndex": 58,
+        "truePowerScore": 58.8,
+        "contactDamageScore": 54.9,
+        "launchPowerScore": 68.8,
+        "strikeoutRate": 24.3,
+        "powerTier": "VIABLE_POWER",
+        "recentForm": 0
       },
       "expected": {
         "pitch": null,
@@ -4423,6 +4341,90 @@
         "launchPowerScore": 68.4,
         "strikeoutRate": 17.6,
         "powerTier": "VIABLE_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Rafael Devers",
+      "team": "San Francisco Giants",
+      "opponent": "Cincinnati Reds",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 69,
+      "stars": 2,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "62.5 launch-power score supports home-run damage.",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "62.5 launch-power score supports home-run damage.",
+          "value": 62.5,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [],
+      "trustBreakdown": {
+        "modelAgreement": 69,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 20,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 45.6,
+        "truePowerScore": 49.2,
+        "contactDamageScore": 47,
+        "launchPowerScore": 62.5,
+        "strikeoutRate": 26.1,
+        "powerTier": "LONGSHOT_POWER",
         "recentForm": 72
       },
       "expected": {
@@ -5134,6 +5136,100 @@
         "contactDamageScore": 33.9,
         "launchPowerScore": 64.1,
         "strikeoutRate": 33.7,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Wyatt Langford",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "21.8% tracked HR probability (NUCLEAR).",
+      "probability": 21.8,
+      "confidence": 68,
+      "stars": 2,
+      "whyToday": [
+        "21.8% tracked HR probability (NUCLEAR).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "39.8 HR Power Index (LONGSHOT POWER).",
+        "42.6 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "21.8% tracked HR probability (NUCLEAR).",
+          "value": 21.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "39.8 HR Power Index (LONGSHOT POWER).",
+          "value": 39.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "42.6 contact-damage score limits the supporting power case.",
+          "value": 42.6,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 68,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 83,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 39.8,
+        "truePowerScore": 41.4,
+        "contactDamageScore": 42.6,
+        "launchPowerScore": 43,
+        "strikeoutRate": 22,
         "powerTier": "LONGSHOT_POWER",
         "recentForm": 72
       },
@@ -6250,91 +6346,6 @@
       }
     },
     {
-      "player": "Corbin Carroll",
-      "team": "Arizona Diamondbacks",
-      "opponent": "Chicago Cubs",
-      "game": "Chicago Cubs at Arizona Diamondbacks",
-      "sections": [],
-      "aiVerdict": "Lean / Watch List",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 66,
-      "stars": 2,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "43.1 HR Power Index (LONGSHOT POWER).",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "43.1 HR Power Index (LONGSHOT POWER).",
-          "value": 43.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 66,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 43.1,
-        "truePowerScore": 47,
-        "contactDamageScore": 54.7,
-        "launchPowerScore": 46.2,
-        "strikeoutRate": 21.4,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Yandy Díaz",
       "team": "Tampa Bay Rays",
       "opponent": "Detroit Tigers",
@@ -6408,6 +6419,91 @@
         "contactDamageScore": 44.8,
         "launchPowerScore": 43.3,
         "strikeoutRate": 14.2,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Corbin Carroll",
+      "team": "Arizona Diamondbacks",
+      "opponent": "Chicago Cubs",
+      "game": "Chicago Cubs at Arizona Diamondbacks",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 66,
+      "stars": 2,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "43.1 HR Power Index (LONGSHOT POWER).",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "43.1 HR Power Index (LONGSHOT POWER).",
+          "value": 43.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 66,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 43.1,
+        "truePowerScore": 47,
+        "contactDamageScore": 54.7,
+        "launchPowerScore": 46.2,
+        "strikeoutRate": 21.4,
         "powerTier": "LONGSHOT_POWER",
         "recentForm": 72
       },
@@ -6894,6 +6990,100 @@
         "launchPowerScore": 54.2,
         "strikeoutRate": 25.7,
         "powerTier": "LONGSHOT_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Joc Pederson",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 66,
+      "stars": 2,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "59.7 launch-power score supports home-run damage.",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "43.5 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "59.7 launch-power score supports home-run damage.",
+          "value": 59.7,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "43.5 contact-damage score limits the supporting power case.",
+          "value": 43.5,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 66,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 49.3,
+        "truePowerScore": 50.4,
+        "contactDamageScore": 43.5,
+        "launchPowerScore": 59.7,
+        "strikeoutRate": 23.4,
+        "powerTier": "VIABLE_POWER",
         "recentForm": 72
       },
       "expected": {
@@ -7486,100 +7676,6 @@
       }
     },
     {
-      "player": "Liam Hicks",
-      "team": "Tampa Bay Rays",
-      "opponent": "Detroit Tigers",
-      "game": "Tampa Bay Rays at Detroit Tigers",
-      "sections": [],
-      "aiVerdict": "Lean / Watch List",
-      "oneLine": "15.6% tracked HR probability (STRONG).",
-      "probability": 15.6,
-      "confidence": 66,
-      "stars": 2,
-      "whyToday": [
-        "15.6% tracked HR probability (STRONG).",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "34 HR Power Index (LOW POWER).",
-        "36.6 contact-damage score limits the supporting power case.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Viable HR probability",
-          "detail": "15.6% tracked HR probability (STRONG).",
-          "value": 15.6,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "34 HR Power Index (LOW POWER).",
-          "value": 34,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "36.6 contact-damage score limits the supporting power case.",
-          "value": 36.6,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 66,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 34,
-        "truePowerScore": 36.3,
-        "contactDamageScore": 36.6,
-        "launchPowerScore": 40.3,
-        "strikeoutRate": 9.4,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Angel Martínez",
       "team": "Cleveland Guardians",
       "opponent": "Los Angeles Angels",
@@ -7654,109 +7750,6 @@
         "launchPowerScore": 38.1,
         "strikeoutRate": 22.3,
         "powerTier": "LOW_POWER",
-        "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Bryan De La Cruz",
-      "team": "Philadelphia Phillies",
-      "opponent": "Seattle Mariners",
-      "game": "Philadelphia Phillies at Seattle Mariners",
-      "sections": [],
-      "aiVerdict": "Speculative HR Target",
-      "oneLine": "66.3 contact-damage score in the current power profile.",
-      "probability": 10.6,
-      "confidence": 65,
-      "stars": 2,
-      "whyToday": [
-        "66.3 contact-damage score in the current power profile.",
-        "100 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "10.6% tracked HR probability; below the model's top probability tier.",
-        "10-point sample penalty is active in the power profile.",
-        "28.2 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "contact_damage",
-          "label": "Authoritative contact",
-          "detail": "66.3 contact-damage score in the current power profile.",
-          "value": 66.3,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Hot recent-form streak",
-          "detail": "100 recent-form trend score is helping the player-card read.",
-          "value": 100,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "modest_hr_probability",
-          "label": "Modest base probability",
-          "detail": "10.6% tracked HR probability; below the model's top probability tier.",
-          "value": 10.6,
-          "source": "hr_probability_tracking.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "sample_penalty",
-          "label": "Limited sample confidence",
-          "detail": "10-point sample penalty is active in the power profile.",
-          "value": 10,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "28.2 launch-power score is below the stronger home-run profiles.",
-          "value": 28.2,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 65,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 100,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 54.9,
-        "truePowerScore": 41.3,
-        "contactDamageScore": 66.3,
-        "launchPowerScore": 28.2,
-        "strikeoutRate": 20,
-        "powerTier": "LONGSHOT_POWER",
         "recentForm": 100
       },
       "expected": {
@@ -8205,14 +8198,14 @@
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 5.5,
+      "probability": 5.4,
       "confidence": 65,
       "stars": 2,
       "whyToday": [
         "72 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "5.5% tracked HR probability (LOW).",
+        "5.4% tracked HR probability (LOW).",
         "23.6 HR Power Index (LOW POWER).",
         "19.7 contact-damage score limits the supporting power case.",
         "23.9 launch-power score is below the stronger home-run profiles.",
@@ -8232,8 +8225,8 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "5.5% tracked HR probability (LOW).",
-          "value": 5.5,
+          "detail": "5.4% tracked HR probability (LOW).",
+          "value": 5.4,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
@@ -8628,81 +8621,90 @@
       }
     },
     {
-      "player": "Joc Pederson",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
+      "player": "Jeff McNeil",
+      "team": "Athletics",
+      "opponent": "Minnesota Twins",
+      "game": "Minnesota Twins at Athletics",
       "sections": [],
-      "aiVerdict": "Lean / Watch List",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 64,
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "100 recent-form trend score is helping the player-card read.",
+      "probability": 1.8,
+      "confidence": 65,
       "stars": 2,
       "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "59.7 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
+        "100 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "43.5 contact-damage score limits the supporting power case.",
+        "1.8% tracked HR probability (LOW).",
+        "11 HR Power Index (LOW POWER).",
+        "17.4 contact-damage score limits the supporting power case.",
+        "15.1 launch-power score is below the stronger home-run profiles.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
         {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "59.7 launch-power score supports home-run damage.",
-          "value": 59.7,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
           "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
+          "label": "Hot recent-form streak",
+          "detail": "100 recent-form trend score is helping the player-card read.",
+          "value": 100,
           "source": "ai_trust_engine.json",
           "severity": "support"
         }
       ],
       "counterSignals": [
         {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.8% tracked HR probability (LOW).",
+          "value": 1.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "11 HR Power Index (LOW POWER).",
+          "value": 11,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "43.5 contact-damage score limits the supporting power case.",
-          "value": 43.5,
+          "detail": "17.4 contact-damage score limits the supporting power case.",
+          "value": 17.4,
           "source": "hr_power_profiles.json",
-          "severity": "moderate"
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "15.1 launch-power score is below the stronger home-run profiles.",
+          "value": 15.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
         }
       ],
       "trustBreakdown": {
-        "modelAgreement": 64,
+        "modelAgreement": 65,
         "pitchMatch": 70,
-        "powerProfile": 82,
+        "powerProfile": 75,
         "environment": 88,
         "pitchMix": 70,
         "consensus": 0,
-        "recentForm": 72,
+        "recentForm": 100,
         "bullpen": null,
         "market": null,
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 49.3,
-        "truePowerScore": 50.4,
-        "contactDamageScore": 43.5,
-        "launchPowerScore": 59.7,
-        "strikeoutRate": 23.4,
-        "powerTier": "VIABLE_POWER",
-        "recentForm": 72
+        "hrPowerIndex": 11,
+        "truePowerScore": 13.8,
+        "contactDamageScore": 17.4,
+        "launchPowerScore": 15.1,
+        "strikeoutRate": 11.1,
+        "powerTier": "LOW_POWER",
+        "recentForm": 100
       },
       "expected": {
         "pitch": null,
@@ -9013,203 +9015,6 @@
       }
     },
     {
-      "player": "Ezequiel Duran",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "Lean / Watch List",
-      "oneLine": "17.7% tracked HR probability (ELITE).",
-      "probability": 17.7,
-      "confidence": 64,
-      "stars": 2,
-      "whyToday": [
-        "17.7% tracked HR probability (ELITE).",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "32.7 HR Power Index (LOW POWER).",
-        "41.6 contact-damage score limits the supporting power case.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Viable HR probability",
-          "detail": "17.7% tracked HR probability (ELITE).",
-          "value": 17.7,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "32.7 HR Power Index (LOW POWER).",
-          "value": 32.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "41.6 contact-damage score limits the supporting power case.",
-          "value": 41.6,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 64,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 32.7,
-        "truePowerScore": 36.2,
-        "contactDamageScore": 41.6,
-        "launchPowerScore": 36.9,
-        "strikeoutRate": 24,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Eugenio Suárez",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "Lean / Watch List",
-      "oneLine": "17.5% tracked HR probability (ELITE).",
-      "probability": 17.5,
-      "confidence": 64,
-      "stars": 2,
-      "whyToday": [
-        "17.5% tracked HR probability (ELITE).",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "35 HR Power Index (LOW POWER).",
-        "34.8% strikeout rate can reduce damage opportunities.",
-        "28.8 contact-damage score limits the supporting power case.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Viable HR probability",
-          "detail": "17.5% tracked HR probability (ELITE).",
-          "value": 17.5,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "35 HR Power Index (LOW POWER).",
-          "value": 35,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "contact_risk",
-          "label": "Contact risk",
-          "detail": "34.8% strikeout rate can reduce damage opportunities.",
-          "value": 34.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "28.8 contact-damage score limits the supporting power case.",
-          "value": 28.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 64,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 35,
-        "truePowerScore": 31.7,
-        "contactDamageScore": 28.8,
-        "launchPowerScore": 48.7,
-        "strikeoutRate": 34.8,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Chase DeLauter",
       "team": "Cleveland Guardians",
       "opponent": "Los Angeles Angels",
@@ -9292,6 +9097,391 @@
         "contactDamageScore": 42.6,
         "launchPowerScore": 33.6,
         "strikeoutRate": 14.2,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Eugenio Suárez",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "16.8% tracked HR probability (ELITE).",
+      "probability": 16.8,
+      "confidence": 64,
+      "stars": 2,
+      "whyToday": [
+        "16.8% tracked HR probability (ELITE).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "35 HR Power Index (LOW POWER).",
+        "34.8% strikeout rate can reduce damage opportunities.",
+        "28.8 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Viable HR probability",
+          "detail": "16.8% tracked HR probability (ELITE).",
+          "value": 16.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "35 HR Power Index (LOW POWER).",
+          "value": 35,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "contact_risk",
+          "label": "Contact risk",
+          "detail": "34.8% strikeout rate can reduce damage opportunities.",
+          "value": 34.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "28.8 contact-damage score limits the supporting power case.",
+          "value": 28.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 64,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 35,
+        "truePowerScore": 31.7,
+        "contactDamageScore": 28.8,
+        "launchPowerScore": 48.7,
+        "strikeoutRate": 34.8,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Ezequiel Duran",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "16.4% tracked HR probability (ELITE).",
+      "probability": 16.4,
+      "confidence": 64,
+      "stars": 2,
+      "whyToday": [
+        "16.4% tracked HR probability (ELITE).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "32.7 HR Power Index (LOW POWER).",
+        "41.6 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Viable HR probability",
+          "detail": "16.4% tracked HR probability (ELITE).",
+          "value": 16.4,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "32.7 HR Power Index (LOW POWER).",
+          "value": 32.7,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "41.6 contact-damage score limits the supporting power case.",
+          "value": 41.6,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 64,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 32.7,
+        "truePowerScore": 36.2,
+        "contactDamageScore": 41.6,
+        "launchPowerScore": 36.9,
+        "strikeoutRate": 24,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Justin Foscue",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "15.7% tracked HR probability (STRONG).",
+      "probability": 15.7,
+      "confidence": 64,
+      "stars": 2,
+      "whyToday": [
+        "15.7% tracked HR probability (STRONG).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "42.4 HR Power Index (LONGSHOT POWER).",
+        "44.2 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Viable HR probability",
+          "detail": "15.7% tracked HR probability (STRONG).",
+          "value": 15.7,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "42.4 HR Power Index (LONGSHOT POWER).",
+          "value": 42.4,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "44.2 contact-damage score limits the supporting power case.",
+          "value": 44.2,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 64,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 42.4,
+        "truePowerScore": 40.5,
+        "contactDamageScore": 44.2,
+        "launchPowerScore": 36.8,
+        "strikeoutRate": 25.7,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Liam Hicks",
+      "team": "Tampa Bay Rays",
+      "opponent": "Detroit Tigers",
+      "game": "Tampa Bay Rays at Detroit Tigers",
+      "sections": [],
+      "aiVerdict": "Lean / Watch List",
+      "oneLine": "15.6% tracked HR probability (STRONG).",
+      "probability": 15.6,
+      "confidence": 64,
+      "stars": 2,
+      "whyToday": [
+        "15.6% tracked HR probability (STRONG).",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "34 HR Power Index (LOW POWER).",
+        "36.6 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Viable HR probability",
+          "detail": "15.6% tracked HR probability (STRONG).",
+          "value": 15.6,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "34 HR Power Index (LOW POWER).",
+          "value": 34,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "36.6 contact-damage score limits the supporting power case.",
+          "value": 36.6,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 64,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 34,
+        "truePowerScore": 36.3,
+        "contactDamageScore": 36.6,
+        "launchPowerScore": 40.3,
+        "strikeoutRate": 9.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -10495,6 +10685,109 @@
       }
     },
     {
+      "player": "Jake Burger",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Speculative HR Target",
+      "oneLine": "50.5 launch-power score supports home-run damage.",
+      "probability": 12.6,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "50.5 launch-power score supports home-run damage.",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "12.6% tracked HR probability; below the model's top probability tier.",
+        "33.2 HR Power Index (LOW POWER).",
+        "29.8 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "50.5 launch-power score supports home-run damage.",
+          "value": 50.5,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "modest_hr_probability",
+          "label": "Modest base probability",
+          "detail": "12.6% tracked HR probability; below the model's top probability tier.",
+          "value": 12.6,
+          "source": "hr_probability_tracking.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "33.2 HR Power Index (LOW POWER).",
+          "value": 33.2,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "29.8 contact-damage score limits the supporting power case.",
+          "value": 29.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 33.2,
+        "truePowerScore": 35.6,
+        "contactDamageScore": 29.8,
+        "launchPowerScore": 50.5,
+        "strikeoutRate": 27,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Spencer Torkelson",
       "team": "Detroit Tigers",
       "opponent": "Tampa Bay Rays",
@@ -10577,100 +10870,6 @@
         "contactDamageScore": 28.7,
         "launchPowerScore": 48,
         "strikeoutRate": 31,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Corey Seager",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "Speculative HR Target",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 12.3,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "12.3% tracked HR probability; below the model's top probability tier.",
-        "34.2 HR Power Index (LOW POWER).",
-        "29.1 contact-damage score limits the supporting power case.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "modest_hr_probability",
-          "label": "Modest base probability",
-          "detail": "12.3% tracked HR probability; below the model's top probability tier.",
-          "value": 12.3,
-          "source": "hr_probability_tracking.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "34.2 HR Power Index (LOW POWER).",
-          "value": 34.2,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "29.1 contact-damage score limits the supporting power case.",
-          "value": 29.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 34.2,
-        "truePowerScore": 33.3,
-        "contactDamageScore": 29.1,
-        "launchPowerScore": 40.3,
-        "strikeoutRate": 24.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -10786,109 +10985,6 @@
       }
     },
     {
-      "player": "Tyler Stephenson",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "Speculative HR Target",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 12.2,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "12.2% tracked HR probability; below the model's top probability tier.",
-        "28.6 HR Power Index (LOW POWER).",
-        "30.5 contact-damage score limits the supporting power case.",
-        "34.2 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "modest_hr_probability",
-          "label": "Modest base probability",
-          "detail": "12.2% tracked HR probability; below the model's top probability tier.",
-          "value": 12.2,
-          "source": "hr_probability_tracking.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "28.6 HR Power Index (LOW POWER).",
-          "value": 28.6,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "30.5 contact-damage score limits the supporting power case.",
-          "value": 30.5,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "34.2 launch-power score is below the stronger home-run profiles.",
-          "value": 34.2,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 28.6,
-        "truePowerScore": 29.5,
-        "contactDamageScore": 30.5,
-        "launchPowerScore": 34.2,
-        "strikeoutRate": 27,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Andrew Benintendi",
       "team": "Chicago White Sox",
       "opponent": "Texas Rangers",
@@ -10962,6 +11058,109 @@
         "contactDamageScore": 35.1,
         "launchPowerScore": 36.9,
         "strikeoutRate": 23.9,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Tyler Stephenson",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "Speculative HR Target",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 11.9,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "11.9% tracked HR probability; below the model's top probability tier.",
+        "28.6 HR Power Index (LOW POWER).",
+        "30.5 contact-damage score limits the supporting power case.",
+        "34.2 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "modest_hr_probability",
+          "label": "Modest base probability",
+          "detail": "11.9% tracked HR probability; below the model's top probability tier.",
+          "value": 11.9,
+          "source": "hr_probability_tracking.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "28.6 HR Power Index (LOW POWER).",
+          "value": 28.6,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "30.5 contact-damage score limits the supporting power case.",
+          "value": 30.5,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "34.2 launch-power score is below the stronger home-run profiles.",
+          "value": 34.2,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 28.6,
+        "truePowerScore": 29.5,
+        "contactDamageScore": 30.5,
+        "launchPowerScore": 34.2,
+        "strikeoutRate": 27,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -11065,6 +11264,100 @@
         "contactDamageScore": 40.3,
         "launchPowerScore": 32.2,
         "strikeoutRate": 14.4,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Corey Seager",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "Speculative HR Target",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 11.7,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "11.7% tracked HR probability; below the model's top probability tier.",
+        "34.2 HR Power Index (LOW POWER).",
+        "29.1 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "modest_hr_probability",
+          "label": "Modest base probability",
+          "detail": "11.7% tracked HR probability; below the model's top probability tier.",
+          "value": 11.7,
+          "source": "hr_probability_tracking.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "34.2 HR Power Index (LOW POWER).",
+          "value": 34.2,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "29.1 contact-damage score limits the supporting power case.",
+          "value": 29.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 34.2,
+        "truePowerScore": 33.3,
+        "contactDamageScore": 29.1,
+        "launchPowerScore": 40.3,
+        "strikeoutRate": 24.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -11283,6 +11576,109 @@
       }
     },
     {
+      "player": "Bryan De La Cruz",
+      "team": "Philadelphia Phillies",
+      "opponent": "Seattle Mariners",
+      "game": "Philadelphia Phillies at Seattle Mariners",
+      "sections": [],
+      "aiVerdict": "Speculative HR Target",
+      "oneLine": "66.3 contact-damage score in the current power profile.",
+      "probability": 10.6,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "66.3 contact-damage score in the current power profile.",
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "10.6% tracked HR probability; below the model's top probability tier.",
+        "10-point sample penalty is active in the power profile.",
+        "28.2 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "contact_damage",
+          "label": "Authoritative contact",
+          "detail": "66.3 contact-damage score in the current power profile.",
+          "value": 66.3,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "modest_hr_probability",
+          "label": "Modest base probability",
+          "detail": "10.6% tracked HR probability; below the model's top probability tier.",
+          "value": 10.6,
+          "source": "hr_probability_tracking.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "sample_penalty",
+          "label": "Limited sample confidence",
+          "detail": "10-point sample penalty is active in the power profile.",
+          "value": 10,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "28.2 launch-power score is below the stronger home-run profiles.",
+          "value": 28.2,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 54.9,
+        "truePowerScore": 41.3,
+        "contactDamageScore": 66.3,
+        "launchPowerScore": 28.2,
+        "strikeoutRate": 20,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Keibert Ruiz",
       "team": "Washington Nationals",
       "opponent": "Colorado Rockies",
@@ -11477,109 +11873,6 @@
         "contactDamageScore": 40.4,
         "launchPowerScore": 33.3,
         "strikeoutRate": 31,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Adley Rutschman",
-      "team": "Boston Red Sox",
-      "opponent": "Miami Marlins",
-      "game": "Boston Red Sox at Miami Marlins",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 9.6,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "9.6% tracked HR probability (VIABLE).",
-        "28.6 HR Power Index (LOW POWER).",
-        "35 contact-damage score limits the supporting power case.",
-        "29.7 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "9.6% tracked HR probability (VIABLE).",
-          "value": 9.6,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "28.6 HR Power Index (LOW POWER).",
-          "value": 28.6,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "35 contact-damage score limits the supporting power case.",
-          "value": 35,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "29.7 launch-power score is below the stronger home-run profiles.",
-          "value": 29.7,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 28.6,
-        "truePowerScore": 30.6,
-        "contactDamageScore": 35,
-        "launchPowerScore": 29.7,
-        "strikeoutRate": 15.6,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -11816,24 +12109,24 @@
       }
     },
     {
-      "player": "Jonathan Aranda",
-      "team": "Tampa Bay Rays",
-      "opponent": "Detroit Tigers",
-      "game": "Tampa Bay Rays at Detroit Tigers",
+      "player": "Brandon Nimmo",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 9.2,
+      "probability": 9.3,
       "confidence": 62,
       "stars": 2,
       "whyToday": [
         "72 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "9.2% tracked HR probability (VIABLE).",
-        "25.9 HR Power Index (LOW POWER).",
-        "31.3 contact-damage score limits the supporting power case.",
-        "33.4 launch-power score is below the stronger home-run profiles.",
+        "9.3% tracked HR probability (VIABLE).",
+        "26.9 HR Power Index (LOW POWER).",
+        "35.9 contact-damage score limits the supporting power case.",
+        "32.5 launch-power score is below the stronger home-run profiles.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -11850,32 +12143,32 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "9.2% tracked HR probability (VIABLE).",
-          "value": 9.2,
+          "detail": "9.3% tracked HR probability (VIABLE).",
+          "value": 9.3,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
         {
           "key": "limited_power",
           "label": "Limited raw-power support",
-          "detail": "25.9 HR Power Index (LOW POWER).",
-          "value": 25.9,
+          "detail": "26.9 HR Power Index (LOW POWER).",
+          "value": 26.9,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "31.3 contact-damage score limits the supporting power case.",
-          "value": 31.3,
+          "detail": "35.9 contact-damage score limits the supporting power case.",
+          "value": 35.9,
           "source": "hr_power_profiles.json",
           "severity": "moderate"
         },
         {
           "key": "limited_launch_power",
           "label": "Launch profile concern",
-          "detail": "33.4 launch-power score is below the stronger home-run profiles.",
-          "value": 33.4,
+          "detail": "32.5 launch-power score is below the stronger home-run profiles.",
+          "value": 32.5,
           "source": "hr_power_profiles.json",
           "severity": "moderate"
         }
@@ -11893,11 +12186,11 @@
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 25.9,
-        "truePowerScore": 29.3,
-        "contactDamageScore": 31.3,
-        "launchPowerScore": 33.4,
-        "strikeoutRate": 23.5,
+        "hrPowerIndex": 26.9,
+        "truePowerScore": 30.7,
+        "contactDamageScore": 35.9,
+        "launchPowerScore": 32.5,
+        "strikeoutRate": 21.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -12331,100 +12624,6 @@
       }
     },
     {
-      "player": "Matt McLain",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 8.5,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "8.5% tracked HR probability (LONGSHOT).",
-        "22 HR Power Index (LOW POWER).",
-        "17.5 contact-damage score limits the supporting power case.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "8.5% tracked HR probability (LONGSHOT).",
-          "value": 8.5,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "22 HR Power Index (LOW POWER).",
-          "value": 22,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "17.5 contact-damage score limits the supporting power case.",
-          "value": 17.5,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 22,
-        "truePowerScore": 23,
-        "contactDamageScore": 17.5,
-        "launchPowerScore": 35,
-        "strikeoutRate": 27.4,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Daylen Lile",
       "team": "Washington Nationals",
       "opponent": "Colorado Rockies",
@@ -12498,6 +12697,100 @@
         "contactDamageScore": 29.4,
         "launchPowerScore": 36.1,
         "strikeoutRate": 19.5,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Matt McLain",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 8.3,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "8.3% tracked HR probability (LONGSHOT).",
+        "22 HR Power Index (LOW POWER).",
+        "17.5 contact-damage score limits the supporting power case.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "8.3% tracked HR probability (LONGSHOT).",
+          "value": 8.3,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "22 HR Power Index (LOW POWER).",
+          "value": 22,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "17.5 contact-damage score limits the supporting power case.",
+          "value": 17.5,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 22,
+        "truePowerScore": 23,
+        "contactDamageScore": 17.5,
+        "launchPowerScore": 35,
+        "strikeoutRate": 27.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -14249,118 +14542,6 @@
         "contactDamageScore": 7.2,
         "launchPowerScore": 34.5,
         "strikeoutRate": 31.2,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Victor Bericoto",
-      "team": "San Francisco Giants",
-      "opponent": "Cincinnati Reds",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 6,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "6% tracked HR probability (LOW).",
-        "34.1 HR Power Index (LOW POWER).",
-        "5-point sample penalty is active in the power profile.",
-        "30.8 contact-damage score limits the supporting power case.",
-        "30.4 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "6% tracked HR probability (LOW).",
-          "value": 6,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "34.1 HR Power Index (LOW POWER).",
-          "value": 34.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "sample_penalty",
-          "label": "Limited sample confidence",
-          "detail": "5-point sample penalty is active in the power profile.",
-          "value": 5,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "30.8 contact-damage score limits the supporting power case.",
-          "value": 30.8,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "30.4 launch-power score is below the stronger home-run profiles.",
-          "value": 30.4,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 34.1,
-        "truePowerScore": 26.3,
-        "contactDamageScore": 30.8,
-        "launchPowerScore": 30.4,
-        "strikeoutRate": 27.6,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -18552,109 +18733,6 @@
       }
     },
     {
-      "player": "Evan Carter",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 2.7,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "2.7% tracked HR probability (LOW).",
-        "11.7 HR Power Index (LOW POWER).",
-        "9.2 contact-damage score limits the supporting power case.",
-        "21.3 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "2.7% tracked HR probability (LOW).",
-          "value": 2.7,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "11.7 HR Power Index (LOW POWER).",
-          "value": 11.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "9.2 contact-damage score limits the supporting power case.",
-          "value": 9.2,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "21.3 launch-power score is below the stronger home-run profiles.",
-          "value": 21.3,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 11.7,
-        "truePowerScore": 12.4,
-        "contactDamageScore": 9.2,
-        "launchPowerScore": 21.3,
-        "strikeoutRate": 24.3,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Troy Johnston",
       "team": "Colorado Rockies",
       "opponent": "Washington Nationals",
@@ -18861,24 +18939,24 @@
       }
     },
     {
-      "player": "Dane Myers",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
+      "player": "Evan Carter",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 2.6,
+      "probability": 2.5,
       "confidence": 62,
       "stars": 2,
       "whyToday": [
         "72 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "2.6% tracked HR probability (LOW).",
-        "15.5 HR Power Index (LOW POWER).",
-        "19.1 contact-damage score limits the supporting power case.",
-        "16 launch-power score is below the stronger home-run profiles.",
+        "2.5% tracked HR probability (LOW).",
+        "11.7 HR Power Index (LOW POWER).",
+        "9.2 contact-damage score limits the supporting power case.",
+        "21.3 launch-power score is below the stronger home-run profiles.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -18895,146 +18973,34 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "2.6% tracked HR probability (LOW).",
-          "value": 2.6,
+          "detail": "2.5% tracked HR probability (LOW).",
+          "value": 2.5,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
         {
           "key": "limited_power",
           "label": "Limited raw-power support",
-          "detail": "15.5 HR Power Index (LOW POWER).",
-          "value": 15.5,
+          "detail": "11.7 HR Power Index (LOW POWER).",
+          "value": 11.7,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "19.1 contact-damage score limits the supporting power case.",
-          "value": 19.1,
+          "detail": "9.2 contact-damage score limits the supporting power case.",
+          "value": 9.2,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_launch_power",
           "label": "Launch profile concern",
-          "detail": "16 launch-power score is below the stronger home-run profiles.",
-          "value": 16,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 15.5,
-        "truePowerScore": 15.6,
-        "contactDamageScore": 19.1,
-        "launchPowerScore": 16,
-        "strikeoutRate": 24.4,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Héctor Rodríguez",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 2.6,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "2.6% tracked HR probability (LOW).",
-        "12.5 HR Power Index (LOW POWER).",
-        "10-point sample penalty is active in the power profile.",
-        "10.4 contact-damage score limits the supporting power case.",
-        "13.1 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "2.6% tracked HR probability (LOW).",
-          "value": 2.6,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "12.5 HR Power Index (LOW POWER).",
-          "value": 12.5,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "sample_penalty",
-          "label": "Limited sample confidence",
-          "detail": "10-point sample penalty is active in the power profile.",
-          "value": 10,
+          "detail": "21.3 launch-power score is below the stronger home-run profiles.",
+          "value": 21.3,
           "source": "hr_power_profiles.json",
           "severity": "moderate"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "10.4 contact-damage score limits the supporting power case.",
-          "value": 10.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "13.1 launch-power score is below the stronger home-run profiles.",
-          "value": 13.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
         }
       ],
       "trustBreakdown": {
@@ -19050,11 +19016,11 @@
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 12.5,
-        "truePowerScore": 2.1,
-        "contactDamageScore": 10.4,
-        "launchPowerScore": 13.1,
-        "strikeoutRate": 21.7,
+        "hrPowerIndex": 11.7,
+        "truePowerScore": 12.4,
+        "contactDamageScore": 9.2,
+        "launchPowerScore": 21.3,
+        "strikeoutRate": 24.3,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -19167,6 +19133,221 @@
         "contactDamageScore": 15.6,
         "launchPowerScore": 20.7,
         "strikeoutRate": 29.9,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Dane Myers",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 2.5,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "2.5% tracked HR probability (LOW).",
+        "15.5 HR Power Index (LOW POWER).",
+        "19.1 contact-damage score limits the supporting power case.",
+        "16 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "2.5% tracked HR probability (LOW).",
+          "value": 2.5,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "15.5 HR Power Index (LOW POWER).",
+          "value": 15.5,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "19.1 contact-damage score limits the supporting power case.",
+          "value": 19.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "16 launch-power score is below the stronger home-run profiles.",
+          "value": 16,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 15.5,
+        "truePowerScore": 15.6,
+        "contactDamageScore": 19.1,
+        "launchPowerScore": 16,
+        "strikeoutRate": 24.4,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Héctor Rodríguez",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 2.5,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "2.5% tracked HR probability (LOW).",
+        "12.5 HR Power Index (LOW POWER).",
+        "10-point sample penalty is active in the power profile.",
+        "10.4 contact-damage score limits the supporting power case.",
+        "13.1 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "2.5% tracked HR probability (LOW).",
+          "value": 2.5,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "12.5 HR Power Index (LOW POWER).",
+          "value": 12.5,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "sample_penalty",
+          "label": "Limited sample confidence",
+          "detail": "10-point sample penalty is active in the power profile.",
+          "value": 10,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "10.4 contact-damage score limits the supporting power case.",
+          "value": 10.4,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "13.1 launch-power score is below the stronger home-run profiles.",
+          "value": 13.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 12.5,
+        "truePowerScore": 2.1,
+        "contactDamageScore": 10.4,
+        "launchPowerScore": 13.1,
+        "strikeoutRate": 21.7,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -19718,6 +19899,118 @@
         "contactDamageScore": 9.6,
         "launchPowerScore": 15.8,
         "strikeoutRate": 39.3,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Danny Jansen",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 2.3,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "2.3% tracked HR probability (LOW).",
+        "11.6 HR Power Index (LOW POWER).",
+        "29.6% strikeout rate can reduce damage opportunities.",
+        "10.6 contact-damage score limits the supporting power case.",
+        "14.8 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "2.3% tracked HR probability (LOW).",
+          "value": 2.3,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "11.6 HR Power Index (LOW POWER).",
+          "value": 11.6,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "contact_risk",
+          "label": "Contact risk",
+          "detail": "29.6% strikeout rate can reduce damage opportunities.",
+          "value": 29.6,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "10.6 contact-damage score limits the supporting power case.",
+          "value": 10.6,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "14.8 launch-power score is below the stronger home-run profiles.",
+          "value": 14.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 11.6,
+        "truePowerScore": 9.1,
+        "contactDamageScore": 10.6,
+        "launchPowerScore": 14.8,
+        "strikeoutRate": 29.6,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -20572,109 +20865,6 @@
       }
     },
     {
-      "player": "Jeff McNeil",
-      "team": "Athletics",
-      "opponent": "Minnesota Twins",
-      "game": "Minnesota Twins at Athletics",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.8,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.8% tracked HR probability (LOW).",
-        "11 HR Power Index (LOW POWER).",
-        "17.4 contact-damage score limits the supporting power case.",
-        "15.1 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.8% tracked HR probability (LOW).",
-          "value": 1.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "11 HR Power Index (LOW POWER).",
-          "value": 11,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "17.4 contact-damage score limits the supporting power case.",
-          "value": 17.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "15.1 launch-power score is below the stronger home-run profiles.",
-          "value": 15.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 11,
-        "truePowerScore": 13.8,
-        "contactDamageScore": 17.4,
-        "launchPowerScore": 15.1,
-        "strikeoutRate": 11.1,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Jose Fernandez",
       "team": "Arizona Diamondbacks",
       "opponent": "Chicago Cubs",
@@ -21299,109 +21489,6 @@
         "contactDamageScore": 9.9,
         "launchPowerScore": 12.1,
         "strikeoutRate": 19,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Max Kepler",
-      "team": "Arizona Diamondbacks",
-      "opponent": "Chicago Cubs",
-      "game": "Chicago Cubs at Arizona Diamondbacks",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.5,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.5% tracked HR probability (LOW).",
-        "11.6 HR Power Index (LOW POWER).",
-        "15.2 contact-damage score limits the supporting power case.",
-        "12.7 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.5% tracked HR probability (LOW).",
-          "value": 1.5,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "11.6 HR Power Index (LOW POWER).",
-          "value": 11.6,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "15.2 contact-damage score limits the supporting power case.",
-          "value": 15.2,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "12.7 launch-power score is below the stronger home-run profiles.",
-          "value": 12.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 11.6,
-        "truePowerScore": 12.9,
-        "contactDamageScore": 15.2,
-        "launchPowerScore": 12.7,
-        "strikeoutRate": 22.6,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -22516,6 +22603,109 @@
       }
     },
     {
+      "player": "Chandler Simpson",
+      "team": "Tampa Bay Rays",
+      "opponent": "Detroit Tigers",
+      "game": "Tampa Bay Rays at Detroit Tigers",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 1.4,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "1.4% tracked HR probability (LOW).",
+        "5.4 HR Power Index (LOW POWER).",
+        "18.5 contact-damage score limits the supporting power case.",
+        "0.5 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.4% tracked HR probability (LOW).",
+          "value": 1.4,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "5.4 HR Power Index (LOW POWER).",
+          "value": 5.4,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "18.5 contact-damage score limits the supporting power case.",
+          "value": 18.5,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "0.5 launch-power score is below the stronger home-run profiles.",
+          "value": 0.5,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 5.4,
+        "truePowerScore": 7.7,
+        "contactDamageScore": 18.5,
+        "launchPowerScore": 0.5,
+        "strikeoutRate": 8.5,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Ryan Ritter",
       "team": "Colorado Rockies",
       "opponent": "Washington Nationals",
@@ -22616,109 +22806,6 @@
         "contactDamageScore": 0,
         "launchPowerScore": 0,
         "strikeoutRate": 33.3,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Chandler Simpson",
-      "team": "Tampa Bay Rays",
-      "opponent": "Detroit Tigers",
-      "game": "Tampa Bay Rays at Detroit Tigers",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.4,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.4% tracked HR probability (LOW).",
-        "5.4 HR Power Index (LOW POWER).",
-        "18.5 contact-damage score limits the supporting power case.",
-        "0.5 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.4% tracked HR probability (LOW).",
-          "value": 1.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "5.4 HR Power Index (LOW POWER).",
-          "value": 5.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "18.5 contact-damage score limits the supporting power case.",
-          "value": 18.5,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "0.5 launch-power score is below the stronger home-run profiles.",
-          "value": 0.5,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 5.4,
-        "truePowerScore": 7.7,
-        "contactDamageScore": 18.5,
-        "launchPowerScore": 0.5,
-        "strikeoutRate": 8.5,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -23376,6 +23463,221 @@
       }
     },
     {
+      "player": "Cody Freeman",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 1.4,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "1.4% tracked HR probability (LOW).",
+        "3.4 HR Power Index (LOW POWER).",
+        "10-point sample penalty is active in the power profile.",
+        "11.2 contact-damage score limits the supporting power case.",
+        "0 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.4% tracked HR probability (LOW).",
+          "value": 1.4,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "3.4 HR Power Index (LOW POWER).",
+          "value": 3.4,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "sample_penalty",
+          "label": "Limited sample confidence",
+          "detail": "10-point sample penalty is active in the power profile.",
+          "value": 10,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "11.2 contact-damage score limits the supporting power case.",
+          "value": 11.2,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "0 launch-power score is below the stronger home-run profiles.",
+          "value": 0,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 3.4,
+        "truePowerScore": 0,
+        "contactDamageScore": 11.2,
+        "launchPowerScore": 0,
+        "strikeoutRate": 25,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Steven Kwan",
+      "team": "Cleveland Guardians",
+      "opponent": "Los Angeles Angels",
+      "game": "Cleveland Guardians at Los Angeles Angels",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 1.4,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "1.4% tracked HR probability (LOW).",
+        "2.1 HR Power Index (LOW POWER).",
+        "9.9 contact-damage score limits the supporting power case.",
+        "2.9 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.4% tracked HR probability (LOW).",
+          "value": 1.4,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "2.1 HR Power Index (LOW POWER).",
+          "value": 2.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "9.9 contact-damage score limits the supporting power case.",
+          "value": 9.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "2.9 launch-power score is below the stronger home-run profiles.",
+          "value": 2.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 2.1,
+        "truePowerScore": 4.4,
+        "contactDamageScore": 9.9,
+        "launchPowerScore": 2.9,
+        "strikeoutRate": 10,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Taylor Walls",
       "team": "Tampa Bay Rays",
       "opponent": "Detroit Tigers",
@@ -23561,109 +23863,6 @@
         "contactDamageScore": 11.4,
         "launchPowerScore": 14.6,
         "strikeoutRate": 20.9,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Steven Kwan",
-      "team": "Cleveland Guardians",
-      "opponent": "Los Angeles Angels",
-      "game": "Cleveland Guardians at Los Angeles Angels",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.4,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.4% tracked HR probability (LOW).",
-        "2.1 HR Power Index (LOW POWER).",
-        "9.9 contact-damage score limits the supporting power case.",
-        "2.9 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.4% tracked HR probability (LOW).",
-          "value": 1.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "2.1 HR Power Index (LOW POWER).",
-          "value": 2.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "9.9 contact-damage score limits the supporting power case.",
-          "value": 9.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "2.9 launch-power score is below the stronger home-run profiles.",
-          "value": 2.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 2.1,
-        "truePowerScore": 4.4,
-        "contactDamageScore": 9.9,
-        "launchPowerScore": 2.9,
-        "strikeoutRate": 10,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -24218,118 +24417,6 @@
       }
     },
     {
-      "player": "Cody Freeman",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.4,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.4% tracked HR probability (LOW).",
-        "3.4 HR Power Index (LOW POWER).",
-        "10-point sample penalty is active in the power profile.",
-        "11.2 contact-damage score limits the supporting power case.",
-        "0 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.4% tracked HR probability (LOW).",
-          "value": 1.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "3.4 HR Power Index (LOW POWER).",
-          "value": 3.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "sample_penalty",
-          "label": "Limited sample confidence",
-          "detail": "10-point sample penalty is active in the power profile.",
-          "value": 10,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "11.2 contact-damage score limits the supporting power case.",
-          "value": 11.2,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "0 launch-power score is below the stronger home-run profiles.",
-          "value": 0,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 3.4,
-        "truePowerScore": 0,
-        "contactDamageScore": 11.2,
-        "launchPowerScore": 0,
-        "strikeoutRate": 25,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Will Banfield",
       "team": "Cincinnati Reds",
       "opponent": "San Francisco Giants",
@@ -24533,6 +24620,109 @@
         "contactDamageScore": 0,
         "launchPowerScore": 0,
         "strikeoutRate": 28.1,
+        "powerTier": "LOW_POWER",
+        "recentForm": 72
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Logan O'Hoppe",
+      "team": "Texas Rangers",
+      "opponent": "Chicago White Sox",
+      "game": "Texas Rangers at Chicago White Sox",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "72 recent-form trend score is helping the player-card read.",
+      "probability": 1.4,
+      "confidence": 62,
+      "stars": 2,
+      "whyToday": [
+        "72 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "1.4% tracked HR probability (LOW).",
+        "6.8 HR Power Index (LOW POWER).",
+        "6.8 contact-damage score limits the supporting power case.",
+        "11.6 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Recent-form support",
+          "detail": "72 recent-form trend score is helping the player-card read.",
+          "value": 72,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.4% tracked HR probability (LOW).",
+          "value": 1.4,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "6.8 HR Power Index (LOW POWER).",
+          "value": 6.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "6.8 contact-damage score limits the supporting power case.",
+          "value": 6.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "11.6 launch-power score is below the stronger home-run profiles.",
+          "value": 11.6,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 62,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 72,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 6.8,
+        "truePowerScore": 7,
+        "contactDamageScore": 6.8,
+        "launchPowerScore": 11.6,
+        "strikeoutRate": 24.4,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -25011,7 +25201,7 @@
       }
     },
     {
-      "player": "Logan O'Hoppe",
+      "player": "Nicky Lopez",
       "team": "Texas Rangers",
       "opponent": "Chicago White Sox",
       "game": "Texas Rangers at Chicago White Sox",
@@ -25026,9 +25216,9 @@
       ],
       "riskFactors": [
         "1.4% tracked HR probability (LOW).",
-        "6.8 HR Power Index (LOW POWER).",
-        "6.8 contact-damage score limits the supporting power case.",
-        "11.6 launch-power score is below the stronger home-run profiles.",
+        "0 HR Power Index (LOW POWER).",
+        "5.9 contact-damage score limits the supporting power case.",
+        "1.3 launch-power score is below the stronger home-run profiles.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -25053,24 +25243,24 @@
         {
           "key": "limited_power",
           "label": "Limited raw-power support",
-          "detail": "6.8 HR Power Index (LOW POWER).",
-          "value": 6.8,
+          "detail": "0 HR Power Index (LOW POWER).",
+          "value": 0,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "6.8 contact-damage score limits the supporting power case.",
-          "value": 6.8,
+          "detail": "5.9 contact-damage score limits the supporting power case.",
+          "value": 5.9,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_launch_power",
           "label": "Launch profile concern",
-          "detail": "11.6 launch-power score is below the stronger home-run profiles.",
-          "value": 11.6,
+          "detail": "1.3 launch-power score is below the stronger home-run profiles.",
+          "value": 1.3,
           "source": "hr_power_profiles.json",
           "severity": "high"
         }
@@ -25088,11 +25278,11 @@
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 6.8,
-        "truePowerScore": 7,
-        "contactDamageScore": 6.8,
-        "launchPowerScore": 11.6,
-        "strikeoutRate": 24.4,
+        "hrPowerIndex": 0,
+        "truePowerScore": 1.9,
+        "contactDamageScore": 5.9,
+        "launchPowerScore": 1.3,
+        "strikeoutRate": 17,
         "powerTier": "LOW_POWER",
         "recentForm": 72
       },
@@ -25198,203 +25388,6 @@
         "strikeoutRate": 23.2,
         "powerTier": "LOW_POWER",
         "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Nicky Lopez",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "72 recent-form trend score is helping the player-card read.",
-      "probability": 1.4,
-      "confidence": 62,
-      "stars": 2,
-      "whyToday": [
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.4% tracked HR probability (LOW).",
-        "0 HR Power Index (LOW POWER).",
-        "5.9 contact-damage score limits the supporting power case.",
-        "1.3 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.4% tracked HR probability (LOW).",
-          "value": 1.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "0 HR Power Index (LOW POWER).",
-          "value": 0,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "5.9 contact-damage score limits the supporting power case.",
-          "value": 5.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "1.3 launch-power score is below the stronger home-run profiles.",
-          "value": 1.3,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 62,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 0,
-        "truePowerScore": 1.9,
-        "contactDamageScore": 5.9,
-        "launchPowerScore": 1.3,
-        "strikeoutRate": 17,
-        "powerTier": "LOW_POWER",
-        "recentForm": 72
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Wyatt Langford",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "Volatile Longshot",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 61,
-      "stars": 2,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR)."
-      ],
-      "riskFactors": [
-        "39.8 HR Power Index (LONGSHOT POWER).",
-        "42.6 contact-damage score limits the supporting power case.",
-        "0 recent-form trend score is not helping the profile today.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "39.8 HR Power Index (LONGSHOT POWER).",
-          "value": 39.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "42.6 contact-damage score limits the supporting power case.",
-          "value": 42.6,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "cold_recent_form",
-          "label": "Cold recent-form signal",
-          "detail": "0 recent-form trend score is not helping the profile today.",
-          "value": 0,
-          "source": "ai_trust_engine.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 61,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 83,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 39.8,
-        "truePowerScore": 41.4,
-        "contactDamageScore": 42.6,
-        "launchPowerScore": 43,
-        "strikeoutRate": 22,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 0
       },
       "expected": {
         "pitch": null,
@@ -27595,100 +27588,6 @@
       }
     },
     {
-      "player": "Elly De La Cruz",
-      "team": "Cincinnati Reds",
-      "opponent": "San Francisco Giants",
-      "game": "Cincinnati Reds at San Francisco Giants",
-      "sections": [],
-      "aiVerdict": "Volatile Longshot",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 57,
-      "stars": 1,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "52 launch-power score supports home-run damage."
-      ],
-      "riskFactors": [
-        "42.8 HR Power Index (LONGSHOT POWER).",
-        "0 recent-form trend score is not helping the profile today.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "52 launch-power score supports home-run damage.",
-          "value": 52,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "42.8 HR Power Index (LONGSHOT POWER).",
-          "value": 42.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "cold_recent_form",
-          "label": "Cold recent-form signal",
-          "detail": "0 recent-form trend score is not helping the profile today.",
-          "value": 0,
-          "source": "ai_trust_engine.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 57,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 42.8,
-        "truePowerScore": 45.2,
-        "contactDamageScore": 46.9,
-        "launchPowerScore": 52,
-        "strikeoutRate": 27.3,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 0
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Mike Trout",
       "team": "Los Angeles Angels",
       "opponent": "Cleveland Guardians",
@@ -27762,6 +27661,100 @@
         "contactDamageScore": 35.3,
         "launchPowerScore": 47.8,
         "strikeoutRate": 25.8,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 0
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Elly De La Cruz",
+      "team": "Cincinnati Reds",
+      "opponent": "San Francisco Giants",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "Volatile Longshot",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 57,
+      "stars": 1,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "52 launch-power score supports home-run damage."
+      ],
+      "riskFactors": [
+        "42.8 HR Power Index (LONGSHOT POWER).",
+        "0 recent-form trend score is not helping the profile today.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "52 launch-power score supports home-run damage.",
+          "value": 52,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "42.8 HR Power Index (LONGSHOT POWER).",
+          "value": 42.8,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 57,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 0,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 42.8,
+        "truePowerScore": 45.2,
+        "contactDamageScore": 46.9,
+        "launchPowerScore": 52,
+        "strikeoutRate": 27.3,
         "powerTier": "LONGSHOT_POWER",
         "recentForm": 0
       },
@@ -27980,100 +27973,6 @@
       }
     },
     {
-      "player": "Justin Foscue",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "Volatile Longshot",
-      "oneLine": "17% tracked HR probability (ELITE).",
-      "probability": 17,
-      "confidence": 57,
-      "stars": 1,
-      "whyToday": [
-        "17% tracked HR probability (ELITE)."
-      ],
-      "riskFactors": [
-        "42.4 HR Power Index (LONGSHOT POWER).",
-        "44.2 contact-damage score limits the supporting power case.",
-        "0 recent-form trend score is not helping the profile today.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Viable HR probability",
-          "detail": "17% tracked HR probability (ELITE).",
-          "value": 17,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "42.4 HR Power Index (LONGSHOT POWER).",
-          "value": 42.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "44.2 contact-damage score limits the supporting power case.",
-          "value": 44.2,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "cold_recent_form",
-          "label": "Cold recent-form signal",
-          "detail": "0 recent-form trend score is not helping the profile today.",
-          "value": 0,
-          "source": "ai_trust_engine.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 57,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 42.4,
-        "truePowerScore": 40.5,
-        "contactDamageScore": 44.2,
-        "launchPowerScore": 36.8,
-        "strikeoutRate": 25.7,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 0
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Gavin Sheets",
       "team": "San Diego Padres",
       "opponent": "Pittsburgh Pirates",
@@ -28262,127 +28161,24 @@
       }
     },
     {
-      "player": "Jake Burger",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "Speculative HR Target",
-      "oneLine": "50.5 launch-power score supports home-run damage.",
-      "probability": 13.7,
-      "confidence": 55,
-      "stars": 1,
-      "whyToday": [
-        "50.5 launch-power score supports home-run damage."
-      ],
-      "riskFactors": [
-        "13.7% tracked HR probability; below the model's top probability tier.",
-        "33.2 HR Power Index (LOW POWER).",
-        "29.8 contact-damage score limits the supporting power case.",
-        "0 recent-form trend score is not helping the profile today.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "50.5 launch-power score supports home-run damage.",
-          "value": 50.5,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "modest_hr_probability",
-          "label": "Modest base probability",
-          "detail": "13.7% tracked HR probability; below the model's top probability tier.",
-          "value": 13.7,
-          "source": "hr_probability_tracking.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "33.2 HR Power Index (LOW POWER).",
-          "value": 33.2,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "29.8 contact-damage score limits the supporting power case.",
-          "value": 29.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "cold_recent_form",
-          "label": "Cold recent-form signal",
-          "detail": "0 recent-form trend score is not helping the profile today.",
-          "value": 0,
-          "source": "ai_trust_engine.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 55,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 33.2,
-        "truePowerScore": 35.6,
-        "contactDamageScore": 29.8,
-        "launchPowerScore": 50.5,
-        "strikeoutRate": 27,
-        "powerTier": "LOW_POWER",
-        "recentForm": 0
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Brandon Nimmo",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
+      "player": "Adley Rutschman",
+      "team": "Boston Red Sox",
+      "opponent": "Miami Marlins",
+      "game": "Boston Red Sox at Miami Marlins",
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "No supporting signal crossed the current explanation threshold.",
-      "probability": 9.8,
+      "probability": 9.6,
       "confidence": 55,
       "stars": 1,
       "whyToday": [
         "No supporting signal crossed the current explanation threshold."
       ],
       "riskFactors": [
-        "9.8% tracked HR probability (VIABLE).",
-        "26.9 HR Power Index (LOW POWER).",
-        "35.9 contact-damage score limits the supporting power case.",
-        "32.5 launch-power score is below the stronger home-run profiles.",
+        "9.6% tracked HR probability (VIABLE).",
+        "28.6 HR Power Index (LOW POWER).",
+        "35 contact-damage score limits the supporting power case.",
+        "29.7 launch-power score is below the stronger home-run profiles.",
         "0 recent-form trend score is not helping the profile today.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
@@ -28391,32 +28187,32 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "9.8% tracked HR probability (VIABLE).",
-          "value": 9.8,
+          "detail": "9.6% tracked HR probability (VIABLE).",
+          "value": 9.6,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
         {
           "key": "limited_power",
           "label": "Limited raw-power support",
-          "detail": "26.9 HR Power Index (LOW POWER).",
-          "value": 26.9,
+          "detail": "28.6 HR Power Index (LOW POWER).",
+          "value": 28.6,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "35.9 contact-damage score limits the supporting power case.",
-          "value": 35.9,
+          "detail": "35 contact-damage score limits the supporting power case.",
+          "value": 35,
           "source": "hr_power_profiles.json",
           "severity": "moderate"
         },
         {
           "key": "limited_launch_power",
           "label": "Launch profile concern",
-          "detail": "32.5 launch-power score is below the stronger home-run profiles.",
-          "value": 32.5,
+          "detail": "29.7 launch-power score is below the stronger home-run profiles.",
+          "value": 29.7,
           "source": "hr_power_profiles.json",
           "severity": "moderate"
         },
@@ -28442,11 +28238,11 @@
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 26.9,
-        "truePowerScore": 30.7,
-        "contactDamageScore": 35.9,
-        "launchPowerScore": 32.5,
-        "strikeoutRate": 21.4,
+        "hrPowerIndex": 28.6,
+        "truePowerScore": 30.6,
+        "contactDamageScore": 35,
+        "launchPowerScore": 29.7,
+        "strikeoutRate": 15.6,
         "powerTier": "LOW_POWER",
         "recentForm": 0
       },
@@ -28541,6 +28337,109 @@
         "contactDamageScore": 48.1,
         "launchPowerScore": 22.5,
         "strikeoutRate": 21.3,
+        "powerTier": "LOW_POWER",
+        "recentForm": 0
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Jonathan Aranda",
+      "team": "Tampa Bay Rays",
+      "opponent": "Detroit Tigers",
+      "game": "Tampa Bay Rays at Detroit Tigers",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "No supporting signal crossed the current explanation threshold.",
+      "probability": 9.2,
+      "confidence": 55,
+      "stars": 1,
+      "whyToday": [
+        "No supporting signal crossed the current explanation threshold."
+      ],
+      "riskFactors": [
+        "9.2% tracked HR probability (VIABLE).",
+        "25.9 HR Power Index (LOW POWER).",
+        "31.3 contact-damage score limits the supporting power case.",
+        "33.4 launch-power score is below the stronger home-run profiles.",
+        "0 recent-form trend score is not helping the profile today.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "9.2% tracked HR probability (VIABLE).",
+          "value": 9.2,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "25.9 HR Power Index (LOW POWER).",
+          "value": 25.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "31.3 contact-damage score limits the supporting power case.",
+          "value": 31.3,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "33.4 launch-power score is below the stronger home-run profiles.",
+          "value": 33.4,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 55,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 0,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 25.9,
+        "truePowerScore": 29.3,
+        "contactDamageScore": 31.3,
+        "launchPowerScore": 33.4,
+        "strikeoutRate": 23.5,
         "powerTier": "LOW_POWER",
         "recentForm": 0
       },
@@ -28674,6 +28573,118 @@
       }
     },
     {
+      "player": "Victor Bericoto",
+      "team": "San Francisco Giants",
+      "opponent": "Cincinnati Reds",
+      "game": "Cincinnati Reds at San Francisco Giants",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "No supporting signal crossed the current explanation threshold.",
+      "probability": 6,
+      "confidence": 55,
+      "stars": 1,
+      "whyToday": [
+        "No supporting signal crossed the current explanation threshold."
+      ],
+      "riskFactors": [
+        "6% tracked HR probability (LOW).",
+        "34.1 HR Power Index (LOW POWER).",
+        "5-point sample penalty is active in the power profile.",
+        "30.8 contact-damage score limits the supporting power case.",
+        "30.4 launch-power score is below the stronger home-run profiles.",
+        "0 recent-form trend score is not helping the profile today.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "6% tracked HR probability (LOW).",
+          "value": 6,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "34.1 HR Power Index (LOW POWER).",
+          "value": 34.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "sample_penalty",
+          "label": "Limited sample confidence",
+          "detail": "5-point sample penalty is active in the power profile.",
+          "value": 5,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "30.8 contact-damage score limits the supporting power case.",
+          "value": 30.8,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "30.4 launch-power score is below the stronger home-run profiles.",
+          "value": 30.4,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        },
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 55,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 0,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 34.1,
+        "truePowerScore": 26.3,
+        "contactDamageScore": 30.8,
+        "launchPowerScore": 30.4,
+        "strikeoutRate": 27.6,
+        "powerTier": "LOW_POWER",
+        "recentForm": 0
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Elias Díaz",
       "team": "Texas Rangers",
       "opponent": "Chicago White Sox",
@@ -28681,14 +28692,14 @@
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "No supporting signal crossed the current explanation threshold.",
-      "probability": 5.8,
+      "probability": 5.6,
       "confidence": 55,
       "stars": 1,
       "whyToday": [
         "No supporting signal crossed the current explanation threshold."
       ],
       "riskFactors": [
-        "5.8% tracked HR probability (LOW).",
+        "5.6% tracked HR probability (LOW).",
         "27.5 HR Power Index (LOW POWER).",
         "28.9 contact-damage score limits the supporting power case.",
         "28.6 launch-power score is below the stronger home-run profiles.",
@@ -28700,8 +28711,8 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "5.8% tracked HR probability (LOW).",
-          "value": 5.8,
+          "detail": "5.6% tracked HR probability (LOW).",
+          "value": 5.6,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
@@ -29077,118 +29088,6 @@
       }
     },
     {
-      "player": "Danny Jansen",
-      "team": "Texas Rangers",
-      "opponent": "Chicago White Sox",
-      "game": "Texas Rangers at Chicago White Sox",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "No supporting signal crossed the current explanation threshold.",
-      "probability": 2.4,
-      "confidence": 55,
-      "stars": 1,
-      "whyToday": [
-        "No supporting signal crossed the current explanation threshold."
-      ],
-      "riskFactors": [
-        "2.4% tracked HR probability (LOW).",
-        "11.6 HR Power Index (LOW POWER).",
-        "29.6% strikeout rate can reduce damage opportunities.",
-        "10.6 contact-damage score limits the supporting power case.",
-        "14.8 launch-power score is below the stronger home-run profiles.",
-        "0 recent-form trend score is not helping the profile today.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "2.4% tracked HR probability (LOW).",
-          "value": 2.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "11.6 HR Power Index (LOW POWER).",
-          "value": 11.6,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "contact_risk",
-          "label": "Contact risk",
-          "detail": "29.6% strikeout rate can reduce damage opportunities.",
-          "value": 29.6,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "10.6 contact-damage score limits the supporting power case.",
-          "value": 10.6,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "14.8 launch-power score is below the stronger home-run profiles.",
-          "value": 14.8,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "cold_recent_form",
-          "label": "Cold recent-form signal",
-          "detail": "0 recent-form trend score is not helping the profile today.",
-          "value": 0,
-          "source": "ai_trust_engine.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 55,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 0,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 11.6,
-        "truePowerScore": 9.1,
-        "contactDamageScore": 10.6,
-        "launchPowerScore": 14.8,
-        "strikeoutRate": 29.6,
-        "powerTier": "LOW_POWER",
-        "recentForm": 0
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
       "player": "Agustín Ramírez",
       "team": "Miami Marlins",
       "opponent": "Boston Red Sox",
@@ -29271,6 +29170,109 @@
         "contactDamageScore": 17.2,
         "launchPowerScore": 9.4,
         "strikeoutRate": 22.5,
+        "powerTier": "LOW_POWER",
+        "recentForm": 0
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
+      "player": "Max Kepler",
+      "team": "Arizona Diamondbacks",
+      "opponent": "Chicago Cubs",
+      "game": "Chicago Cubs at Arizona Diamondbacks",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "No supporting signal crossed the current explanation threshold.",
+      "probability": 1.5,
+      "confidence": 55,
+      "stars": 1,
+      "whyToday": [
+        "No supporting signal crossed the current explanation threshold."
+      ],
+      "riskFactors": [
+        "1.5% tracked HR probability (LOW).",
+        "11.6 HR Power Index (LOW POWER).",
+        "15.2 contact-damage score limits the supporting power case.",
+        "12.7 launch-power score is below the stronger home-run profiles.",
+        "0 recent-form trend score is not helping the profile today.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "1.5% tracked HR probability (LOW).",
+          "value": 1.5,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "11.6 HR Power Index (LOW POWER).",
+          "value": 11.6,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "15.2 contact-damage score limits the supporting power case.",
+          "value": 15.2,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "12.7 launch-power score is below the stronger home-run profiles.",
+          "value": 12.7,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "cold_recent_form",
+          "label": "Cold recent-form signal",
+          "detail": "0 recent-form trend score is not helping the profile today.",
+          "value": 0,
+          "source": "ai_trust_engine.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 55,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 0,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 11.6,
+        "truePowerScore": 12.9,
+        "contactDamageScore": 15.2,
+        "launchPowerScore": 12.7,
+        "strikeoutRate": 22.6,
         "powerTier": "LOW_POWER",
         "recentForm": 0
       },
