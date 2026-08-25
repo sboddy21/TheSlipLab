@@ -1,14 +1,14 @@
 {
-  "updatedAt": "2026-08-25T10:57:38.431Z",
+  "updatedAt": "2026-08-25T16:46:57.371Z",
   "date": "2026-08-25",
-  "slot": "overnight",
+  "slot": "midday",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
-    "requested": "overnight",
-    "selected": "overnight",
+    "requested": "midday",
+    "selected": "midday",
     "available": [
       "morning",
       "midday",
@@ -19,48 +19,72 @@
     ]
   },
   "eventPosting": {
-    "enabled": false,
+    "enabled": true,
     "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-25T10:57:38.431Z",
+    "checkedAt": "2026-08-25T16:46:57.371Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T10:57:37.976Z",
+        "timestamp": "2026-08-25T16:46:56.922Z",
         "ageSeconds": 0
       },
       {
-        "file": "mlb_results_previous.json",
+        "file": "hr_decision_center.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T10:57:36.905Z",
-        "ageSeconds": 1,
-        "scheduledGames": 10,
-        "totalScheduledGames": 10,
-        "finalGames": 10
+        "timestamp": "2026-08-25T16:41:33.321Z",
+        "ageSeconds": 324
       },
       {
-        "file": "hr_ai_history.json",
+        "file": "mlb_weather.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T08:13:24.862Z",
-        "players": 572,
-        "mode": "historical pregame archive"
+        "timestamp": "2026-08-25T16:41:32.064Z",
+        "ageSeconds": 325
       },
       {
-        "file": "hr_calibration_report.json",
+        "file": "mlb_results.json",
+        "timestampField": "updatedAt",
+        "timestamp": "2026-08-25T16:46:56.410Z",
+        "ageSeconds": 0
+      },
+      {
+        "file": "health_status.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-25T10:57:36.960Z",
-        "ageSeconds": 1,
-        "reportDate": "2026-08-24",
-        "archivedPlayers": 265,
-        "mode": "verified daily model report"
+        "timestamp": "2026-08-25T16:43:29.987Z",
+        "ageSeconds": 207
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-25_MIDDAY_WEATHER_NOTE",
+      "date": "2026-08-25",
+      "type": "weather_note",
+      "slot": "midday",
+      "status": "posted",
+      "scheduled_for_eastern": "2026-08-25T16:46:57.371Z",
+      "text": "Weather note—not a pick by itself:\n\nBoston Red Sox at Miami Marlins at loanDepot park is the environment I am watching most closely.\n\n88° | 9.2 mph S\n\nWeather can amplify a good power matchup. It cannot rescue a bad one. Which park conditions are you watching today?",
+      "players": [],
+      "graphic": null,
+      "graphicType": null,
+      "reportDate": null,
+      "resultsDate": null,
+      "verifiedPregame": false,
+      "verifiedResults": false,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": true,
+      "posted_at": "2026-08-25T16:46:57.851Z",
+      "x_post_id": "2092292659922588078",
+      "created_at": "2026-08-25T16:46:56.922Z",
+      "error": null
+    }
+  ]
 }
