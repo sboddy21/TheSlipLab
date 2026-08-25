@@ -1,16 +1,15 @@
 {
-  "updatedAt": "2026-08-25T03:23:05.123Z",
-  "date": "2026-08-24",
-  "slot": "evening",
+  "updatedAt": "2026-08-25T05:59:03.821Z",
+  "date": "2026-08-25",
+  "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
   "emptyReason": null,
   "slotResolution": {
-    "requested": "evening",
-    "selected": "evening",
+    "requested": "overnight",
+    "selected": "overnight",
     "available": [
-      "live",
       "morning",
       "midday",
       "afternoon",
@@ -20,399 +19,76 @@
     ]
   },
   "eventPosting": {
-    "enabled": true,
-    "candidates": 6,
+    "enabled": false,
+    "candidates": 0,
     "maxPerRun": 10
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-25T03:23:05.123Z",
+    "checkedAt": "2026-08-25T05:59:03.821Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T03:23:04.494Z",
+        "timestamp": "2026-08-25T05:59:03.386Z",
         "ageSeconds": 0
       },
       {
-        "file": "hr_decision_center.json",
+        "file": "mlb_results_previous.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T03:14:08.362Z",
-        "ageSeconds": 536
+        "timestamp": "2026-08-25T05:59:02.295Z",
+        "ageSeconds": 1,
+        "scheduledGames": 10,
+        "totalScheduledGames": 10,
+        "finalGames": 10
       },
       {
-        "file": "mlb_weather.json",
+        "file": "hr_ai_history.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T03:13:54.756Z",
-        "ageSeconds": 550
+        "timestamp": "2026-08-25T05:26:50.479Z",
+        "players": 572,
+        "mode": "historical pregame archive"
       },
       {
-        "file": "mlb_results.json",
-        "timestampField": "updatedAt",
-        "timestamp": "2026-08-25T03:23:04.088Z",
-        "ageSeconds": 1
-      },
-      {
-        "file": "health_status.json",
+        "file": "hr_calibration_report.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-25T03:15:21.063Z",
-        "ageSeconds": 464
+        "timestamp": "2026-08-25T05:59:02.340Z",
+        "ageSeconds": 1,
+        "reportDate": "2026-08-24",
+        "archivedPlayers": 265,
+        "mode": "verified daily model report"
       }
     ]
   },
-  "count": 7,
+  "count": 1,
   "posts": [
     {
-      "id": "called_it_home_run_2026-08-24_824557_694671_79",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
+      "id": "2026-08-25_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "date": "2026-08-25",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
       "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB CALLED IT\n\nWyatt Langford just left the yard.\n\nAI Says: SMASH + PARK #4 · HOMER AI #19\nTexas Rangers @ Chicago White Sox\nTop 9\n368 ft · 103.0 mph EV · 41° LA\nOff Trevor Richards\n\nBoard: https://thesliplab.com/ai-says.html",
+      "scheduled_for_eastern": "2026-08-25T05:59:03.821Z",
+      "text": "The verified MLB model report for 2026-08-24 is in.\n\n19 home runs landed against 20.2 expected (-1.2).\nTop 10: 0 hits from 11 archived players.\n\n• Rafael Devers: pregame rank #12 | 24.0% model probability | 427 ft\n• Esmerlyn Valdez: pregame rank #13 | 24.0% model probability | 414 ft\n• Wyatt Langford: pregame rank #29 | 24.0% model probability | 368 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
       "players": [
+        "Rafael Devers",
+        "Esmerlyn Valdez",
         "Wyatt Langford"
       ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 824557,
-        "playId": 79,
-        "playerId": 694671,
-        "player": "Wyatt Langford",
-        "team": "Texas Rangers",
-        "opponent": "Chicago White Sox",
-        "inning": "Top 9",
-        "distance": 368,
-        "exitVelocity": 103,
-        "launchAngle": 41
-      },
-      "ai": {
-        "primarySection": "SMASH + PARK",
-        "primaryRank": 4,
-        "sections": [
-          {
-            "section": "SMASH + PARK",
-            "rank": 4,
-            "confidence": 0.628,
-            "aiScore": 0.628
-          },
-          {
-            "section": "HOMER AI",
-            "rank": 19,
-            "confidence": 0.692,
-            "aiScore": 0.628
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board",
-          "decision_center_top_30"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "called_it_home_run_2026-08-24_824557_669394_43",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB CALLED IT\n\nJake Burger just left the yard.\n\nAI Says: SMASH + PARK #5 · LIVE LONGSHOTS #25\nTexas Rangers @ Chicago White Sox\nTop 5\n412 ft · 108.2 mph EV · 32° LA\nOff Tyler Schweitzer\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Jake Burger"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 824557,
-        "playId": 43,
-        "playerId": 669394,
-        "player": "Jake Burger",
-        "team": "Texas Rangers",
-        "opponent": "Chicago White Sox",
-        "inning": "Top 5",
-        "distance": 412,
-        "exitVelocity": 108.2,
-        "launchAngle": 32
-      },
-      "ai": {
-        "primarySection": "SMASH + PARK",
-        "primaryRank": 5,
-        "sections": [
-          {
-            "section": "SMASH + PARK",
-            "rank": 5,
-            "confidence": 0.564,
-            "aiScore": 0.564
-          },
-          {
-            "section": "LIVE LONGSHOTS",
-            "rank": 25,
-            "confidence": 0.655,
-            "aiScore": 0.564
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "called_it_home_run_2026-08-24_823260_699013_35",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB CALLED IT\n\nEsmerlyn Valdez just left the yard.\n\nAI Says: HOMER AI #13\nPittsburgh Pirates @ San Diego Padres\nTop 6\n414 ft · 111.6 mph EV · 23° LA\nOff Robbie Ray\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Esmerlyn Valdez"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 823260,
-        "playId": 35,
-        "playerId": 699013,
-        "player": "Esmerlyn Valdez",
-        "team": "Pittsburgh Pirates",
-        "opponent": "San Diego Padres",
-        "inning": "Top 6",
-        "distance": 414,
-        "exitVelocity": 111.6,
-        "launchAngle": 23
-      },
-      "ai": {
-        "primarySection": "HOMER AI",
-        "primaryRank": 13,
-        "sections": [
-          {
-            "section": "HOMER AI",
-            "rank": 13,
-            "confidence": 0.727,
-            "aiScore": 0.727
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board",
-          "decision_center_top_30"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "called_it_home_run_2026-08-24_823183_646240_17",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB CALLED IT\n\nRafael Devers just left the yard.\n\nAI Says: HOMER AI #14\nCincinnati Reds @ San Francisco Giants\nBottom 2\n\nOff Chase Burns\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Rafael Devers"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 823183,
-        "playId": 17,
-        "playerId": 646240,
-        "player": "Rafael Devers",
-        "team": "San Francisco Giants",
-        "opponent": "Cincinnati Reds",
-        "inning": "Bottom 2",
-        "distance": "",
-        "exitVelocity": "",
-        "launchAngle": ""
-      },
-      "ai": {
-        "primarySection": "HOMER AI",
-        "primaryRank": 14,
-        "sections": [
-          {
-            "section": "HOMER AI",
-            "rank": 14,
-            "confidence": 0.724,
-            "aiScore": 0.724
-          }
-        ],
-        "archiveGrade": "A",
-        "archiveRank": 5,
-        "qualifiedBy": [
-          "verified_pregame_archive",
-          "ai_says_current_board",
-          "decision_center_top_30"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "called_it_home_run_2026-08-24_824557_671976_22",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nTristan Peters just left the yard.\n\nAI Says: LIVE LONGSHOTS #32\nTexas Rangers @ Chicago White Sox\nBottom 2\n372 ft · 102.0 mph EV · 40° LA\nOff Kumar Rocker\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Tristan Peters"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 824557,
-        "playId": 22,
-        "playerId": 671976,
-        "player": "Tristan Peters",
-        "team": "Chicago White Sox",
-        "opponent": "Texas Rangers",
-        "inning": "Bottom 2",
-        "distance": 372,
-        "exitVelocity": 102,
-        "launchAngle": 40
-      },
-      "ai": {
-        "primarySection": "LIVE LONGSHOTS",
-        "primaryRank": 32,
-        "sections": [
-          {
-            "section": "LIVE LONGSHOTS",
-            "rank": 32,
-            "confidence": 0.641,
-            "aiScore": 0.516
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "called_it_home_run_2026-08-24_823097_663728_11",
-      "date": "2026-08-24",
-      "type": "called_it_home_run",
-      "slot": "live",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "🚨 SLIP LAB LONGSHOT HIT\n\nCal Raleigh just left the yard.\n\nAI Says: LIVE LONGSHOTS #35\nPhiladelphia Phillies @ Seattle Mariners\nBottom 1\n378 ft · 108.5 mph EV · 39° LA\nOff Zack Wheeler\n\nBoard: https://thesliplab.com/ai-says.html",
-      "players": [
-        "Cal Raleigh"
-      ],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
-      "eventPost": true,
-      "event": {
-        "gamePk": 823097,
-        "playId": 11,
-        "playerId": 663728,
-        "player": "Cal Raleigh",
-        "team": "Seattle Mariners",
-        "opponent": "Philadelphia Phillies",
-        "inning": "Bottom 1",
-        "distance": 378,
-        "exitVelocity": 108.5,
-        "launchAngle": 39
-      },
-      "ai": {
-        "primarySection": "LIVE LONGSHOTS",
-        "primaryRank": 35,
-        "sections": [
-          {
-            "section": "LIVE LONGSHOTS",
-            "rank": 35,
-            "confidence": 0.655,
-            "aiScore": 0.407
-          }
-        ],
-        "archiveGrade": null,
-        "archiveRank": null,
-        "qualifiedBy": [
-          "ai_says_current_board"
-        ]
-      },
-      "posted": false,
-      "posted_at": null,
-      "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
-    },
-    {
-      "id": "2026-08-24_EVENING_PROCESS_QUESTION",
-      "date": "2026-08-24",
-      "type": "process_question",
-      "slot": "evening",
-      "status": "queued",
-      "scheduled_for_eastern": "2026-08-25T03:23:05.123Z",
-      "text": "Quick question for anyone building an MLB card: what signal do you trust most when the data disagrees—recent form, pitcher matchup, weather, or price?\n\nI built The Slip Lab because I wanted all four in one place, but I still think the hardest part is deciding which signal deserves the most weight.",
-      "players": [],
-      "graphic": null,
-      "graphicType": null,
-      "reportDate": null,
-      "resultsDate": null,
-      "verifiedPregame": false,
-      "verifiedResults": false,
+      "graphic": "exports/content/graphics/2026-08-25_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-08-24",
+      "resultsDate": "2026-08-24",
+      "verifiedPregame": true,
+      "verifiedResults": true,
       "eventPost": false,
       "event": null,
       "ai": null,
       "posted": false,
       "posted_at": null,
       "x_post_id": null,
-      "created_at": "2026-08-25T03:23:04.494Z"
+      "created_at": "2026-08-25T05:59:03.386Z"
     }
   ]
 }
