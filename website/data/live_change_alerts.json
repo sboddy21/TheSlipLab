@@ -1,17 +1,826 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-08-26T13:59:20.636Z",
+  "generatedAt": "2026-08-26T14:57:02.509Z",
   "date": "2026-08-26",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-08-26T13:57:23.282Z",
-    "mlb_player_pool.json": "2026-08-26T13:57:23.607Z",
-    "game_pitcher_matchups.json": "2026-08-26T13:57:52.927Z",
-    "player_card_data.json": "2026-08-26T13:59:20.529Z",
-    "hr_probability_tracking.json": "2026-08-26T13:57:51.799Z",
-    "pitcher_vulnerability.json": "2026-08-26T13:57:52.939Z"
+    "mlb_games_today.json": "2026-08-26T14:53:23.375Z",
+    "mlb_player_pool.json": "2026-08-26T14:53:25.723Z",
+    "game_pitcher_matchups.json": "2026-08-26T14:55:02.981Z",
+    "player_card_data.json": "2026-08-26T14:57:02.327Z",
+    "hr_probability_tracking.json": "2026-08-26T14:55:01.480Z",
+    "pitcher_vulnerability.json": "2026-08-26T14:55:02.990Z"
   },
   "alerts": [
+    {
+      "id": "0496a77bbe7f47e165d5",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "595879",
+      "entityName": "Javier Báez",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Javier Báez's model score fell",
+      "message": "The live model score fell from 24.4 to 0.",
+      "previous": {
+        "modelScore": 24.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "923f409f7fc841b5472b",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "622761",
+      "entityName": "Jorge Mateo",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Jorge Mateo confirmed in the lineup",
+      "message": "Jorge Mateo is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "73315ff9bdeeb728a93d",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Gleyber Torres confirmed in the lineup",
+      "message": "Gleyber Torres is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2c687c67aa078452bfd2",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "650490",
+      "entityName": "Yandy Díaz",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Yandy Díaz confirmed in the lineup",
+      "message": "Yandy Díaz is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2c9a7d28fdf6eece2351",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656716",
+      "entityName": "Zach McKinstry",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Zach McKinstry confirmed in the lineup",
+      "message": "Zach McKinstry is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cf115ef075c4f170ea48",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656775",
+      "entityName": "Cedric Mullins",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Cedric Mullins confirmed in the lineup",
+      "message": "Cedric Mullins is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0f0a9f111693f1872dfb",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663743",
+      "entityName": "Nick Fortes",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Nick Fortes's model score fell",
+      "message": "The live model score fell from 21.6 to 0.",
+      "previous": {
+        "modelScore": 21.6
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "cd0e9405c0e21e43d2a9",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666018",
+      "entityName": "Jonathan Aranda",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Jonathan Aranda confirmed in the lineup",
+      "message": "Jonathan Aranda is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b85591c7d506732dba49",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "667452",
+      "entityName": "Corey Julks",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Corey Julks's HR probability fell",
+      "message": "Tracked HR probability fell from 7.3% to 0%.",
+      "previous": {
+        "probability": 7.3
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "3049627f9400c3efebd8",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "667452",
+      "entityName": "Corey Julks",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Corey Julks's model score fell",
+      "message": "The live model score fell from 29 to 0.",
+      "previous": {
+        "modelScore": 29
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "10cb7dccddd917836cfe",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Ryan Vilade's HR probability fell",
+      "message": "Tracked HR probability fell from 19.7% to 0%.",
+      "previous": {
+        "probability": 19.7
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "05490417c482b49ae019",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Ryan Vilade's model score fell",
+      "message": "The live model score fell from 41.9 to 0.",
+      "previous": {
+        "modelScore": 41.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5a2f6284819c34955e08",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669134",
+      "entityName": "Luis Campusano",
+      "team": "San Diego Padres",
+      "gamePk": 823255,
+      "title": "Luis Campusano's verified signals changed",
+      "message": "Added: sleeper.",
+      "previous": {
+        "signals": [
+          "due"
+        ]
+      },
+      "current": {
+        "signals": [
+          "due",
+          "sleeper"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "fa70276f6ab07cd0fd85",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "670764",
+      "entityName": "Taylor Walls",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Taylor Walls's model score fell",
+      "message": "The live model score fell from 17.4 to 0.",
+      "previous": {
+        "modelScore": 17.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0ee2450c31fbcb9f9846",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "676356",
+      "entityName": "Jonny DeLuca",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Jonny DeLuca confirmed in the lineup",
+      "message": "Jonny DeLuca is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cbfb97e975441c7f03bf",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "679529",
+      "entityName": "Spencer Torkelson",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Spencer Torkelson confirmed in the lineup",
+      "message": "Spencer Torkelson is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "201f5c382a7ad72c6249",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "680664",
+      "entityName": "Eduardo Valencia",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Eduardo Valencia's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "14e7df71d45ae3e99681",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "680664",
+      "entityName": "Eduardo Valencia",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Eduardo Valencia's model score fell",
+      "message": "The live model score fell from 47.2 to 0.",
+      "previous": {
+        "modelScore": 47.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "025c2beabdaaf334b007",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "680700",
+      "entityName": "Richie Palacios",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Richie Palacios confirmed in the lineup",
+      "message": "Richie Palacios is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "f378aaf7b8cdcdd9ddea",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "689414",
+      "entityName": "Liam Hicks",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Liam Hicks confirmed in the lineup",
+      "message": "Liam Hicks is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "80e2127ed33f80d6d839",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Colt Keith confirmed in the lineup",
+      "message": "Colt Keith is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "bfd570ce286bc9645cdc",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "691406",
+      "entityName": "Junior Caminero",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Junior Caminero confirmed in the lineup",
+      "message": "Junior Caminero is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "9504e8665dc1407170ed",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "693307",
+      "entityName": "Dillon Dingler",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Dillon Dingler confirmed in the lineup",
+      "message": "Dillon Dingler is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5f74f61b842860ef1835",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "700652",
+      "entityName": "Kenny Piper",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Kenny Piper's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "8f503da2ee64d265b703",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "700652",
+      "entityName": "Kenny Piper",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Kenny Piper's model score fell",
+      "message": "The live model score fell from 42 to 0.",
+      "previous": {
+        "modelScore": 42
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "e5cfc0e210916dd1b1a8",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701162",
+      "entityName": "Ben Malgeri",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Ben Malgeri's HR probability fell",
+      "message": "Tracked HR probability fell from 5% to 0%.",
+      "previous": {
+        "probability": 5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "da6fd464f9e931a250fa",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701162",
+      "entityName": "Ben Malgeri",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Ben Malgeri's model score fell",
+      "message": "The live model score fell from 32 to 0.",
+      "previous": {
+        "modelScore": 32
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "bc778d4fc7a3134dea6b",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Hao-Yu Lee confirmed in the lineup",
+      "message": "Hao-Yu Lee is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a9c5d662987020e1aca7",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "703601",
+      "entityName": "Max Clark",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Max Clark confirmed in the lineup",
+      "message": "Max Clark is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "10011aba3f0c008d01fb",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "802415",
+      "entityName": "Chandler Simpson",
+      "team": "Tampa Bay Rays",
+      "gamePk": 824234,
+      "title": "Chandler Simpson confirmed in the lineup",
+      "message": "Chandler Simpson is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "acb2c391cd1cb87601a8",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "805808",
+      "entityName": "Kevin McGonigle",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Kevin McGonigle confirmed in the lineup",
+      "message": "Kevin McGonigle is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ab7bcf83faa6fc6812b2",
+      "createdAt": "2026-08-26T14:57:02.509Z",
+      "date": "2026-08-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "814430",
+      "entityName": "Brett Callahan",
+      "team": "Detroit Tigers",
+      "gamePk": 824234,
+      "title": "Brett Callahan confirmed in the lineup",
+      "message": "Brett Callahan is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
     {
       "id": "de45ea27431beae4d8b5",
       "createdAt": "2026-08-26T05:07:44.310Z",
@@ -56,7 +865,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 3.4,
-        "modelScore": 28.5,
+        "modelScore": 28.6,
         "signals": []
       },
       "502671": {
@@ -71,7 +880,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 22.7,
-        "modelScore": 40.1,
+        "modelScore": 40.3,
         "signals": []
       },
       "514888": {
@@ -86,7 +895,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 8.7,
-        "modelScore": 26.6,
+        "modelScore": 26.7,
         "signals": []
       },
       "518595": {
@@ -101,7 +910,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.4,
-        "modelScore": 13.7,
+        "modelScore": 13.8,
         "signals": []
       },
       "518692": {
@@ -116,7 +925,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 17.1,
-        "modelScore": 35.6,
+        "modelScore": 35.8,
         "signals": [
           "due"
         ]
@@ -133,7 +942,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 12.7,
-        "modelScore": 38.1,
+        "modelScore": 38.2,
         "signals": []
       },
       "543510": {
@@ -148,7 +957,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 6.7,
-        "modelScore": 32.5,
+        "modelScore": 32.7,
         "signals": []
       },
       "543760": {
@@ -163,7 +972,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 5.8,
-        "modelScore": 30.1,
+        "modelScore": 30.2,
         "signals": []
       },
       "543807": {
@@ -178,7 +987,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 9.5,
-        "modelScore": 39.7,
+        "modelScore": 39.8,
         "signals": []
       },
       "543877": {
@@ -193,7 +1002,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 3.4,
-        "modelScore": 23.1,
+        "modelScore": 23.3,
         "signals": [
           "hotLately"
         ]
@@ -210,7 +1019,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 7.6,
-        "modelScore": 39.7,
+        "modelScore": 39.8,
         "signals": []
       },
       "545341": {
@@ -225,7 +1034,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 22.8,
-        "modelScore": 44.3,
+        "modelScore": 44.4,
         "signals": [
           "hotLately"
         ]
@@ -242,7 +1051,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 22.8,
-        "modelScore": 39.3,
+        "modelScore": 39.4,
         "signals": [
           "due"
         ]
@@ -259,7 +1068,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 22.8,
-        "modelScore": 47.5,
+        "modelScore": 47.6,
         "signals": []
       },
       "553869": {
@@ -274,7 +1083,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 5.8,
-        "modelScore": 36.4,
+        "modelScore": 36.5,
         "signals": []
       },
       "553993": {
@@ -289,7 +1098,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 15.9,
-        "modelScore": 38.6,
+        "modelScore": 38.7,
         "signals": []
       },
       "571448": {
@@ -304,7 +1113,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 22.8,
-        "modelScore": 40.9,
+        "modelScore": 41,
         "signals": []
       },
       "571771": {
@@ -319,7 +1128,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 9.9,
-        "modelScore": 30.8,
+        "modelScore": 30.9,
         "signals": []
       },
       "571912": {
@@ -334,7 +1143,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 2.3,
-        "modelScore": 20.9,
+        "modelScore": 21,
         "signals": []
       },
       "571970": {
@@ -349,7 +1158,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 22.8,
-        "modelScore": 47.5,
+        "modelScore": 47.7,
         "signals": [
           "hotLately"
         ]
@@ -366,7 +1175,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 22.8,
-        "modelScore": 34.9,
+        "modelScore": 35,
         "signals": []
       },
       "573262": {
@@ -381,7 +1190,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 4.9,
-        "modelScore": 29.5,
+        "modelScore": 29.6,
         "signals": []
       },
       "575929": {
@@ -396,7 +1205,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 22.8,
-        "modelScore": 47,
+        "modelScore": 47.2,
         "signals": []
       },
       "592518": {
@@ -411,7 +1220,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 19.2,
-        "modelScore": 38.5,
+        "modelScore": 38.6,
         "signals": []
       },
       "592626": {
@@ -426,7 +1235,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 22.8,
-        "modelScore": 40.2,
+        "modelScore": 40.4,
         "signals": [
           "due"
         ]
@@ -443,7 +1252,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 4.7,
-        "modelScore": 30.1,
+        "modelScore": 30.2,
         "signals": []
       },
       "592885": {
@@ -458,7 +1267,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 7.4,
-        "modelScore": 37.8,
+        "modelScore": 38,
         "signals": []
       },
       "593428": {
@@ -473,7 +1282,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 2.1,
-        "modelScore": 27.5,
+        "modelScore": 27.6,
         "signals": []
       },
       "595879": {
@@ -482,13 +1291,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 2.2,
-        "modelScore": 24.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "595978": {
@@ -503,7 +1312,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 3.4,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       },
       "596019": {
@@ -518,7 +1327,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 12.4,
-        "modelScore": 33.5,
+        "modelScore": 33.7,
         "signals": []
       },
       "596117": {
@@ -533,7 +1342,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 1.4,
-        "modelScore": 20.9,
+        "modelScore": 21,
         "signals": []
       },
       "596142": {
@@ -548,7 +1357,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 16.8,
-        "modelScore": 35,
+        "modelScore": 35.1,
         "signals": []
       },
       "596146": {
@@ -563,7 +1372,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 1.4,
-        "modelScore": 24.6,
+        "modelScore": 24.7,
         "signals": []
       },
       "602104": {
@@ -578,7 +1387,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 4.2,
-        "modelScore": 36.5,
+        "modelScore": 36.6,
         "signals": []
       },
       "605137": {
@@ -593,7 +1402,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 14,
-        "modelScore": 37.3,
+        "modelScore": 37.4,
         "signals": []
       },
       "605141": {
@@ -608,7 +1417,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 11.4,
-        "modelScore": 37.4,
+        "modelScore": 37.5,
         "signals": []
       },
       "605170": {
@@ -623,7 +1432,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 2.2,
-        "modelScore": 29.9,
+        "modelScore": 30,
         "signals": []
       },
       "606192": {
@@ -638,7 +1447,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 5.2,
-        "modelScore": 28.2,
+        "modelScore": 28.3,
         "signals": []
       },
       "607043": {
@@ -653,7 +1462,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 9.7,
-        "modelScore": 32.2,
+        "modelScore": 32.3,
         "signals": []
       },
       "607208": {
@@ -668,7 +1477,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 7.3,
-        "modelScore": 31.3,
+        "modelScore": 31.4,
         "signals": []
       },
       "608070": {
@@ -683,7 +1492,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 6.9,
-        "modelScore": 33.6,
+        "modelScore": 33.7,
         "signals": []
       },
       "608324": {
@@ -698,7 +1507,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 13.5,
-        "modelScore": 36.8,
+        "modelScore": 37,
         "signals": [
           "hotLately"
         ]
@@ -715,7 +1524,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 4.3,
-        "modelScore": 29.8,
+        "modelScore": 29.9,
         "signals": []
       },
       "608369": {
@@ -730,7 +1539,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 12.9,
-        "modelScore": 37,
+        "modelScore": 37.1,
         "signals": []
       },
       "620443": {
@@ -745,7 +1554,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 6.5,
-        "modelScore": 32.6,
+        "modelScore": 32.7,
         "signals": [
           "hotLately"
         ]
@@ -762,7 +1571,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 22.2,
-        "modelScore": 48.5,
+        "modelScore": 48.7,
         "signals": [
           "sleeper"
         ]
@@ -779,7 +1588,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 22.8,
-        "modelScore": 45.3,
+        "modelScore": 45.4,
         "signals": [
           "due"
         ]
@@ -796,7 +1605,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 1.4,
-        "modelScore": 18.8,
+        "modelScore": 19,
         "signals": []
       },
       "621550": {
@@ -811,7 +1620,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 1.4,
-        "modelScore": 21.7,
+        "modelScore": 21.9,
         "signals": []
       },
       "621566": {
@@ -826,7 +1635,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 22.8,
-        "modelScore": 45.5,
+        "modelScore": 45.6,
         "signals": [
           "due"
         ]
@@ -843,7 +1652,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 7.5,
-        "modelScore": 34.7,
+        "modelScore": 34.8,
         "signals": []
       },
       "622761": {
@@ -852,13 +1661,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 4.1,
-        "modelScore": 26.3,
+        "modelScore": 27.4,
         "signals": []
       },
       "623168": {
@@ -873,7 +1682,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.4,
-        "modelScore": 16.5,
+        "modelScore": 16.7,
         "signals": []
       },
       "624413": {
@@ -888,7 +1697,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 22.8,
-        "modelScore": 50.4,
+        "modelScore": 50.5,
         "signals": [
           "hotLately"
         ]
@@ -905,7 +1714,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 22.8,
-        "modelScore": 41.1,
+        "modelScore": 41.2,
         "signals": [
           "hotLately"
         ]
@@ -922,7 +1731,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 2.2,
-        "modelScore": 26.6,
+        "modelScore": 26.7,
         "signals": []
       },
       "624431": {
@@ -937,7 +1746,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 5.2,
-        "modelScore": 34.7,
+        "modelScore": 34.8,
         "signals": []
       },
       "624641": {
@@ -952,7 +1761,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 4.6,
-        "modelScore": 28.5,
+        "modelScore": 28.6,
         "signals": []
       },
       "630105": {
@@ -967,7 +1776,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.4,
-        "modelScore": 17.5,
+        "modelScore": 17.7,
         "signals": []
       },
       "640459": {
@@ -982,7 +1791,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 1.9,
-        "modelScore": 23.5,
+        "modelScore": 23.7,
         "signals": []
       },
       "640902": {
@@ -997,7 +1806,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 1.5,
-        "modelScore": 24.5,
+        "modelScore": 24.6,
         "signals": []
       },
       "641343": {
@@ -1012,7 +1821,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 22.8,
-        "modelScore": 43,
+        "modelScore": 43.2,
         "signals": [
           "hotLately"
         ]
@@ -1029,7 +1838,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 16.1,
-        "modelScore": 36.6,
+        "modelScore": 36.7,
         "signals": []
       },
       "641487": {
@@ -1044,7 +1853,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 5.2,
-        "modelScore": 27.5,
+        "modelScore": 27.7,
         "signals": []
       },
       "641680": {
@@ -1059,7 +1868,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 6.4,
-        "modelScore": 33.8,
+        "modelScore": 33.9,
         "signals": []
       },
       "641933": {
@@ -1074,7 +1883,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 6.4,
-        "modelScore": 32.4,
+        "modelScore": 32.6,
         "signals": []
       },
       "642086": {
@@ -1089,7 +1898,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 3.9,
-        "modelScore": 26.2,
+        "modelScore": 26.3,
         "signals": []
       },
       "642201": {
@@ -1104,7 +1913,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 5,
-        "modelScore": 27.8,
+        "modelScore": 27.9,
         "signals": []
       },
       "642215": {
@@ -1119,7 +1928,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 3.6,
-        "modelScore": 26.5,
+        "modelScore": 26.6,
         "signals": []
       },
       "642350": {
@@ -1134,7 +1943,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 10.1,
-        "modelScore": 37.5,
+        "modelScore": 37.7,
         "signals": []
       },
       "642708": {
@@ -1149,7 +1958,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 8.5,
-        "modelScore": 31.9,
+        "modelScore": 32,
         "signals": []
       },
       "643289": {
@@ -1164,7 +1973,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 3.8,
-        "modelScore": 26.1,
+        "modelScore": 26.2,
         "signals": []
       },
       "643376": {
@@ -1179,7 +1988,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 3.4,
-        "modelScore": 22,
+        "modelScore": 22.2,
         "signals": []
       },
       "643446": {
@@ -1194,7 +2003,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 1.8,
-        "modelScore": 28.3,
+        "modelScore": 28.4,
         "signals": []
       },
       "645277": {
@@ -1209,7 +2018,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 13.5,
-        "modelScore": 34.9,
+        "modelScore": 35,
         "signals": []
       },
       "645302": {
@@ -1224,7 +2033,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 1.4,
-        "modelScore": 21.4,
+        "modelScore": 21.5,
         "signals": []
       },
       "645305": {
@@ -1239,7 +2048,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 1.4,
-        "modelScore": 19.8,
+        "modelScore": 19.9,
         "signals": []
       },
       "646240": {
@@ -1254,7 +2063,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 22.8,
-        "modelScore": 49.3,
+        "modelScore": 49.4,
         "signals": [
           "hotLately"
         ]
@@ -1271,7 +2080,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 2.1,
-        "modelScore": 24.1,
+        "modelScore": 24.2,
         "signals": []
       },
       "650333": {
@@ -1286,7 +2095,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 5,
-        "modelScore": 31.9,
+        "modelScore": 32.1,
         "signals": []
       },
       "650402": {
@@ -1295,13 +2104,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 4.4,
-        "modelScore": 28.8,
+        "modelScore": 33.7,
         "signals": []
       },
       "650489": {
@@ -1316,7 +2125,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 14.8,
-        "modelScore": 38.3,
+        "modelScore": 38.4,
         "signals": [
           "hotLately"
         ]
@@ -1327,13 +2136,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 22.7,
-        "modelScore": 39.7,
+        "modelScore": 44.7,
         "signals": []
       },
       "650559": {
@@ -1348,7 +2157,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 11.7,
-        "modelScore": 34.3,
+        "modelScore": 34.4,
         "signals": [
           "due"
         ]
@@ -1365,7 +2174,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.4,
-        "modelScore": 20,
+        "modelScore": 20.1,
         "signals": []
       },
       "650968": {
@@ -1380,7 +2189,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 1.4,
-        "modelScore": 20.2,
+        "modelScore": 20.3,
         "signals": []
       },
       "655316": {
@@ -1395,7 +2204,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 7.3,
-        "modelScore": 38.4,
+        "modelScore": 38.6,
         "signals": []
       },
       "656537": {
@@ -1410,7 +2219,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 11.8,
-        "modelScore": 43.7,
+        "modelScore": 43.8,
         "signals": [
           "sleeper"
         ]
@@ -1427,7 +2236,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 2.4,
-        "modelScore": 26.7,
+        "modelScore": 26.8,
         "signals": []
       },
       "656716": {
@@ -1436,13 +2245,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 1.5,
-        "modelScore": 21.1,
+        "modelScore": 24.1,
         "signals": []
       },
       "656775": {
@@ -1451,13 +2260,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 6.9,
-        "modelScore": 35,
+        "modelScore": 35.1,
         "signals": []
       },
       "656941": {
@@ -1472,7 +2281,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 22.8,
-        "modelScore": 48.6,
+        "modelScore": 48.7,
         "signals": [
           "hotLately"
         ]
@@ -1489,7 +2298,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 8.1,
-        "modelScore": 36.3,
+        "modelScore": 36.4,
         "signals": []
       },
       "657136": {
@@ -1504,7 +2313,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 3,
-        "modelScore": 27.5,
+        "modelScore": 27.6,
         "signals": []
       },
       "657757": {
@@ -1519,7 +2328,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 12,
-        "modelScore": 38,
+        "modelScore": 38.1,
         "signals": []
       },
       "660271": {
@@ -1534,7 +2343,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 22.8,
-        "modelScore": 46.6,
+        "modelScore": 46.7,
         "signals": [
           "hotLately"
         ]
@@ -1551,7 +2360,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 15.6,
-        "modelScore": 36.3,
+        "modelScore": 36.4,
         "signals": []
       },
       "660688": {
@@ -1566,7 +2375,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 10.2,
-        "modelScore": 37.1,
+        "modelScore": 37.3,
         "signals": []
       },
       "660821": {
@@ -1581,7 +2390,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 10.2,
-        "modelScore": 36.2,
+        "modelScore": 36.3,
         "signals": []
       },
       "661388": {
@@ -1596,7 +2405,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 9.5,
-        "modelScore": 38.5,
+        "modelScore": 38.6,
         "signals": []
       },
       "661531": {
@@ -1611,7 +2420,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 15.5,
-        "modelScore": 36.5,
+        "modelScore": 36.7,
         "signals": [
           "hotLately"
         ]
@@ -1628,7 +2437,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 3.8,
-        "modelScore": 23.5,
+        "modelScore": 23.6,
         "signals": []
       },
       "663330": {
@@ -1643,7 +2452,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 3.8,
-        "modelScore": 28.1,
+        "modelScore": 28.3,
         "signals": []
       },
       "663457": {
@@ -1658,7 +2467,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 1.9,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "663494": {
@@ -1673,7 +2482,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 3.6,
-        "modelScore": 26.8,
+        "modelScore": 26.9,
         "signals": []
       },
       "663538": {
@@ -1688,7 +2497,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 1.8,
-        "modelScore": 22.6,
+        "modelScore": 22.7,
         "signals": []
       },
       "663586": {
@@ -1703,7 +2512,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 7.1,
-        "modelScore": 33.7,
+        "modelScore": 33.8,
         "signals": []
       },
       "663616": {
@@ -1718,7 +2527,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 6.6,
-        "modelScore": 32.9,
+        "modelScore": 33,
         "signals": []
       },
       "663647": {
@@ -1733,7 +2542,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 1.4,
-        "modelScore": 23,
+        "modelScore": 23.2,
         "signals": []
       },
       "663656": {
@@ -1748,7 +2557,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 4.4,
-        "modelScore": 27.4,
+        "modelScore": 27.6,
         "signals": []
       },
       "663662": {
@@ -1763,7 +2572,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 12.6,
-        "modelScore": 41.1,
+        "modelScore": 41.2,
         "signals": []
       },
       "663728": {
@@ -1778,7 +2587,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 9,
-        "modelScore": 35.2,
+        "modelScore": 35.4,
         "signals": [
           "hotLately"
         ]
@@ -1789,13 +2598,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 1.4,
-        "modelScore": 21.6,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "663757": {
@@ -1810,7 +2619,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 14.1,
-        "modelScore": 37.4,
+        "modelScore": 37.5,
         "signals": [
           "hotLately"
         ]
@@ -1827,7 +2636,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 11.6,
-        "modelScore": 36.1,
+        "modelScore": 36.2,
         "signals": []
       },
       "663968": {
@@ -1842,7 +2651,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 2.4,
-        "modelScore": 23.8,
+        "modelScore": 23.9,
         "signals": []
       },
       "663993": {
@@ -1857,7 +2666,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 20.9,
-        "modelScore": 43.8,
+        "modelScore": 43.9,
         "signals": [
           "sleeper"
         ]
@@ -1874,7 +2683,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 22.8,
-        "modelScore": 40.9,
+        "modelScore": 41.1,
         "signals": [
           "hotLately"
         ]
@@ -1891,7 +2700,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 22.8,
-        "modelScore": 39.5,
+        "modelScore": 39.6,
         "signals": []
       },
       "664040": {
@@ -1906,7 +2715,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 22.8,
-        "modelScore": 39.6,
+        "modelScore": 39.7,
         "signals": []
       },
       "664702": {
@@ -1921,7 +2730,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 2.2,
-        "modelScore": 25.4,
+        "modelScore": 25.5,
         "signals": []
       },
       "664728": {
@@ -1936,7 +2745,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 3.8,
-        "modelScore": 34.9,
+        "modelScore": 35,
         "signals": [
           "hotLately"
         ]
@@ -1953,7 +2762,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 9.4,
-        "modelScore": 38.8,
+        "modelScore": 38.9,
         "signals": []
       },
       "664770": {
@@ -1968,7 +2777,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 3,
-        "modelScore": 31.6,
+        "modelScore": 31.7,
         "signals": [
           "hotLately"
         ]
@@ -1985,7 +2794,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 2.1,
-        "modelScore": 22.3,
+        "modelScore": 22.4,
         "signals": []
       },
       "664954": {
@@ -2000,7 +2809,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 7.9,
-        "modelScore": 34.5,
+        "modelScore": 34.6,
         "signals": []
       },
       "664983": {
@@ -2015,7 +2824,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 19,
-        "modelScore": 41.9,
+        "modelScore": 42,
         "signals": [
           "due"
         ]
@@ -2032,7 +2841,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 22.8,
-        "modelScore": 48.2,
+        "modelScore": 48.3,
         "signals": [
           "sleeper"
         ]
@@ -2049,7 +2858,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 22.8,
-        "modelScore": 40.3,
+        "modelScore": 40.5,
         "signals": []
       },
       "665161": {
@@ -2064,7 +2873,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 21,
-        "modelScore": 31.2,
+        "modelScore": 31.4,
         "signals": [
           "hotLately"
         ]
@@ -2081,7 +2890,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 18.6,
-        "modelScore": 40.6,
+        "modelScore": 40.7,
         "signals": [
           "hotLately"
         ]
@@ -2098,7 +2907,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 1.4,
-        "modelScore": 25.2,
+        "modelScore": 25.3,
         "signals": []
       },
       "665506": {
@@ -2113,7 +2922,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 17.8,
+        "modelScore": 18,
         "signals": []
       },
       "665750": {
@@ -2128,7 +2937,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 2.7,
-        "modelScore": 26.3,
+        "modelScore": 26.4,
         "signals": []
       },
       "665804": {
@@ -2143,7 +2952,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 4.2,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       },
       "665833": {
@@ -2158,7 +2967,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 22.8,
-        "modelScore": 38.4,
+        "modelScore": 38.5,
         "signals": [
           "hotLately"
         ]
@@ -2175,7 +2984,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 11.4,
-        "modelScore": 33.4,
+        "modelScore": 33.6,
         "signals": []
       },
       "665877": {
@@ -2190,7 +2999,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 3.9,
-        "modelScore": 31.4,
+        "modelScore": 31.6,
         "signals": []
       },
       "665923": {
@@ -2205,7 +3014,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 11.4,
-        "modelScore": 31.3,
+        "modelScore": 31.5,
         "signals": []
       },
       "665926": {
@@ -2220,7 +3029,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 3.5,
-        "modelScore": 26.8,
+        "modelScore": 26.9,
         "signals": []
       },
       "665953": {
@@ -2235,7 +3044,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 22.8,
-        "modelScore": 46.7,
+        "modelScore": 46.8,
         "signals": []
       },
       "665966": {
@@ -2250,7 +3059,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 1.4,
-        "modelScore": 23.7,
+        "modelScore": 23.8,
         "signals": []
       },
       "666018": {
@@ -2259,13 +3068,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 10.2,
-        "modelScore": 34.1,
+        "modelScore": 39.2,
         "signals": []
       },
       "666023": {
@@ -2280,7 +3089,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.7,
-        "modelScore": 21.4,
+        "modelScore": 21.5,
         "signals": []
       },
       "666126": {
@@ -2295,7 +3104,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 5.5,
-        "modelScore": 28.9,
+        "modelScore": 29,
         "signals": []
       },
       "666139": {
@@ -2310,7 +3119,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 4.2,
-        "modelScore": 26.7,
+        "modelScore": 26.8,
         "signals": []
       },
       "666152": {
@@ -2325,7 +3134,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 1.4,
-        "modelScore": 22.3,
+        "modelScore": 22.4,
         "signals": []
       },
       "666160": {
@@ -2340,7 +3149,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 22.8,
-        "modelScore": 43.4,
+        "modelScore": 43.5,
         "signals": [
           "hotLately"
         ]
@@ -2357,7 +3166,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 1.4,
-        "modelScore": 13.5,
+        "modelScore": 13.6,
         "signals": []
       },
       "666176": {
@@ -2372,7 +3181,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 13,
-        "modelScore": 40.1,
+        "modelScore": 40.2,
         "signals": [
           "hotLately"
         ]
@@ -2389,7 +3198,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 6.4,
-        "modelScore": 31.5,
+        "modelScore": 31.6,
         "signals": [
           "hotLately"
         ]
@@ -2406,7 +3215,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 4.6,
-        "modelScore": 22.3,
+        "modelScore": 22.4,
         "signals": []
       },
       "666624": {
@@ -2421,7 +3230,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 18.1,
+        "modelScore": 18.2,
         "signals": []
       },
       "667452": {
@@ -2430,13 +3239,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 7.3,
-        "modelScore": 29,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -2453,7 +3262,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 2.4,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       },
       "668227": {
@@ -2468,7 +3277,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 20.8,
-        "modelScore": 36.6,
+        "modelScore": 36.7,
         "signals": [
           "hotLately"
         ]
@@ -2485,7 +3294,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 2.8,
-        "modelScore": 26.7,
+        "modelScore": 26.9,
         "signals": []
       },
       "668709": {
@@ -2500,7 +3309,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 22.8,
-        "modelScore": 41.5,
+        "modelScore": 41.6,
         "signals": []
       },
       "668723": {
@@ -2509,13 +3318,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 19.7,
-        "modelScore": 41.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -2532,7 +3341,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 6.2,
-        "modelScore": 38.1,
+        "modelScore": 38.2,
         "signals": []
       },
       "668804": {
@@ -2547,7 +3356,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 15.8,
-        "modelScore": 36.6,
+        "modelScore": 36.8,
         "signals": []
       },
       "668904": {
@@ -2562,7 +3371,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 11.7,
-        "modelScore": 36.7,
+        "modelScore": 36.9,
         "signals": []
       },
       "668930": {
@@ -2577,7 +3386,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 17,
-        "modelScore": 34.8,
+        "modelScore": 34.9,
         "signals": []
       },
       "668939": {
@@ -2592,7 +3401,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 8.9,
-        "modelScore": 35.1,
+        "modelScore": 35.2,
         "signals": []
       },
       "668952": {
@@ -2607,7 +3416,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 5.3,
-        "modelScore": 28.9,
+        "modelScore": 29,
         "signals": []
       },
       "669003": {
@@ -2622,7 +3431,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 10.4,
-        "modelScore": 34.8,
+        "modelScore": 34.9,
         "signals": []
       },
       "669016": {
@@ -2637,7 +3446,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 13.3,
-        "modelScore": 34.7,
+        "modelScore": 34.8,
         "signals": []
       },
       "669065": {
@@ -2652,7 +3461,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 22.8,
-        "modelScore": 42.2,
+        "modelScore": 42.3,
         "signals": []
       },
       "669134": {
@@ -2667,9 +3476,10 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 11.9,
-        "modelScore": 41.9,
+        "modelScore": 42.1,
         "signals": [
-          "due"
+          "due",
+          "sleeper"
         ]
       },
       "669221": {
@@ -2684,7 +3494,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 1.4,
-        "modelScore": 14.3,
+        "modelScore": 14.4,
         "signals": []
       },
       "669224": {
@@ -2699,7 +3509,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 2.7,
-        "modelScore": 25.7,
+        "modelScore": 25.9,
         "signals": []
       },
       "669242": {
@@ -2714,7 +3524,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 5.4,
-        "modelScore": 32.3,
+        "modelScore": 32.4,
         "signals": []
       },
       "669357": {
@@ -2729,7 +3539,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 3.1,
-        "modelScore": 27,
+        "modelScore": 27.1,
         "signals": []
       },
       "669364": {
@@ -2744,7 +3554,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 1.9,
-        "modelScore": 23.4,
+        "modelScore": 23.5,
         "signals": []
       },
       "669394": {
@@ -2759,7 +3569,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 19.9,
-        "modelScore": 39.2,
+        "modelScore": 39.4,
         "signals": [
           "hotLately"
         ]
@@ -2776,7 +3586,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 1.4,
-        "modelScore": 18.9,
+        "modelScore": 19,
         "signals": []
       },
       "669707": {
@@ -2791,7 +3601,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 1.4,
-        "modelScore": 17.8,
+        "modelScore": 17.9,
         "signals": []
       },
       "669720": {
@@ -2806,7 +3616,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.8,
-        "modelScore": 30.4,
+        "modelScore": 30.5,
         "signals": []
       },
       "669743": {
@@ -2821,7 +3631,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 1.4,
-        "modelScore": 22.4,
+        "modelScore": 22.5,
         "signals": []
       },
       "670032": {
@@ -2836,7 +3646,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 1.4,
-        "modelScore": 15.3,
+        "modelScore": 15.4,
         "signals": []
       },
       "670231": {
@@ -2851,7 +3661,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 13.1,
-        "modelScore": 32.4,
+        "modelScore": 32.5,
         "signals": []
       },
       "670541": {
@@ -2866,7 +3676,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 22.8,
-        "modelScore": 41,
+        "modelScore": 41.2,
         "signals": [
           "due"
         ]
@@ -2883,7 +3693,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 14.9,
-        "modelScore": 29,
+        "modelScore": 29.1,
         "signals": []
       },
       "670764": {
@@ -2892,13 +3702,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 1.4,
-        "modelScore": 17.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "670770": {
@@ -2913,7 +3723,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 1.4,
-        "modelScore": 17.8,
+        "modelScore": 17.9,
         "signals": []
       },
       "671056": {
@@ -2928,7 +3738,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 6.5,
-        "modelScore": 30.2,
+        "modelScore": 30.3,
         "signals": []
       },
       "671083": {
@@ -2943,7 +3753,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 1.4,
-        "modelScore": 25,
+        "modelScore": 25.2,
         "signals": []
       },
       "671155": {
@@ -2958,7 +3768,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 1.4,
-        "modelScore": 19.4,
+        "modelScore": 19.6,
         "signals": []
       },
       "671218": {
@@ -2973,7 +3783,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 6.4,
-        "modelScore": 31.9,
+        "modelScore": 32.1,
         "signals": []
       },
       "671277": {
@@ -2988,7 +3798,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 22.8,
-        "modelScore": 51,
+        "modelScore": 51.2,
         "signals": [
           "hotLately"
         ]
@@ -3005,7 +3815,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 5.1,
-        "modelScore": 31,
+        "modelScore": 31.1,
         "signals": []
       },
       "671739": {
@@ -3020,7 +3830,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 22.8,
-        "modelScore": 37,
+        "modelScore": 37.1,
         "signals": []
       },
       "671976": {
@@ -3035,7 +3845,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 15.1,
-        "modelScore": 40.8,
+        "modelScore": 40.9,
         "signals": [
           "hotLately"
         ]
@@ -3052,7 +3862,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 2.2,
-        "modelScore": 26.5,
+        "modelScore": 26.7,
         "signals": []
       },
       "672356": {
@@ -3067,7 +3877,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 3.1,
-        "modelScore": 25.1,
+        "modelScore": 25.2,
         "signals": []
       },
       "672386": {
@@ -3082,7 +3892,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 6.8,
-        "modelScore": 34.3,
+        "modelScore": 34.4,
         "signals": [
           "hotLately"
         ]
@@ -3099,7 +3909,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 14.2,
-        "modelScore": 39.5,
+        "modelScore": 39.6,
         "signals": []
       },
       "672569": {
@@ -3114,7 +3924,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.4,
-        "modelScore": 14.7,
+        "modelScore": 14.8,
         "signals": []
       },
       "672640": {
@@ -3129,7 +3939,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 10.1,
-        "modelScore": 33.7,
+        "modelScore": 33.8,
         "signals": []
       },
       "672695": {
@@ -3144,7 +3954,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 4.3,
-        "modelScore": 29.6,
+        "modelScore": 29.7,
         "signals": []
       },
       "672724": {
@@ -3159,7 +3969,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 2.5,
-        "modelScore": 24,
+        "modelScore": 24.1,
         "signals": []
       },
       "672960": {
@@ -3174,7 +3984,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 22.8,
-        "modelScore": 45.2,
+        "modelScore": 45.3,
         "signals": [
           "hotLately"
         ]
@@ -3191,7 +4001,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 6.5,
-        "modelScore": 24.1,
+        "modelScore": 24.3,
         "signals": [
           "hotLately"
         ]
@@ -3208,7 +4018,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 11.1,
-        "modelScore": 35.2,
+        "modelScore": 35.3,
         "signals": [
           "hotLately"
         ]
@@ -3225,7 +4035,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 1.4,
-        "modelScore": 14.1,
+        "modelScore": 14.2,
         "signals": []
       },
       "673548": {
@@ -3240,7 +4050,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 22.8,
-        "modelScore": 38.5,
+        "modelScore": 38.6,
         "signals": [
           "due"
         ]
@@ -3257,7 +4067,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 4.6,
-        "modelScore": 33.7,
+        "modelScore": 33.8,
         "signals": []
       },
       "676356": {
@@ -3266,13 +4076,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 9.1,
-        "modelScore": 32.7,
+        "modelScore": 35,
         "signals": []
       },
       "676369": {
@@ -3287,7 +4097,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 7.5,
-        "modelScore": 28.7,
+        "modelScore": 28.8,
         "signals": []
       },
       "676391": {
@@ -3302,7 +4112,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 3.1,
-        "modelScore": 25.7,
+        "modelScore": 25.9,
         "signals": []
       },
       "676439": {
@@ -3317,7 +4127,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 1.5,
-        "modelScore": 22.7,
+        "modelScore": 22.9,
         "signals": []
       },
       "676475": {
@@ -3332,7 +4142,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 22.4,
-        "modelScore": 39.2,
+        "modelScore": 39.3,
         "signals": [
           "due"
         ]
@@ -3349,7 +4159,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 16.2,
-        "modelScore": 39.3,
+        "modelScore": 39.5,
         "signals": [
           "due"
         ]
@@ -3366,7 +4176,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 2.3,
-        "modelScore": 23.2,
+        "modelScore": 23.4,
         "signals": []
       },
       "676609": {
@@ -3381,7 +4191,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 6.8,
-        "modelScore": 31.5,
+        "modelScore": 31.6,
         "signals": []
       },
       "676724": {
@@ -3396,7 +4206,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 9.2,
-        "modelScore": 30,
+        "modelScore": 30.2,
         "signals": []
       },
       "677587": {
@@ -3411,7 +4221,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 3.1,
-        "modelScore": 28.2,
+        "modelScore": 28.4,
         "signals": []
       },
       "677588": {
@@ -3426,7 +4236,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 7.3,
-        "modelScore": 35.8,
+        "modelScore": 36,
         "signals": []
       },
       "677594": {
@@ -3441,7 +4251,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 14.2,
-        "modelScore": 35.3,
+        "modelScore": 35.5,
         "signals": []
       },
       "677649": {
@@ -3456,7 +4266,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 17.3,
-        "modelScore": 37.8,
+        "modelScore": 37.9,
         "signals": []
       },
       "677800": {
@@ -3471,7 +4281,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 22.8,
-        "modelScore": 40.6,
+        "modelScore": 40.7,
         "signals": []
       },
       "677870": {
@@ -3486,7 +4296,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 1.4,
-        "modelScore": 21.1,
+        "modelScore": 21.3,
         "signals": []
       },
       "677943": {
@@ -3501,7 +4311,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 1.4,
-        "modelScore": 20.1,
+        "modelScore": 20.2,
         "signals": []
       },
       "677950": {
@@ -3516,7 +4326,7 @@
         "opposingPitcherId": "700363",
         "opposingPitcher": "AJ Smith-Shawver",
         "probability": 3.8,
-        "modelScore": 29.7,
+        "modelScore": 29.8,
         "signals": []
       },
       "677951": {
@@ -3531,7 +4341,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 16.8,
-        "modelScore": 36.7,
+        "modelScore": 36.8,
         "signals": []
       },
       "678011": {
@@ -3546,7 +4356,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 4.8,
-        "modelScore": 27.9,
+        "modelScore": 28,
         "signals": []
       },
       "678218": {
@@ -3561,7 +4371,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 7.5,
-        "modelScore": 35.9,
+        "modelScore": 36,
         "signals": []
       },
       "678246": {
@@ -3576,7 +4386,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 22.8,
-        "modelScore": 44.4,
+        "modelScore": 44.6,
         "signals": []
       },
       "678391": {
@@ -3591,7 +4401,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 1.4,
-        "modelScore": 21.5,
+        "modelScore": 21.7,
         "signals": []
       },
       "678489": {
@@ -3606,7 +4416,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 3.9,
-        "modelScore": 27.7,
+        "modelScore": 27.8,
         "signals": []
       },
       "678545": {
@@ -3621,7 +4431,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 4.3,
-        "modelScore": 31.2,
+        "modelScore": 31.3,
         "signals": []
       },
       "678662": {
@@ -3636,7 +4446,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 4.7,
-        "modelScore": 34,
+        "modelScore": 34.1,
         "signals": []
       },
       "678882": {
@@ -3651,7 +4461,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 19.6,
-        "modelScore": 42.2,
+        "modelScore": 42.4,
         "signals": [
           "sleeper"
         ]
@@ -3662,13 +4472,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 14,
-        "modelScore": 33.6,
+        "modelScore": 35.5,
         "signals": []
       },
       "679822": {
@@ -3683,7 +4493,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 18.5,
-        "modelScore": 37.6,
+        "modelScore": 37.7,
         "signals": [
           "hotLately"
         ]
@@ -3700,7 +4510,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 5.6,
-        "modelScore": 30.7,
+        "modelScore": 30.9,
         "signals": []
       },
       "680574": {
@@ -3715,7 +4525,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 8,
-        "modelScore": 34.5,
+        "modelScore": 34.7,
         "signals": [
           "hotLately"
         ]
@@ -3726,13 +4536,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 22.8,
-        "modelScore": 47.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "680700": {
@@ -3741,13 +4551,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 1.7,
-        "modelScore": 24.8,
+        "modelScore": 26.4,
         "signals": []
       },
       "680757": {
@@ -3762,7 +4572,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 1.4,
-        "modelScore": 20.5,
+        "modelScore": 20.6,
         "signals": []
       },
       "680776": {
@@ -3777,7 +4587,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 7.7,
-        "modelScore": 31.1,
+        "modelScore": 31.2,
         "signals": [
           "hotLately"
         ]
@@ -3794,7 +4604,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 18.7,
-        "modelScore": 39.4,
+        "modelScore": 39.5,
         "signals": [
           "due"
         ]
@@ -3811,7 +4621,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 4.2,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "680869": {
@@ -3826,7 +4636,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 18,
-        "modelScore": 40.1,
+        "modelScore": 40.2,
         "signals": []
       },
       "681047": {
@@ -3841,7 +4651,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 1.4,
-        "modelScore": 25.7,
+        "modelScore": 25.8,
         "signals": []
       },
       "681082": {
@@ -3856,7 +4666,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 7.3,
-        "modelScore": 30.4,
+        "modelScore": 30.5,
         "signals": []
       },
       "681198": {
@@ -3871,7 +4681,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 11.7,
-        "modelScore": 34.3,
+        "modelScore": 34.4,
         "signals": [
           "due"
         ]
@@ -3888,7 +4698,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 7.8,
-        "modelScore": 34.9,
+        "modelScore": 35.1,
         "signals": [
           "hotLately"
         ]
@@ -3905,7 +4715,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 1.4,
-        "modelScore": 17.5,
+        "modelScore": 17.6,
         "signals": []
       },
       "681393": {
@@ -3920,7 +4730,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 4.9,
-        "modelScore": 30.5,
+        "modelScore": 30.6,
         "signals": []
       },
       "681508": {
@@ -3935,7 +4745,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 10.6,
-        "modelScore": 37.5,
+        "modelScore": 37.7,
         "signals": [
           "hotLately"
         ]
@@ -3952,7 +4762,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 22.8,
-        "modelScore": 40.4,
+        "modelScore": 40.5,
         "signals": [
           "hotLately"
         ]
@@ -3969,7 +4779,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 3.5,
-        "modelScore": 26.6,
+        "modelScore": 26.7,
         "signals": []
       },
       "682626": {
@@ -3984,7 +4794,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 9.2,
-        "modelScore": 31.9,
+        "modelScore": 32,
         "signals": []
       },
       "682634": {
@@ -3999,7 +4809,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 2.3,
-        "modelScore": 24.6,
+        "modelScore": 24.7,
         "signals": []
       },
       "682657": {
@@ -4014,7 +4824,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 13.8,
-        "modelScore": 37.9,
+        "modelScore": 38,
         "signals": []
       },
       "682663": {
@@ -4029,7 +4839,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 1.4,
-        "modelScore": 20.8,
+        "modelScore": 20.9,
         "signals": []
       },
       "682668": {
@@ -4044,7 +4854,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 1.4,
-        "modelScore": 22,
+        "modelScore": 22.1,
         "signals": []
       },
       "682829": {
@@ -4059,7 +4869,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 22.8,
-        "modelScore": 42.2,
+        "modelScore": 42.4,
         "signals": []
       },
       "682928": {
@@ -4074,7 +4884,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 22.8,
-        "modelScore": 45.1,
+        "modelScore": 45.3,
         "signals": [
           "due"
         ]
@@ -4091,7 +4901,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 10.8,
-        "modelScore": 39.8,
+        "modelScore": 39.9,
         "signals": [
           "hotLately"
         ]
@@ -4108,7 +4918,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 22.8,
-        "modelScore": 43.9,
+        "modelScore": 44,
         "signals": [
           "due"
         ]
@@ -4125,7 +4935,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 13.7,
-        "modelScore": 36.4,
+        "modelScore": 36.5,
         "signals": []
       },
       "683021": {
@@ -4140,7 +4950,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 3.5,
-        "modelScore": 30.1,
+        "modelScore": 30.2,
         "signals": []
       },
       "683083": {
@@ -4155,7 +4965,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 1.4,
-        "modelScore": 20,
+        "modelScore": 20.1,
         "signals": []
       },
       "683090": {
@@ -4170,7 +4980,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 1.4,
-        "modelScore": 12.1,
+        "modelScore": 12.2,
         "signals": []
       },
       "683146": {
@@ -4185,7 +4995,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 2.2,
-        "modelScore": 27.1,
+        "modelScore": 27.3,
         "signals": []
       },
       "683227": {
@@ -4200,7 +5010,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 1.4,
-        "modelScore": 21.9,
+        "modelScore": 22.1,
         "signals": []
       },
       "683357": {
@@ -4215,7 +5025,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 15.5,
-        "modelScore": 35.1,
+        "modelScore": 35.2,
         "signals": []
       },
       "683734": {
@@ -4230,7 +5040,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 13.1,
-        "modelScore": 39.4,
+        "modelScore": 39.5,
         "signals": [
           "due"
         ]
@@ -4247,7 +5057,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 8.5,
-        "modelScore": 32.3,
+        "modelScore": 32.4,
         "signals": [
           "hotLately"
         ]
@@ -4264,7 +5074,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 1.4,
-        "modelScore": 22.3,
+        "modelScore": 22.4,
         "signals": []
       },
       "683953": {
@@ -4279,7 +5089,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 5.5,
-        "modelScore": 33.8,
+        "modelScore": 33.9,
         "signals": []
       },
       "686217": {
@@ -4294,7 +5104,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 1.6,
-        "modelScore": 25.7,
+        "modelScore": 25.8,
         "signals": []
       },
       "686469": {
@@ -4309,7 +5119,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 4.8,
-        "modelScore": 32.9,
+        "modelScore": 33,
         "signals": [
           "hotLately"
         ]
@@ -4326,7 +5136,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 5.2,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       },
       "686527": {
@@ -4341,7 +5151,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 22.8,
-        "modelScore": 39.5,
+        "modelScore": 39.6,
         "signals": [
           "due"
         ]
@@ -4358,7 +5168,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 3,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "686611": {
@@ -4373,7 +5183,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 4,
-        "modelScore": 28.9,
+        "modelScore": 29.1,
         "signals": []
       },
       "686668": {
@@ -4388,7 +5198,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 1.4,
-        "modelScore": 17,
+        "modelScore": 17.1,
         "signals": []
       },
       "686681": {
@@ -4403,7 +5213,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 12.6,
-        "modelScore": 37.2,
+        "modelScore": 37.4,
         "signals": []
       },
       "686765": {
@@ -4418,7 +5228,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 4.7,
-        "modelScore": 32.1,
+        "modelScore": 32.2,
         "signals": [
           "hotLately"
         ]
@@ -4435,7 +5245,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 1.4,
-        "modelScore": 21.1,
+        "modelScore": 21.3,
         "signals": []
       },
       "686797": {
@@ -4450,7 +5260,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 21.7,
-        "modelScore": 42.6,
+        "modelScore": 42.7,
         "signals": [
           "hotLately"
         ]
@@ -4467,7 +5277,7 @@
         "opposingPitcherId": "808963",
         "opposingPitcher": "Roki Sasaki",
         "probability": 18.6,
-        "modelScore": 38.3,
+        "modelScore": 38.5,
         "signals": []
       },
       "687093": {
@@ -4482,7 +5292,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 5,
-        "modelScore": 27.2,
+        "modelScore": 27.3,
         "signals": [
           "hotLately"
         ]
@@ -4499,7 +5309,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 1.4,
-        "modelScore": 20.1,
+        "modelScore": 20.2,
         "signals": []
       },
       "687263": {
@@ -4514,7 +5324,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 22.8,
-        "modelScore": 41.3,
+        "modelScore": 41.4,
         "signals": [
           "hotLately"
         ]
@@ -4531,7 +5341,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 3.3,
-        "modelScore": 28.9,
+        "modelScore": 29,
         "signals": []
       },
       "687462": {
@@ -4546,7 +5356,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 6.9,
-        "modelScore": 28,
+        "modelScore": 28.1,
         "signals": []
       },
       "687529": {
@@ -4561,7 +5371,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 2.5,
-        "modelScore": 27.1,
+        "modelScore": 27.2,
         "signals": []
       },
       "687551": {
@@ -4576,7 +5386,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 3.9,
-        "modelScore": 32.9,
+        "modelScore": 33.1,
         "signals": []
       },
       "687597": {
@@ -4591,7 +5401,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 1.4,
-        "modelScore": 21.2,
+        "modelScore": 21.3,
         "signals": []
       },
       "687605": {
@@ -4606,7 +5416,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 21.1,
-        "modelScore": 52.9,
+        "modelScore": 53,
         "signals": [
           "due",
           "hotLook"
@@ -4624,7 +5434,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 4.6,
-        "modelScore": 33.2,
+        "modelScore": 33.3,
         "signals": [
           "hotLately"
         ]
@@ -4641,7 +5451,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.6,
-        "modelScore": 26.3,
+        "modelScore": 26.4,
         "signals": []
       },
       "687859": {
@@ -4656,7 +5466,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 3.1,
-        "modelScore": 30.4,
+        "modelScore": 30.6,
         "signals": []
       },
       "687952": {
@@ -4671,7 +5481,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 16.9,
-        "modelScore": 36.6,
+        "modelScore": 36.7,
         "signals": [
           "hotLately"
         ]
@@ -4688,7 +5498,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 1.4,
-        "modelScore": 20.1,
+        "modelScore": 20.2,
         "signals": []
       },
       "689414": {
@@ -4697,13 +5507,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 16.1,
-        "modelScore": 38.7,
+        "modelScore": 44.1,
         "signals": []
       },
       "690022": {
@@ -4718,7 +5528,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 1.4,
-        "modelScore": 21.4,
+        "modelScore": 21.6,
         "signals": []
       },
       "690984": {
@@ -4733,7 +5543,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 1.8,
-        "modelScore": 28.3,
+        "modelScore": 28.5,
         "signals": []
       },
       "690993": {
@@ -4742,13 +5552,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 7.9,
-        "modelScore": 34.6,
+        "modelScore": 39.9,
         "signals": []
       },
       "691011": {
@@ -4763,7 +5573,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 3.7,
-        "modelScore": 29.8,
+        "modelScore": 30,
         "signals": []
       },
       "691023": {
@@ -4778,7 +5588,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 22.8,
-        "modelScore": 47.4,
+        "modelScore": 47.6,
         "signals": [
           "hotLately"
         ]
@@ -4789,13 +5599,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 22.8,
-        "modelScore": 44.8,
+        "modelScore": 50.1,
         "signals": [
           "due"
         ]
@@ -4812,7 +5622,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 1.9,
-        "modelScore": 24.7,
+        "modelScore": 24.9,
         "signals": []
       },
       "691594": {
@@ -4827,7 +5637,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 5.1,
-        "modelScore": 28.3,
+        "modelScore": 28.5,
         "signals": []
       },
       "691718": {
@@ -4842,7 +5652,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 22.8,
-        "modelScore": 45.7,
+        "modelScore": 45.9,
         "signals": [
           "hotLately"
         ]
@@ -4859,7 +5669,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 22.8,
-        "modelScore": 42,
+        "modelScore": 42.1,
         "signals": [
           "hotLately"
         ]
@@ -4876,7 +5686,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 17.5,
-        "modelScore": 49.8,
+        "modelScore": 49.9,
         "signals": [
           "sleeper"
         ]
@@ -4893,7 +5703,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 7,
-        "modelScore": 33.5,
+        "modelScore": 33.7,
         "signals": [
           "hotLately"
         ]
@@ -4910,7 +5720,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 8.1,
-        "modelScore": 35.2,
+        "modelScore": 35.4,
         "signals": []
       },
       "691783": {
@@ -4925,7 +5735,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 4.7,
-        "modelScore": 32,
+        "modelScore": 32.1,
         "signals": []
       },
       "691788": {
@@ -4940,7 +5750,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 14,
-        "modelScore": 33.4,
+        "modelScore": 33.5,
         "signals": []
       },
       "693304": {
@@ -4955,7 +5765,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 3.1,
-        "modelScore": 24.8,
+        "modelScore": 25,
         "signals": []
       },
       "693307": {
@@ -4964,13 +5774,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 22.8,
-        "modelScore": 40.8,
+        "modelScore": 45.5,
         "signals": []
       },
       "694192": {
@@ -4985,7 +5795,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 19.7,
-        "modelScore": 37.3,
+        "modelScore": 37.4,
         "signals": []
       },
       "694197": {
@@ -5000,7 +5810,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 1.9,
-        "modelScore": 25.4,
+        "modelScore": 25.6,
         "signals": []
       },
       "694203": {
@@ -5015,7 +5825,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 4.2,
-        "modelScore": 31,
+        "modelScore": 31.1,
         "signals": []
       },
       "694208": {
@@ -5030,7 +5840,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 2.1,
-        "modelScore": 24.4,
+        "modelScore": 24.5,
         "signals": []
       },
       "694212": {
@@ -5045,7 +5855,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 20.7,
-        "modelScore": 39.7,
+        "modelScore": 39.8,
         "signals": []
       },
       "694249": {
@@ -5060,7 +5870,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 9,
-        "modelScore": 32,
+        "modelScore": 32.2,
         "signals": []
       },
       "694374": {
@@ -5075,7 +5885,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 6.3,
-        "modelScore": 35.8,
+        "modelScore": 35.9,
         "signals": []
       },
       "694376": {
@@ -5090,7 +5900,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 5.1,
-        "modelScore": 29.6,
+        "modelScore": 29.7,
         "signals": []
       },
       "694377": {
@@ -5105,7 +5915,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 1.4,
-        "modelScore": 16,
+        "modelScore": 16.1,
         "signals": []
       },
       "694378": {
@@ -5120,7 +5930,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 3.1,
-        "modelScore": 24.2,
+        "modelScore": 24.3,
         "signals": []
       },
       "694497": {
@@ -5135,7 +5945,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 2.7,
-        "modelScore": 24.7,
+        "modelScore": 24.9,
         "signals": []
       },
       "694671": {
@@ -5150,7 +5960,7 @@
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 22.8,
-        "modelScore": 44.9,
+        "modelScore": 45,
         "signals": []
       },
       "694673": {
@@ -5165,7 +5975,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 15.7,
-        "modelScore": 37.9,
+        "modelScore": 38.1,
         "signals": []
       },
       "695257": {
@@ -5180,7 +5990,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 1.4,
-        "modelScore": 20.8,
+        "modelScore": 20.9,
         "signals": []
       },
       "695491": {
@@ -5195,7 +6005,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 13.9,
-        "modelScore": 39.9,
+        "modelScore": 40.1,
         "signals": []
       },
       "695506": {
@@ -5210,7 +6020,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 22.8,
-        "modelScore": 46,
+        "modelScore": 46.1,
         "signals": [
           "due"
         ]
@@ -5227,7 +6037,7 @@
         "opposingPitcherId": "693686",
         "opposingPitcher": "Spencer Miles",
         "probability": 13.8,
-        "modelScore": 37.1,
+        "modelScore": 37.3,
         "signals": []
       },
       "695657": {
@@ -5242,7 +6052,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 22.8,
-        "modelScore": 43.7,
+        "modelScore": 43.9,
         "signals": []
       },
       "695670": {
@@ -5257,7 +6067,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 7.2,
-        "modelScore": 42.7,
+        "modelScore": 42.8,
         "signals": [
           "sleeper"
         ]
@@ -5274,7 +6084,7 @@
         "opposingPitcherId": "676282",
         "opposingPitcher": "Joey Cantillo",
         "probability": 1.4,
-        "modelScore": 19.1,
+        "modelScore": 19.2,
         "signals": []
       },
       "695720": {
@@ -5289,7 +6099,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 1.4,
-        "modelScore": 28.9,
+        "modelScore": 29,
         "signals": []
       },
       "695731": {
@@ -5304,7 +6114,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 4.5,
-        "modelScore": 30.1,
+        "modelScore": 30.2,
         "signals": []
       },
       "695734": {
@@ -5319,7 +6129,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 10.9,
-        "modelScore": 34.1,
+        "modelScore": 34.2,
         "signals": [
           "hotLately"
         ]
@@ -5336,7 +6146,7 @@
         "opposingPitcherId": "663362",
         "opposingPitcher": "Matt Waldron",
         "probability": 22.8,
-        "modelScore": 47,
+        "modelScore": 47.2,
         "signals": [
           "hotLately"
         ]
@@ -5353,7 +6163,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 7,
-        "modelScore": 33.5,
+        "modelScore": 33.7,
         "signals": []
       },
       "699013": {
@@ -5368,7 +6178,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 22.8,
-        "modelScore": 41.6,
+        "modelScore": 41.7,
         "signals": []
       },
       "699302": {
@@ -5383,7 +6193,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 1.9,
-        "modelScore": 27.5,
+        "modelScore": 27.6,
         "signals": []
       },
       "699393": {
@@ -5398,7 +6208,7 @@
         "opposingPitcherId": "593958",
         "opposingPitcher": "Eduardo Rodriguez",
         "probability": 7.6,
-        "modelScore": 35.5,
+        "modelScore": 35.6,
         "signals": []
       },
       "699625": {
@@ -5413,7 +6223,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 4.4,
-        "modelScore": 35.8,
+        "modelScore": 35.9,
         "signals": []
       },
       "699912": {
@@ -5428,7 +6238,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 1.8,
-        "modelScore": 28.5,
+        "modelScore": 28.6,
         "signals": []
       },
       "700250": {
@@ -5443,7 +6253,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 22.8,
-        "modelScore": 49.2,
+        "modelScore": 49.3,
         "signals": []
       },
       "700652": {
@@ -5452,13 +6262,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
-        "probability": 22.8,
-        "modelScore": 42,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "701162": {
@@ -5467,13 +6277,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 5,
-        "modelScore": 32,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "701358": {
@@ -5488,7 +6298,7 @@
         "opposingPitcherId": null,
         "opposingPitcher": "TBD",
         "probability": 12.5,
-        "modelScore": 28.7,
+        "modelScore": 28.8,
         "signals": []
       },
       "701398": {
@@ -5503,7 +6313,7 @@
         "opposingPitcherId": "694738",
         "opposingPitcher": "Landen Roupp",
         "probability": 22.8,
-        "modelScore": 42.8,
+        "modelScore": 43,
         "signals": [
           "hotLately"
         ]
@@ -5520,7 +6330,7 @@
         "opposingPitcherId": "696149",
         "opposingPitcher": "Bubba Chandler",
         "probability": 10.1,
-        "modelScore": 32.4,
+        "modelScore": 32.5,
         "signals": [
           "hotLately"
         ]
@@ -5537,7 +6347,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 5.4,
-        "modelScore": 29.4,
+        "modelScore": 29.5,
         "signals": []
       },
       "701678": {
@@ -5546,13 +6356,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 7.4,
-        "modelScore": 35.8,
+        "modelScore": 36.2,
         "signals": []
       },
       "701785": {
@@ -5567,7 +6377,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 9.6,
-        "modelScore": 37.2,
+        "modelScore": 37.3,
         "signals": []
       },
       "701807": {
@@ -5582,7 +6392,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 13.1,
-        "modelScore": 33.5,
+        "modelScore": 33.6,
         "signals": [
           "hotLately"
         ]
@@ -5599,7 +6409,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 1.4,
-        "modelScore": 19.2,
+        "modelScore": 19.3,
         "signals": []
       },
       "702176": {
@@ -5614,7 +6424,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 1.4,
-        "modelScore": 20.9,
+        "modelScore": 21.1,
         "signals": []
       },
       "702222": {
@@ -5629,7 +6439,7 @@
         "opposingPitcherId": "693433",
         "opposingPitcher": "Bryan Woo",
         "probability": 1.4,
-        "modelScore": 20.3,
+        "modelScore": 20.4,
         "signals": []
       },
       "702284": {
@@ -5644,7 +6454,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 8.1,
-        "modelScore": 29,
+        "modelScore": 29.2,
         "signals": []
       },
       "702332": {
@@ -5659,7 +6469,7 @@
         "opposingPitcherId": "687473",
         "opposingPitcher": "Ryan Gusto",
         "probability": 7.5,
-        "modelScore": 30.5,
+        "modelScore": 30.7,
         "signals": []
       },
       "702616": {
@@ -5674,7 +6484,7 @@
         "opposingPitcherId": "700241",
         "opposingPitcher": "Michael McGreevy",
         "probability": 3.9,
-        "modelScore": 29.1,
+        "modelScore": 29.2,
         "signals": []
       },
       "703520": {
@@ -5689,7 +6499,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 3.5,
-        "modelScore": 31.4,
+        "modelScore": 31.6,
         "signals": []
       },
       "703601": {
@@ -5698,13 +6508,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 5.3,
-        "modelScore": 33.3,
+        "modelScore": 34.6,
         "signals": []
       },
       "703607": {
@@ -5719,7 +6529,7 @@
         "opposingPitcherId": "687570",
         "opposingPitcher": "Connor Prielipp",
         "probability": 2.2,
-        "modelScore": 26.4,
+        "modelScore": 26.5,
         "signals": []
       },
       "800050": {
@@ -5734,7 +6544,7 @@
         "opposingPitcherId": "680570",
         "opposingPitcher": "Grayson Rodriguez",
         "probability": 17.4,
-        "modelScore": 37.8,
+        "modelScore": 37.9,
         "signals": [
           "due"
         ]
@@ -5751,7 +6561,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 2.1,
-        "modelScore": 25.4,
+        "modelScore": 25.6,
         "signals": []
       },
       "801126": {
@@ -5766,7 +6576,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 3.3,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "801501": {
@@ -5781,7 +6591,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 1.4,
-        "modelScore": 19.1,
+        "modelScore": 19.2,
         "signals": []
       },
       "802139": {
@@ -5796,7 +6606,7 @@
         "opposingPitcherId": "680694",
         "opposingPitcher": "Kyle Bradish",
         "probability": 9.3,
-        "modelScore": 38,
+        "modelScore": 38.1,
         "signals": []
       },
       "802415": {
@@ -5805,13 +6615,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Detroit Tigers",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "675512",
         "opposingPitcher": "Troy Melton",
         "probability": 1.4,
-        "modelScore": 21.1,
+        "modelScore": 25.3,
         "signals": []
       },
       "803011": {
@@ -5826,7 +6636,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 5.3,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       },
       "804668": {
@@ -5841,7 +6651,7 @@
         "opposingPitcherId": "681190",
         "opposingPitcher": "Randy Vásquez",
         "probability": 22.8,
-        "modelScore": 45.2,
+        "modelScore": 45.4,
         "signals": [
           "hotLately"
         ]
@@ -5858,7 +6668,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 2,
-        "modelScore": 25.4,
+        "modelScore": 25.5,
         "signals": []
       },
       "805367": {
@@ -5873,7 +6683,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 7.3,
-        "modelScore": 31.2,
+        "modelScore": 31.3,
         "signals": []
       },
       "805808": {
@@ -5882,13 +6692,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 13.7,
-        "modelScore": 36.7,
+        "modelScore": 41.9,
         "signals": []
       },
       "805999": {
@@ -5903,7 +6713,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 3,
-        "modelScore": 25.8,
+        "modelScore": 25.9,
         "signals": []
       },
       "806146": {
@@ -5918,7 +6728,7 @@
         "opposingPitcherId": "663567",
         "opposingPitcher": "Peter Lambert",
         "probability": 2.6,
-        "modelScore": 25.1,
+        "modelScore": 25.2,
         "signals": []
       },
       "806198": {
@@ -5933,7 +6743,7 @@
         "opposingPitcherId": "476594",
         "opposingPitcher": "Robert Stock",
         "probability": 1.4,
-        "modelScore": 22.1,
+        "modelScore": 22.2,
         "signals": []
       },
       "806367": {
@@ -5948,7 +6758,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 4.6,
-        "modelScore": 32.3,
+        "modelScore": 32.5,
         "signals": []
       },
       "807712": {
@@ -5963,7 +6773,7 @@
         "opposingPitcherId": "669372",
         "opposingPitcher": "J.T. Ginn",
         "probability": 3.5,
-        "modelScore": 32.8,
+        "modelScore": 33,
         "signals": []
       },
       "807727": {
@@ -5978,7 +6788,7 @@
         "opposingPitcherId": "677976",
         "opposingPitcher": "Randy Dobnak",
         "probability": 3.8,
-        "modelScore": 36.5,
+        "modelScore": 36.6,
         "signals": []
       },
       "807747": {
@@ -5993,7 +6803,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 1.4,
-        "modelScore": 15.5,
+        "modelScore": 15.7,
         "signals": []
       },
       "808959": {
@@ -6008,7 +6818,7 @@
         "opposingPitcherId": "669022",
         "opposingPitcher": "MacKenzie Gore",
         "probability": 22.8,
-        "modelScore": 49.5,
+        "modelScore": 49.7,
         "signals": [
           "due",
           "sleeper"
@@ -6026,7 +6836,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 7.6,
-        "modelScore": 32.8,
+        "modelScore": 33,
         "signals": []
       },
       "813841": {
@@ -6041,7 +6851,7 @@
         "opposingPitcherId": "666157",
         "opposingPitcher": "Nick Lodolo",
         "probability": 8.7,
-        "modelScore": 35.9,
+        "modelScore": 36,
         "signals": []
       },
       "814430": {
@@ -6050,13 +6860,13 @@
         "team": "Detroit Tigers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 824234,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 18.4,
-        "modelScore": 44.4,
+        "modelScore": 49.5,
         "signals": []
       },
       "814439": {
@@ -6071,7 +6881,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 4.2,
-        "modelScore": 28.4,
+        "modelScore": 28.5,
         "signals": []
       }
     },
