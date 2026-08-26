@@ -23,7 +23,7 @@ function opportunity(metrics = {}) {
   };
 }
 
-function scoreRow(role, assignment, context, practice, weather, price) {
+function scoreRow(role, assignment, context, practice, weather) {
   const baseline = opportunity(role.historicalOpportunity?.weightedPerGame);
   const recent = opportunity(role.historicalOpportunity?.recentSixGamesPerGame);
   const baselineHighValue = baseline.inside10Carries + baseline.inside10Targets;
@@ -100,16 +100,13 @@ function scoreRow(role, assignment, context, practice, weather, price) {
       leagueTouchdownsPerGame: context.scoringEnvironment.leagueTouchdownsPerGame,
       paceIndex: context.scoringEnvironment.paceIndex,
       defensiveVulnerabilityPercentile: defensiveVulnerabilityScore,
-      opponentDefenseStatus: context.opponentDefense.status,
-      marketImpliedTeamTotal: null
+      opponentDefenseStatus: context.opponentDefense.status
     },
     strengths: strengths.length ? strengths : ["Role and historical opportunity context available"],
     gates: {
       activeRoster: role.readiness?.status !== "unavailable",
       currentTeamContinuity: Boolean(role.teamContext?.currentTeamContinuity),
       verifiedOpponent: true,
-      verifiedSportsbookPrice: Boolean(price),
-      freshMarketQuote: Boolean(price),
       routeParticipation: false,
       defensiveMatchup: true,
       gameEnvironment: Boolean(weather?.weatherGate),
@@ -118,7 +115,6 @@ function scoreRow(role, assignment, context, practice, weather, price) {
     },
     practiceReport: practice || null,
     weather: weather || null,
-    sportsbook: price ? { status: "fresh_verified", anytimeTdPrice: price.priceAmerican, bookmaker: price.bookmaker, quoteTimestamp: price.quoteTimestamp } : { status: "unavailable", anytimeTdPrice: null, quoteTimestamp: null },
     publicationStatus: "private_shadow_only"
   };
 }
@@ -132,21 +128,19 @@ function main() {
   const matchup = read("nfl_matchup_context.json");
   const practice = read("nfl_practice_reports.json");
   const weather = read("nfl_weather.json");
-  const odds = read("nfl_sportsbook_lines.json");
   const health = read("nfl_data_health.json");
   const generatedAt = new Date().toISOString();
   const assignmentByPlayer = new Map(matchup.playerAssignments.map(row => [row.playerId, row]));
   const contextByTeam = new Map(matchup.teamContexts.map(row => [row.team, row]));
   const practiceByPlayer = new Map(practice.players.map(row => [row.playerId, row]));
   const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
-  const priceByPlayer = new Map(odds.playerPrices.filter(row => row.market === "player_anytime_td").map(row => [row.playerId, row]));
   const eligible = roles.roles
     .filter(role => role.modelEligibility && role.historicalOpportunity && role.readiness?.status !== "unavailable")
     .map(role => {
       const assignment = assignmentByPlayer.get(role.playerId);
       const context = contextByTeam.get(role.team);
       if (!assignment || !context || assignment.team !== role.team) throw new Error(`Missing verified matchup context for ${role.playerName} (${role.team})`);
-      return scoreRow(role, assignment, context, practiceByPlayer.get(role.playerId), weatherByGame.get(assignment.gameId), priceByPlayer.get(role.playerId));
+      return scoreRow(role, assignment, context, practiceByPlayer.get(role.playerId), weatherByGame.get(assignment.gameId));
     })
     .filter(row => row.position !== "QB" || row.historicalPerGame.redZoneCarries > 0)
     .sort((a, b) => b.tdSignalScore - a.tdSignalScore || b.dataConfidence - a.dataConfidence || a.playerName.localeCompare(b.playerName))
@@ -169,10 +163,10 @@ function main() {
     projectionStatus: "disabled",
     scoreLabel: "TD Signal Score",
     scoreDisclaimer: "The TD Signal Score is a private opportunity-ranking score. It is not a touchdown probability, betting recommendation, or published projection.",
-    launchGate: "Requires verified regular-season role, opponent, defensive matchup, game environment, and fresh sportsbook quote before recommendations can be considered.",
+    launchGate: "Requires verified regular-season role, opponent, defensive matchup, and game environment before recommendations can be considered.",
     inputs: {
       available: ["Canonical player identity", "Current team", "Depth chart", "Verified Week 1 opponent", "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
-      gated: ["Regular-season role confirmation", "Routes and snap participation", "Market-implied team total", "Spread and game total", "Weather", "Verified Anytime TD price", "Quote freshness"]
+      gated: ["Regular-season role confirmation", "Routes and snap participation", "Weather"]
     },
     weights: { historicalOpportunityComposite: 0.80, scoringEnvironment: 0.12, defensiveVulnerability: 0.06, pace: 0.02 },
     counts: {
@@ -182,7 +176,6 @@ function main() {
       redZoneTargets: redZoneTargets.length,
       opportunitySurges: surges.length,
       publishableRecommendations: 0,
-      verifiedSportsbookPrices: eligible.filter(row => row.gates.verifiedSportsbookPrice).length,
       verifiedOpponentAssignments: eligible.length,
       matchupAdjustedPlayers: eligible.length
     },
@@ -193,7 +186,7 @@ function main() {
       section("red_zone_targets", "Red-Zone Targets", "Pass catchers and backs with established red-zone target volume.", redZoneTargets),
       section("opportunity_surge", "Opportunity Surge", "Recent red-zone opportunity at least 20% above the weighted baseline.", surges),
       section("td_ai", "TD AI", "Balanced private shadow ranking across all currently available inputs.", top(30)),
-      section("td_longshots", "TD Longshots", "Held empty until verified prices and implied probabilities are available.", []),
+      section("deep_td_signals", "Deep TD Signals", "Lower-ranked private touchdown signals for broader model review.", eligible.slice(30, 60)),
       section("top_5", "Top 5", "Top five private shadow signals.", top(5)),
       section("top_10", "Top 10", "Top ten private shadow signals.", top(10)),
       section("top_30", "Top 30", "Top thirty private shadow signals.", top(30))
@@ -209,7 +202,6 @@ function main() {
     market: "anytime_touchdown",
     rankedPlayers: eligible.length,
     publishableRecommendations: 0,
-    verifiedSportsbookPrices: eligible.filter(row => row.gates.verifiedSportsbookPrice).length
   };
   health.status = "nfl_dress_rehearsal_private_gates_active";
   write("nfl_data_health.json", health);

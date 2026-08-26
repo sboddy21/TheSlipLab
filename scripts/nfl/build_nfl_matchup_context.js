@@ -251,10 +251,7 @@ async function main() {
         projectedTeamTouchdownsBaseline,
         leagueTouchdownsPerGame: leagueTdAverage,
         paceIndex,
-        expectedGameScript: "unavailable_until_verified_spread",
-        impliedTeamTotal: null,
-        spread: null,
-        gameTotal: null
+        expectedGameScript: "unavailable_until_regular_season_tendencies"
       },
       offense: own.offense,
       opponentDefense: {
@@ -276,13 +273,13 @@ async function main() {
   const payload = {
     sport: "NFL", schemaVersion: "1.0", season: schedule.season, generatedAt,
     status: "private_week_matchup_context", week,
-    contextType: "historical_baseline_without_sportsbook_or_weather",
+    contextType: "historical_baseline_without_live_weather",
     historicalBuiltAt: history.builtAt, historicalSeasons: history.seasons, historicalWeights: history.weights, historicalSources: history.sources,
     methodology: {
       projectedTeamTouchdownsBaseline: "55% weighted team offensive TD/game plus 45% opponent defensive TD allowed/game, with a small non-neutral home/away adjustment.",
       paceIndex: "Team offensive plays/game blended with opponent defensive plays/game and indexed to league average 100.",
       defensiveVulnerability: "Percentile rank of weighted TDs allowed per game to the player position; scorer-position rates are coverage-normalized and higher is more vulnerable.",
-      warning: "These are matchup context scores, not touchdown probabilities. Market-implied totals, spread, weather, and confirmed Week 1 roles remain unavailable."
+      warning: "These are matchup context scores, not touchdown probabilities. Live weather and confirmed Week 1 roles remain gated."
     },
     freshness: { historicalCacheHours: CACHE_HOURS, historicalAgeHours: round((Date.now() - Date.parse(history.builtAt)) / 36e5, 2) },
     counts: { games: games.length, teamContexts: teamContexts.length, playerAssignments: playerAssignments.length, duplicatePlayerAssignments: 0, missingTeamAssignments: 0 },

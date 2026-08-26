@@ -497,7 +497,7 @@
     <section aria-labelledby="receivingTitle">
       <div class="section-head">
         <div><span class="section-kicker">05 / Private shadow board</span><h2 class="section-title" id="receivingTitle">Receiving Yards Lab.</h2></div>
-        <p>Target volume, historical yardage, role, recent form, and matchup context. Routes, confirmed Week 1 roles, and fresh lines remain hard launch gates.</p>
+        <p>Target volume, historical yardage, role, recent form, and matchup context. Routes, confirmed Week 1 roles, and weather remain hard launch gates.</p>
       </div>
       <div class="td-shell"><div class="td-status" id="receivingStatus"><span>Loading receiving signals</span></div><div class="td-grid" id="receivingGrid"></div></div>
     </section>
@@ -505,7 +505,7 @@
     <section aria-labelledby="marketTitle">
       <div class="section-head">
         <div><span class="section-kicker">05 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
-        <p>These are the first markets worth supporting because they connect cleanly to usage, role, game environment, and sportsbook lines.</p>
+        <p>These are the first prediction categories worth supporting because they connect cleanly to usage, role, matchup, and game environment.</p>
       </div>
       <div class="market-grid" id="marketGrid"></div>
     </section>
@@ -613,7 +613,7 @@
     }
 
     function renderHealth(sources){
-      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", practiceReports: "Practice reports", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", weather: "Weather", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", receivingYards: "Receiving shadow board", resultsTracking: "Results tracking", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", practiceReports: "Practice reports", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", weather: "Weather", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", receivingYards: "Receiving shadow board", resultsTracking: "Results tracking", routes: "Routes", projections: "Projections" };
       return Object.entries(labels).map(([key, label]) => {
         const status = sources?.[key]?.status || "pending";
         const ready = status === "available" || status.startsWith("available_");
@@ -662,12 +662,12 @@
         <div class="td-metrics"><div><span>Inside 10</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.inside10Carries + row.historicalPerGame?.inside10Targets))}</strong></div><div><span>Team TD base</span><strong>${escapeHtml(tdMetric(row.matchup?.projectedTeamTouchdownsBaseline))}</strong></div><div><span>Defense vuln.</span><strong>${escapeHtml(tdMetric(row.matchup?.defensiveVulnerabilityPercentile))}%</strong></div></div>
         <p class="td-reason">${(row.strengths || []).slice(0,2).map(escapeHtml).join(" · ")}</p>
         <div class="td-gate">Verified Week ${escapeHtml(board.week || 1)} matchup · Market and role gated</div>
-      </article>`).join("") : `<div class="td-empty">${sectionId === "td_longshots" ? "Longshots stay empty until verified Anytime TD prices and quote freshness are available." : "No players currently meet this private review filter."}</div>`;
+      </article>`).join("") : `<div class="td-empty">No players currently meet this private review filter.</div>`;
     }
 
     function renderTdBoard(board){
       const counts = board.counts || {};
-      document.getElementById("tdStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(counts.matchupAdjustedPlayers || 0)} matchup adjusted</span><span>${escapeHtml(counts.verifiedSportsbookPrices || 0)} verified prices</span><span>${escapeHtml(counts.publishableRecommendations || 0)} publishable</span><span>Not a probability</span>`;
+      document.getElementById("tdStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(counts.matchupAdjustedPlayers || 0)} matchup adjusted</span><span>${escapeHtml(counts.publishableRecommendations || 0)} publishable</span><span>Not a probability</span>`;
       const sections = board.sections || [];
       document.getElementById("tdFilters").innerHTML = sections.map((section,index) => `<button type="button" data-td-filter="${escapeHtml(section.id)}" class="${index === 0 ? "active" : ""}">${escapeHtml(section.label)}</button>`).join("");
       document.getElementById("tdFilters").addEventListener("click", event => {
@@ -680,8 +680,8 @@
 
     function renderReceivingBoard(board){
       const rows = (board.rows || []).slice(0, 12);
-      document.getElementById("receivingStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(board.counts?.rankedPlayers || 0)} ranked</span><span>${escapeHtml(board.counts?.freshSportsbookLines || 0)} fresh lines</span><span>Not a yardage projection</span>`;
-      document.getElementById("receivingGrid").innerHTML = rows.map(row => `<article class="td-card"><div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} vs ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.receivingSignalScore)}</strong><span>REC signal</span></div></div><div class="td-metrics"><div><span>Targets/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.targets))}</strong></div><div><span>Yards/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.receivingYards))}</strong></div><div><span>Role gate</span><strong>${row.gates?.regularSeasonRoleConfirmed ? "Pass" : "Wait"}</strong></div></div><div class="td-gate">Private signal · Routes, role, and fresh line gated</div></article>`).join("");
+      document.getElementById("receivingStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(board.counts?.rankedPlayers || 0)} ranked</span><span>Player-data only</span><span>Not a yardage projection</span>`;
+      document.getElementById("receivingGrid").innerHTML = rows.map(row => `<article class="td-card"><div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} vs ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.receivingSignalScore)}</strong><span>REC signal</span></div></div><div class="td-metrics"><div><span>Targets/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.targets))}</strong></div><div><span>Yards/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.receivingYards))}</strong></div><div><span>Role gate</span><strong>${row.gates?.regularSeasonRoleConfirmed ? "Pass" : "Wait"}</strong></div></div><div class="td-gate">Private signal · Routes, role, matchup, and weather gated</div></article>`).join("");
     }
 
     async function init(){

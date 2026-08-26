@@ -128,7 +128,6 @@ function normalizePlayer(raw = {}, team = {}) {
       depthChart: "pending",
       injury: injuries.length ? "reported" : "no_report_in_roster_feed",
       usage: "pending",
-      odds: "pending"
     }
   };
 }
@@ -220,7 +219,6 @@ async function main() {
       depthCharts: { status: "pending", provider: null },
       injuries: { status: "partial", provider: "ESPN roster feed" },
       historicalPlayByPlay: { status: "pending", provider: null },
-      sportsbookLines: { status: "pending", provider: null },
       projections: { status: "disabled", reason: "Usage, depth-chart, and market inputs are not validated." }
     }
   });

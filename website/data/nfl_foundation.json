@@ -4,9 +4,9 @@
   "status": "usage_model",
   "season": "2026",
   "date": "2026-08-26",
-  "updatedAt": "2026-08-26T22:25:04.683Z",
+  "updatedAt": "2026-08-26T22:31:40.213Z",
   "headline": "NFL Lab usage engine is underway.",
-  "summary": "Schedule, identity, usage, matchup, practice-report, weather, sportsbook, results, and private TD/receiving shadow contracts are wired. Recommendations remain gated until every live input passes.",
+  "summary": "Schedule, identity, usage, matchup, practice-report, weather, results, and private TD/receiving shadow contracts are wired. Recommendations remain gated until every player-data input passes.",
   "currentPhase": {
     "id": "usage_model",
     "label": "Usage Engine",
@@ -48,7 +48,7 @@
         "Target and carry opportunity context",
         "Red-zone opportunity context",
         "Pace and defensive matchup context",
-        "Weather and sportsbook line contracts"
+        "Weather and availability contracts"
       ],
       "status": "active"
     },
@@ -116,12 +116,8 @@
       "purpose": "Indoor verification and kickoff-hour forecasts with horizon and freshness rejection."
     },
     {
-      "file": "nfl_sportsbook_lines.json",
-      "purpose": "The Odds API game/player line envelope with strict quote-age and identity rejection."
-    },
-    {
       "file": "nfl_receiving_yards_board.json",
-      "purpose": "Private receiving-yards shadow signals; routes, confirmed roles, and fresh lines remain required."
+      "purpose": "Private receiving-yards shadow signals; routes, confirmed roles, matchup, and weather remain required."
     },
     {
       "file": "nfl_results_tracking.json",
@@ -143,13 +139,13 @@
   "integrityRules": [
     "No fake player projections before data sources exist.",
     "Separate preseason usage signals from regular-season model confidence.",
-    "Mark missing depth-chart, injury, line, or weather inputs as pending instead of inventing values.",
+    "Mark missing depth-chart, injury, role, route, or weather inputs as pending instead of inventing values.",
     "Every market must eventually connect to a result-tracking path."
   ],
   "nextBuildSteps": [
     "Activate official weekly practice reports when providers begin publishing Week 1 designations.",
     "Require complete kickoff-hour weather coverage once every game enters the forecast horizon.",
-    "Verify The Odds API player-prop coverage and fresh quote identity matching.",
+    "Validate player ownership, role, matchup, and weather inputs before Week 1 publishing.",
     "Run TD and receiving-yards shadow boards through Week 1 and grade only pre-kickoff snapshots."
   ]
 }

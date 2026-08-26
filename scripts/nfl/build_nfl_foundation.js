@@ -36,7 +36,7 @@ const phaseDefinitions = [
   {
     id: "usage_model", label: "Usage Engine", window: "August 21 – August 27", start: "2026-08-21", end: "2026-08-27",
     objective: "Add matchup, environment, and market inputs around the validated role and opportunity foundation.",
-    tasks: ["Expected usage framework", "Target and carry opportunity context", "Red-zone opportunity context", "Pace and defensive matchup context", "Weather and sportsbook line contracts"]
+    tasks: ["Expected usage framework", "Target and carry opportunity context", "Red-zone opportunity context", "Pace and defensive matchup context", "Weather and availability contracts"]
   },
   {
     id: "dress_rehearsal", label: "Dress Rehearsal", window: "August 28 – September 8", start: "2026-08-28", end: "2026-09-08",
@@ -67,7 +67,7 @@ const markets = {
       label: "Anytime TD",
       launchPriority: 1,
       supportedPositions: ["RB", "WR", "TE", "QB"],
-      coreInputs: ["redZoneRole", "rushShare", "targetShare", "teamTotal", "defenseTdAllowed", "sportsbookLine"],
+      coreInputs: ["redZoneRole", "rushShare", "targetShare", "teamScoringContext", "defenseTdAllowed"],
       status: "planned"
     },
     {
@@ -75,7 +75,7 @@ const markets = {
       label: "Receiving Yards",
       launchPriority: 2,
       supportedPositions: ["WR", "TE", "RB"],
-      coreInputs: ["routeShare", "targetShare", "airYardsShare", "defenseCoverage", "sportsbookLine"],
+      coreInputs: ["routeShare", "targetShare", "airYardsShare", "defenseCoverage"],
       status: "planned"
     }
   ],
@@ -85,7 +85,7 @@ const markets = {
       label: "Rushing Yards",
       launchPriority: 3,
       supportedPositions: ["RB", "QB"],
-      coreInputs: ["carryShare", "snapShare", "offensiveLineContext", "gameScript", "sportsbookLine"],
+      coreInputs: ["carryShare", "snapShare", "offensiveLineContext", "gameScript"],
       reason: "Add after the carry-share and offensive-line inputs are validated."
     },
     {
@@ -93,7 +93,7 @@ const markets = {
       label: "Passing Yards",
       launchPriority: 4,
       supportedPositions: ["QB"],
-      coreInputs: ["dropbackRate", "passRateOverExpected", "opponentPressure", "pace", "sportsbookLine"],
+      coreInputs: ["dropbackRate", "passRateOverExpected", "opponentPressure", "pace"],
       reason: "Add after the dropback, pressure, and pace inputs are validated."
     },
     {
@@ -101,7 +101,7 @@ const markets = {
       label: "Receptions",
       launchPriority: 5,
       supportedPositions: ["WR", "TE", "RB"],
-      coreInputs: ["targetShare", "routeShare", "aDot", "coverageShell", "sportsbookLine"],
+      coreInputs: ["targetShare", "routeShare", "aDot", "coverageShell"],
       reason: "Add after route and target-share inputs are stable."
     },
     {
@@ -126,7 +126,7 @@ const foundation = {
   updatedAt: now.toISOString(),
   headline: phaseHeadline,
   summary:
-    "Schedule, identity, usage, matchup, practice-report, weather, sportsbook, results, and private TD/receiving shadow contracts are wired. Recommendations remain gated until every live input passes.",
+    "Schedule, identity, usage, matchup, practice-report, weather, results, and private TD/receiving shadow contracts are wired. Recommendations remain gated until every player-data input passes.",
   currentPhase: {
     id: activePhaseDefinition.id,
     label: activePhaseDefinition.label,
@@ -177,8 +177,7 @@ const foundation = {
     },
     { file: "nfl_practice_reports.json", purpose: "Official weekly availability and regular-season role gates that fail closed before reports begin." },
     { file: "nfl_weather.json", purpose: "Indoor verification and kickoff-hour forecasts with horizon and freshness rejection." },
-    { file: "nfl_sportsbook_lines.json", purpose: "The Odds API game/player line envelope with strict quote-age and identity rejection." },
-    { file: "nfl_receiving_yards_board.json", purpose: "Private receiving-yards shadow signals; routes, confirmed roles, and fresh lines remain required." },
+    { file: "nfl_receiving_yards_board.json", purpose: "Private receiving-yards shadow signals; routes, confirmed roles, matchup, and weather remain required." },
     { file: "nfl_results_tracking.json", purpose: "Pre-kickoff snapshot and postgame grading contract with anti-leakage rules." },
     {
       file: "nfl_data_health.json",
@@ -196,13 +195,13 @@ const foundation = {
   integrityRules: [
     "No fake player projections before data sources exist.",
     "Separate preseason usage signals from regular-season model confidence.",
-    "Mark missing depth-chart, injury, line, or weather inputs as pending instead of inventing values.",
+    "Mark missing depth-chart, injury, role, route, or weather inputs as pending instead of inventing values.",
     "Every market must eventually connect to a result-tracking path."
   ],
   nextBuildSteps: [
     "Activate official weekly practice reports when providers begin publishing Week 1 designations.",
     "Require complete kickoff-hour weather coverage once every game enters the forecast horizon.",
-    "Verify The Odds API player-prop coverage and fresh quote identity matching.",
+    "Validate player ownership, role, matchup, and weather inputs before Week 1 publishing.",
     "Run TD and receiving-yards shadow boards through Week 1 and grade only pre-kickoff snapshots."
   ]
 };
@@ -218,7 +217,7 @@ writeJson("nfl_decision_center.json", {
   updatedAt: now.toISOString(),
   marketCount: 0,
   playerCount: 0,
-  disclaimer: "NFL recommendations are not live yet. The private TD shadow board remains gated until role, opponent, matchup, weather, and fresh market inputs pass validation.",
+  disclaimer: "NFL recommendations are not live yet. The private TD shadow board remains gated until role, opponent, matchup, and weather inputs pass validation.",
   sections: []
 });
 
