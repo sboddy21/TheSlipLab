@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 22
       - name: Refresh NFL foundation and final-game usage
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          NFL_ODDS_MAX_QUOTE_AGE_MINUTES: "15"
         run: node scripts/run_nfl_refresh.js
       - name: Commit refreshed NFL data
         run: |

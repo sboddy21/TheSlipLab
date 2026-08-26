@@ -4,9 +4,9 @@
   "status": "usage_model",
   "season": "2026",
   "date": "2026-08-26",
-  "updatedAt": "2026-08-26T15:59:39.530Z",
+  "updatedAt": "2026-08-26T22:19:03.412Z",
   "headline": "NFL Lab usage engine is underway.",
-  "summary": "Schedule, identity, depth charts, historical usage, finalized preseason opportunity, and role review are wired. Matchup, weather, market lines, and projections remain intentionally gated.",
+  "summary": "Schedule, identity, usage, matchup, practice-report, weather, sportsbook, results, and private TD/receiving shadow contracts are wired. Recommendations remain gated until every live input passes.",
   "currentPhase": {
     "id": "usage_model",
     "label": "Usage Engine",
@@ -108,6 +108,26 @@
       "purpose": "Private Anytime TD shadow rankings built from verified goal-line, red-zone, touchdown, role, and recent-opportunity inputs."
     },
     {
+      "file": "nfl_practice_reports.json",
+      "purpose": "Official weekly availability and regular-season role gates that fail closed before reports begin."
+    },
+    {
+      "file": "nfl_weather.json",
+      "purpose": "Indoor verification and kickoff-hour forecasts with horizon and freshness rejection."
+    },
+    {
+      "file": "nfl_sportsbook_lines.json",
+      "purpose": "The Odds API game/player line envelope with strict quote-age and identity rejection."
+    },
+    {
+      "file": "nfl_receiving_yards_board.json",
+      "purpose": "Private receiving-yards shadow signals; routes, confirmed roles, and fresh lines remain required."
+    },
+    {
+      "file": "nfl_results_tracking.json",
+      "purpose": "Pre-kickoff snapshot and postgame grading contract with anti-leakage rules."
+    },
+    {
       "file": "nfl_data_health.json",
       "purpose": "Source-by-source availability and gating status; projections remain disabled until required inputs pass validation."
     },
@@ -127,9 +147,9 @@
     "Every market must eventually connect to a result-tracking path."
   ],
   "nextBuildSteps": [
-    "Add official weekly practice-report availability and role-confirmation gates.",
-    "Add the game-level weather contract and freshness rules.",
-    "Select the sportsbook provider and enforce quote-age rejection rules.",
-    "Run the private TD shadow board through preseason and Week 1 role validation without publishing recommendations."
+    "Activate official weekly practice reports when providers begin publishing Week 1 designations.",
+    "Require complete kickoff-hour weather coverage once every game enters the forecast horizon.",
+    "Verify The Odds API player-prop coverage and fresh quote identity matching.",
+    "Run TD and receiving-yards shadow boards through Week 1 and grade only pre-kickoff snapshots."
   ]
 }

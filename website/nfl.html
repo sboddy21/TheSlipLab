@@ -494,6 +494,14 @@
       </div>
     </section>
 
+    <section aria-labelledby="receivingTitle">
+      <div class="section-head">
+        <div><span class="section-kicker">05 / Private shadow board</span><h2 class="section-title" id="receivingTitle">Receiving Yards Lab.</h2></div>
+        <p>Target volume, historical yardage, role, recent form, and matchup context. Routes, confirmed Week 1 roles, and fresh lines remain hard launch gates.</p>
+      </div>
+      <div class="td-shell"><div class="td-status" id="receivingStatus"><span>Loading receiving signals</span></div><div class="td-grid" id="receivingGrid"></div></div>
+    </section>
+
     <section aria-labelledby="marketTitle">
       <div class="section-head">
         <div><span class="section-kicker">05 / Launch markets</span><h2 class="section-title" id="marketTitle">Start narrow.</h2></div>
@@ -605,7 +613,7 @@
     }
 
     function renderHealth(sources){
-      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", practiceReports: "Practice reports", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", weather: "Weather", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", receivingYards: "Receiving shadow board", resultsTracking: "Results tracking", routes: "Routes", sportsbookLines: "Sportsbook lines", projections: "Projections" };
       return Object.entries(labels).map(([key, label]) => {
         const status = sources?.[key]?.status || "pending";
         const ready = status === "available" || status.startsWith("available_");
@@ -670,13 +678,20 @@
       renderTdRows(board, sections[0]?.id || "all");
     }
 
+    function renderReceivingBoard(board){
+      const rows = (board.rows || []).slice(0, 12);
+      document.getElementById("receivingStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(board.counts?.rankedPlayers || 0)} ranked</span><span>${escapeHtml(board.counts?.freshSportsbookLines || 0)} fresh lines</span><span>Not a yardage projection</span>`;
+      document.getElementById("receivingGrid").innerHTML = rows.map(row => `<article class="td-card"><div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} vs ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.receivingSignalScore)}</strong><span>REC signal</span></div></div><div class="td-metrics"><div><span>Targets/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.targets))}</strong></div><div><span>Yards/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.receivingYards))}</strong></div><div><span>Role gate</span><strong>${row.gates?.regularSeasonRoleConfirmed ? "Pass" : "Wait"}</strong></div></div><div class="td-gate">Private signal · Routes, role, and fresh line gated</div></article>`).join("");
+    }
+
     async function init(){
-      const [foundation, markets, publicStatus, roleBoard, tdBoard] = await Promise.all([
+      const [foundation, markets, publicStatus, roleBoard, tdBoard, receivingBoard] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
         loadJson("./data/nfl_markets.json", fallbackMarkets),
         loadJson("./data/nfl_public_status.json", fallbackStatus),
         loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] }),
-        loadJson("./data/nfl_td_decision_center.json", { counts: {}, sections: [], rows: [], scoreDisclaimer: "TD shadow signals are unavailable." })
+        loadJson("./data/nfl_td_decision_center.json", { counts: {}, sections: [], rows: [], scoreDisclaimer: "TD shadow signals are unavailable." }),
+        loadJson("./data/nfl_receiving_yards_board.json", { counts: {}, rows: [] })
       ]);
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
@@ -709,6 +724,7 @@
       document.getElementById("healthBoard").innerHTML = renderHealth(publicStatus.sources);
       renderRoleBoard(roleBoard);
       renderTdBoard(tdBoard);
+      renderReceivingBoard(receivingBoard);
     }
 
     init();

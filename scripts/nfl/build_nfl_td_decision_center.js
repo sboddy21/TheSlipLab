@@ -23,7 +23,7 @@ function opportunity(metrics = {}) {
   };
 }
 
-function scoreRow(role, assignment, context) {
+function scoreRow(role, assignment, context, practice, weather, price) {
   const baseline = opportunity(role.historicalOpportunity?.weightedPerGame);
   const recent = opportunity(role.historicalOpportunity?.recentSixGamesPerGame);
   const baselineHighValue = baseline.inside10Carries + baseline.inside10Targets;
@@ -108,14 +108,17 @@ function scoreRow(role, assignment, context) {
       activeRoster: role.readiness?.status !== "unavailable",
       currentTeamContinuity: Boolean(role.teamContext?.currentTeamContinuity),
       verifiedOpponent: true,
-      verifiedSportsbookPrice: false,
-      freshMarketQuote: false,
+      verifiedSportsbookPrice: Boolean(price),
+      freshMarketQuote: Boolean(price),
       routeParticipation: false,
       defensiveMatchup: true,
-      gameEnvironment: true,
-      regularSeasonRoleConfirmed: false
+      gameEnvironment: Boolean(weather?.weatherGate),
+      weather: Boolean(weather?.weatherGate),
+      regularSeasonRoleConfirmed: practice?.regularSeasonRoleConfirmed === true
     },
-    sportsbook: { status: "unavailable", anytimeTdPrice: null, quoteTimestamp: null },
+    practiceReport: practice || null,
+    weather: weather || null,
+    sportsbook: price ? { status: "fresh_verified", anytimeTdPrice: price.priceAmerican, bookmaker: price.bookmaker, quoteTimestamp: price.quoteTimestamp } : { status: "unavailable", anytimeTdPrice: null, quoteTimestamp: null },
     publicationStatus: "private_shadow_only"
   };
 }
@@ -127,17 +130,23 @@ function section(id, label, description, rows) {
 function main() {
   const roles = read("nfl_role_engine.json");
   const matchup = read("nfl_matchup_context.json");
+  const practice = read("nfl_practice_reports.json");
+  const weather = read("nfl_weather.json");
+  const odds = read("nfl_sportsbook_lines.json");
   const health = read("nfl_data_health.json");
   const generatedAt = new Date().toISOString();
   const assignmentByPlayer = new Map(matchup.playerAssignments.map(row => [row.playerId, row]));
   const contextByTeam = new Map(matchup.teamContexts.map(row => [row.team, row]));
+  const practiceByPlayer = new Map(practice.players.map(row => [row.playerId, row]));
+  const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
+  const priceByPlayer = new Map(odds.playerPrices.filter(row => row.market === "player_anytime_td").map(row => [row.playerId, row]));
   const eligible = roles.roles
     .filter(role => role.modelEligibility && role.historicalOpportunity && role.readiness?.status !== "unavailable")
     .map(role => {
       const assignment = assignmentByPlayer.get(role.playerId);
       const context = contextByTeam.get(role.team);
       if (!assignment || !context || assignment.team !== role.team) throw new Error(`Missing verified matchup context for ${role.playerName} (${role.team})`);
-      return scoreRow(role, assignment, context);
+      return scoreRow(role, assignment, context, practiceByPlayer.get(role.playerId), weatherByGame.get(assignment.gameId), priceByPlayer.get(role.playerId));
     })
     .filter(row => row.position !== "QB" || row.historicalPerGame.redZoneCarries > 0)
     .sort((a, b) => b.tdSignalScore - a.tdSignalScore || b.dataConfidence - a.dataConfidence || a.playerName.localeCompare(b.playerName))
@@ -173,7 +182,7 @@ function main() {
       redZoneTargets: redZoneTargets.length,
       opportunitySurges: surges.length,
       publishableRecommendations: 0,
-      verifiedSportsbookPrices: 0,
+      verifiedSportsbookPrices: eligible.filter(row => row.gates.verifiedSportsbookPrice).length,
       verifiedOpponentAssignments: eligible.length,
       matchupAdjustedPlayers: eligible.length
     },
@@ -200,9 +209,9 @@ function main() {
     market: "anytime_touchdown",
     rankedPlayers: eligible.length,
     publishableRecommendations: 0,
-    verifiedSportsbookPrices: 0
+    verifiedSportsbookPrices: eligible.filter(row => row.gates.verifiedSportsbookPrice).length
   };
-  health.status = "td_matchup_shadow_board_ready_projections_gated";
+  health.status = "nfl_dress_rehearsal_private_gates_active";
   write("nfl_data_health.json", health);
   console.log(`Built private NFL TD Decision Center: ${eligible.length} ranked players, 0 publishable recommendations`);
 }
