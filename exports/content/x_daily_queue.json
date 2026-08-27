@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-08-26T10:59:38.084Z",
-  "date": "2026-08-26",
+  "updatedAt": "2026-08-27T05:30:34.629Z",
+  "date": "2026-08-27",
   "slot": "overnight",
   "cadence": "event posts plus one scheduled story per workflow run",
   "source": "Content Engine 3.0 selected from current production MLB data",
   "fakeData": false,
-  "emptyReason": "already_posted",
+  "emptyReason": null,
   "slotResolution": {
     "requested": "overnight",
     "selected": "overnight",
@@ -25,19 +25,19 @@
   },
   "inputValidation": {
     "status": "passed",
-    "checkedAt": "2026-08-26T10:59:38.084Z",
+    "checkedAt": "2026-08-27T05:30:34.629Z",
     "maxAgeMinutes": 15,
     "inputs": [
       {
         "file": "content/x_posts.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-26T10:59:37.620Z",
+        "timestamp": "2026-08-27T05:30:34.164Z",
         "ageSeconds": 0
       },
       {
         "file": "mlb_results_previous.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-26T10:59:36.234Z",
+        "timestamp": "2026-08-27T05:30:33.084Z",
         "ageSeconds": 1,
         "scheduledGames": 15,
         "totalScheduledGames": 15,
@@ -46,21 +46,49 @@
       {
         "file": "hr_ai_history.json",
         "timestampField": "updatedAt",
-        "timestamp": "2026-08-26T08:24:57.011Z",
-        "players": 574,
+        "timestamp": "2026-08-27T00:20:05.633Z",
+        "players": 576,
         "mode": "historical pregame archive"
       },
       {
         "file": "hr_calibration_report.json",
         "timestampField": "generatedAt",
-        "timestamp": "2026-08-26T10:59:36.302Z",
+        "timestamp": "2026-08-27T05:30:33.130Z",
         "ageSeconds": 1,
-        "reportDate": "2026-08-25",
-        "archivedPlayers": 394,
+        "reportDate": "2026-08-26",
+        "archivedPlayers": 389,
         "mode": "verified daily model report"
       }
     ]
   },
-  "count": 0,
-  "posts": []
+  "count": 1,
+  "posts": [
+    {
+      "id": "2026-08-27_OVERNIGHT_VERIFIED_DAILY_RECAP",
+      "date": "2026-08-27",
+      "type": "verified_daily_recap",
+      "slot": "overnight",
+      "status": "queued",
+      "scheduled_for_eastern": "2026-08-27T05:30:34.629Z",
+      "text": "The verified MLB model report for 2026-08-26 is in.\n\n32 home runs landed against 28.5 expected (+3.5).\nTop 10: 5 hits from 13 archived players.\n\n• Hunter Goodman: pregame rank #3 | 24.0% model probability | 435 ft\n• Ben Rice: pregame rank #4 | 24.0% model probability | 364 ft\n• Kyle Schwarber: pregame rank #5 | 22.8% model probability | 425 ft\n\nEvery label comes from an archived snapshot captured before first pitch and was matched to final results. What should the model have weighted differently?",
+      "players": [
+        "Hunter Goodman",
+        "Ben Rice",
+        "Kyle Schwarber"
+      ],
+      "graphic": "exports/content/graphics/2026-08-27_VERIFIED_MODEL_REPORT.png",
+      "graphicType": "verified_model_report",
+      "reportDate": "2026-08-26",
+      "resultsDate": "2026-08-26",
+      "verifiedPregame": true,
+      "verifiedResults": true,
+      "eventPost": false,
+      "event": null,
+      "ai": null,
+      "posted": false,
+      "posted_at": null,
+      "x_post_id": null,
+      "created_at": "2026-08-27T05:30:34.164Z"
+    }
+  ]
 }
