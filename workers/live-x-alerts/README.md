@@ -121,9 +121,5 @@ From this folder:
 wrangler deploy
 ```
 
-The Cron Trigger is configured in `wrangler.toml`:
-
-```toml
-[triggers]
-crons = ["* * * * *"]
-```
+Automatic Cron Triggers are intentionally disabled. The authenticated `/run`
+endpoint remains available for deliberate manual runs.
