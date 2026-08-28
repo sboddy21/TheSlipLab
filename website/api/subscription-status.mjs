@@ -78,7 +78,7 @@ async function supabaseFetch(path, options = {}) {
 }
 
 async function subscriptionForUser(userId) {
-  const endpoint = `/rest/v1/user_subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=status,price_id,current_period_end,cancel_at_period_end,updated_at&limit=1`;
+  const endpoint = `/rest/v1/user_subscriptions?user_id=eq.${encodeURIComponent(userId)}&select=status,plan,price_id,stripe_subscription_id,current_period_end,cancel_at_period_end,updated_at&limit=1`;
   const response = await supabaseFetch(endpoint);
 
   if (!response.ok) throw new Error("Subscription lookup failed");
@@ -166,6 +166,23 @@ async function repairSubscriptionFromStripe(user) {
   return row;
 }
 
+async function billingDetails(subscription) {
+  if (!subscription?.stripe_subscription_id) return {};
+  const stripeSubscription = await stripeGet(`subscriptions/${subscription.stripe_subscription_id}`, { "expand[]": "items.data.price" });
+  const item = stripeSubscription?.items?.data?.[0];
+  const price = item?.price;
+  const discount = stripeSubscription?.discount || stripeSubscription?.discounts?.[0];
+  const coupon = discount?.coupon || discount?.source?.coupon;
+  return {
+    plan: subscription.plan || planFromPrice(price?.id || subscription.price_id),
+    unitAmount: Number.isFinite(price?.unit_amount) ? price.unit_amount : null,
+    currency: price?.currency || null,
+    interval: price?.recurring?.interval || null,
+    discountPercent: Number.isFinite(coupon?.percent_off) ? coupon.percent_off : null,
+    discountAmount: Number.isFinite(coupon?.amount_off) ? coupon.amount_off : null
+  };
+}
+
 export default async function handler(request, response) {
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
@@ -198,6 +215,7 @@ export default async function handler(request, response) {
       subscription = await repairSubscriptionFromStripe(user).catch(() => null) || subscription;
     }
     const status = subscription?.status || "inactive";
+    const billing = ACTIVE_STATUSES.has(status) ? await billingDetails(subscription).catch(() => ({})) : {};
     return json(response, 200, {
       authenticated: true,
       required: true,
@@ -205,7 +223,8 @@ export default async function handler(request, response) {
       status,
       priceId: subscription?.price_id || null,
       currentPeriodEnd: subscription?.current_period_end || null,
-      cancelAtPeriodEnd: Boolean(subscription?.cancel_at_period_end)
+      cancelAtPeriodEnd: Boolean(subscription?.cancel_at_period_end),
+      ...billing
     });
   } catch (error) {
     return json(response, 503, { error: error.message || "Subscription service unavailable" });

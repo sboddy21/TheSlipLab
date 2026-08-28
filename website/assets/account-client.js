@@ -3,6 +3,11 @@ const SUPABASE_MODULE_URL = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@
 let clientPromise;
 let session = null;
 
+const incomingReferral = new URLSearchParams(window.location.search).get("ref");
+if (/^[A-Za-z0-9]{8,16}$/.test(String(incomingReferral || ""))) {
+  localStorage.setItem("tsl_referral_code", incomingReferral.toUpperCase());
+}
+
 async function createAccountClient() {
   const response = await fetch("/api/account-config", {
     headers: { Accept: "application/json" },
@@ -84,12 +89,20 @@ async function signUpWithPassword(email, password) {
     ? `?plan=${encodeURIComponent(requestedPlan)}`
     : "";
   const emailRedirectTo = `${window.location.origin}/account.html${planQuery}`;
+  const referralCode = String(localStorage.getItem("tsl_referral_code") || "").trim().toUpperCase();
   const { data, error } = await client.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo }
+    options: {
+      emailRedirectTo,
+      data: {
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/New_York",
+        ...(referralCode ? { referral_code: referralCode } : {})
+      }
+    }
   });
   if (error) throw error;
+  if (data?.user) localStorage.removeItem("tsl_referral_code");
   return data;
 }
 
@@ -108,10 +121,80 @@ async function updatePassword(password) {
   return data;
 }
 
-async function signOut() {
+async function updateEmail(email) {
   const client = await getClient();
-  const { error } = await client.auth.signOut();
+  const emailRedirectTo = `${window.location.origin}/account.html?email=confirmed`;
+  const { data, error } = await client.auth.updateUser({ email }, { emailRedirectTo });
   if (error) throw error;
+  return data;
+}
+
+async function signOut(scope = "local") {
+  const client = await getClient();
+  const { error } = await client.auth.signOut({ scope });
+  if (error) throw error;
+}
+
+async function signOutOtherSessions() {
+  const client = await getClient();
+  const { error } = await client.auth.signOut({ scope: "others" });
+  if (error) throw error;
+}
+
+async function getProfile() {
+  if (!session?.user) throw new Error("Sign in to view your profile");
+  const client = await getClient();
+  const { data, error } = await client.from("user_profiles")
+    .select("display_name,timezone,favorite_team,onboarding_completed_at,created_at,updated_at")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+  if (error) throw error;
+  return data || {};
+}
+
+async function saveProfile(profile) {
+  if (!session?.user) throw new Error("Sign in to update your profile");
+  const client = await getClient();
+  const payload = {
+    user_id: session.user.id,
+    display_name: String(profile.displayName || "").trim() || null,
+    timezone: String(profile.timezone || "America/New_York").trim(),
+    favorite_team: String(profile.favoriteTeam || "").trim() || null,
+    updated_at: new Date().toISOString()
+  };
+  if (profile.onboardingCompleted) payload.onboarding_completed_at = new Date().toISOString();
+  const { data, error } = await client.from("user_profiles").upsert(payload, { onConflict: "user_id" }).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function getPreferences() {
+  if (!session?.user) throw new Error("Sign in to view notification preferences");
+  const client = await getClient();
+  const { data, error } = await client.from("member_preferences")
+    .select("notify_lineups,notify_scratches,notify_model_moves,notify_results,email_frequency,communication_consent,updated_at")
+    .eq("user_id", session.user.id)
+    .maybeSingle();
+  if (error) throw error;
+  return data || {};
+}
+
+async function savePreferences(preferences) {
+  if (!session?.user) throw new Error("Sign in to update notification preferences");
+  const client = await getClient();
+  const payload = {
+    user_id: session.user.id,
+    notify_lineups: Boolean(preferences.notifyLineups),
+    notify_scratches: Boolean(preferences.notifyScratches),
+    notify_model_moves: Boolean(preferences.notifyModelMoves),
+    notify_results: Boolean(preferences.notifyResults),
+    email_frequency: ["off", "immediate", "daily"].includes(preferences.emailFrequency) ? preferences.emailFrequency : "off",
+    communication_consent: Boolean(preferences.communicationConsent),
+    updated_at: new Date().toISOString()
+  };
+  const { data, error } = await client.from("member_preferences").upsert(payload, { onConflict: "user_id" }).select().single();
+  if (error) throw error;
+  return data;
 }
 
 async function listFavorites() {
@@ -119,7 +202,7 @@ async function listFavorites() {
   const client = await getClient();
   const { data, error } = await client
     .from("favorite_entities")
-    .select("id,sport,entity_type,external_id,display_name,team_name,created_at")
+    .select("id,sport,entity_type,external_id,display_name,team_name,watchlist,notes,created_at,updated_at")
     .order("created_at", { ascending: false });
   if (error) throw error;
   return data || [];
@@ -150,6 +233,63 @@ async function removeFavorite(id) {
   const client = await getClient();
   const { error } = await client.from("favorite_entities").delete().eq("id", id);
   if (error) throw error;
+}
+
+async function updateFavorite(id, changes) {
+  if (!session?.user) throw new Error("Sign in before changing favorites");
+  const client = await getClient();
+  const payload = {
+    watchlist: String(changes.watchlist || "Main").trim().slice(0, 40) || "Main",
+    notes: String(changes.notes || "").trim().slice(0, 500) || null,
+    updated_at: new Date().toISOString()
+  };
+  const { data, error } = await client.from("favorite_entities").update(payload).eq("id", id).select().single();
+  if (error) throw error;
+  return data;
+}
+
+async function referralSummary() {
+  if (!session?.user) throw new Error("Sign in to view referrals");
+  const client = await getClient();
+  const [{ data: codeRow, error: codeError }, { data: referrals, error: referralError }] = await Promise.all([
+    client.from("referral_codes").select("code").eq("user_id", session.user.id).maybeSingle(),
+    client.from("referrals").select("id,status,created_at,converted_at").eq("referrer_user_id", session.user.id).order("created_at", { ascending: false })
+  ]);
+  if (codeError) throw codeError;
+  if (referralError) throw referralError;
+  return { code: codeRow?.code || "", referrals: referrals || [] };
+}
+
+async function authenticatedApi(path, options = {}) {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in to continue");
+  const response = await fetch(path, {
+    ...options,
+    headers: { Accept: "application/json", Authorization: `Bearer ${token}`, ...(options.headers || {}) }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Account request failed");
+  return data;
+}
+
+async function sendSupportRequest(category, message) {
+  return authenticatedApi("/api/account-support", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ category, message })
+  });
+}
+
+async function exportAccountData() {
+  return authenticatedApi("/api/account-export");
+}
+
+async function deleteAccount(confirmation) {
+  return authenticatedApi("/api/account-delete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ confirmation })
+  });
 }
 
 async function accessToken() {
@@ -218,10 +358,21 @@ window.TSLAccount = {
   signUpWithPassword,
   requestPasswordReset,
   updatePassword,
+  updateEmail,
   signOut,
+  signOutOtherSessions,
+  getProfile,
+  saveProfile,
+  getPreferences,
+  savePreferences,
   listFavorites,
   addFavorite,
   removeFavorite,
+  updateFavorite,
+  referralSummary,
+  sendSupportRequest,
+  exportAccountData,
+  deleteAccount,
   accessToken,
   subscriptionStatus,
   createCheckoutSession,

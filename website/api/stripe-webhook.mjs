@@ -120,6 +120,17 @@ async function upsertSubscription(row) {
   if (!response.ok) throw new Error("Subscription database update failed");
 }
 
+async function markReferralConversion(userId, status) {
+  if (!userId || !["active", "trialing"].includes(status)) return;
+  const { url, serviceKey } = supabaseConfig();
+  const response = await fetch(`${url.replace(/\/+$/, "")}/rest/v1/referrals?referred_user_id=eq.${encodeURIComponent(userId)}&status=eq.joined`, {
+    method: "PATCH",
+    headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json", Prefer: "return=minimal" },
+    body: JSON.stringify({ status: "subscribed", converted_at: new Date().toISOString() })
+  });
+  if (!response.ok) throw new Error("Referral conversion update failed");
+}
+
 async function rowFromSubscription(subscription) {
   let userId = subscription.metadata?.user_id || "";
   if (!userId) {
@@ -142,15 +153,19 @@ async function rowFromSubscription(subscription) {
 async function handleCheckoutCompleted(session) {
   if (!session.subscription) return;
   const subscription = await stripeGet(`subscriptions/${session.subscription}`);
-  await upsertSubscription({
+  const row = {
     ...(await rowFromSubscription(subscription)),
     user_id: subscription.metadata?.user_id || session.metadata?.user_id || session.client_reference_id,
     plan: normalizePlan(subscription.metadata?.plan || session.metadata?.plan)
-  });
+  };
+  await upsertSubscription(row);
+  await markReferralConversion(row.user_id, row.status);
 }
 
 async function handleSubscriptionEvent(subscription) {
-  await upsertSubscription(await rowFromSubscription(subscription));
+  const row = await rowFromSubscription(subscription);
+  await upsertSubscription(row);
+  await markReferralConversion(row.user_id, row.status);
 }
 
 async function checkoutUserEmail(session) {

@@ -29,6 +29,7 @@ const elements = {
   billingPanel: document.getElementById("accountBillingPanel"),
   billingButton: document.getElementById("manageSubscriptionButton"),
   billingMessage: document.getElementById("accountBillingMessage"),
+  billingDetails: document.getElementById("accountBillingDetails"),
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
@@ -314,11 +315,12 @@ function renderSearchResults() {
 
 function renderFavorites() {
   elements.summary.textContent = favorites.length === 1 ? "1 saved favorite" : `${favorites.length} saved favorites`;
-  elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
+  elements.list.innerHTML = favorites.length ? favorites.map(item => `<div class="favorite-card" data-favorite-card="${item.id}" data-watchlist="${escapeHtml(item.watchlist || "Main")}"><button class="favorite-card-open" type="button" data-open-favorite="${item.id}" aria-label="Open details for ${escapeHtml(item.display_name)}"><span class="favorite-card-type">${escapeHtml(item.sport)} ${escapeHtml(item.entity_type)}</span><strong>${escapeHtml(item.display_name)}</strong><span>${escapeHtml(item.team_name || "Team unavailable")}</span><small>View verified game and event data →</small></button><button class="account-button danger" type="button" data-remove-favorite="${item.id}">Remove</button><div class="favorite-card-settings"><label>Watchlist<input data-favorite-watchlist value="${escapeHtml(item.watchlist || "Main")}" maxlength="40" /></label><label>Private note<input data-favorite-notes value="${escapeHtml(item.notes || "")}" maxlength="500" placeholder="Why you are watching this player" /></label><button class="account-button secondary" type="button" data-save-favorite-settings="${item.id}">Save</button></div></div>`).join("") : '<div class="empty-state">No favorites saved yet. Search today’s player pool to build your board.</div>';
   renderAccountDashboard();
   renderDailyLab();
   renderLiveAlerts();
   renderSearchResults();
+  window.dispatchEvent(new CustomEvent("tsl:favorites-updated", { detail: { favorites: favorites.map(item => ({ ...item })) } }));
 }
 
 function normalizedName(value) {
@@ -427,11 +429,18 @@ function alertKindLabel(kind) {
   })[kind] || "Verified change";
 }
 
+function alertAllowedByPreferences(alert) {
+  const preferences = window.TSLMemberPreferences || {};
+  if (alert.kind === "lineup_confirmed") return preferences.notify_lineups !== false;
+  if (alert.kind === "lineup_removed") return preferences.notify_scratches !== false;
+  return preferences.notify_model_moves !== false;
+}
+
 function renderLiveAlerts() {
   if (!elements.liveAlertsList || !elements.liveAlertsSummary || !elements.liveAlertsFreshness) return;
   const payload = detailData.liveAlerts || {};
   const allAlerts = Array.isArray(payload.alerts) ? payload.alerts : [];
-  const matching = allAlerts.filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
+  const matching = allAlerts.filter(alertAllowedByPreferences).filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
   const players = favorites.filter(favorite => favorite.entity_type === "player").length;
   const pitchers = favorites.filter(favorite => favorite.entity_type === "pitcher").length;
   elements.liveAlertsSummary.innerHTML = [
@@ -468,7 +477,7 @@ function renderLiveAlerts() {
 
 function matchingLiveAlerts() {
   const allAlerts = Array.isArray(detailData.liveAlerts?.alerts) ? detailData.liveAlerts.alerts : [];
-  return allAlerts.filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
+  return allAlerts.filter(alertAllowedByPreferences).filter(alert => favorites.some(favorite => alertMatchesFavorite(alert, favorite)));
 }
 
 function modelScore(model) {
@@ -728,6 +737,7 @@ async function renderMembership() {
   elements.subscribeOptions.hidden = true;
   if (elements.billingPanel) elements.billingPanel.hidden = true;
   if (elements.billingMessage) elements.billingMessage.textContent = "";
+  if (elements.billingDetails) elements.billingDetails.innerHTML = "";
   elements.membershipStatus.textContent = "Checking your membership status…";
   try {
     const status = await window.TSLAccount.subscriptionStatus();
@@ -746,6 +756,12 @@ async function renderMembership() {
         ? `Active through ${periodEnd}. Your subscription is set to cancel after this period.`
         : "Active subscription. Premium MLB boards and tools are unlocked.";
       if (elements.billingPanel) elements.billingPanel.hidden = false;
+      if (elements.billingDetails) {
+        const amount = Number.isFinite(status.unitAmount) ? new Intl.NumberFormat("en-US", { style: "currency", currency: String(status.currency || "usd").toUpperCase() }).format(status.unitAmount / 100) : "Current price";
+        const plan = status.plan ? `${status.plan[0].toUpperCase()}${status.plan.slice(1)}` : "Active";
+        const discount = status.discountPercent ? `${status.discountPercent}% off` : status.discountAmount ? `${new Intl.NumberFormat("en-US", { style: "currency", currency: String(status.currency || "usd").toUpperCase() }).format(status.discountAmount / 100)} off` : "None";
+        elements.billingDetails.innerHTML = `<div><dt>Plan</dt><dd>${escapeHtml(plan)}</dd></div><div><dt>Price</dt><dd>${escapeHtml(amount)}${status.interval ? ` / ${escapeHtml(status.interval)}` : ""}</dd></div><div><dt>Discount</dt><dd>${escapeHtml(discount)}</dd></div>`;
+      }
       return;
     }
     elements.membership.classList.add("pending");
@@ -763,6 +779,8 @@ async function renderMembership() {
     elements.membershipStatus.textContent = error.message || "Membership status is temporarily unavailable.";
   }
 }
+
+window.addEventListener("tsl:preferences-updated", renderLiveAlerts);
 
 async function showSession(session) {
   const signedIn = Boolean(session?.user);
@@ -945,6 +963,24 @@ elements.list.addEventListener("click", async event => {
   if (openButton) {
     const favorite = favorites.find(item => String(item.id) === String(openButton.dataset.openFavorite));
     if (favorite) openFavoriteDetails(favorite);
+    return;
+  }
+  const settingsButton = event.target.closest("[data-save-favorite-settings]");
+  if (settingsButton) {
+    const card = settingsButton.closest("[data-favorite-card]");
+    settingsButton.disabled = true;
+    const originalLabel = settingsButton.textContent;
+    settingsButton.textContent = "Saving…";
+    try {
+      await window.TSLAccount.updateFavorite(Number(settingsButton.dataset.saveFavoriteSettings), {
+        watchlist: card?.querySelector("[data-favorite-watchlist]")?.value,
+        notes: card?.querySelector("[data-favorite-notes]")?.value
+      });
+      await refreshFavorites();
+    } catch (error) {
+      settingsButton.disabled = false;
+      settingsButton.textContent = error.message || originalLabel;
+    }
     return;
   }
   const button = event.target.closest("[data-remove-favorite]");

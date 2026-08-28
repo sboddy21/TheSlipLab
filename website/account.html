@@ -8,6 +8,7 @@
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   <link rel="stylesheet" href="./assets/site-header.css" />
   <link rel="stylesheet" href="./assets/account.css" />
+  <link rel="stylesheet" href="./assets/account-center.css" />
   <script src="./assets/member-data.js"></script>
   <script defer src="./assets/site-header.js?v=20260823-trackers"></script>
   <link rel="stylesheet" href="./assets/energy.css?v=20260821c">
@@ -94,6 +95,7 @@
               <div>
                 <strong>Subscription settings</strong>
                 <span>Update your payment method, view invoices, or cancel your plan securely through Stripe.</span>
+                <dl class="account-billing-details" id="accountBillingDetails"></dl>
               </div>
               <button class="account-button secondary" id="manageSubscriptionButton" type="button">Manage subscription</button>
               <p class="account-billing-message" id="accountBillingMessage" aria-live="polite"></p>
@@ -142,6 +144,114 @@
                 </article>
               </div>
               <p class="account-checkout-note">Every plan unlocks the same tools · Secure Stripe checkout · Cancel from My Account</p>
+            </div>
+          </section>
+
+          <section class="member-center" id="memberCenter" aria-labelledby="memberCenterHeading">
+            <div class="member-center-head">
+              <div>
+                <span class="member-center-kicker">Member settings</span>
+                <h3 id="memberCenterHeading">Your account center</h3>
+                <p>Manage your identity, alerts, saved-board organization, security, privacy, support, and referrals.</p>
+              </div>
+              <span class="member-center-save-state" id="memberCenterState" aria-live="polite">Loading settings…</span>
+            </div>
+
+            <nav class="member-center-tabs" aria-label="Account settings">
+              <button class="active" type="button" data-member-tab="overview">Overview</button>
+              <button type="button" data-member-tab="profile">Profile</button>
+              <button type="button" data-member-tab="notifications">Alerts</button>
+              <button type="button" data-member-tab="watchlists">Watchlists</button>
+              <button type="button" data-member-tab="security">Security</button>
+              <button type="button" data-member-tab="privacy">Privacy</button>
+              <button type="button" data-member-tab="support">Support</button>
+              <button type="button" data-member-tab="referrals">Referrals</button>
+            </nav>
+
+            <div class="member-center-panel active" data-member-panel="overview">
+              <div class="member-center-grid">
+                <article class="member-setting-card">
+                  <span class="member-setting-label">Getting started</span>
+                  <h4>Member setup checklist</h4>
+                  <div class="member-checklist" id="memberOnboardingChecklist"></div>
+                  <button class="account-button secondary" id="completeOnboardingButton" type="button">Mark setup complete</button>
+                </article>
+                <article class="member-setting-card">
+                  <span class="member-setting-label">Personal results</span>
+                  <h4>Your saved-player performance</h4>
+                  <div class="member-performance" id="memberPerformance"></div>
+                  <p class="member-setting-note">This summarizes verified model outcomes for saved players—not personal wagering profit.</p>
+                </article>
+              </div>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="profile" hidden>
+              <form class="member-form" id="memberProfileForm">
+                <div class="member-form-heading"><h4>Profile settings</h4><p>Choose how your account appears and how times are displayed.</p></div>
+                <label>Display name<input id="memberDisplayName" maxlength="60" placeholder="Your name" /></label>
+                <label>Account email<input id="memberEmail" type="email" autocomplete="email" required /></label>
+                <label>Timezone<select id="memberTimezone"></select></label>
+                <label>Favorite team<input id="memberFavoriteTeam" maxlength="80" placeholder="Optional" /></label>
+                <button class="account-button" type="submit">Save profile</button>
+                <p class="member-inline-message" id="memberProfileMessage" aria-live="polite"></p>
+              </form>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="notifications" hidden>
+              <form class="member-form" id="memberPreferencesForm">
+                <div class="member-form-heading"><h4>Notification preferences</h4><p>Control which verified changes appear in your account and whether you consent to account emails.</p></div>
+                <label class="member-toggle"><input id="notifyLineups" type="checkbox" /><span><strong>Lineup confirmations</strong>When a saved player is confirmed in the batting order.</span></label>
+                <label class="member-toggle"><input id="notifyScratches" type="checkbox" /><span><strong>Scratches and removals</strong>When a saved player leaves the expected lineup.</span></label>
+                <label class="member-toggle"><input id="notifyModelMoves" type="checkbox" /><span><strong>Meaningful model movement</strong>Probability, score, pitcher, or signal changes.</span></label>
+                <label class="member-toggle"><input id="notifyResults" type="checkbox" /><span><strong>Saved-player results</strong>Verified outcomes for players on your board.</span></label>
+                <label>Email frequency<select id="memberEmailFrequency"><option value="off">Off</option><option value="immediate">Immediate</option><option value="daily">Daily digest</option></select></label>
+                <label class="member-toggle"><input id="communicationConsent" type="checkbox" /><span><strong>Email consent</strong>Allow the selected account-alert emails. Required unless email frequency is off.</span></label>
+                <button class="account-button" type="submit">Save alert preferences</button>
+                <p class="member-inline-message" id="memberPreferencesMessage" aria-live="polite"></p>
+              </form>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="watchlists" hidden>
+              <div class="member-form-heading"><h4>Saved-player organization</h4><p>Group favorites into private watchlists and keep a short note on each player.</p></div>
+              <div class="member-watchlist-tools"><label>Show watchlist<select id="memberWatchlistFilter"><option value="all">All watchlists</option></select></label><a href="#savedFavoritesHeading">Manage saved players below →</a></div>
+              <p class="member-setting-note">Each saved-player card now includes its watchlist and private note controls.</p>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="security" hidden>
+              <div class="member-center-grid">
+                <form class="member-form member-setting-card" id="memberPasswordForm">
+                  <div class="member-form-heading"><h4>Change password</h4><p>Use at least eight characters.</p></div>
+                  <label>New password<input id="memberNewPassword" type="password" minlength="8" autocomplete="new-password" required /></label>
+                  <label>Confirm password<input id="memberNewPasswordConfirm" type="password" minlength="8" autocomplete="new-password" required /></label>
+                  <button class="account-button" type="submit">Update password</button>
+                  <p class="member-inline-message" id="memberPasswordMessage" aria-live="polite"></p>
+                </form>
+                <article class="member-setting-card">
+                  <span class="member-setting-label">Account activity</span>
+                  <h4>Sessions and sign-ins</h4>
+                  <dl class="member-activity" id="memberAccountActivity"></dl>
+                  <button class="account-button secondary" id="signOutOthersButton" type="button">Sign out other devices</button>
+                  <p class="member-inline-message" id="memberSecurityMessage" aria-live="polite"></p>
+                </article>
+              </div>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="privacy" hidden>
+              <div class="member-center-grid">
+                <article class="member-setting-card"><span class="member-setting-label">Your information</span><h4>Download account data</h4><p>Export your profile, settings, saved players, subscription record, referrals, and support history as JSON.</p><button class="account-button secondary" id="exportAccountButton" type="button">Download my data</button></article>
+                <article class="member-setting-card danger-zone"><span class="member-setting-label">Danger zone</span><h4>Request account deletion</h4><p>Submit a verified request for removal of your account and saved data. Active subscriptions must be canceled separately in Stripe first.</p><label>Type DELETE to confirm<input id="deleteAccountConfirmation" autocomplete="off" /></label><button class="account-button danger" id="deleteAccountButton" type="button">Request account deletion</button><p class="member-inline-message" id="memberPrivacyMessage" aria-live="polite"></p></article>
+              </div>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="support" hidden>
+              <div class="member-center-grid">
+                <form class="member-form member-setting-card" id="memberSupportForm"><div class="member-form-heading"><h4>Contact support</h4><p>Send an account-linked request to The Slip Lab.</p></div><label>Topic<select id="memberSupportCategory"><option value="account">Account</option><option value="billing">Billing</option><option value="data">Incorrect data</option><option value="feedback">Technical issue or feedback</option><option value="other">Other</option></select></label><label>Message<textarea id="memberSupportMessage" minlength="10" maxlength="2000" required placeholder="Tell us what happened and what you expected."></textarea></label><button class="account-button" type="submit">Send support request</button><p class="member-inline-message" id="memberSupportStatus" aria-live="polite"></p></form>
+                <article class="member-setting-card"><span class="member-setting-label">Quick answers</span><h4>Account FAQ</h4><details><summary>How do I cancel or update billing?</summary><p>Use Manage subscription in the Membership section. Stripe handles payment methods, invoices, and cancellation.</p></details><details><summary>Why is a player missing?</summary><p>The live boards show eligible players from current verified feeds and confirmed-lineup rules.</p></details><details><summary>Are saved players private?</summary><p>Yes. Saved players, watchlists, notes, preferences, and support requests are restricted to your account.</p></details></article>
+              </div>
+            </div>
+
+            <div class="member-center-panel" data-member-panel="referrals" hidden>
+              <article class="member-setting-card"><span class="member-setting-label">Invite members</span><h4>Your referral link</h4><p>Share your personal link. Joined and subscribed referrals are tracked; no automatic reward is issued until referral terms are published.</p><div class="member-referral-link"><input id="memberReferralLink" readonly /><button class="account-button secondary" id="copyReferralButton" type="button">Copy link</button></div><div class="member-referral-stats" id="memberReferralStats"></div><p class="member-inline-message" id="memberReferralMessage" aria-live="polite"></p></article>
             </div>
           </section>
 
@@ -220,5 +330,6 @@
     <div class="favorite-detail-body" id="favoriteDetailBody"></div>
   </dialog>
   <script type="module" src="./assets/account-page.js"></script>
+  <script type="module" src="./assets/account-center.js"></script>
 </body>
 </html>
