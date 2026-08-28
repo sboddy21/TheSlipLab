@@ -198,6 +198,19 @@ async function createCheckoutSession(plan = "monthly") {
   return data;
 }
 
+async function createBillingPortalSession() {
+  const token = await accessToken();
+  if (!token) throw new Error("Sign in before managing your subscription");
+  const response = await fetch("/api/create-billing-portal-session", {
+    method: "POST",
+    headers: { Accept: "application/json", Authorization: `Bearer ${token}` }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || "Unable to open subscription management");
+  if (!data.url) throw new Error("Billing portal did not return a Stripe URL");
+  return data;
+}
+
 window.TSLAccount = {
   get session() { return session; },
   getClient,
@@ -211,7 +224,8 @@ window.TSLAccount = {
   removeFavorite,
   accessToken,
   subscriptionStatus,
-  createCheckoutSession
+  createCheckoutSession,
+  createBillingPortalSession
 };
 
 window.TSLAccount.ready = initialize();
