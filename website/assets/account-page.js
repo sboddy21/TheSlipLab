@@ -26,6 +26,9 @@ const elements = {
   membershipStatus: document.getElementById("accountMembershipStatus"),
   conversionPanel: document.getElementById("accountConversionPanel"),
   subscribeOptions: document.getElementById("accountSubscribeOptions"),
+  billingPanel: document.getElementById("accountBillingPanel"),
+  billingButton: document.getElementById("manageSubscriptionButton"),
+  billingMessage: document.getElementById("accountBillingMessage"),
   search: document.getElementById("favoriteSearch"),
   results: document.getElementById("favoriteSearchResults"),
   list: document.getElementById("favoriteList"),
@@ -723,6 +726,8 @@ async function renderMembership() {
   elements.membership.classList.remove("active", "pending");
   if (elements.conversionPanel) elements.conversionPanel.hidden = true;
   elements.subscribeOptions.hidden = true;
+  if (elements.billingPanel) elements.billingPanel.hidden = true;
+  if (elements.billingMessage) elements.billingMessage.textContent = "";
   elements.membershipStatus.textContent = "Checking your membership status…";
   try {
     const status = await window.TSLAccount.subscriptionStatus();
@@ -740,6 +745,7 @@ async function renderMembership() {
       elements.membershipStatus.textContent = status.cancelAtPeriodEnd && periodEnd
         ? `Active through ${periodEnd}. Your subscription is set to cancel after this period.`
         : "Active subscription. Premium MLB boards and tools are unlocked.";
+      if (elements.billingPanel) elements.billingPanel.hidden = false;
       return;
     }
     elements.membership.classList.add("pending");
@@ -902,6 +908,22 @@ elements.subscribeOptions?.addEventListener("click", async event => {
     setMessage(error.message || "Checkout is temporarily unavailable.", true);
     button.disabled = false;
     button.textContent = originalLabel;
+  }
+});
+
+elements.billingButton?.addEventListener("click", async () => {
+  const originalLabel = elements.billingButton.textContent;
+  elements.billingButton.disabled = true;
+  elements.billingButton.textContent = "Opening Stripe…";
+  if (elements.billingMessage) elements.billingMessage.textContent = "Opening your secure billing settings…";
+  try {
+    const portal = await window.TSLAccount.createBillingPortalSession();
+    trackConversion("billing_portal_opened", { source: "account" });
+    window.location.href = portal.url;
+  } catch (error) {
+    if (elements.billingMessage) elements.billingMessage.textContent = error.message || "Subscription management is temporarily unavailable.";
+    elements.billingButton.disabled = false;
+    elements.billingButton.textContent = originalLabel;
   }
 });
 
