@@ -376,8 +376,8 @@
       border:1px solid #1a3045;
       background:#1a3045;
     }
-    .health-row{padding:14px;background:#fffdf7;display:flex;justify-content:space-between;gap:10px;align-items:center}
-    .health-row strong{font-size:11px;text-transform:uppercase;color:#12633d}
+    .health-row{min-width:0;padding:14px;background:#fffdf7;display:flex;justify-content:space-between;gap:10px;align-items:center}
+    .health-row strong{min-width:0;font-size:11px;text-align:right;text-transform:uppercase;overflow-wrap:anywhere;color:#12633d}
     .health-row strong.pending{color:#996315}
     .role-controls{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
     .role-controls button{padding:9px 12px;border:1px solid #1a3045;background:#fffdf7;color:#071d36;font:900 10px Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
@@ -613,7 +613,7 @@
     }
 
     function renderHealth(sources){
-      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", practiceReports: "Practice reports", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", weather: "Weather", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", receivingYards: "Receiving shadow board", resultsTracking: "Results tracking", routes: "Routes", projections: "Projections" };
+      const labels = { schedule: "Schedule", teams: "Teams", rosters: "Rosters", depthCharts: "Depth charts", injuries: "Injuries", practiceReports: "Practice reports", historicalPlayByPlay: "Historical PBP", usageBaselines: "Usage baselines", matchupContext: "Matchup context", weather: "Weather", roleEngine: "Role engine", preseasonUsage: "Preseason usage", tdDecisionCenter: "TD shadow board", receivingYards: "Receiving shadow board", resultsTracking: "Results tracking", launchAudit: "Launch audit", routes: "Routes", projections: "Projections" };
       return Object.entries(labels).map(([key, label]) => {
         const status = sources?.[key]?.status || "pending";
         const ready = status === "available" || status.startsWith("available_");

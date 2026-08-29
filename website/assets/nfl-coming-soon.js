@@ -59,7 +59,7 @@
           <h2 id="${rootId}-title">NFL Intelligence <span>Coming Soon</span></h2>
           <p>Roles. Usage. Matchups. Availability. The next Slip Lab is being built to make every NFL slate easier to read.</p>
           <div class="nfl-launch-pills" aria-label="Upcoming NFL features"><span>Role tracking</span><span>Usage signals</span><span>Matchup context</span></div>
-          <div class="nfl-launch-actions"><a class="nfl-launch-action primary" href="./nfl.html">Preview the NFL Lab</a><button class="nfl-launch-action" type="button" data-nfl-dismiss>Keep exploring</button></div>
+          <div class="nfl-launch-actions"><button class="nfl-launch-action primary" type="button" data-nfl-dismiss>Keep exploring</button></div>
         </div>
         <div class="nfl-launch-visual" aria-hidden="true"><span class="nfl-launch-season">The next lab is loading</span></div>
       </section>`;

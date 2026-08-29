@@ -179,6 +179,7 @@ const foundation = {
     { file: "nfl_weather.json", purpose: "Indoor verification and kickoff-hour forecasts with horizon and freshness rejection." },
     { file: "nfl_receiving_yards_board.json", purpose: "Private receiving-yards shadow signals; routes, confirmed roles, matchup, and weather remain required." },
     { file: "nfl_results_tracking.json", purpose: "Pre-kickoff snapshot and postgame grading contract with anti-leakage rules." },
+    { file: "nfl_launch_audit.json", purpose: "Final identity, ownership, inactive-player, weather, role, and manual-navigation launch gate." },
     {
       file: "nfl_data_health.json",
       purpose: "Source-by-source availability and gating status; projections remain disabled until required inputs pass validation."
@@ -201,7 +202,7 @@ const foundation = {
   nextBuildSteps: [
     "Activate official weekly practice reports when providers begin publishing Week 1 designations.",
     "Require complete kickoff-hour weather coverage once every game enters the forecast horizon.",
-    "Validate player ownership, role, matchup, and weather inputs before Week 1 publishing.",
+    "Keep routes optional for TD candidates and mandatory for receiving-yards recommendations.",
     "Run TD and receiving-yards shadow boards through Week 1 and grade only pre-kickoff snapshots."
   ]
 };

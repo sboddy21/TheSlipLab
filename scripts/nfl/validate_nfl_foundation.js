@@ -4,7 +4,7 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_matchup_context.json", "nfl_practice_reports.json", "nfl_weather.json", "nfl_receiving_yards_board.json", "nfl_results_tracking.json", "nfl_td_decision_center.json", "nfl_data_health.json", "nfl_public_status.json"];
+const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_matchup_context.json", "nfl_practice_reports.json", "nfl_weather.json", "nfl_receiving_yards_board.json", "nfl_results_tracking.json", "nfl_td_decision_center.json", "nfl_launch_audit.json", "nfl_data_health.json", "nfl_public_status.json"];
 
 function fail(message) {
   throw new Error(`NFL VALIDATION FAILED: ${message}`);
@@ -36,6 +36,7 @@ const weather = payloads["nfl_weather.json"];
 const receiving = payloads["nfl_receiving_yards_board.json"];
 const results = payloads["nfl_results_tracking.json"];
 const tdBoard = payloads["nfl_td_decision_center.json"];
+const launchAudit = payloads["nfl_launch_audit.json"];
 const health = payloads["nfl_data_health.json"];
 const publicStatus = payloads["nfl_public_status.json"];
 const foundation = JSON.parse(fs.readFileSync(path.join(DATA, "nfl_foundation.json"), "utf8"));
@@ -49,6 +50,7 @@ if (!pool.playerCount || pool.players?.length !== pool.playerCount) fail("player
 if (pool.players.some(player => !["QB", "RB", "WR", "TE"].includes(player.position))) fail("player pool contains an ineligible position");
 if (new Set(pool.players.map(player => player.playerId)).size !== pool.playerCount) fail("player IDs must be unique");
 if (depth.availability !== "available" || depth.teamCount !== 32 || !depth.entryCount) fail("depth-chart contract is incomplete");
+if (depth.unmatchedPlayerCount !== 0 || !Array.isArray(depth.excludedSourceEntries)) fail("unmatched depth entries were not resolved");
 if (depth.entries.some(entry => !entry.playerId || !entry.team || !entry.position || !Number.isFinite(entry.rank))) fail("depth-chart contract contains an invalid entry");
 if (injuries.availability !== "partial" || !Array.isArray(injuries.injuries)) fail("injury contract must explicitly report partial preseason coverage");
 if (usage.profileCount < 400 || usage.sourcePlayCount < 100000 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
@@ -81,6 +83,7 @@ if (!tdBoard.rows?.length || tdBoard.rows.length !== tdBoard.counts?.rankedPlaye
 if (new Set(tdBoard.rows.map(row => row.playerId)).size !== tdBoard.rows.length || tdBoard.rows.some((row, index) => row.shadowRank !== index + 1)) fail("TD Decision Center identity or rank order is invalid");
 if (tdBoard.rows.some(row => row.scoreType !== "private_shadow_signal_not_probability" || row.tdSignalScore < 0 || row.tdSignalScore > 100 || row.publicationStatus !== "private_shadow_only")) fail("TD Decision Center contains an invalid shadow score");
 if (tdBoard.rows.some(row => row.gates?.regularSeasonRoleConfirmed && !practice.officialReportsActive)) fail("TD Decision Center bypassed a role gate");
+if (tdBoard.rows.some(row => "routeParticipation" in (row.gates || {}))) fail("TD Decision Center incorrectly requires route participation");
 const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
 if (tdBoard.rows.some(row => !row.opponent || !row.gameId || !row.gates?.verifiedOpponent || !row.gates?.defensiveMatchup || row.gates?.gameEnvironment !== (weatherByGame.get(row.gameId)?.weatherGate === true) || row.matchup?.status !== "verified_historical_baseline")) fail("TD Decision Center is missing verified matchup or weather context");
 if (health.status !== "nfl_dress_rehearsal_private_gates_active" || health.sources?.depthCharts?.status !== "available") fail("health contract must report private dress-rehearsal readiness");
@@ -90,6 +93,8 @@ if (health.sources?.roleEngine?.status !== "available" || !["available", "waitin
 if (health.sources?.tdDecisionCenter?.status !== "private_shadow_only" || health.sources?.tdDecisionCenter?.publishableRecommendations !== 0) fail("health contract must keep the TD Decision Center private and gated");
 if (health.sources?.matchupContext?.status !== "available_historical_baseline" || health.sources?.matchupContext?.teamContexts !== 32) fail("health contract must report complete matchup context");
 if (!health.sources?.practiceReports || !health.sources?.weather || health.sources?.receivingYards?.publishableRecommendations !== 0) fail("health contract is missing dress-rehearsal sources");
+if (launchAudit.publicLaunchAutomatic !== false || launchAudit.publicNavigationEnabled !== false || launchAudit.checks?.duplicatePlayerIds || launchAudit.checks?.roleTeamMismatches || launchAudit.checks?.matchupTeamMismatches || launchAudit.checks?.inactiveRowsLeaked || launchAudit.checks?.unresolvedDepthEntries) fail("launch audit failed identity, ownership, or manual-launch policy");
+if (launchAudit.policy?.tdRoutesRequired !== false || launchAudit.policy?.receivingRoutesRequired !== true) fail("launch audit has invalid route policy");
 if (publicStatus.weekOneGames?.length !== 16 || publicStatus.counts?.roleEligible !== roles.modelEligibleCount || publicStatus.counts?.completedPreseasonGames !== preseason.processedGameCount || !publicStatus.preseasonUsage?.finalGameGate) fail("public NFL status is incomplete");
 if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
 if (foundation.currentPhase?.id === "foundation" && foundation.date >= "2026-08-21") fail("roadmap regressed to the completed foundation phase");

@@ -107,7 +107,6 @@ function scoreRow(role, assignment, context, practice, weather) {
       activeRoster: role.readiness?.status !== "unavailable",
       currentTeamContinuity: Boolean(role.teamContext?.currentTeamContinuity),
       verifiedOpponent: true,
-      routeParticipation: false,
       defensiveMatchup: true,
       gameEnvironment: Boolean(weather?.weatherGate),
       weather: Boolean(weather?.weatherGate),
@@ -115,6 +114,7 @@ function scoreRow(role, assignment, context, practice, weather) {
     },
     practiceReport: practice || null,
     weather: weather || null,
+    launchEligible: Boolean(practice?.regularSeasonRoleConfirmed && weather?.weatherGate && role.readiness?.status !== "unavailable"),
     publicationStatus: "private_shadow_only"
   };
 }
@@ -166,7 +166,7 @@ function main() {
     launchGate: "Requires verified regular-season role, opponent, defensive matchup, and game environment before recommendations can be considered.",
     inputs: {
       available: ["Canonical player identity", "Current team", "Depth chart", "Verified Week 1 opponent", "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
-      gated: ["Regular-season role confirmation", "Routes and snap participation", "Weather"]
+      gated: ["Regular-season role confirmation", "Weather"]
     },
     weights: { historicalOpportunityComposite: 0.80, scoringEnvironment: 0.12, defensiveVulnerability: 0.06, pace: 0.02 },
     counts: {
@@ -177,7 +177,8 @@ function main() {
       opportunitySurges: surges.length,
       publishableRecommendations: 0,
       verifiedOpponentAssignments: eligible.length,
-      matchupAdjustedPlayers: eligible.length
+      matchupAdjustedPlayers: eligible.length,
+      launchEligiblePlayers: eligible.filter(row => row.launchEligible).length
     },
     sections: [
       section("all", "All", "Every player eligible for private TD opportunity review.", eligible),

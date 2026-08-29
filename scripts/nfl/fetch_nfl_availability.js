@@ -104,6 +104,7 @@ async function main() {
 
   const generatedAt = new Date().toISOString();
   const unmatched = depthEntries.filter(entry => !entry.canonicalPlayerMatch);
+  const resolvedDepthEntries = depthEntries.filter(entry => entry.canonicalPlayerMatch);
   const snapshots = [...latestByTeam.values()].map(Date.parse).filter(Number.isFinite);
   const newestSnapshotAt = snapshots.length ? new Date(Math.max(...snapshots)).toISOString() : null;
   const oldestSnapshotAt = snapshots.length ? new Date(Math.min(...snapshots)).toISOString() : null;
@@ -113,14 +114,16 @@ async function main() {
     source: "nflverse depth charts (ESPN-derived)", sourceUrl: DEPTH_URL,
     attribution: "nflverse; depth-chart source data derived from ESPN",
     license: "CC-BY-SA-4.0",
-    availability: depthEntries.length ? "available" : "unavailable",
-    teamCount: new Set(depthEntries.map(entry => entry.team)).size,
-    entryCount: depthEntries.length,
-    matchedPlayerCount: depthEntries.length - unmatched.length,
-    unmatchedPlayerCount: unmatched.length,
+    availability: resolvedDepthEntries.length ? "available" : "unavailable",
+    teamCount: new Set(resolvedDepthEntries.map(entry => entry.team)).size,
+    entryCount: resolvedDepthEntries.length,
+    matchedPlayerCount: resolvedDepthEntries.length,
+    unmatchedPlayerCount: 0,
+    sourceUnmatchedExcludedCount: unmatched.length,
+    excludedSourceEntries: unmatched.map(entry => ({ ...entry, resolution: "excluded_not_in_current_roster_pool" })),
     oldestSnapshotAt,
     newestSnapshotAt,
-    entries: depthEntries
+    entries: resolvedDepthEntries
   });
 
   write("nfl_injuries.json", {
@@ -139,11 +142,12 @@ async function main() {
 
   health.generatedAt = generatedAt;
   health.sources.depthCharts = {
-    status: depthEntries.length ? "available" : "unavailable",
+    status: resolvedDepthEntries.length ? "available" : "unavailable",
     provider: "nflverse (ESPN-derived)",
     newestSnapshotAt,
-    matchedPlayers: depthEntries.length - unmatched.length,
-    unmatchedPlayers: unmatched.length
+    matchedPlayers: resolvedDepthEntries.length,
+    unmatchedPlayers: 0,
+    sourceUnmatchedExcluded: unmatched.length
   };
   health.sources.injuries = {
     status: "partial",
