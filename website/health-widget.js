@@ -3,9 +3,10 @@
   const CSS = `
   .sl-health-widget{
     --sl-state:#25ff7a;--sl-state-soft:rgba(37,255,122,.14);
-    position:fixed;top:4px;right:14px;z-index:100000;
+    position:static;z-index:100000;flex:0 0 auto;margin-left:auto;visibility:hidden;
     font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   }
+  .sl-health-widget[data-docked="true"]{visibility:visible}
   .sl-health-widget[data-state="closed"]{--sl-state:#8db6ff;--sl-state-soft:rgba(141,182,255,.16)}
   .sl-health-widget[data-state="updating"]{--sl-state:#48d7ff;--sl-state-soft:rgba(72,215,255,.16)}
   .sl-health-widget[data-state="delayed"]{--sl-state:#ffb323;--sl-state-soft:rgba(255,179,35,.17)}
@@ -54,7 +55,8 @@
   .sl-health-artifact strong{color:#fff;overflow-wrap:anywhere}.sl-health-fresh{color:var(--sl-state)!important;text-align:right;text-transform:uppercase}
   .sl-health-errors{margin-top:12px;padding:10px 12px;border:1px solid rgba(255,91,87,.35);border-radius:14px;background:rgba(255,91,87,.1);font-size:11px;color:#ffd2d0}
   .sl-health-close{margin-top:14px;width:100%;border:0;border-radius:14px;padding:11px;background:var(--sl-state);color:#07110a;font-weight:1000;cursor:pointer}
-  @media(max-width:900px){.sl-health-widget{top:3px;right:8px;bottom:auto}.sl-health-pill{min-height:24px;padding:3px 8px}.sl-health-top{font-size:9px}.sl-health-sub{display:none}.sl-health-tip{top:31px;bottom:auto}.sl-health-grid{grid-template-columns:repeat(2,1fr)}.sl-health-artifact{grid-template-columns:1fr 72px}.sl-health-artifact span:nth-child(2){display:none}}
+  @media(max-width:1180px){.sl-health-sub{display:none}}
+  @media(max-width:900px){.tsl-site-header-inner{position:relative}.sl-health-widget{position:absolute;top:8px;right:12px;margin:0}.tsl-site-header-inner>.tsl-brand{padding-right:118px}.sl-health-pill{min-height:24px;padding:3px 8px}.sl-health-top{font-size:9px}.sl-health-tip{top:31px;bottom:auto}.sl-health-grid{grid-template-columns:repeat(2,1fr)}.sl-health-artifact{grid-template-columns:1fr 72px}.sl-health-artifact span:nth-child(2){display:none}}
   `;
   const style = document.createElement("style");
   style.textContent = CSS;
@@ -71,6 +73,22 @@
     <div class="sl-health-tip" id="slHealthTip"></div>
   `;
   document.body.appendChild(root);
+
+  function dockInHeader(){
+    const headerInner = document.querySelector(".tsl-site-header-inner");
+    if (!headerInner) return false;
+    headerInner.appendChild(root);
+    root.dataset.docked = "true";
+    return true;
+  }
+
+  if (!dockInHeader()) {
+    const headerObserver = new MutationObserver(() => {
+      if (dockInHeader()) headerObserver.disconnect();
+    });
+    headerObserver.observe(document.body, { childList: true });
+    window.addEventListener("DOMContentLoaded", dockInHeader, { once: true });
+  }
 
   const modal = document.createElement("div");
   modal.className = "sl-health-modal-backdrop";
