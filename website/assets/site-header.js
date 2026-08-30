@@ -57,7 +57,7 @@
     ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
-  const mlbPrimaryOrder = ["Slate", "Decision Center", "Full Board", "Matchup Lab", "Results Archive"];
+  const mlbPrimaryOrder = ["Slate", "Decision Center", "HR Tracker", "Full Board", "Matchup Lab", "Results Archive"];
   const wnbaItems = [
     ["Slate","./wnba.html",["/wnba.html"]],
     ["Decision Center","./wnba-decision-center.html",["/wnba-decision-center.html"]],
@@ -233,10 +233,13 @@
     function positionMenuPanel(){
       const rect = menuButton.getBoundingClientRect();
       const viewportHeight = window.visualViewport?.height || window.innerHeight || 700;
+      const viewportWidth = window.visualViewport?.width || window.innerWidth || 1200;
       const top = Math.max(84, Math.round(rect.bottom + 8));
       const maxHeight = Math.max(220, Math.round(viewportHeight - top - 16));
+      const right = Math.max(12, Math.round(viewportWidth - rect.right));
       panel.style.setProperty("--tsl-nav-menu-top", `${top}px`);
       panel.style.setProperty("--tsl-nav-menu-max-height", `${maxHeight}px`);
+      panel.style.setProperty("--tsl-nav-menu-right", `${right}px`);
     }
 
     function setMenuOpen(open){
