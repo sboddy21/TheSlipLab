@@ -68,7 +68,7 @@ const markets = {
       launchPriority: 1,
       supportedPositions: ["RB", "WR", "TE", "QB"],
       coreInputs: ["redZoneRole", "rushShare", "targetShare", "teamScoringContext", "defenseTdAllowed"],
-      status: "planned"
+      status: "private_shadow"
     },
     {
       id: "receiving_yards",
@@ -76,17 +76,15 @@ const markets = {
       launchPriority: 2,
       supportedPositions: ["WR", "TE", "RB"],
       coreInputs: ["routeShare", "targetShare", "airYardsShare", "defenseCoverage"],
-      status: "planned"
-    }
-  ],
-  deferredMarkets: [
+      status: "private_shadow"
+    },
     {
       id: "rushing_yards",
       label: "Rushing Yards",
       launchPriority: 3,
       supportedPositions: ["RB", "QB"],
       coreInputs: ["carryShare", "snapShare", "offensiveLineContext", "gameScript"],
-      reason: "Add after the carry-share and offensive-line inputs are validated."
+      status: "inputs_gated"
     },
     {
       id: "passing_yards",
@@ -94,8 +92,10 @@ const markets = {
       launchPriority: 4,
       supportedPositions: ["QB"],
       coreInputs: ["dropbackRate", "passRateOverExpected", "opponentPressure", "pace"],
-      reason: "Add after the dropback, pressure, and pace inputs are validated."
-    },
+      status: "inputs_gated"
+    }
+  ],
+  deferredMarkets: [
     {
       id: "receptions",
       label: "Receptions",
