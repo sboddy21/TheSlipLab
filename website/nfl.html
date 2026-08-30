@@ -421,6 +421,12 @@
   <script src="./assets/member-data.js"></script>
   <script defer src="./assets/site-header.js?v=20260823-trackers"></script>
   <link rel="stylesheet" href="./assets/energy.css?v=20260821c">
+  <style>
+    body.tsl-nfl-page::before,
+    body.tsl-nfl-page .hero::before{display:none!important;animation:none!important}
+    body.tsl-nfl-page .tsl-site-header{backdrop-filter:none!important}
+    body.tsl-nfl-page section{content-visibility:auto;contain-intrinsic-size:auto 900px}
+  </style>
 </head>
 <body class="tsl-editorial tsl-tool-page tsl-nfl-page">
   <main class="nfl-wrap">
@@ -628,7 +634,7 @@
 
     function renderRoleRows(board, filter = "all"){
       const rows = (board.rows || []).filter(row => filter === "all" || (filter === "review" ? row.signalPublication === "eligible_starter_context" : row.roleSignal === filter));
-      document.getElementById("roleRows").innerHTML = rows.length ? rows.slice(0, 150).map(row => `<tr>
+      document.getElementById("roleRows").innerHTML = rows.length ? rows.slice(0, 50).map(row => `<tr>
         <td><strong>${escapeHtml(row.playerName)}</strong><small>${escapeHtml(row.team)} · ${escapeHtml(row.position)}</small></td>
         <td>${escapeHtml(row.roleLabel)}<small>Depth ${escapeHtml(row.depthRank || "—")}</small></td>
         <td>${escapeHtml(row.games)}</td><td>${escapeHtml(row.opportunities)}</td><td>${escapeHtml(usageLabel(row))}</td>
@@ -639,7 +645,7 @@
 
     function renderRoleBoard(board){
       const counts = board.counts || {};
-      document.getElementById("roleSummary").innerHTML = `<span>${escapeHtml(counts.withUsage || 0)} with usage</span><span>${escapeHtml(counts.reviewEligible || 0)} review eligible</span><span>${escapeHtml(counts.noBoxScoreOpportunity || 0)} without box-score opportunity</span><span>Projections disabled</span>`;
+      document.getElementById("roleSummary").innerHTML = `<span>${escapeHtml(counts.withUsage || 0)} with usage</span><span>${escapeHtml(counts.reviewEligible || 0)} review eligible</span><span>Top 50 shown per filter</span><span>Projections disabled</span>`;
       const filters = [["all","All"],["review","Review eligible"],["rising","Rising"],["stable","Stable"],["falling","Falling"],["initial_sample","Initial sample"],["no_box_score_opportunity","No opportunity"]];
       document.getElementById("roleFilters").innerHTML = filters.map(([value,label], index) => `<button type="button" data-role-filter="${value}" class="${index === 0 ? "active" : ""}">${label}</button>`).join("");
       document.getElementById("roleFilters").addEventListener("click", event => {
