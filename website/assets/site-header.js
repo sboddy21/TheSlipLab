@@ -69,6 +69,17 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
+  const nflItems = [
+    ["NFL Home","#pageTitle",["/nfl.html"]],
+    ["Anytime TD","#anytime-td",[]],
+    ["Rec Yds","#receiving-yards",[]],
+    ["Rush Yds","#market-rushing-yards",[]],
+    ["Pass Yds","#market-passing-yards",[]],
+    ["Status","#nfl-status",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds", "Status"];
   const protectedPaths = new Set([
     "/ai-hall-of-fame.html",
     "/ai-says.html",
@@ -139,11 +150,13 @@
   function buildHeader(){
     const path = window.location.pathname;
     const wnbaSection = path === "/wnba.html" || path.startsWith("/wnba-");
-    const navItems = wnbaSection ? wnbaItems : items;
-    const navPrimaryOrder = wnbaSection ? wnbaPrimaryOrder : primaryOrder;
+    const nflSection = path === "/nfl.html" || document.body?.classList.contains("tsl-nfl-page");
+    const navItems = nflSection ? nflItems : (wnbaSection ? wnbaItems : items);
+    const navPrimaryOrder = nflSection ? nflPrimaryOrder : (wnbaSection ? wnbaPrimaryOrder : primaryOrder);
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = "tsl-site-header";
+    if (nflSection) header.classList.add("tsl-nfl-header");
 
     const inner = document.createElement("div");
     inner.className = "tsl-site-header-inner";

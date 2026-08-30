@@ -419,13 +419,20 @@
   </style>
   <link rel="stylesheet" href="./assets/site-header.css" />
   <script src="./assets/member-data.js"></script>
-  <script defer src="./assets/site-header.js?v=20260823-trackers"></script>
+  <script defer src="./assets/site-header.js?v=20260830-sport-nav2"></script>
   <link rel="stylesheet" href="./assets/energy.css?v=20260821c">
   <style>
     body.tsl-nfl-page::before,
     body.tsl-nfl-page .hero::before{display:none!important;animation:none!important}
     body.tsl-nfl-page .tsl-site-header{backdrop-filter:none!important}
     body.tsl-nfl-page section{content-visibility:auto;contain-intrinsic-size:auto 900px}
+    body.tsl-nfl-page #pageTitle,
+    body.tsl-nfl-page #anytime-td,
+    body.tsl-nfl-page #receiving-yards,
+    body.tsl-nfl-page #market-rushing-yards,
+    body.tsl-nfl-page #market-passing-yards,
+    body.tsl-nfl-page #nfl-status{scroll-margin-top:120px}
+    body.tsl-nfl-page .tsl-nfl-header .tsl-brand::after{content:"NFL";margin-left:9px;color:#c6ff65;font:950 10px/1 Arial,sans-serif;letter-spacing:.14em}
   </style>
 </head>
 <body class="tsl-editorial tsl-tool-page tsl-nfl-page">
@@ -468,7 +475,7 @@
       <div class="build-grid" id="phaseGrid"></div>
     </section>
 
-    <section aria-labelledby="slateTitle">
+    <section id="nfl-status" aria-labelledby="slateTitle">
       <div class="section-head">
         <div><span class="section-kicker">02 / Week 1</span><h2 class="section-title" id="slateTitle">The opening slate.</h2></div>
         <p>Real schedule data only. Player projections stay off until role, usage, injury, and market inputs pass validation.</p>
@@ -487,7 +494,7 @@
       <div class="role-table-wrap"><table class="role-table"><thead><tr><th>Player</th><th>Role</th><th>Games</th><th>Opportunity</th><th>Usage</th><th>Signal</th><th>Review status</th></tr></thead><tbody id="roleRows"><tr><td colspan="7">Loading private role board.</td></tr></tbody></table></div>
     </section>
 
-    <section aria-labelledby="tdTitle">
+    <section id="anytime-td" aria-labelledby="tdTitle">
       <div class="section-head">
         <div><span class="section-kicker">04 / Private shadow board</span><h2 class="section-title" id="tdTitle">TD Decision Center.</h2></div>
         <p>The MLB-style decision workflow, rebuilt around goal-line work, red-zone opportunity, touchdown history, and role certainty. Scores remain private and are not probabilities.</p>
@@ -500,7 +507,7 @@
       </div>
     </section>
 
-    <section aria-labelledby="receivingTitle">
+    <section id="receiving-yards" aria-labelledby="receivingTitle">
       <div class="section-head">
         <div><span class="section-kicker">05 / Private shadow board</span><h2 class="section-title" id="receivingTitle">Receiving Yards Lab.</h2></div>
         <p>Target volume, historical yardage, role, recent form, and matchup context. Routes, confirmed Week 1 roles, and weather remain hard launch gates.</p>
@@ -585,7 +592,7 @@
       const positions = Array.isArray(market.supportedPositions) ? market.supportedPositions : [];
       const inputs = Array.isArray(market.coreInputs) ? market.coreInputs : [];
       return `
-        <article class="market-card">
+        <article class="market-card" id="market-${escapeHtml(String(market.id || "planned").replaceAll("_", "-"))}">
           <div class="market-rank">Priority ${escapeHtml(market.launchPriority || "—")} · ${escapeHtml(market.status || "planned")}</div>
           <h3>${escapeHtml(market.label || "Market")}</h3>
           <div class="position-row">${positions.map(position => `<span>${escapeHtml(position)}</span>`).join("")}</div>
@@ -736,6 +743,5 @@
     init();
   </script>
   <script src="./health-widget.js?v=3"></script>
-  <script defer src="./assets/nfl-coming-soon.js?v=20260830-private"></script>
 </body>
 </html>
