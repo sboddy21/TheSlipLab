@@ -39,10 +39,9 @@
 
   initAnalytics();
 
-  const items = [
+  const mlbItems = [
     ["Sign In","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]],
-    ["WNBA","./wnba.html",["/wnba.html"]],
     ["Slate","./mlb.html",["/mlb.html","/index.html","/"]],
     ["Full Board","./full-board.html",["/full-board.html"]],
     ["Matchup Lab","./matchup-lab.html",["/matchup-lab.html"]],
@@ -58,8 +57,7 @@
     ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
-  const primaryLabels = new Set(["Sign In", "Slate", "HR Tracker", "Weather", "AI Says"]);
-  const primaryOrder = ["Sign In", "Slate", "HR Tracker", "Weather", "AI Says"];
+  const mlbPrimaryOrder = ["Slate", "Decision Center", "Full Board", "Matchup Lab", "Results Archive"];
   const wnbaItems = [
     ["Slate","./wnba.html",["/wnba.html"]],
     ["Decision Center","./wnba-decision-center.html",["/wnba-decision-center.html"]],
@@ -80,6 +78,29 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds", "Status"];
+  const nbaItems = [
+    ["NBA Home","./nba.html",["/nba.html"]],
+    ["Points","./nba-points.html",["/nba-points.html"]],
+    ["Rebounds","./nba-rebounds.html",["/nba-rebounds.html"]],
+    ["Assists","./nba-assists.html",["/nba-assists.html"]],
+    ["Threes","./nba-threes.html",["/nba-threes.html"]],
+    ["Matchups","./nba-matchups.html",["/nba-matchups.html"]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const nbaPrimaryOrder = ["NBA Home", "Points", "Rebounds", "Assists", "Threes", "Matchups"];
+  const generalItems = [
+    ["Home","./index.html",["/index.html","/"]],
+    ["MLB","./mlb.html",[]],
+    ["WNBA","./wnba.html",[]],
+    ["NFL","./nfl.html",[]],
+    ["NBA","./nba.html",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["How to Use","./how-to-use.html",["/how-to-use.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "NBA", "My Account"];
+  const generalPaths = new Set(["/", "/index.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/ai-hall-of-fame.html",
     "/ai-says.html",
@@ -118,6 +139,14 @@
     return activePaths.includes(path);
   }
 
+  function sectionForPath(path){
+    if (path === "/nfl.html") return "nfl";
+    if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
+    if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
+    if (generalPaths.has(path)) return "general";
+    return "mlb";
+  }
+
   function makeNavLink(label, href, activePaths, path){
     const a = document.createElement("a");
     a.href = href;
@@ -149,14 +178,15 @@
 
   function buildHeader(){
     const path = window.location.pathname;
-    const wnbaSection = path === "/wnba.html" || path.startsWith("/wnba-");
-    const nflSection = path === "/nfl.html" || document.body?.classList.contains("tsl-nfl-page");
-    const navItems = nflSection ? nflItems : (wnbaSection ? wnbaItems : items);
-    const navPrimaryOrder = nflSection ? nflPrimaryOrder : (wnbaSection ? wnbaPrimaryOrder : primaryOrder);
+    const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : "");
+    const section = bodySection || sectionForPath(path);
+    const navItems = section === "nfl" ? nflItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "general" ? generalItems : mlbItems;
+    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
-    header.className = "tsl-site-header";
-    if (nflSection) header.classList.add("tsl-nfl-header");
+    header.className = `tsl-site-header tsl-${section}-header`;
+    document.documentElement.dataset.sport = section;
+    document.body?.classList.add(`tsl-${section}-section`);
 
     const inner = document.createElement("div");
     inner.className = "tsl-site-header-inner";
@@ -271,18 +301,22 @@
   }
 
   function buildFooter(){
+    const section = document.documentElement.dataset.sport || sectionForPath(window.location.pathname);
+    const links = section === "nfl"
+      ? [["NFL Home","./nfl.html"],["Anytime TD","./nfl.html#anytime-td"],["Rec Yds","./nfl.html#receiving-yards"],["Status","./nfl.html#nfl-status"]]
+      : section === "wnba"
+        ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
+        : section === "nba"
+          ? [["NBA Home","./nba.html"],["Points","./nba-points.html"],["Rebounds","./nba-rebounds.html"],["Matchups","./nba-matchups.html"]]
+          : section === "mlb"
+            ? [["MLB Slate","./mlb.html"],["Decision Center","./hr-decision-center.html"],["Results","./results.html"],["AI Says","./ai-says.html"]]
+            : [["Home","./index.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
     const footer = document.createElement("footer");
     footer.className = "tsl-site-footer";
     footer.innerHTML = `
       <div class="tsl-site-footer-inner">
         <a class="tsl-site-footer-brand" href="./index.html">The Slip <span>Lab</span></a>
-        <nav class="tsl-site-footer-links" aria-label="Footer navigation">
-          <a href="./how-to-use.html">How to Use</a>
-          <a href="./blog.html">Lab Notes</a>
-          <a href="./mlb.html">Slate</a>
-          <a href="./results.html">Results</a>
-          <a href="./ai-says.html">AI Says</a>
-        </nav>
+        <nav class="tsl-site-footer-links" aria-label="Footer navigation">${links.map(([label, href]) => `<a href="${href}">${label}</a>`).join("")}</nav>
       </div>
     `;
     return footer;
