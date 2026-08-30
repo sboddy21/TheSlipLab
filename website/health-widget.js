@@ -1,4 +1,5 @@
 (function () {
+  const nflPage = document.body?.classList.contains("tsl-nfl-page") || window.location.pathname === "/nfl.html";
   const CSS = `
   .sl-health-widget{
     --sl-state:#25ff7a;--sl-state-soft:rgba(37,255,122,.14);
@@ -63,8 +64,8 @@
   root.className = "sl-health-widget";
   root.dataset.state = "updating";
   root.innerHTML = `
-    <div class="sl-health-pill" id="slHealthPill" role="button" tabindex="0" aria-label="Open MLB production status">
-      <div class="sl-health-top"><span class="sl-dot"></span><span id="slHealthLabel">MLB UPDATING</span></div>
+    <div class="sl-health-pill" id="slHealthPill" role="button" tabindex="0" aria-label="Open ${nflPage ? "NFL" : "MLB"} production status">
+      <div class="sl-health-top"><span class="sl-dot"></span><span id="slHealthLabel">${nflPage ? "NFL BUILDING" : "MLB UPDATING"}</span></div>
       <div class="sl-health-sub" id="slHealthSub">Checking production data...</div>
     </div>
     <div class="sl-health-tip" id="slHealthTip"></div>
@@ -131,6 +132,54 @@
   }
 
   function render(data) {
+    if (nflPage) {
+      const c = data.counts || {};
+      const s = data.sources || {};
+      const audit = s.launchAudit || {};
+      const state = Number(audit.criticalIdentityIssues) > 0 ? "check" : (Number(audit.blockerCount) > 0 ? "updating" : "live");
+      const stateLabel = state === "updating" ? "BUILDING" : state.toUpperCase();
+      const updateTime = audit.checkedAt || data.generatedAt;
+      root.dataset.state = state;
+      document.getElementById("slHealthLabel").textContent = `NFL ${stateLabel}`;
+      document.getElementById("slHealthSub").textContent = ago(updateTime);
+      document.getElementById("slHealthTip").innerHTML = `
+        <div><span>Week 1 games</span><b>${Number(c.weekOneGames) || 0}</b></div>
+        <div><span>Players</span><b>${Number(c.eligiblePlayers) || 0}</b></div>
+        <div><span>Weather</span><b>${Number(s.weather?.readyGames) || 0}/${Number(s.weather?.games) || 0} ready</b></div>
+        <div><span>Status</span><b>${stateLabel}</b></div>
+      `;
+      const openModal = () => {
+        const issues = [
+          s.practiceReports?.status === "waiting_for_official_weekly_reports" ? "Official Week 1 practice reports are pending." : "",
+          Number(s.weather?.readyGames) < Number(s.weather?.games) ? `${Number(s.weather?.games) - Number(s.weather?.readyGames)} game still needs kickoff-hour weather.` : "",
+          s.routes?.status === "unavailable" ? "Verified route participation is not available yet." : ""
+        ].filter(Boolean);
+        modal.style.display = "flex";
+        modal.innerHTML = `
+          <div class="sl-health-modal">
+            <h3>NFL Build Status</h3>
+            <p>Week 1 • ${escapeHtml(ago(updateTime))}</p>
+            <div class="sl-health-banner">${escapeHtml(stateLabel)} — NFL data gates remain visible while the member preview is reviewed.</div>
+            <div class="sl-health-grid">
+              <div class="sl-health-card"><small>Teams</small><strong>${Number(c.teams) || 0}</strong></div>
+              <div class="sl-health-card"><small>Week 1 Games</small><strong>${Number(c.weekOneGames) || 0}</strong></div>
+              <div class="sl-health-card"><small>Players</small><strong>${Number(c.eligiblePlayers) || 0}</strong></div>
+              <div class="sl-health-card"><small>Weather Ready</small><strong>${Number(s.weather?.readyGames) || 0}/${Number(s.weather?.games) || 0}</strong></div>
+              <div class="sl-health-card"><small>TD Signals</small><strong>${Number(s.tdDecisionCenter?.rankedPlayers) || 0}</strong></div>
+              <div class="sl-health-card"><small>Rec Signals</small><strong>${Number(s.receivingYards?.rankedPlayers) || 0}</strong></div>
+            </div>
+            ${issues.length ? `<div class="sl-health-errors">${issues.map(escapeHtml).join("<br>")}</div>` : ""}
+            <button class="sl-health-close" id="slHealthClose">Close</button>
+          </div>`;
+        document.getElementById("slHealthClose").onclick = () => modal.style.display = "none";
+      };
+      const pill = document.getElementById("slHealthPill");
+      pill.onclick = openModal;
+      pill.onkeydown = event => {
+        if (event.key === "Enter" || event.key === " ") openModal();
+      };
+      return;
+    }
     const state = resolveState(data);
     const c = data.checks || {};
     const stateLabel = state.toUpperCase();
@@ -177,7 +226,7 @@
 
   async function loadHealth() {
     try {
-      const res = await fetch("./data/health_status.json?ts=" + Date.now(), { cache: "no-store" });
+      const res = await fetch(`./data/${nflPage ? "nfl_data_health" : "health_status"}.json?ts=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`Health request returned ${res.status}`);
       render(await res.json());
     } catch (error) {
