@@ -57,7 +57,7 @@
     ["Hall of Fame","./ai-hall-of-fame.html",["/ai-hall-of-fame.html"]]
   ];
 
-  const mlbPrimaryOrder = ["Slate", "Decision Center", "HR Tracker", "Full Board", "Matchup Lab", "Results Archive"];
+  const mlbPrimaryOrder = ["Slate", "Decision Center", "HR Tracker"];
   const wnbaItems = [
     ["Slate","./wnba.html",["/wnba.html"]],
     ["Decision Center","./wnba-decision-center.html",["/wnba-decision-center.html"]],
