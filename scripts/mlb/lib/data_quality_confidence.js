@@ -50,7 +50,28 @@ export function buildDataQualityConfidence(input = {}) {
   };
 }
 
+export function normalizeModelConfidence(modelConfidence) {
+  return Number(clamp(finite(modelConfidence), 0, 100).toFixed(1));
+}
+
 export function applyDataQualityPenalty(modelConfidence, quality) {
   if (quality?.grade === "OUT") return 0;
-  return Number((clamp(finite(modelConfidence), 0, 100) * clamp(finite(quality?.penaltyFactor, 0.85), 0.85, 1)).toFixed(1));
+  const normalizedConfidence = normalizeModelConfidence(modelConfidence);
+  return Math.min(
+    normalizedConfidence,
+    Number((normalizedConfidence * clamp(finite(quality?.penaltyFactor, 0.85), 0.85, 1)).toFixed(1))
+  );
+}
+
+export function dataQualityPenaltyIssue(rawConfidence, adjustedConfidence, quality) {
+  const raw = Number(rawConfidence);
+  const adjusted = Number(adjustedConfidence);
+  const factor = Number(quality?.penaltyFactor);
+
+  if (!Number.isFinite(raw) || raw < 0 || raw > 100) return "invalid raw confidence";
+  if (!Number.isFinite(adjusted) || adjusted < 0 || adjusted > 100) return "invalid adjusted confidence";
+  if (quality?.grade === "OUT") return adjusted === 0 ? "" : "out player retained adjusted confidence";
+  if (!Number.isFinite(factor) || factor < 0.85 || factor > 1) return "penalty factor outside 0.85-1.00";
+  if (adjusted > raw) return "adjusted confidence exceeds raw confidence";
+  return "";
 }

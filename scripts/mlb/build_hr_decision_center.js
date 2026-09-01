@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { projectPitchingExposure } from "./lib/bullpen_context.js";
-import { applyDataQualityPenalty, buildDataQualityConfidence } from "./lib/data_quality_confidence.js";
+import { applyDataQualityPenalty, buildDataQualityConfidence, normalizeModelConfidence } from "./lib/data_quality_confidence.js";
 import { explainPlayerMovement } from "./lib/player_movement.js";
 
 const ROOT = process.cwd();
@@ -384,7 +384,7 @@ function enrichDataQuality(card) {
     marketAvailable: card.marketAvailable,
     marketAgeMinutes
   });
-  const rawModelConfidence = card.hrConfidence;
+  const rawModelConfidence = normalizeModelConfidence(card.hrConfidence);
   const adjustedConfidence = applyDataQualityPenalty(rawModelConfidence, quality);
   const qualityTag = quality.grade === "A" || quality.grade === "B"
     ? "DATA VERIFIED"

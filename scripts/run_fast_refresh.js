@@ -1,5 +1,6 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
+import { dataQualityPenaltyIssue } from "./mlb/lib/data_quality_confidence.js";
 
 const requestedStart = Number(process.env.MLB_REFRESH_STARTED_AT);
 const REFRESH_STARTED_AT = Number.isFinite(requestedStart) && requestedStart > 0 ? requestedStart : Date.now();
@@ -513,11 +514,8 @@ function validateRealPitcherAttackZones(expectedDate) {
     if (!quality || Number(quality.score) < 0 || Number(quality.score) > 100) {
       throw new Error(`Decision Center has invalid data quality for ${row.player}`);
     }
-    if (quality.grade === "OUT") {
-      if (adjustedConfidence !== 0) throw new Error(`Out player retained adjusted confidence for ${row.player}`);
-    } else if (Number(quality.penaltyFactor) < 0.85 || Number(quality.penaltyFactor) > 1 || adjustedConfidence > rawConfidence) {
-      throw new Error(`Decision Center has unsafe data quality penalty for ${row.player}`);
-    }
+    const penaltyIssue = dataQualityPenaltyIssue(rawConfidence, adjustedConfidence, quality);
+    if (penaltyIssue) throw new Error(`Decision Center has unsafe data quality penalty for ${row.player}: ${penaltyIssue} (raw=${rawConfidence}, adjusted=${adjustedConfidence}, factor=${quality.penaltyFactor})`);
     const movement = row.movement;
     if (!movement || !["NEW", "UP", "DOWN", "UNCHANGED"].includes(movement.direction) || !Array.isArray(movement.reasons)) {
       throw new Error(`Decision Center has invalid movement for ${row.player}`);

@@ -3,6 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
 import { isFreshForRefresh } from "./refresh_freshness.mjs";
+import { dataQualityPenaltyIssue } from "./lib/data_quality_confidence.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -706,11 +707,8 @@ function validateRealPitcherAttackZones(expectedDate) {
     if (!quality || Number(quality.score) < 0 || Number(quality.score) > 100) {
       fail(`Decision Center has invalid data quality for ${row.player}`);
     }
-    if (quality.grade === "OUT") {
-      if (adjustedConfidence !== 0) fail(`Out player retained adjusted confidence for ${row.player}`);
-    } else if (Number(quality.penaltyFactor) < 0.85 || Number(quality.penaltyFactor) > 1 || adjustedConfidence > rawConfidence) {
-      fail(`Decision Center has unsafe data quality penalty for ${row.player}`);
-    }
+    const penaltyIssue = dataQualityPenaltyIssue(rawConfidence, adjustedConfidence, quality);
+    if (penaltyIssue) fail(`Decision Center has unsafe data quality penalty for ${row.player}: ${penaltyIssue} (raw=${rawConfidence}, adjusted=${adjustedConfidence}, factor=${quality.penaltyFactor})`);
     const movement = row.movement;
     if (!movement || !["NEW", "UP", "DOWN", "UNCHANGED"].includes(movement.direction) || !Array.isArray(movement.reasons)) {
       fail(`Decision Center has invalid movement for ${row.player}`);
