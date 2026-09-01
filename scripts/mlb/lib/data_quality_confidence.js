@@ -50,7 +50,15 @@ export function buildDataQualityConfidence(input = {}) {
   };
 }
 
+export function normalizeModelConfidence(modelConfidence) {
+  return Number(clamp(finite(modelConfidence), 0, 100).toFixed(1));
+}
+
 export function applyDataQualityPenalty(modelConfidence, quality) {
   if (quality?.grade === "OUT") return 0;
-  return Number((clamp(finite(modelConfidence), 0, 100) * clamp(finite(quality?.penaltyFactor, 0.85), 0.85, 1)).toFixed(1));
+  const normalizedConfidence = normalizeModelConfidence(modelConfidence);
+  return Math.min(
+    normalizedConfidence,
+    Number((normalizedConfidence * clamp(finite(quality?.penaltyFactor, 0.85), 0.85, 1)).toFixed(1))
+  );
 }
