@@ -1,17 +1,793 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-09-03T17:02:23.457Z",
+  "generatedAt": "2026-09-03T19:45:56.460Z",
   "date": "2026-09-03",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-09-03T16:59:13.212Z",
-    "mlb_player_pool.json": "2026-09-03T16:59:14.974Z",
-    "game_pitcher_matchups.json": "2026-09-03T17:00:24.508Z",
-    "player_card_data.json": "2026-09-03T17:02:23.370Z",
-    "hr_probability_tracking.json": "2026-09-03T17:00:16.549Z",
-    "pitcher_vulnerability.json": "2026-09-03T17:00:24.516Z"
+    "mlb_games_today.json": "2026-09-03T19:43:43.566Z",
+    "mlb_player_pool.json": "2026-09-03T19:43:44.683Z",
+    "game_pitcher_matchups.json": "2026-09-03T19:44:26.279Z",
+    "player_card_data.json": "2026-09-03T19:45:56.332Z",
+    "hr_probability_tracking.json": "2026-09-03T19:44:20.935Z",
+    "pitcher_vulnerability.json": "2026-09-03T19:44:26.286Z"
   },
   "alerts": [
+    {
+      "id": "8e64b02ade9994a713e5",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "660821",
+      "entityName": "Jesús Sánchez",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Jesús Sánchez removed from the confirmed lineup",
+      "message": "Jesús Sánchez's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "95652390448ac5a009af",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "660821",
+      "entityName": "Jesús Sánchez",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Jesús Sánchez's HR probability fell",
+      "message": "Tracked HR probability fell from 10.1% to 0%.",
+      "previous": {
+        "probability": 10.1
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "7b90caf35c643876e879",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "660821",
+      "entityName": "Jesús Sánchez",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Jesús Sánchez's model score fell",
+      "message": "The live model score fell from 41 to 0.",
+      "previous": {
+        "modelScore": 41
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "63c7824b18751e9b8eaa",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "664702",
+      "entityName": "Myles Straw",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Myles Straw confirmed in the lineup",
+      "message": "Myles Straw is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "840b4342dac5136a074c",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "664702",
+      "entityName": "Myles Straw",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Myles Straw's model score rose",
+      "message": "The live model score rose from 0 to 30.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 30.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5ea881100d8a247d8e0c",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "664770",
+      "entityName": "Nathan Lukes",
+      "team": "Toronto Blue Jays",
+      "gamePk": 824388,
+      "title": "Nathan Lukes's verified signals changed",
+      "message": "Removed: hotLately.",
+      "previous": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "current": {
+        "signals": []
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "2e3f322ccb6838040fc2",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "665161",
+      "entityName": "Jeremy Peña",
+      "team": "Houston Astros",
+      "gamePk": 824144,
+      "title": "Jeremy Peña's verified signals changed",
+      "message": "Removed: hotLately.",
+      "previous": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "current": {
+        "signals": []
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "abca05637a7023299f3f",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "668800",
+      "entityName": "Andrew Knizner",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Andrew Knizner removed from the confirmed lineup",
+      "message": "Andrew Knizner's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "aa3db3e4a08518827270",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668800",
+      "entityName": "Andrew Knizner",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Andrew Knizner's HR probability fell",
+      "message": "Tracked HR probability fell from 5.5% to 0%.",
+      "previous": {
+        "probability": 5.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "66f968160cf46b46a5ca",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668800",
+      "entityName": "Andrew Knizner",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Andrew Knizner's model score fell",
+      "message": "The live model score fell from 40.7 to 0.",
+      "previous": {
+        "modelScore": 40.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d4e6754ae1dc015877b9",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671976",
+      "entityName": "Tristan Peters",
+      "team": "Chicago White Sox",
+      "gamePk": 824144,
+      "title": "Tristan Peters's verified signals changed",
+      "message": "Added: due.",
+      "previous": {
+        "signals": []
+      },
+      "current": {
+        "signals": [
+          "due"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ba447a979aff7ed55904",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "678545",
+      "entityName": "Osleivis Basabe",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Osleivis Basabe confirmed in the lineup",
+      "message": "Osleivis Basabe is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ee6428368d4265eb3e6a",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "678545",
+      "entityName": "Osleivis Basabe",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Osleivis Basabe's model score rose",
+      "message": "The live model score rose from 0 to 31.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 31.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "e303e8a830a30ad27279",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "682177",
+      "entityName": "Daniel Schneemann",
+      "team": "Cleveland Guardians",
+      "gamePk": 824388,
+      "title": "Daniel Schneemann confirmed in the lineup",
+      "message": "Daniel Schneemann is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5360610a36892d062401",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682177",
+      "entityName": "Daniel Schneemann",
+      "team": "Cleveland Guardians",
+      "gamePk": 824388,
+      "title": "Daniel Schneemann's model score rose",
+      "message": "The live model score rose from 0 to 26.4.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 26.4
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8831071dc5f508dbd8e4",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683953",
+      "entityName": "Travis Bazzana",
+      "team": "Cleveland Guardians",
+      "gamePk": 824388,
+      "title": "Travis Bazzana removed from the confirmed lineup",
+      "message": "Travis Bazzana's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "107b3a2376327b6e1de0",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683953",
+      "entityName": "Travis Bazzana",
+      "team": "Cleveland Guardians",
+      "gamePk": 824388,
+      "title": "Travis Bazzana's model score fell",
+      "message": "The live model score fell from 34 to 0.",
+      "previous": {
+        "modelScore": 34
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a5ded146af5cfc01f3aa",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "694376",
+      "entityName": "Shay Whitcomb",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Shay Whitcomb removed from the confirmed lineup",
+      "message": "Shay Whitcomb's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "4aac3af1a8448069717e",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "694376",
+      "entityName": "Shay Whitcomb",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Shay Whitcomb's model score fell",
+      "message": "The live model score fell from 27.8 to 0.",
+      "previous": {
+        "modelScore": 27.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "12bf45a0a286c52ebfb2",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "694377",
+      "entityName": "Nick Yorke",
+      "team": "Pittsburgh Pirates",
+      "gamePk": 823337,
+      "title": "Nick Yorke confirmed in the lineup",
+      "message": "Nick Yorke is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b74f5c40828d69bf301b",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "694377",
+      "entityName": "Nick Yorke",
+      "team": "Pittsburgh Pirates",
+      "gamePk": 823337,
+      "title": "Nick Yorke's model score rose",
+      "message": "The live model score rose from 0 to 19.1.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 19.1
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a13f59d8d4a4f0f04c62",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "694378",
+      "entityName": "Jacob Gonzalez",
+      "team": "Pittsburgh Pirates",
+      "gamePk": 823337,
+      "title": "Jacob Gonzalez removed from the confirmed lineup",
+      "message": "Jacob Gonzalez's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "48bfc1334ab99a711a89",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "694378",
+      "entityName": "Jacob Gonzalez",
+      "team": "Pittsburgh Pirates",
+      "gamePk": 823337,
+      "title": "Jacob Gonzalez's model score fell",
+      "message": "The live model score fell from 29.1 to 0.",
+      "previous": {
+        "modelScore": 29.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "dd1a88fb5639cb48bce9",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701852",
+      "entityName": "Drew Cavanaugh",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Drew Cavanaugh confirmed in the lineup",
+      "message": "Drew Cavanaugh is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "129f4dd3fb2ce14e393f",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701852",
+      "entityName": "Drew Cavanaugh",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Drew Cavanaugh's model score rose",
+      "message": "The live model score rose from 0 to 24.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 24.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "72325fce2fe45a5aee8a",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "801501",
+      "entityName": "Nate Furman",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Nate Furman removed from the confirmed lineup",
+      "message": "Nate Furman's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ff56fc593c4b0264f20e",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "801501",
+      "entityName": "Nate Furman",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Nate Furman's model score fell",
+      "message": "The live model score fell from 19.7 to 0.",
+      "previous": {
+        "modelScore": 19.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "62b71011a8917a060b53",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "806367",
+      "entityName": "Turner Hill",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Turner Hill's verified signals changed",
+      "message": "Removed: due.",
+      "previous": {
+        "signals": [
+          "due"
+        ]
+      },
+      "current": {
+        "signals": []
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "dbe8a70f5776e3f7ec55",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "808982",
+      "entityName": "Jung Hoo Lee",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Jung Hoo Lee confirmed in the lineup",
+      "message": "Jung Hoo Lee is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "9440cbc52548ea477ec2",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "808982",
+      "entityName": "Jung Hoo Lee",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Jung Hoo Lee's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 6.2%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 6.2
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "6ef0f05e6d0ccbb932bb",
+      "createdAt": "2026-09-03T19:45:56.460Z",
+      "date": "2026-09-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "808982",
+      "entityName": "Jung Hoo Lee",
+      "team": "San Francisco Giants",
+      "gamePk": 823337,
+      "title": "Jung Hoo Lee's model score rose",
+      "message": "The live model score rose from 0 to 35.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 35.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "8f5676671f907d1b2aae",
       "createdAt": "2026-09-03T17:02:23.457Z",
@@ -2533,7 +3309,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 4.1,
-        "modelScore": 29.9,
+        "modelScore": 30,
         "signals": []
       },
       "502054": {
@@ -2562,8 +3338,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 7.8,
-        "modelScore": 40.1,
+        "probability": 9.9,
+        "modelScore": 41,
         "signals": []
       },
       "518692": {
@@ -2578,7 +3354,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 20,
-        "modelScore": 39,
+        "modelScore": 39.1,
         "signals": []
       },
       "521692": {
@@ -2593,7 +3369,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 12.9,
-        "modelScore": 38.2,
+        "modelScore": 38.3,
         "signals": []
       },
       "542194": {
@@ -2672,7 +3448,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 6,
-        "modelScore": 39.3,
+        "modelScore": 39.4,
         "signals": []
       },
       "571771": {
@@ -2687,7 +3463,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 4.8,
-        "modelScore": 31.2,
+        "modelScore": 31.3,
         "signals": []
       },
       "571912": {
@@ -2702,7 +3478,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 1.6,
-        "modelScore": 20.9,
+        "modelScore": 21,
         "signals": []
       },
       "571970": {
@@ -2717,7 +3493,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 22.8,
-        "modelScore": 45.7,
+        "modelScore": 45.8,
         "signals": [
           "due"
         ]
@@ -2733,8 +3509,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 22.8,
-        "modelScore": 44.7,
+        "probability": 23.3,
+        "modelScore": 44.8,
         "signals": []
       },
       "592626": {
@@ -2749,7 +3525,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 22.8,
-        "modelScore": 44.5,
+        "modelScore": 44.7,
         "signals": [
           "hotLately"
         ]
@@ -2766,7 +3542,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 8.1,
-        "modelScore": 38.6,
+        "modelScore": 38.8,
         "signals": []
       },
       "595978": {
@@ -2780,8 +3556,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 2.5,
-        "modelScore": 25.8,
+        "probability": 2.2,
+        "modelScore": 25.7,
         "signals": []
       },
       "596115": {
@@ -2796,7 +3572,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 1.7,
-        "modelScore": 27.5,
+        "modelScore": 27.6,
         "signals": []
       },
       "596142": {
@@ -2811,7 +3587,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 17,
-        "modelScore": 37.2,
+        "modelScore": 37.3,
         "signals": []
       },
       "602104": {
@@ -2826,7 +3602,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 6.4,
-        "modelScore": 36.5,
+        "modelScore": 36.6,
         "signals": [
           "hotLately"
         ]
@@ -2843,7 +3619,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 15,
-        "modelScore": 38.7,
+        "modelScore": 38.8,
         "signals": []
       },
       "606192": {
@@ -2858,7 +3634,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 7.5,
-        "modelScore": 32,
+        "modelScore": 32.1,
         "signals": []
       },
       "607043": {
@@ -2873,7 +3649,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 12.4,
-        "modelScore": 35.5,
+        "modelScore": 35.6,
         "signals": []
       },
       "608070": {
@@ -2887,8 +3663,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 7.2,
-        "modelScore": 38.1,
+        "probability": 7.9,
+        "modelScore": 37.8,
         "signals": []
       },
       "608324": {
@@ -2903,7 +3679,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 20.6,
-        "modelScore": 40.2,
+        "modelScore": 40.4,
         "signals": [
           "hotLately"
         ]
@@ -2920,7 +3696,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 6.8,
-        "modelScore": 32.3,
+        "modelScore": 32.4,
         "signals": [
           "hotLately"
         ]
@@ -2937,7 +3713,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 9.7,
-        "modelScore": 38.4,
+        "modelScore": 38.5,
         "signals": []
       },
       "621438": {
@@ -2952,7 +3728,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 22.2,
-        "modelScore": 51.5,
+        "modelScore": 51.6,
         "signals": []
       },
       "621493": {
@@ -2967,7 +3743,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 1.4,
-        "modelScore": 21.8,
+        "modelScore": 21.9,
         "signals": []
       },
       "621550": {
@@ -2982,7 +3758,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 1.4,
-        "modelScore": 23.5,
+        "modelScore": 23.7,
         "signals": []
       },
       "622268": {
@@ -2997,7 +3773,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 7.3,
-        "modelScore": 35.4,
+        "modelScore": 35.6,
         "signals": [
           "due"
         ]
@@ -3014,7 +3790,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 3.3,
-        "modelScore": 25.9,
+        "modelScore": 26,
         "signals": []
       },
       "624413": {
@@ -3029,7 +3805,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 22.8,
-        "modelScore": 47.3,
+        "modelScore": 47.5,
         "signals": [
           "due",
           "sleeper"
@@ -3047,7 +3823,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 22.8,
-        "modelScore": 43.5,
+        "modelScore": 43.6,
         "signals": [
           "hotLately"
         ]
@@ -3064,7 +3840,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 1.4,
-        "modelScore": 21.3,
+        "modelScore": 21.5,
         "signals": []
       },
       "640902": {
@@ -3079,7 +3855,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 2.2,
-        "modelScore": 30.7,
+        "modelScore": 30.9,
         "signals": []
       },
       "641343": {
@@ -3094,7 +3870,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 22.8,
-        "modelScore": 45.5,
+        "modelScore": 45.6,
         "signals": [
           "due"
         ]
@@ -3111,7 +3887,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 4.3,
-        "modelScore": 31.1,
+        "modelScore": 31.3,
         "signals": []
       },
       "641680": {
@@ -3126,7 +3902,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 9,
-        "modelScore": 35.8,
+        "modelScore": 36,
         "signals": [
           "hotLately"
         ]
@@ -3143,7 +3919,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 5.9,
-        "modelScore": 31.2,
+        "modelScore": 31.4,
         "signals": []
       },
       "642215": {
@@ -3172,7 +3948,7 @@
         "lineupSpot": 4,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 12.3,
+        "probability": 13.4,
         "modelScore": 42.1,
         "signals": []
       },
@@ -3188,7 +3964,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 4.6,
-        "modelScore": 29.9,
+        "modelScore": 30,
         "signals": [
           "hotLately"
         ]
@@ -3205,7 +3981,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 1.5,
-        "modelScore": 23,
+        "modelScore": 23.1,
         "signals": []
       },
       "643446": {
@@ -3220,7 +3996,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 2.2,
-        "modelScore": 27,
+        "modelScore": 27.1,
         "signals": []
       },
       "645302": {
@@ -3235,7 +4011,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 1.4,
-        "modelScore": 24,
+        "modelScore": 24.1,
         "signals": []
       },
       "646240": {
@@ -3249,8 +4025,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 22.8,
-        "modelScore": 56.2,
+        "probability": 24,
+        "modelScore": 55.6,
         "signals": [
           "hotLately",
           "hotLook"
@@ -3268,7 +4044,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 1.8,
-        "modelScore": 25.8,
+        "modelScore": 25.9,
         "signals": []
       },
       "650490": {
@@ -3283,7 +4059,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 22.8,
-        "modelScore": 42.7,
+        "modelScore": 42.9,
         "signals": [
           "hotLately"
         ]
@@ -3300,7 +4076,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 1.4,
-        "modelScore": 18.6,
+        "modelScore": 18.8,
         "signals": []
       },
       "655316": {
@@ -3330,7 +4106,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 7.2,
-        "modelScore": 36.7,
+        "modelScore": 36.8,
         "signals": []
       },
       "657136": {
@@ -3345,7 +4121,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 1.9,
-        "modelScore": 23.9,
+        "modelScore": 24.1,
         "signals": []
       },
       "660271": {
@@ -3360,7 +4136,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 22.8,
-        "modelScore": 47,
+        "modelScore": 47.2,
         "signals": [
           "due",
           "sleeper"
@@ -3372,13 +4148,13 @@
         "team": "Toronto Blue Jays",
         "opponent": "Cleveland Guardians",
         "gamePk": 824388,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 4,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 10.1,
-        "modelScore": 41,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "661388": {
@@ -3393,7 +4169,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 11.7,
-        "modelScore": 40.4,
+        "modelScore": 40.5,
         "signals": []
       },
       "661531": {
@@ -3408,7 +4184,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 21,
-        "modelScore": 40.1,
+        "modelScore": 40.2,
         "signals": [
           "hotLately"
         ]
@@ -3424,8 +4200,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 3.7,
-        "modelScore": 35.3,
+        "probability": 4.1,
+        "modelScore": 35.6,
         "signals": []
       },
       "663330": {
@@ -3440,7 +4216,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 6.6,
-        "modelScore": 33.6,
+        "modelScore": 33.8,
         "signals": []
       },
       "663494": {
@@ -3455,7 +4231,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 3.9,
-        "modelScore": 28.5,
+        "modelScore": 28.6,
         "signals": []
       },
       "663538": {
@@ -3470,7 +4246,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 1.8,
-        "modelScore": 23.2,
+        "modelScore": 23.3,
         "signals": []
       },
       "663656": {
@@ -3485,7 +4261,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 4.1,
-        "modelScore": 29.2,
+        "modelScore": 29.3,
         "signals": []
       },
       "663728": {
@@ -3500,7 +4276,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 12.2,
-        "modelScore": 40.4,
+        "modelScore": 40.5,
         "signals": [
           "hotLately"
         ]
@@ -3517,7 +4293,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 1.4,
-        "modelScore": 22.7,
+        "modelScore": 22.8,
         "signals": []
       },
       "663968": {
@@ -3531,8 +4307,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 2.1,
-        "modelScore": 28.2,
+        "probability": 2.3,
+        "modelScore": 28.4,
         "signals": []
       },
       "663993": {
@@ -3546,8 +4322,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 21.8,
-        "modelScore": 49.4,
+        "probability": 22.7,
+        "modelScore": 49,
         "signals": []
       },
       "664023": {
@@ -3562,7 +4338,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 22.8,
-        "modelScore": 40.7,
+        "modelScore": 40.8,
         "signals": []
       },
       "664040": {
@@ -3576,8 +4352,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 22.8,
-        "modelScore": 49.1,
+        "probability": 24,
+        "modelScore": 48.9,
         "signals": [
           "hotLately"
         ]
@@ -3588,13 +4364,13 @@
         "team": "Toronto Blue Jays",
         "opponent": "Cleveland Guardians",
         "gamePk": 824388,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 2.3,
+        "modelScore": 30.2,
         "signals": []
       },
       "664728": {
@@ -3609,7 +4385,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 3.2,
-        "modelScore": 34.6,
+        "modelScore": 34.7,
         "signals": []
       },
       "664770": {
@@ -3623,11 +4399,9 @@
         "lineupSpot": 2,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 5.3,
-        "modelScore": 39.7,
-        "signals": [
-          "hotLately"
-        ]
+        "probability": 6.5,
+        "modelScore": 39.9,
+        "signals": []
       },
       "664774": {
         "id": "664774",
@@ -3640,8 +4414,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 3.6,
-        "modelScore": 30.1,
+        "probability": 3.3,
+        "modelScore": 30.5,
         "signals": []
       },
       "665052": {
@@ -3656,7 +4430,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 22.8,
-        "modelScore": 41.5,
+        "modelScore": 41.6,
         "signals": [
           "due"
         ]
@@ -3672,11 +4446,9 @@
         "lineupSpot": 1,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 19.5,
+        "probability": 22,
         "modelScore": 44,
-        "signals": [
-          "hotLately"
-        ]
+        "signals": []
       },
       "665489": {
         "id": "665489",
@@ -3689,8 +4461,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 1.6,
-        "modelScore": 29.9,
+        "probability": 1.7,
+        "modelScore": 29.6,
         "signals": []
       },
       "665750": {
@@ -3705,7 +4477,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 3,
-        "modelScore": 26.4,
+        "modelScore": 26.5,
         "signals": []
       },
       "665804": {
@@ -3720,7 +4492,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 3.4,
-        "modelScore": 25.6,
+        "modelScore": 25.7,
         "signals": []
       },
       "665833": {
@@ -3734,8 +4506,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 22.8,
-        "modelScore": 46.9,
+        "probability": 24,
+        "modelScore": 46.6,
         "signals": [
           "due"
         ]
@@ -3752,7 +4524,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 2.6,
-        "modelScore": 28.8,
+        "modelScore": 28.9,
         "signals": []
       },
       "665923": {
@@ -3767,7 +4539,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 8.8,
-        "modelScore": 32.6,
+        "modelScore": 32.7,
         "signals": []
       },
       "665926": {
@@ -3781,8 +4553,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 2,
-        "modelScore": 28.1,
+        "probability": 1.9,
+        "modelScore": 28,
         "signals": []
       },
       "665966": {
@@ -3797,7 +4569,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 1.4,
-        "modelScore": 19.2,
+        "modelScore": 19.4,
         "signals": []
       },
       "666018": {
@@ -3812,7 +4584,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 11.2,
-        "modelScore": 36.7,
+        "modelScore": 36.8,
         "signals": []
       },
       "666126": {
@@ -3827,7 +4599,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 6.3,
-        "modelScore": 30.4,
+        "modelScore": 30.5,
         "signals": []
       },
       "666152": {
@@ -3856,8 +4628,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 12.9,
-        "modelScore": 42.1,
+        "probability": 14,
+        "modelScore": 41.9,
         "signals": []
       },
       "666211": {
@@ -3871,8 +4643,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 5.2,
-        "modelScore": 32.6,
+        "probability": 4.8,
+        "modelScore": 32.4,
         "signals": []
       },
       "666310": {
@@ -3887,7 +4659,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 1.4,
-        "modelScore": 23.7,
+        "modelScore": 23.9,
         "signals": []
       },
       "668227": {
@@ -3902,7 +4674,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 22.6,
-        "modelScore": 42.1,
+        "modelScore": 42.3,
         "signals": [
           "hotLately"
         ]
@@ -3918,8 +4690,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 2.5,
-        "modelScore": 26.7,
+        "probability": 2.2,
+        "modelScore": 27,
         "signals": []
       },
       "668723": {
@@ -3934,7 +4706,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 19.8,
-        "modelScore": 43.2,
+        "modelScore": 43.4,
         "signals": [
           "due"
         ]
@@ -3945,13 +4717,13 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 6,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 5.5,
-        "modelScore": 40.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "668804": {
@@ -3965,8 +4737,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 15.9,
-        "modelScore": 46,
+        "probability": 16.1,
+        "modelScore": 45.3,
         "signals": []
       },
       "668930": {
@@ -3981,7 +4753,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 16.8,
-        "modelScore": 37.9,
+        "modelScore": 38,
         "signals": []
       },
       "668939": {
@@ -3996,7 +4768,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 8.8,
-        "modelScore": 34.7,
+        "modelScore": 34.8,
         "signals": []
       },
       "668942": {
@@ -4011,7 +4783,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 2.3,
-        "modelScore": 28.9,
+        "modelScore": 29,
         "signals": []
       },
       "669003": {
@@ -4026,7 +4798,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 8.9,
-        "modelScore": 37.4,
+        "modelScore": 37.5,
         "signals": []
       },
       "669065": {
@@ -4041,7 +4813,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 22.8,
-        "modelScore": 46.6,
+        "modelScore": 46.7,
         "signals": [
           "hotLately"
         ]
@@ -4058,7 +4830,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 6,
-        "modelScore": 35.7,
+        "modelScore": 35.8,
         "signals": []
       },
       "669257": {
@@ -4073,7 +4845,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 4.9,
-        "modelScore": 31.7,
+        "modelScore": 31.8,
         "signals": []
       },
       "669357": {
@@ -4088,7 +4860,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 3.9,
-        "modelScore": 30.8,
+        "modelScore": 31,
         "signals": []
       },
       "669394": {
@@ -4133,7 +4905,7 @@
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
         "probability": 2,
-        "modelScore": 30.3,
+        "modelScore": 30.1,
         "signals": [
           "hotLately"
         ]
@@ -4149,8 +4921,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 1.4,
-        "modelScore": 20.5,
+        "probability": 1.3,
+        "modelScore": 20.3,
         "signals": []
       },
       "669743": {
@@ -4165,7 +4937,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 1.4,
-        "modelScore": 24.1,
+        "modelScore": 24.2,
         "signals": []
       },
       "670032": {
@@ -4180,7 +4952,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 1.4,
-        "modelScore": 17.9,
+        "modelScore": 18,
         "signals": []
       },
       "670231": {
@@ -4195,7 +4967,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 6.4,
-        "modelScore": 31.2,
+        "modelScore": 31.3,
         "signals": []
       },
       "670541": {
@@ -4209,8 +4981,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 22.8,
-        "modelScore": 53.5,
+        "probability": 24,
+        "modelScore": 53.7,
         "signals": [
           "hotLook"
         ]
@@ -4226,8 +4998,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 14.9,
-        "modelScore": 40.2,
+        "probability": 16.9,
+        "modelScore": 40.5,
         "signals": []
       },
       "670764": {
@@ -4242,7 +5014,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 1.4,
-        "modelScore": 19.1,
+        "modelScore": 19.2,
         "signals": []
       },
       "671056": {
@@ -4257,7 +5029,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 6.4,
-        "modelScore": 30,
+        "modelScore": 30.1,
         "signals": []
       },
       "671732": {
@@ -4286,9 +5058,11 @@
         "lineupSpot": 8,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 18,
+        "probability": 16.8,
         "modelScore": 45,
-        "signals": []
+        "signals": [
+          "due"
+        ]
       },
       "672016": {
         "id": "672016",
@@ -4302,7 +5076,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 1.4,
-        "modelScore": 17,
+        "modelScore": 17.1,
         "signals": []
       },
       "672275": {
@@ -4334,7 +5108,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 2.9,
-        "modelScore": 25,
+        "modelScore": 25.2,
         "signals": []
       },
       "672386": {
@@ -4364,7 +5138,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 11.2,
-        "modelScore": 37.6,
+        "modelScore": 37.8,
         "signals": []
       },
       "672960": {
@@ -4395,8 +5169,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "622491",
         "opposingPitcher": "Luis Castillo",
-        "probability": 5.7,
-        "modelScore": 31.7,
+        "probability": 5.5,
+        "modelScore": 32.1,
         "signals": [
           "hotLately"
         ]
@@ -4413,7 +5187,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 8.1,
-        "modelScore": 36.7,
+        "modelScore": 36.8,
         "signals": []
       },
       "673548": {
@@ -4428,7 +5202,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 22.8,
-        "modelScore": 42.9,
+        "modelScore": 43,
         "signals": [
           "hotLately"
         ]
@@ -4445,7 +5219,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 6.9,
-        "modelScore": 38,
+        "modelScore": 38.1,
         "signals": []
       },
       "676356": {
@@ -4460,7 +5234,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 7.9,
-        "modelScore": 32,
+        "modelScore": 32.2,
         "signals": []
       },
       "676369": {
@@ -4489,8 +5263,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 2.4,
-        "modelScore": 24.5,
+        "probability": 2.1,
+        "modelScore": 24.2,
         "signals": []
       },
       "676439": {
@@ -4505,7 +5279,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 1.4,
-        "modelScore": 23.7,
+        "modelScore": 23.8,
         "signals": []
       },
       "676475": {
@@ -4520,7 +5294,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 19.4,
-        "modelScore": 37.4,
+        "modelScore": 37.5,
         "signals": [
           "due"
         ]
@@ -4552,7 +5326,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 1.4,
-        "modelScore": 23.5,
+        "modelScore": 23.6,
         "signals": []
       },
       "677587": {
@@ -4566,8 +5340,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 2.8,
-        "modelScore": 27.2,
+        "probability": 2.4,
+        "modelScore": 26.8,
         "signals": []
       },
       "677594": {
@@ -4582,7 +5356,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 13.2,
-        "modelScore": 37,
+        "modelScore": 37.1,
         "signals": []
       },
       "677649": {
@@ -4597,7 +5371,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 20,
-        "modelScore": 42.2,
+        "modelScore": 42.4,
         "signals": [
           "hotLately"
         ]
@@ -4614,22 +5388,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 22.8,
-        "modelScore": 39.5,
-        "signals": []
-      },
-      "677870": {
-        "id": "677870",
-        "name": "Leo Jiménez",
-        "team": "Miami Marlins",
-        "opponent": "Kansas City Royals",
-        "gamePk": 824069,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
-        "opposingPitcherId": "608379",
-        "opposingPitcher": "Michael Wacha",
-        "probability": 1.4,
-        "modelScore": 20,
+        "modelScore": 39.6,
         "signals": []
       },
       "677942": {
@@ -4644,7 +5403,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 3,
-        "modelScore": 27.8,
+        "modelScore": 27.9,
         "signals": []
       },
       "677951": {
@@ -4659,7 +5418,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 14.8,
-        "modelScore": 37.7,
+        "modelScore": 37.9,
         "signals": [
           "due"
         ]
@@ -4675,7 +5434,7 @@
         "lineupSpot": 9,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 7.3,
+        "probability": 6.6,
         "modelScore": 34.7,
         "signals": []
       },
@@ -4690,8 +5449,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 22.8,
-        "modelScore": 48.4,
+        "probability": 24,
+        "modelScore": 48.6,
         "signals": [
           "due"
         ]
@@ -4702,13 +5461,13 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.5,
+        "modelScore": 31.2,
         "signals": []
       },
       "678882": {
@@ -4723,7 +5482,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 17.8,
-        "modelScore": 41.5,
+        "modelScore": 41.6,
         "signals": []
       },
       "679822": {
@@ -4738,7 +5497,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 18.9,
-        "modelScore": 40.2,
+        "modelScore": 40.3,
         "signals": [
           "hotLately"
         ]
@@ -4755,7 +5514,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 6.2,
-        "modelScore": 32.9,
+        "modelScore": 33,
         "signals": []
       },
       "680700": {
@@ -4770,7 +5529,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 2.1,
-        "modelScore": 26,
+        "modelScore": 26.1,
         "signals": []
       },
       "680757": {
@@ -4784,7 +5543,7 @@
         "lineupSpot": 1,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 1.4,
+        "probability": 1.7,
         "modelScore": 25.2,
         "signals": []
       },
@@ -4800,7 +5559,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 7.8,
-        "modelScore": 36.1,
+        "modelScore": 36.2,
         "signals": []
       },
       "680779": {
@@ -4830,7 +5589,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 17.9,
-        "modelScore": 39.4,
+        "modelScore": 39.5,
         "signals": []
       },
       "681230": {
@@ -4845,7 +5604,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 1.4,
-        "modelScore": 26.5,
+        "modelScore": 26.6,
         "signals": []
       },
       "681297": {
@@ -4860,7 +5619,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 7,
-        "modelScore": 31.6,
+        "modelScore": 31.7,
         "signals": []
       },
       "681351": {
@@ -4875,7 +5634,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 1.4,
-        "modelScore": 19.7,
+        "modelScore": 19.8,
         "signals": []
       },
       "681439": {
@@ -4905,7 +5664,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 17.9,
-        "modelScore": 42.5,
+        "modelScore": 42.6,
         "signals": [
           "hotLately"
         ]
@@ -4922,7 +5681,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 22.8,
-        "modelScore": 46,
+        "modelScore": 46.1,
         "signals": [
           "hotLately"
         ]
@@ -4948,13 +5707,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Toronto Blue Jays",
         "gamePk": 824388,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.8,
+        "modelScore": 26.4,
         "signals": []
       },
       "682657": {
@@ -4986,7 +5745,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 1.4,
-        "modelScore": 21.5,
+        "modelScore": 21.7,
         "signals": []
       },
       "682668": {
@@ -5016,7 +5775,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 13.4,
-        "modelScore": 33.9,
+        "modelScore": 34.1,
         "signals": [
           "hotLately"
         ]
@@ -5033,7 +5792,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 5.3,
-        "modelScore": 34.5,
+        "modelScore": 34.6,
         "signals": [
           "due"
         ]
@@ -5050,7 +5809,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 1.4,
-        "modelScore": 10.7,
+        "modelScore": 10.8,
         "signals": []
       },
       "683227": {
@@ -5080,7 +5839,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 12,
-        "modelScore": 34,
+        "modelScore": 34.2,
         "signals": []
       },
       "683734": {
@@ -5095,7 +5854,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 12.3,
-        "modelScore": 39.1,
+        "modelScore": 39.3,
         "signals": [
           "due"
         ]
@@ -5112,7 +5871,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 8.1,
-        "modelScore": 33.4,
+        "modelScore": 33.5,
         "signals": []
       },
       "683748": {
@@ -5127,7 +5886,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 16.8,
-        "modelScore": 40.1,
+        "modelScore": 40.2,
         "signals": []
       },
       "683766": {
@@ -5141,8 +5900,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 1.4,
-        "modelScore": 18.3,
+        "probability": 1.3,
+        "modelScore": 18.5,
         "signals": []
       },
       "683953": {
@@ -5151,13 +5910,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Toronto Blue Jays",
         "gamePk": 824388,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 4.5,
-        "modelScore": 34,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "686217": {
@@ -5172,7 +5931,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 1.4,
-        "modelScore": 21.4,
+        "modelScore": 21.5,
         "signals": []
       },
       "686469": {
@@ -5187,7 +5946,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 4.3,
-        "modelScore": 32.3,
+        "modelScore": 32.4,
         "signals": []
       },
       "686475": {
@@ -5202,7 +5961,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 4.5,
-        "modelScore": 29.2,
+        "modelScore": 29.4,
         "signals": [
           "due"
         ]
@@ -5219,7 +5978,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 22.8,
-        "modelScore": 45.8,
+        "modelScore": 46,
         "signals": [
           "hotLately"
         ]
@@ -5236,7 +5995,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 3.1,
-        "modelScore": 28.4,
+        "modelScore": 28.6,
         "signals": []
       },
       "686668": {
@@ -5266,7 +6025,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 12.5,
-        "modelScore": 36.9,
+        "modelScore": 37,
         "signals": []
       },
       "686765": {
@@ -5281,7 +6040,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 5.5,
-        "modelScore": 32.7,
+        "modelScore": 32.8,
         "signals": []
       },
       "686780": {
@@ -5296,7 +6055,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 1.4,
-        "modelScore": 21.9,
+        "modelScore": 22,
         "signals": []
       },
       "687221": {
@@ -5311,7 +6070,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 22.8,
-        "modelScore": 42,
+        "modelScore": 42.1,
         "signals": []
       },
       "687231": {
@@ -5326,7 +6085,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 1.4,
-        "modelScore": 20.2,
+        "modelScore": 20.3,
         "signals": []
       },
       "687363": {
@@ -5341,7 +6100,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 1.4,
-        "modelScore": 19.6,
+        "modelScore": 19.7,
         "signals": []
       },
       "687401": {
@@ -5356,7 +6115,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 4.3,
-        "modelScore": 31.9,
+        "modelScore": 32,
         "signals": []
       },
       "687462": {
@@ -5370,8 +6129,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 6,
-        "modelScore": 35.7,
+        "probability": 6.2,
+        "modelScore": 35,
         "signals": []
       },
       "687529": {
@@ -5400,8 +6159,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 4.5,
-        "modelScore": 37.2,
+        "probability": 5.1,
+        "modelScore": 36.8,
         "signals": []
       },
       "687637": {
@@ -5416,7 +6175,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 4.7,
-        "modelScore": 31.3,
+        "modelScore": 31.4,
         "signals": []
       },
       "687952": {
@@ -5431,7 +6190,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 12.7,
-        "modelScore": 34.5,
+        "modelScore": 34.6,
         "signals": []
       },
       "688363": {
@@ -5446,7 +6205,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 4.2,
-        "modelScore": 32.8,
+        "modelScore": 33,
         "signals": []
       },
       "689414": {
@@ -5461,7 +6220,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 14.7,
-        "modelScore": 37.9,
+        "modelScore": 38,
         "signals": [
           "due"
         ]
@@ -5478,7 +6237,7 @@
         "opposingPitcherId": "687273",
         "opposingPitcher": "Quinn Mathews",
         "probability": 1.4,
-        "modelScore": 21.1,
+        "modelScore": 21.3,
         "signals": []
       },
       "690984": {
@@ -5523,7 +6282,22 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 22.8,
-        "modelScore": 48.2,
+        "modelScore": 48.3,
+        "signals": []
+      },
+      "691277": {
+        "id": "691277",
+        "name": "Deyvison De Los Santos",
+        "team": "Miami Marlins",
+        "opponent": "Kansas City Royals",
+        "gamePk": 824069,
+        "lineupStatus": "PROJECTED",
+        "confirmedLineup": false,
+        "lineupSpot": null,
+        "opposingPitcherId": "608379",
+        "opposingPitcher": "Michael Wacha",
+        "probability": 2.9,
+        "modelScore": 27.1,
         "signals": []
       },
       "691406": {
@@ -5538,7 +6312,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 22.8,
-        "modelScore": 48.5,
+        "modelScore": 48.6,
         "signals": [
           "hotLately"
         ]
@@ -5555,7 +6329,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 5.9,
-        "modelScore": 31.9,
+        "modelScore": 32.1,
         "signals": []
       },
       "691718": {
@@ -5570,7 +6344,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 22.8,
-        "modelScore": 51.4,
+        "modelScore": 51.6,
         "signals": [
           "hotLately"
         ]
@@ -5587,7 +6361,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 22.8,
-        "modelScore": 41.6,
+        "modelScore": 41.7,
         "signals": [
           "hotLately"
         ]
@@ -5604,7 +6378,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 6.2,
-        "modelScore": 32,
+        "modelScore": 32.1,
         "signals": []
       },
       "691788": {
@@ -5619,7 +6393,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 10.8,
-        "modelScore": 34.6,
+        "modelScore": 34.8,
         "signals": []
       },
       "691858": {
@@ -5634,7 +6408,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 1.4,
-        "modelScore": 13.3,
+        "modelScore": 13.4,
         "signals": []
       },
       "693304": {
@@ -5648,8 +6422,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 3.2,
-        "modelScore": 34.1,
+        "probability": 3.5,
+        "modelScore": 34,
         "signals": []
       },
       "693409": {
@@ -5664,7 +6438,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 1.4,
-        "modelScore": 13.9,
+        "modelScore": 14,
         "signals": []
       },
       "694192": {
@@ -5679,7 +6453,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 22.8,
-        "modelScore": 44.6,
+        "modelScore": 44.7,
         "signals": [
           "hotLately"
         ]
@@ -5695,8 +6469,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 2.5,
-        "modelScore": 30.4,
+        "probability": 2.4,
+        "modelScore": 30.1,
         "signals": []
       },
       "694212": {
@@ -5711,7 +6485,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 17.2,
-        "modelScore": 34,
+        "modelScore": 34.1,
         "signals": []
       },
       "694376": {
@@ -5720,18 +6494,33 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 3.9,
-        "modelScore": 27.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "694377": {
         "id": "694377",
         "name": "Nick Yorke",
+        "team": "Pittsburgh Pirates",
+        "opponent": "San Francisco Giants",
+        "gamePk": 823337,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
+        "opposingPitcherId": "694918",
+        "opposingPitcher": "Blade Tidwell",
+        "probability": 1.4,
+        "modelScore": 19.1,
+        "signals": []
+      },
+      "694378": {
+        "id": "694378",
+        "name": "Jacob Gonzalez",
         "team": "Pittsburgh Pirates",
         "opponent": "San Francisco Giants",
         "gamePk": 823337,
@@ -5742,21 +6531,6 @@
         "opposingPitcher": "Blade Tidwell",
         "probability": 0,
         "modelScore": 0,
-        "signals": []
-      },
-      "694378": {
-        "id": "694378",
-        "name": "Jacob Gonzalez",
-        "team": "Pittsburgh Pirates",
-        "opponent": "San Francisco Giants",
-        "gamePk": 823337,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
-        "opposingPitcherId": "694918",
-        "opposingPitcher": "Blade Tidwell",
-        "probability": 3.4,
-        "modelScore": 29.1,
         "signals": []
       },
       "694497": {
@@ -5771,7 +6545,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 2.4,
-        "modelScore": 24.1,
+        "modelScore": 24.2,
         "signals": []
       },
       "694671": {
@@ -5786,7 +6560,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 22.8,
-        "modelScore": 46.8,
+        "modelScore": 46.9,
         "signals": [
           "sleeper"
         ]
@@ -5818,7 +6592,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 7.1,
-        "modelScore": 37.3,
+        "modelScore": 37.4,
         "signals": [
           "hotLately"
         ]
@@ -5835,7 +6609,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 22.8,
-        "modelScore": 46.6,
+        "modelScore": 46.8,
         "signals": [
           "hotLately"
         ]
@@ -5852,7 +6626,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 22.8,
-        "modelScore": 47.2,
+        "modelScore": 47.4,
         "signals": []
       },
       "695508": {
@@ -5867,7 +6641,7 @@
         "opposingPitcherId": "663556",
         "opposingPitcher": "Shane McClanahan",
         "probability": 2.4,
-        "modelScore": 24.1,
+        "modelScore": 24.2,
         "signals": []
       },
       "695600": {
@@ -5882,7 +6656,7 @@
         "opposingPitcherId": "645261",
         "opposingPitcher": "Sandy Alcantara",
         "probability": 22.8,
-        "modelScore": 44.3,
+        "modelScore": 44.5,
         "signals": [
           "hotLately"
         ]
@@ -5898,8 +6672,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 22.8,
-        "modelScore": 53.3,
+        "probability": 23.3,
+        "modelScore": 53.4,
         "signals": [
           "hotLately",
           "hotLook"
@@ -5917,7 +6691,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 1.4,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "695731": {
@@ -5931,8 +6705,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 3.3,
-        "modelScore": 34.2,
+        "probability": 3.4,
+        "modelScore": 34.3,
         "signals": []
       },
       "699013": {
@@ -5964,7 +6738,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 14,
-        "modelScore": 33.2,
+        "modelScore": 33.3,
         "signals": []
       },
       "699393": {
@@ -5979,7 +6753,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 7.9,
-        "modelScore": 36.3,
+        "modelScore": 36.4,
         "signals": [
           "hotLately"
         ]
@@ -5996,7 +6770,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 22.8,
-        "modelScore": 41.2,
+        "modelScore": 41.3,
         "signals": [
           "due"
         ]
@@ -6013,7 +6787,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 4.8,
-        "modelScore": 34,
+        "modelScore": 34.1,
         "signals": []
       },
       "701358": {
@@ -6043,7 +6817,7 @@
         "opposingPitcherId": "669373",
         "opposingPitcher": "Tarik Skubal",
         "probability": 4.7,
-        "modelScore": 31.9,
+        "modelScore": 32,
         "signals": []
       },
       "701852": {
@@ -6052,13 +6826,13 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 24.9,
         "signals": []
       },
       "702284": {
@@ -6073,7 +6847,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 7.2,
-        "modelScore": 33.9,
+        "modelScore": 34,
         "signals": []
       },
       "702332": {
@@ -6088,7 +6862,7 @@
         "opposingPitcherId": "687064",
         "opposingPitcher": "Brandon Young",
         "probability": 6.6,
-        "modelScore": 30.4,
+        "modelScore": 30.5,
         "signals": []
       },
       "702616": {
@@ -6103,7 +6877,7 @@
         "opposingPitcherId": "687562",
         "opposingPitcher": "Jake Bennett",
         "probability": 3.4,
-        "modelScore": 28.5,
+        "modelScore": 28.6,
         "signals": []
       },
       "703155": {
@@ -6118,7 +6892,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 22.8,
-        "modelScore": 52,
+        "modelScore": 52.1,
         "signals": [
           "hotLook"
         ]
@@ -6134,8 +6908,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 2.8,
-        "modelScore": 31.3,
+        "probability": 4,
+        "modelScore": 32.4,
         "signals": []
       },
       "703607": {
@@ -6150,7 +6924,7 @@
         "opposingPitcherId": "807739",
         "opposingPitcher": "Kade Anderson",
         "probability": 3.5,
-        "modelScore": 28.3,
+        "modelScore": 28.4,
         "signals": [
           "hotLately"
         ]
@@ -6166,8 +6940,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "667755",
         "opposingPitcher": "José Soriano",
-        "probability": 17.9,
-        "modelScore": 44,
+        "probability": 20.4,
+        "modelScore": 43.8,
         "signals": [
           "due"
         ]
@@ -6184,7 +6958,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 1.7,
-        "modelScore": 26.2,
+        "modelScore": 26.3,
         "signals": []
       },
       "801126": {
@@ -6199,7 +6973,7 @@
         "opposingPitcherId": "678022",
         "opposingPitcher": "Jack Perkins",
         "probability": 1.4,
-        "modelScore": 23.8,
+        "modelScore": 23.9,
         "signals": []
       },
       "801501": {
@@ -6208,13 +6982,13 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 1.4,
-        "modelScore": 19.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "802415": {
@@ -6229,7 +7003,7 @@
         "opposingPitcherId": "615698",
         "opposingPitcher": "Cal Quantrill",
         "probability": 1.4,
-        "modelScore": 22,
+        "modelScore": 22.2,
         "signals": []
       },
       "803011": {
@@ -6243,8 +7017,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 4.9,
-        "modelScore": 35.2,
+        "probability": 5.7,
+        "modelScore": 35.4,
         "signals": []
       },
       "804668": {
@@ -6258,8 +7032,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "694918",
         "opposingPitcher": "Blade Tidwell",
-        "probability": 21.2,
-        "modelScore": 43.8,
+        "probability": 19.5,
+        "modelScore": 42.4,
         "signals": []
       },
       "805300": {
@@ -6274,7 +7048,7 @@
         "opposingPitcherId": "608379",
         "opposingPitcher": "Michael Wacha",
         "probability": 2.6,
-        "modelScore": 28.3,
+        "modelScore": 28.5,
         "signals": []
       },
       "805367": {
@@ -6288,8 +7062,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 7,
-        "modelScore": 34.3,
+        "probability": 6.8,
+        "modelScore": 34.4,
         "signals": []
       },
       "805811": {
@@ -6303,8 +7077,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 22.1,
-        "modelScore": 48.1,
+        "probability": 23.9,
+        "modelScore": 47.6,
         "signals": []
       },
       "806198": {
@@ -6319,7 +7093,7 @@
         "opposingPitcherId": "592332",
         "opposingPitcher": "Kevin Gausman",
         "probability": 1.8,
-        "modelScore": 28.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "806367": {
@@ -6333,11 +7107,9 @@
         "lineupSpot": 5,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 4.7,
-        "modelScore": 39.6,
-        "signals": [
-          "due"
-        ]
+        "probability": 4,
+        "modelScore": 38.2,
+        "signals": []
       },
       "807713": {
         "id": "807713",
@@ -6351,7 +7123,7 @@
         "opposingPitcherId": "701656",
         "opposingPitcher": "Logan Henderson",
         "probability": 9,
-        "modelScore": 34,
+        "modelScore": 34.1,
         "signals": []
       },
       "807727": {
@@ -6380,8 +7152,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "686613",
         "opposingPitcher": "Hunter Brown",
-        "probability": 22.8,
-        "modelScore": 55.6,
+        "probability": 24,
+        "modelScore": 55.5,
         "signals": [
           "due",
           "hotLook"
@@ -6393,13 +7165,13 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 6.2,
+        "modelScore": 35.9,
         "signals": []
       },
       "813841": {
@@ -6414,7 +7186,7 @@
         "opposingPitcherId": "669199",
         "opposingPitcher": "Lake Bachar",
         "probability": 16.4,
-        "modelScore": 49,
+        "modelScore": 48.1,
         "signals": []
       },
       "815873": {
@@ -6428,8 +7200,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "676440",
         "opposingPitcher": "Tanner Bibee",
-        "probability": 1.4,
-        "modelScore": 26,
+        "probability": 1.5,
+        "modelScore": 25,
         "signals": []
       }
     },
@@ -6464,7 +7236,7 @@
         "team": "Chicago White Sox",
         "opponent": "Houston Astros",
         "gamePk": 824144,
-        "vulnerability": 60
+        "vulnerability": 62
       },
       "645261": {
         "id": "645261",
@@ -6488,7 +7260,7 @@
         "team": "Toronto Blue Jays",
         "opponent": "Cleveland Guardians",
         "gamePk": 824388,
-        "vulnerability": 30
+        "vulnerability": 31
       },
       "669199": {
         "id": "669199",
@@ -6496,7 +7268,7 @@
         "team": "Pittsburgh Pirates",
         "opponent": "San Francisco Giants",
         "gamePk": 823337,
-        "vulnerability": 29
+        "vulnerability": 28
       },
       "669373": {
         "id": "669373",
@@ -6512,7 +7284,7 @@
         "team": "Cleveland Guardians",
         "opponent": "Toronto Blue Jays",
         "gamePk": 824388,
-        "vulnerability": 34
+        "vulnerability": 36
       },
       "678022": {
         "id": "678022",
@@ -6528,7 +7300,7 @@
         "team": "Houston Astros",
         "opponent": "Chicago White Sox",
         "gamePk": 824144,
-        "vulnerability": 33
+        "vulnerability": 32
       },
       "687064": {
         "id": "687064",
@@ -6544,7 +7316,7 @@
         "team": "St. Louis Cardinals",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 823907,
-        "vulnerability": 38
+        "vulnerability": 39
       },
       "687562": {
         "id": "687562",
@@ -6560,7 +7332,7 @@
         "team": "San Francisco Giants",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 823337,
-        "vulnerability": 40
+        "vulnerability": 35
       },
       "701656": {
         "id": "701656",
