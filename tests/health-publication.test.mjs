@@ -38,3 +38,12 @@ test('health publication cannot extend expired source inputs during a long refre
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test('every refresh validator honors source-bounded health expiry', () => {
+  const fastRefresh = fs.readFileSync(path.resolve('scripts/run_fast_refresh.js'), 'utf8');
+  const fullValidator = fs.readFileSync(path.resolve('scripts/mlb/validate_mlb_refresh.mjs'), 'utf8');
+  for (const source of [fastRefresh, fullValidator]) {
+    assert.match(source, /validHealthFreshnessWindow/);
+    assert.doesNotMatch(source, /freshUntil\s*-\s*generatedAt\s*!==\s*15\s*\*\s*60\s*\*\s*1000/);
+  }
+});
