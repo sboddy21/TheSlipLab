@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {rapidQuotes,mainMarkets,bestComparable} from '../scripts/odds/core.mjs';
 import {attachCfbOdds} from '../scripts/odds/cfb.mjs';
 import {valuePicks} from '../website/assets/cfb-edge.mjs';
@@ -67,6 +68,11 @@ test('canonical game matching accepts the MLB array publication shape',()=>{
  const rows=canonicalRows([{gamePk:1,gameDate:kickoff,homeTeam:'Home',awayTeam:'Away'}]);
  assert.deepEqual(rows,[{id:1,kickoff,homeNames:['Home',undefined],awayNames:['Away',undefined]}]);
  assert.equal(playerQuotes({quotes:[prop]},rows,{gameId:1,playerId:42,player:'Jose Player'}).length,1);
+});
+test('Decision Center does not turn a missing game ID into an asserted N/A identity',()=>{
+ const html=fs.readFileSync(new URL('../website/hr-decision-center.html',import.meta.url),'utf8');
+ assert.ok(html.includes('data-game-id="${row.gamePk || ""}"'));
+ assert.ok(!html.includes('data-game-id="${clean(row.gamePk || "")}"'));
 });
 test('shared catalog preserves under prices in the HR pipeline and never uses alternate totals',()=>{
  const events=catalogPropEvents({quotes:[prop,{...prop,side:'under',price:-400},{...prop,line:2.5,price:8000}]});

@@ -433,7 +433,7 @@ function renderPickOnePanel(){
     const displayScore = p.pickOneScore || p.hrConfidence || p.score || 0;
 
     return `
-      <article class="pick-one-card" data-player="${clean(p.player || "")}" data-player-id="${clean(p.playerId || "")}" data-game-id="${clean(p.gamePk || "")}" data-team="${clean(p.team || "")}">
+      <article class="pick-one-card" data-player="${clean(p.player || "")}" data-player-id="${p.playerId || ""}" data-game-id="${p.gamePk || ""}" data-team="${clean(p.team || "")}">
         <div class="pick-one-card-top">
           <span>${icon} ${label}</span>
           <b>${clean(p.tier || p.type || p.label || "")}</b>
@@ -486,7 +486,7 @@ function renderTopTargets(){
     </div>
     <div class="top-targets-grid">
       ${rows.map((row,index) => `
-        <article class="top-target" data-player-name="${clean(row.player)}" data-player-id="${clean(row.playerId || "")}" data-game-id="${clean(row.gamePk || "")}" data-team="${clean(row.team || "")}">
+        <article class="top-target" data-player-name="${clean(row.player)}" data-player-id="${row.playerId || ""}" data-game-id="${row.gamePk || ""}" data-team="${clean(row.team || "")}">
           <div>
             <div class="top-target-rank">#${index + 1}</div>
             <div class="top-target-name">${clean(row.player)}</div>
@@ -535,7 +535,7 @@ function renderGrid(){
   }
 
   document.getElementById("grid").innerHTML = rows.map(row => `
-    <article class="card player-card" data-player-name="${clean(row.player)}" data-player-id="${clean(row.playerId || "")}" data-game-id="${clean(row.gamePk || "")}" data-team="${clean(row.team || "")}">
+    <article class="card player-card" data-player-name="${clean(row.player)}" data-player-id="${row.playerId || ""}" data-game-id="${row.gamePk || ""}" data-team="${clean(row.team || "")}">
       <div class="tier">${clean(row.tier)}</div>
 
       <div class="card-top">

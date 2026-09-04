@@ -331,7 +331,7 @@
   function init(){
     if (!document.querySelector('script[data-tsl-odds]')) {
       const oddsScript = document.createElement('script');
-      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js?v=player-card-prices-20260904-2';
+      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js?v=player-card-prices-20260904-3';
       oddsScript.dataset.tslOdds = 'true'; document.head.appendChild(oddsScript);
     }
     if (document.querySelector(".tsl-site-header")) return;
