@@ -6,7 +6,7 @@ import {valuePicks} from '../website/assets/cfb-edge.mjs';
 import {grade} from '../scripts/cfb/core.mjs';
 import {catalogPropEvents} from '../scripts/odds/catalog-to-props.mjs';
 import {quoteSides} from '../scripts/mlb/build_market_odds.js';
-import {playerQuotes,table} from '../website/assets/sports-odds.js';
+import {bestPlayerPrice,playerQuotes,table} from '../website/assets/sports-odds.js';
 const now=Date.now(),stamp=new Date(now-1000).toISOString(),kickoff=new Date(now+3600000).toISOString();
 const q=(side,extra={})=>({source:'DRAFT_KINGS',marketKey:'market',type:'WIN',participantKey:side,live:false,time:stamp,payout:1.925,modifier:side==='h'?-3.5:3.5,...extra});
 const m={key:'market',type:'POINT_SPREAD',segment:'FULL_MATCH',participantKey:null,lastFoundAt:stamp,outcomes:{DRAFT_KINGS:[q('h'),q('a')]}};
@@ -55,6 +55,13 @@ test('player cards reject another doubleheader game, wrong player identity and s
  assert.equal(playerQuotes({quotes:[{...prop,quotedAt:new Date(now-30*60_000).toISOString()}]},games,identity).length,0);
  // RapidAPI and PropLine event IDs coexist without causing a false ambiguous match.
  assert.equal(playerQuotes({quotes:[...data.quotes,{...prop,player:undefined,providerEventId:'rapid'}]},games,identity).length,1);
+});
+test('MLB cards show only the best exact HR 0.5 over price',()=>{
+ const better={...prop,quoteId:'better',book:'Better Book',decimalOdds:5,price:400};
+ const wrongLine={...better,quoteId:'alternate',line:1.5,decimalOdds:12,price:1100};
+ const wrongMarket={...better,quoteId:'hits',market:'batter_hits',decimalOdds:8,price:700};
+ assert.equal(bestPlayerPrice([prop,better,wrongLine,wrongMarket],'MLB').quoteId,'better');
+ assert.equal(bestPlayerPrice([wrongLine,wrongMarket],'MLB'),null);
 });
 test('shared catalog preserves under prices in the HR pipeline and never uses alternate totals',()=>{
  const events=catalogPropEvents({quotes:[prop,{...prop,side:'under',price:-400},{...prop,line:2.5,price:8000}]});
