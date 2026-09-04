@@ -4,7 +4,7 @@
   const markets={points:"Points",rebounds:"Rebounds",assists:"Assists",threes:"Threes"};
   const seasonKey={points:"points",rebounds:"rebounds",assists:"assists",threes:"threesMade"};
   const params=new URLSearchParams(window.location.search),requestedView=params.get("view");
-  const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",game:params.get("game")||"",market:"points",query:"",team:"",sort:"signal",compared:new Set(),favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
+  const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",game:params.get("game")||"",market:"points",query:"",team:"",sort:"signal",compared:new Set(),favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null,noGames:false};
   const fmt=value=>Number.isFinite(Number(value))?Number(value).toFixed(1).replace(/\.0$/,""):"—";
   state.dataError="Checking current player data…";
   const changeText=item=>{
@@ -64,6 +64,14 @@
     if(state.dataError){
       $("#wdcStatus").textContent=state.dataError;
       $("#wdcBoard").innerHTML=`<div class="wdc-empty">${esc(state.dataError)}</div>`;
+      return;
+    }
+    if(state.noGames){
+      $("#wdcStatus").textContent="No WNBA games are scheduled for today. No player rankings are published.";
+      $("#wdcBoard").innerHTML='<div class="wdc-empty">No WNBA games are scheduled for today. Check back on the next game day.</div>';
+      renderMatchups();
+      renderBrief();
+      renderCompareDock();
       return;
     }
     let rows=enriched().filter(row=>(!state.game||String(row.gameId)===state.game)&&(!state.team||row.team===state.team)&&(!state.query||`${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query)));
@@ -127,12 +135,12 @@
       const asOf=Date.parse(board.dataAsOf||"");
       if(board.stale||!Number.isFinite(asOf)||Date.now()-asOf<0||Date.now()-asOf>20*60_000)throw new Error("Current WNBA player data is unavailable. Waiting for updated projections.");
       state.dataError="";
-      state.rows=Array.isArray(board.projections)?board.projections.filter(row=>Date.parse(row.gameTimeUTC)>Date.now()):[];state.players=new Map((players.players||[]).map(player=>[String(player.playerId),player]));state.games=games.games||[];state.verified=verified;
+      state.rows=Array.isArray(board.projections)?board.projections.filter(row=>Date.parse(row.gameTimeUTC)>Date.now()):[];state.players=new Map((players.players||[]).map(player=>[String(player.playerId),player]));state.games=games.games||[];state.verified=verified;state.noGames=state.games.length===0&&state.rows.length===0;
       if(state.game&&!state.rows.some(row=>String(row.gameId)===state.game)){state.game="";const url=new URL(window.location.href);url.searchParams.delete("game");window.history.replaceState({},"",url)}
       $("#wdcPlayerCount").textContent=state.rows.length;$("#wdcGameCount").textContent=state.games.length;$("#wdcTopConfidence").textContent=state.rows.length?`${Math.max(...state.rows.map(row=>Number(row.confidence)||0))}/100`:"—";$("#wdcUpdated").textContent=board.generatedAt?`Updated ${new Date(board.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`:"Current slate";
       const teams=[...new Set(state.rows.map(row=>row.team))].sort();$("#wdcTeam").insertAdjacentHTML("beforeend",teams.map(team=>`<option value="${esc(team)}">${esc(team)}</option>`).join(""));
-      const unlocked=!verified.locked&&(verified.recommendations||[]).length>0;$("#wdcGate").classList.toggle("unlocked",unlocked);$("#wdcGate").innerHTML=unlocked?`<strong>Verified markets available</strong><span>${verified.recommendations.length} recommendations passed calibration, freshness, and minimum-edge gates.</span>`:`<strong>Model-signal mode</strong><span>Authorized market lines are not currently available, so this board ranks projection evidence without presenting unverified betting edges.</span>`;
-      renderChanges(changeFeed);
+      const unlocked=!verified.locked&&(verified.recommendations||[]).length>0;$("#wdcGate").classList.toggle("unlocked",unlocked);$("#wdcGate").innerHTML=state.noGames?"<strong>No games scheduled</strong><span>There is no WNBA slate to rank today.</span>":unlocked?`<strong>Verified markets available</strong><span>${verified.recommendations.length} recommendations passed calibration, freshness, and minimum-edge gates.</span>`:`<strong>Model-signal mode</strong><span>Authorized market lines are not currently available, so this board ranks projection evidence without presenting unverified betting edges.</span>`;
+      if(state.noGames){$("#wdcChangesMeta").textContent="No slate movement";$("#wdcChanges").textContent="There are no scheduled WNBA games to monitor today."}else renderChanges(changeFeed);
       render();
     }catch(error){
       state.dataError=error.message||"Current WNBA player data is unavailable.";

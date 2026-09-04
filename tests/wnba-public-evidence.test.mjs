@@ -27,6 +27,11 @@ test('landing page does not advertise MLB or WNBA as live before current data is
  assert.match(landing,/health_status\.json/);
  assert.match(landing,/Recommendations withheld/);
 });
+test('WNBA Decision Center distinguishes a no-game day from filtered-out players',()=>{
+ const center=fs.readFileSync('website/assets/wnba-decision-center.js','utf8');
+ assert.match(center,/No WNBA games are scheduled for today\. No player rankings are published\./);
+ assert.match(center,/There is no WNBA slate to rank today\./);
+});
 test('role heuristic is a score, not a win probability',async()=>{
  const result=await render();assert.match(result.html,/85\/100/);assert.doesNotMatch(result.html,/85%/);
 });
