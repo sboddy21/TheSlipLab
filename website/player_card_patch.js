@@ -1310,7 +1310,9 @@
 
   function renderHero(row) {
     const h = stats(row);
-    const modelScore = num(row.hrConfidence ?? row.score ?? row.rawModelConfidence);
+    // `mlb_home_runs.json` uses hrConfidence/score for its power index. The Decision
+    // Center's explicit rawModelConfidence is the authoritative HR model score.
+    const modelScore = num(row.rawModelConfidence ?? row.hrConfidence ?? row.score);
     const theme = pcTheme(row);
 
     return `
