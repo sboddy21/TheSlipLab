@@ -20,8 +20,9 @@ export function playerQuotes(data,games,identity){
 }
 async function canonical(sport){
  const data=await json(`./data/${sport==='NFL'?'nfl_schedule':sport.toLowerCase()+'_games_today'}.json`);
- return (data.games||[]).map(g=>({id:g.gamePk||g.gameId||g.id,kickoff:g.gameDate||g.gameTimeUTC||g.kickoffUTC||g.date||g.startTime,homeNames:typeof g.homeTeam==='string'?[g.homeTeam,g.homeTeamAbbreviation]:[g.homeTeam?.name,g.homeTeam?.displayName,g.homeTeam?.abbreviation,g.homeTeam?.team,g.homeTeam?.teamName,`${g.homeTeam?.city||''} ${g.homeTeam?.team||''}`.trim()],awayNames:typeof g.awayTeam==='string'?[g.awayTeam,g.awayTeamAbbreviation]:[g.awayTeam?.name,g.awayTeam?.displayName,g.awayTeam?.abbreviation,g.awayTeam?.team,g.awayTeam?.teamName,`${g.awayTeam?.city||''} ${g.awayTeam?.team||''}`.trim()]}));
+ return canonicalRows(data);
 }
+export function canonicalRows(data){return (Array.isArray(data)?data:(data.games||[])).map(g=>({id:g.gamePk||g.gameId||g.id,kickoff:g.gameDate||g.gameTimeUTC||g.kickoffUTC||g.date||g.startTime,homeNames:typeof g.homeTeam==='string'?[g.homeTeam,g.homeTeamAbbreviation]:[g.homeTeam?.name,g.homeTeam?.displayName,g.homeTeam?.abbreviation,g.homeTeam?.team,g.homeTeam?.teamName,`${g.homeTeam?.city||''} ${g.homeTeam?.team||''}`.trim()],awayNames:typeof g.awayTeam==='string'?[g.awayTeam,g.awayTeamAbbreviation]:[g.awayTeam?.name,g.awayTeam?.displayName,g.awayTeam?.abbreviation,g.awayTeam?.team,g.awayTeam?.teamName,`${g.awayTeam?.city||''} ${g.awayTeam?.team||''}`.trim()]}));}
 function canonicalFeed(sport){if(!canonicalPending.has(sport))canonicalPending.set(sport,canonical(sport));return canonicalPending.get(sport);}
 export function bestPlayerPrice(quotes,sport){
  const market={MLB:'batter_home_runs',WNBA:'player_points',NBA:'player_points',NFL:'player_anytime_td'}[sport];
