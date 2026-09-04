@@ -1310,7 +1310,7 @@
 
   function renderHero(row) {
     const h = stats(row);
-    const conf = hrChance(row);
+    const modelScore = num(row.hrConfidence ?? row.score ?? row.rawModelConfidence);
     const theme = pcTheme(row);
 
     return `
@@ -1324,8 +1324,8 @@
           </div>
         </div>
         <div class="pcprob">
-          <b>${hrChance(row)===null?"—":one(hrChance(row))+"%"}</b>
-          <span>Model HR estimate</span>
+          <b>${one(modelScore)}</b>
+          <span>Model HR score / 100</span>
         </div>
       </div>
 
@@ -1334,7 +1334,7 @@
         ${metric("SLG", dec(h.SLG))}
         ${metric("HR", h.HR)}
         ${metric("OPS", dec(h.OPS))}
-        ${metric("Model HR estimate", conf===null?"—":one(conf)+"%")}
+        ${metric("Model HR score", one(modelScore) + " / 100")}
         ${metric("Power", one(row.powerScore))}
         ${metric("Barrel %", statcastRate(row, "barrel"))}
         ${metric("Hard-Hit %", statcastRate(row, "hardHit"))}
@@ -1351,7 +1351,7 @@
       ${renderMatchupIntel(row)}
 
       <div class="pcbars">
-        ${conf===null?'':bar("Model HR estimate", conf, 100, "%")}
+        ${bar("Model HR score", modelScore, 100)}
         ${bar("Power Score", row.powerScore, 100)}
         ${bar("Zone Power", row.hitterZonePower, 100)}
         ${bar("Pitcher Risk", row.pitcherRisk, 100)}
