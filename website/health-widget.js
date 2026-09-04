@@ -175,7 +175,8 @@
       const validAudit = Number.isInteger(audit.criticalIdentityIssues) && audit.criticalIdentityIssues >= 0
         && Number.isInteger(audit.blockerCount) && audit.blockerCount >= 0 && Number.isFinite(checkedAt);
       const state = data.status === "error" || !validAudit || checkedAt > Date.now() + 1000 || audit.criticalIdentityIssues > 0
-        ? "check" : Date.now() - checkedAt >= 3600000 ? "delayed"
+        ? "check"
+        : Date.now() - checkedAt >= 3600000 ? "delayed"
         : audit.blockerCount > 0 || audit.publicNavigationEnabled !== true ? "updating" : "live";
       const stateLabel = state === "updating" ? "BUILDING" : state.toUpperCase();
       const updateTime = audit.checkedAt || data.generatedAt;
@@ -268,7 +269,11 @@
   }
 
   let latestHealth = null;
-  function publishHealth(data) { latestHealth = data; render(data); }
+  function publishHealth(data) {
+    latestHealth = data;
+    render(data);
+  }
+
   async function loadHealth() {
     try {
       const headers = {};
@@ -295,5 +300,6 @@
 
   loadHealth();
   setInterval(loadHealth, 60000);
+  // Expire green status even if the next network request has not completed.
   setInterval(() => { if (latestHealth) render(latestHealth); }, 15000);
 })();

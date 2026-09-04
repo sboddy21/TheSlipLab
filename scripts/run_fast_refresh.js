@@ -1,6 +1,7 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
 import { dataQualityPenaltyIssue } from "./mlb/lib/data_quality_confidence.js";
+import { validHealthFreshnessWindow } from "./mlb/refresh_freshness.mjs";
 
 const requestedStart = Number(process.env.MLB_REFRESH_STARTED_AT);
 const REFRESH_STARTED_AT = Number.isFinite(requestedStart) && requestedStart > 0 ? requestedStart : Date.now();
@@ -291,7 +292,15 @@ function validateHealthStatus(expectedDate) {
   if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
     throw new Error("health_status.json monitoring timestamps do not identify the completed refresh");
   }
-  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+  const artifactDeadlines = Object.values(health.artifacts || {})
+    .filter(artifact => artifact?.required === true)
+    .map(artifact => Date.parse(artifact.timestamp) + Number(artifact.maxAgeSeconds) * 1000);
+  if (monitoring.refreshWindowSeconds !== 900 || !validHealthFreshnessWindow({
+    generatedAt,
+    freshUntil,
+    refreshWindowMs: 15 * 60 * 1000,
+    artifactDeadlines
+  })) {
     throw new Error("health_status.json monitoring freshness window is invalid");
   }
 

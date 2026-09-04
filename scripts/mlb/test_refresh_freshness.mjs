@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { belongsToRefresh, isFreshForRefresh } from "./refresh_freshness.mjs";
+import { belongsToRefresh, isFreshForRefresh, validHealthFreshnessWindow } from "./refresh_freshness.mjs";
 
 const minute = 60 * 1000;
 const generatedAt = Date.parse("2026-08-21T13:48:15.000Z");
@@ -29,5 +29,19 @@ assert.equal(isFreshForRefresh({
   maxAgeMs: 15 * minute,
   refreshStartedAt: generatedAt - 31 * minute
 }), false, "an implausibly old refresh start must not exempt stale data");
+
+const sourceDeadline = generatedAt + 9 * minute;
+assert.equal(validHealthFreshnessWindow({
+  generatedAt,
+  freshUntil: sourceDeadline,
+  refreshWindowMs: 15 * minute,
+  artifactDeadlines: [sourceDeadline, generatedAt + 70 * minute]
+}), true, "health may expire before the nominal window when a required source expires first");
+assert.equal(validHealthFreshnessWindow({
+  generatedAt,
+  freshUntil: generatedAt + 15 * minute,
+  refreshWindowMs: 15 * minute,
+  artifactDeadlines: [sourceDeadline]
+}), false, "health must not outlive its earliest required source");
 
 console.log("MLB REFRESH FRESHNESS TEST PASSED");

@@ -1,4 +1,5 @@
 import fs from "fs";
+import { depthMatchesPlayer } from "./launch_safety.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -74,11 +75,12 @@ async function main() {
   const latest = rows.filter(row => row.dt === latestByTeam.get(row.team) && TARGET_POSITIONS.has(row.pos_abb));
   const depthEntries = latest.map(row => {
     const player = playersById.get(String(row.espn_id));
+    const team = ({ LA: "LAR", WAS: "WSH" })[row.team] || row.team;
     return {
       playerId: String(row.espn_id || ""),
       gsisId: row.gsis_id || "",
       playerName: row.player_name || player?.fullName || "",
-      team: row.team || player?.team || "",
+      team: team || "",
       position: row.pos_abb || player?.position || "",
       positionName: row.pos_name || "",
       positionGroup: row.pos_grp || "",
@@ -86,7 +88,7 @@ async function main() {
       rank: Number(row.pos_rank || 0),
       starter: Number(row.pos_rank || 0) === 1,
       snapshotAt: row.dt,
-      canonicalPlayerMatch: Boolean(player)
+      canonicalPlayerMatch: depthMatchesPlayer({ playerId: String(row.espn_id || ""), team, position: row.pos_abb }, player)
     };
   }).sort((a, b) => a.team.localeCompare(b.team) || a.position.localeCompare(b.position) || a.slot - b.slot || a.rank - b.rank);
 
