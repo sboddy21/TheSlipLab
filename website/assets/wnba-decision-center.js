@@ -6,6 +6,7 @@
   const params=new URLSearchParams(window.location.search),requestedView=params.get("view");
   const state={view:["top","full","saved"].includes(requestedView)?requestedView:"top",game:params.get("game")||"",market:"points",query:"",team:"",sort:"signal",compared:new Set(),favorites:[],accountReady:false,rows:[],players:new Map(),games:[],verified:null};
   const fmt=value=>Number.isFinite(Number(value))?Number(value).toFixed(1).replace(/\.0$/,""):"—";
+  state.dataError="Checking current player data…";
   const changeText=item=>{
     if(item.type==="minutes")return `Expected minutes moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
     if(item.type==="projection")return `${markets[item.market]} projection moved ${item.direction} from ${fmt(item.previousValue)} to ${fmt(item.currentValue)}`;
@@ -60,6 +61,11 @@
     brief.innerHTML=`<button class="wdc-brief-card" type="button" data-brief-player="${esc(strongest.playerId)}"><span class="wdc-brief-label">Strongest ${esc(markets[state.market])} signal</span><strong>${esc(strongest.player)}</strong><p>${esc(strongest.team)} vs ${esc(strongest.opponent)} · ${esc(strongest.role)} role</p><span class="wdc-brief-value">Signal ${strongest.signal} · ${fmt(strongest.marketValue)} projected</span></button><button class="wdc-brief-card" type="button" data-brief-player="${esc(minutes.playerId)}"><span class="wdc-brief-label">Most secure workload</span><strong>${esc(minutes.player)}</strong><p>${esc(minutes.team)} vs ${esc(minutes.opponent)} · ${esc(minutes.role)} role</p><span class="wdc-brief-value">${fmt(minutes.expectedMinutes)} expected minutes</span></button><button class="wdc-brief-card" type="button" data-brief-game="${esc(paceSpot.gameId)}"><span class="wdc-brief-label">Best pace environment</span><strong>${esc(paceGame?.awayTeam?.abbreviation||paceSpot.rows[0]?.team)} @ ${esc(paceGame?.homeTeam?.abbreviation||paceSpot.rows[0]?.opponent)}</strong><p>${paceSpot.rows.length} projected players · ${esc(paceGame?.venue||paceGame?.city||"Venue pending")}</p><span class="wdc-brief-value">${paceSpot.pace>1.01?"Faster":paceSpot.pace<.99?"Slower":"Neutral"} pace factor · ${fmt(paceSpot.pace)}</span></button><article class="wdc-brief-card ${injuries.length?"alert":"clear"}"><span class="wdc-brief-label">Availability watch</span><strong>${injuries.length?`${injuries.length} flagged player${injuries.length===1?"":"s"}`:"No active flags"}</strong><p>${injuries.length?injuries.slice(0,3).map(row=>`${esc(row.player)} · ${esc(row.injury?.status||row.playerData?.injury?.status||"Review")}`).join("<br>"):"Every projected player is currently clear in the active player pool."}</p><span class="wdc-brief-value">${injuries.length?"Review before using projections":"Current board clear"}</span></article>`;
   }
   function render(){
+    if(state.dataError){
+      $("#wdcStatus").textContent=state.dataError;
+      $("#wdcBoard").innerHTML=`<div class="wdc-empty">${esc(state.dataError)}</div>`;
+      return;
+    }
     let rows=enriched().filter(row=>(!state.game||String(row.gameId)===state.game)&&(!state.team||row.team===state.team)&&(!state.query||`${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query)));
     if(state.view==="saved")rows=window.TSLWnbaPersonalization.filterRows(rows,state.favorites);
     const sorters={signal:(a,b)=>b.signal-a.signal||b.confidence-a.confidence,projection:(a,b)=>b.marketValue-a.marketValue,confidence:(a,b)=>b.confidence-a.confidence||b.signal-a.signal,minutes:(a,b)=>b.expectedMinutes-a.expectedMinutes};
@@ -120,6 +126,7 @@
       const [board,players,games,verified,changeFeed]=await Promise.all(responses.map(response=>response.json()));
       const asOf=Date.parse(board.dataAsOf||"");
       if(board.stale||!Number.isFinite(asOf)||Date.now()-asOf<0||Date.now()-asOf>20*60_000)throw new Error("Current WNBA player data is unavailable. Waiting for updated projections.");
+      state.dataError="";
       state.rows=Array.isArray(board.projections)?board.projections.filter(row=>Date.parse(row.gameTimeUTC)>Date.now()):[];state.players=new Map((players.players||[]).map(player=>[String(player.playerId),player]));state.games=games.games||[];state.verified=verified;
       if(state.game&&!state.rows.some(row=>String(row.gameId)===state.game)){state.game="";const url=new URL(window.location.href);url.searchParams.delete("game");window.history.replaceState({},"",url)}
       $("#wdcPlayerCount").textContent=state.rows.length;$("#wdcGameCount").textContent=state.games.length;$("#wdcTopConfidence").textContent=state.rows.length?`${Math.max(...state.rows.map(row=>Number(row.confidence)||0))}/100`:"—";$("#wdcUpdated").textContent=board.generatedAt?`Updated ${new Date(board.generatedAt).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"})}`:"Current slate";
@@ -127,7 +134,15 @@
       const unlocked=!verified.locked&&(verified.recommendations||[]).length>0;$("#wdcGate").classList.toggle("unlocked",unlocked);$("#wdcGate").innerHTML=unlocked?`<strong>Verified markets available</strong><span>${verified.recommendations.length} recommendations passed calibration, freshness, and minimum-edge gates.</span>`:`<strong>Model-signal mode</strong><span>Authorized market lines are not currently available, so this board ranks projection evidence without presenting unverified betting edges.</span>`;
       renderChanges(changeFeed);
       render();
-    }catch(error){$("#wdcStatus").textContent=error.message;$("#wdcBoard").innerHTML=`<div class="wdc-empty">WNBA Decision Center is temporarily unavailable. Please check back shortly.</div>`}
+    }catch(error){
+      state.dataError=error.message||"Current WNBA player data is unavailable.";
+      state.rows=[];
+      $("#wdcUpdated").textContent="Player data unavailable";
+      $("#wdcGate").innerHTML="<strong>Data unavailable</strong><span>Rankings are withheld until current player inputs can be verified.</span>";
+      $("#wdcChangesMeta").textContent="Movement unavailable";
+      $("#wdcChanges").textContent="Current projection changes cannot be verified.";
+      render();
+    }
   }
   $("#wdcTabs").addEventListener("click",event=>{const button=event.target.closest("button[data-market]");if(!button)return;state.market=button.dataset.market;document.querySelectorAll("#wdcTabs button").forEach(item=>item.setAttribute("aria-selected",String(item===button)));render()});
   $("#wdcViews").addEventListener("click",event=>{const button=event.target.closest("button[data-view]");if(button)setView(button.dataset.view)});
