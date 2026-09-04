@@ -445,6 +445,7 @@
 </head>
 <body class="tsl-editorial tsl-tool-page tsl-nfl-page">
   <main class="nfl-wrap">
+    <section class="rule-card" aria-label="NFL data readiness" role="status" id="launchReadiness">Checking NFL data readiness…</section>
     <div class="nfl-report-line"><span id="reportPhase">NFL usage engine</span><span id="reportStep">Phase three build</span></div>
 
     <section class="hero" aria-labelledby="pageTitle">
@@ -575,12 +576,17 @@
       "'": "&#39;"
     }[char]));
 
+    const dataProblems = [];
     async function loadJson(path, fallback){
       try{
         const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
         if(!response.ok) throw new Error(path);
-        return await response.json();
+        const data = await response.json();
+        if(data.sport !== "NFL" || !Number.isFinite(Date.parse(data.generatedAt))) throw new Error("Invalid NFL data");
+        if(Date.now() - Date.parse(data.generatedAt) > 24 * 3600000) dataProblems.push(`${path.split("/").pop()}: older than 24 hours`);
+        return data;
       }catch(error){
+        dataProblems.push(`${path.split("/").pop()}: unavailable`);
         return fallback;
       }
     }
@@ -706,14 +712,17 @@
     }
 
     async function init(){
-      const [foundation, markets, publicStatus, roleBoard, tdBoard, receivingBoard] = await Promise.all([
+      const [foundation, markets, publicStatus, roleBoard, tdBoard, receivingBoard, audit] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
         loadJson("./data/nfl_markets.json", fallbackMarkets),
         loadJson("./data/nfl_public_status.json", fallbackStatus),
         loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] }),
         loadJson("./data/nfl_td_decision_center.json", { counts: {}, sections: [], rows: [], scoreDisclaimer: "TD shadow signals are unavailable." }),
-        loadJson("./data/nfl_receiving_yards_board.json", { counts: {}, rows: [] })
+        loadJson("./data/nfl_receiving_yards_board.json", { counts: {}, rows: [] }),
+        loadJson("./data/nfl_launch_audit.json", { blockers: ["Launch readiness could not be verified."] })
       ]);
+      document.getElementById("launchReadiness").innerHTML = `<h2>NFL launch readiness</h2><p>TD and receiving boards are research signals, not published predictions. Rushing and passing projections are not available yet.</p><ul>${[...(audit.blockers || []), ...dataProblems].map(message => `<li>${escapeHtml(message)}</li>`).join("")}</ul><p>Last audit: ${escapeHtml(audit.generatedAt ? new Date(audit.generatedAt).toLocaleString() : "Unavailable")}</p><button type="button" id="retryNflData">Reload NFL data</button>`;
+      document.getElementById("retryNflData").onclick = () => location.reload();
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
       const launchMarkets = Array.isArray(markets.launchMarkets) ? markets.launchMarkets : [];

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
-import { isFreshForRefresh } from "./refresh_freshness.mjs";
+import { isFreshForRefresh, validHealthFreshnessWindow } from "./refresh_freshness.mjs";
 import { dataQualityPenaltyIssue } from "./lib/data_quality_confidence.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -421,7 +421,15 @@ function validateHealthStatus(expectedDate, anchor) {
   if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
     fail("health_status.json monitoring timestamps do not identify the completed refresh");
   }
-  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+  const artifactDeadlines = Object.values(health.artifacts || {})
+    .filter(artifact => artifact?.required === true)
+    .map(artifact => Date.parse(artifact.timestamp) + Number(artifact.maxAgeSeconds) * 1000);
+  if (monitoring.refreshWindowSeconds !== 900 || !validHealthFreshnessWindow({
+    generatedAt,
+    freshUntil,
+    refreshWindowMs: MAX_REFRESH_AGE_MS,
+    artifactDeadlines
+  })) {
     fail("health_status.json monitoring freshness window is invalid");
   }
 

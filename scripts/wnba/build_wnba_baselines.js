@@ -13,6 +13,7 @@ const FETCH_ATTEMPTS = 3;
 const FETCH_TIMEOUT_MS = 15_000;
 
 const TEAM_URL = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams";
+const CORE_TEAMS_URL = `https://sports.core.api.espn.com/v2/sports/basketball/leagues/wnba/seasons/${SEASON}/teams?limit=50&lang=en&region=us`;
 const rosterUrl = slug => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams/${slug}/roster`;
 const teamStatsUrl = slug => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams/${slug}/statistics?season=${SEASON}`;
 const teamDetailUrl = slug => `https://site.api.espn.com/apis/site/v2/sports/basketball/wnba/teams/${slug}?season=${SEASON}`;
@@ -40,6 +41,23 @@ async function fetchJson(url) {
     if (attempt < FETCH_ATTEMPTS) await new Promise(resolve => setTimeout(resolve, attempt * 1_000));
   }
   throw lastError;
+}
+
+const secureRef = value => String(value || "").replace(/^http:/, "https:");
+
+async function fetchCoreTeams() {
+  const directory = await fetchJson(CORE_TEAMS_URL);
+  const refs = (directory.items || []).map(item => secureRef(item?.$ref)).filter(Boolean);
+  if (!refs.length) throw new Error("WNBA core team directory returned no teams");
+  return (await mapLimit(refs, 6, fetchJson)).filter(team => team?.isActive !== false && !team?.isAllStar);
+}
+
+async function fetchCoreRoster(team) {
+  const collectionUrl = secureRef(team?.athletes?.$ref)
+    || `https://sports.core.api.espn.com/v2/sports/basketball/leagues/wnba/seasons/${SEASON}/teams/${team.id}/athletes?limit=100&lang=en&region=us`;
+  const collection = await fetchJson(collectionUrl);
+  const refs = (collection.items || []).map(item => secureRef(item?.$ref)).filter(Boolean);
+  return (await mapLimit(refs, 8, fetchJson)).filter(Boolean);
 }
 
 function writeJson(file, value) {
@@ -161,19 +179,44 @@ function teamEnvironment(statsResponse, detailResponse) {
 
 async function main() {
   const startedAt = new Date().toISOString();
-  const teamResponse = await fetchJson(TEAM_URL);
-  const teams = teamResponse?.sports?.[0]?.leagues?.[0]?.teams?.map(item => item.team).filter(Boolean) || [];
+  let teams;
+  let directorySource;
+  try {
+    const teamResponse = await fetchJson(TEAM_URL);
+    teams = teamResponse?.sports?.[0]?.leagues?.[0]?.teams?.map(item => item.team).filter(Boolean) || [];
+    directorySource = "ESPN site WNBA directory";
+  } catch {
+    teams = await fetchCoreTeams();
+    directorySource = "ESPN core WNBA directory";
+  }
   if (!teams.length) throw new Error("WNBA team directory returned no teams");
 
   const rosters = await mapLimit(teams, 5, async team => {
-    const slug = team.abbreviation?.toLowerCase();
-    const roster = await fetchJson(rosterUrl(slug));
-    return { team, athletes: roster.athletes || [] };
+    let athletes;
+    try {
+      const slug = team.abbreviation?.toLowerCase();
+      const roster = await fetchJson(rosterUrl(slug));
+      athletes = roster.athletes || [];
+    } catch {
+      athletes = await fetchCoreRoster(team);
+    }
+    return { team, athletes };
   });
 
   const teamEnvironmentRows = await mapLimit(teams, 5, async team => {
-    const slug = team.abbreviation?.toLowerCase();
-    const [stats, detail] = await Promise.all([fetchJson(teamStatsUrl(slug)), fetchJson(teamDetailUrl(slug))]);
+    let stats;
+    let detail;
+    try {
+      const slug = team.abbreviation?.toLowerCase();
+      [stats, detail] = await Promise.all([fetchJson(teamStatsUrl(slug)), fetchJson(teamDetailUrl(slug))]);
+    } catch {
+      const [coreStats, record] = await Promise.all([
+        fetchJson(secureRef(team?.statistics?.$ref)),
+        fetchJson(secureRef(team?.record?.$ref))
+      ]);
+      stats = { results: { stats: { categories: coreStats?.splits?.categories || [] } } };
+      detail = { team: { record } };
+    }
     return [String(team.id), teamEnvironment(stats, detail)];
   });
   const environmentByTeam = new Map(teamEnvironmentRows);
@@ -235,7 +278,12 @@ async function main() {
   }
   teamBaselines.sort((a, b) => a.team.localeCompare(b.team));
 
-  const common = { sport: "WNBA", season: SEASON, phase: "independent_baselines", source: "ESPN WNBA rosters, season statistics, and player game logs", generatedAt: new Date().toISOString() };
+  const generatedAt = new Date().toISOString();
+  const common = {
+    sport: "WNBA", season: SEASON, phase: "independent_baselines",
+    source: `${directorySource}; ESPN WNBA rosters, season statistics, and player game logs`,
+    generatedAt, dataAsOf: generatedAt, sourceStatus: "live", stale: false, staleAgeHours: 0
+  };
   const playerOutput = { ...common, playerCount: players.length, rotationHistoryCount: players.filter(player => player.recent).length, warnings: [...statFailures, ...logFailures], players };
   const teamOutput = { ...common, teamCount: teamBaselines.length, teams: teamBaselines };
   writeJson(PLAYER_OUT, playerOutput);

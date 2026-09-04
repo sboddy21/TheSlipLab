@@ -20,3 +20,12 @@ export function isFreshForRefresh({
   return (validCurrentRefresh && belongsToRefresh(timestamp, refreshStartedAt, toleranceMs))
     || generatedAt - timestamp <= maxAgeMs;
 }
+
+export function validHealthFreshnessWindow({ generatedAt, freshUntil, refreshWindowMs, artifactDeadlines = [] }) {
+  if (![generatedAt, freshUntil, refreshWindowMs].every(Number.isFinite) || refreshWindowMs <= 0) return false;
+  if (freshUntil <= generatedAt || freshUntil > generatedAt + refreshWindowMs) return false;
+
+  const validDeadlines = artifactDeadlines.filter(Number.isFinite);
+  if (!validDeadlines.length) return false;
+  return freshUntil <= Math.min(...validDeadlines);
+}

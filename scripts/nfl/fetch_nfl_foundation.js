@@ -1,4 +1,5 @@
 import fs from "fs";
+import { isActiveRoster } from "./launch_safety.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -178,8 +179,9 @@ async function main() {
     }));
     rosterResults.push(...results);
   }
+  const excludedPlayers = rosterResults.flat().filter(player => TARGET_POSITIONS.has(player.position) && !isActiveRoster(player));
   const players = rosterResults.flat()
-    .filter(player => TARGET_POSITIONS.has(player.position))
+    .filter(player => TARGET_POSITIONS.has(player.position) && isActiveRoster(player))
     .sort((a, b) => a.team.localeCompare(b.team) || a.position.localeCompare(b.position) || a.fullName.localeCompare(b.fullName));
   const duplicateIds = players.filter((player, index) => players.findIndex(other => other.playerId === player.playerId) !== index);
   if (duplicateIds.length) throw new Error(`Duplicate player IDs found: ${duplicateIds.slice(0, 5).map(p => p.playerId).join(", ")}`);
@@ -206,6 +208,8 @@ async function main() {
   writeJson("nfl_player_pool.json", {
     ...common, source: "ESPN NFL roster feeds", eligibility: ["QB", "RB", "WR", "TE"],
     playerCount: players.length, teamCount: new Set(players.map(player => player.teamId)).size,
+    excludedRosterCount: excludedPlayers.length,
+    excludedPlayers: excludedPlayers.map(({playerId, fullName, team, position, status}) => ({playerId, fullName, team, position, status, reason: "not_active_roster"})),
     availability: players.length ? "rosters_available_roles_pending" : "unavailable", warnings: rosterWarnings, players
   });
   writeJson("nfl_data_health.json", {
