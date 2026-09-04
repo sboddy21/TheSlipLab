@@ -234,6 +234,29 @@ const sections = [
 
 let active = "bestPicks";
 let data = null;
+let boardExpiresAt = 0;
+
+function withholdBoard(message){
+  data = null;
+  document.getElementById("status").textContent = message;
+  for (const id of ["pickOnePanel", "topTargets", "tabs", "grid"]) document.getElementById(id).replaceChildren();
+}
+
+function verifiedBoardDeadline(board, health){
+  const now = Date.now();
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const updated = Date.parse(board?.updatedAt);
+  const until = Date.parse(health?.monitoring?.freshUntil);
+  if (health?.status !== "healthy" || health?.monitoring?.state !== "live" || health?.slateDate !== today || board?.pitcherDate !== today || !Number.isFinite(updated) || updated > now + 1000 || !Number.isFinite(until)) return 0;
+  const required = Object.values(health.artifacts || {}).filter(row => row.required);
+  if (!required.length) return 0;
+  const deadlines = required.map(row => {
+    const timestamp = Date.parse(row.timestamp);
+    const limit = row.maxAgeSeconds || (["mlb_home_runs.json", "game_pitcher_matchups.json"].includes(row.file) ? 4200 : 900);
+    return row.freshness === "current" && Number.isFinite(timestamp) && timestamp <= now + 1000 ? timestamp + limit * 1000 : 0;
+  });
+  return Math.min(until, updated + 900000, ...deadlines);
+}
 
 function clean(v){return v === null || v === undefined || v === "" ? "N/A" : String(v)}
 function num(v){const n = Number(v); return Number.isFinite(n) ? n : 0}
@@ -562,8 +585,13 @@ function renderGrid(){
 }
 
 async function load(){
-  const res = await fetch("./data/hr_decision_center.json?v=" + Date.now());
-  data = await res.json();
+  try {
+  const responses = await Promise.all(["hr_decision_center.json", "health_status.json"].map(file => fetch("./data/" + file + "?v=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) })));
+  if (responses.some(response => !response.ok)) throw new Error("Current MLB data could not be loaded. Recommendations are withheld.");
+  const [board, health] = await Promise.all(responses.map(response => response.json()));
+  boardExpiresAt = verifiedBoardDeadline(board, health);
+  if (boardExpiresAt <= Date.now()) throw new Error("MLB inputs are delayed or unverified. Recommendations are withheld until a current refresh is available.");
+  data = board;
   data.allPlayers = (data.allPlayers || []).filter(isConfirmedLineupPlayer);
   const confirmedKeys = new Set(data.allPlayers.map(playerLineupKey));
   Object.entries(data.sections || {}).forEach(([key, value]) => {
@@ -580,9 +608,13 @@ async function load(){
   renderTopTargets();
   renderTabs();
   renderGrid();
+  } catch (error) {
+    withholdBoard(error.message || "Current MLB recommendations are unavailable.");
+  }
 }
 
 load();
+setInterval(() => { if (data && Date.now() >= boardExpiresAt) withholdBoard("MLB inputs have expired. Recommendations are withheld pending a current refresh."); }, 15000);
 </script>
 
 <script src="/js/player-tags.js"></script>

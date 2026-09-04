@@ -231,10 +231,21 @@ for (const [key, definition] of Object.entries(artifactDefinitions)) {
     timestamp: Number.isFinite(details.timestamp) ? new Date(details.timestamp).toISOString() : null,
     timestampField: details.field,
     ageSeconds,
+    maxAgeSeconds: maxAge / 1000,
     rowCount: count(artifact.data, definition.countKeys),
     slateDate: artifact.data?.[definition.dateField] || null,
     freshness
   };
+}
+
+// A newly written health file must not extend the lifetime of its source inputs.
+const sourceDeadlines = Object.values(payload.artifacts)
+  .filter(artifact => artifact.required && Number.isFinite(Date.parse(artifact.timestamp)))
+  .map(artifact => Date.parse(artifact.timestamp) + artifact.maxAgeSeconds * 1000);
+if (sourceDeadlines.length) {
+  const deadline = Math.min(generatedAtMs + MAX_REFRESH_AGE_MS, ...sourceDeadlines);
+  payload.monitoring.freshUntil = new Date(deadline).toISOString();
+  if (deadline <= generatedAtMs) payload.delays.push("Required source inputs expired before publication; refresh them before claiming live data");
 }
 
 const expectedDates = [
