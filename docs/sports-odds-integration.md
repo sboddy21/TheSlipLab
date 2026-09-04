@@ -30,6 +30,6 @@ The NCAAF odds and book-comparison UI was checked in the mobile browser with no 
 
 The local `cfb:dev` server checks for an odds refresh every minute, refreshing when the last catalog is at least 14 minutes old. It serializes refreshes and leaves stale prices hidden after failures. Stop the dev server to stop local refreshes.
 
-`.github/workflows/sports-odds-refresh.yml` schedules the production refresh every 15 minutes and references RAPIDAPI_KEY and PROPLINE_API_KEY repository secrets; the host is fixed to sportsbook-api2.p.rapidapi.com. These code/workflow changes are local and have not been deployed. Local .env does not configure GitHub or production secrets. Existing access controls remain in place.
+`.github/workflows/sports-odds-refresh.yml` schedules the production refresh every 15 minutes and references RAPIDAPI_KEY and PROPLINE_API_KEY repository secrets; the host is fixed to sportsbook-api2.p.rapidapi.com. Production deployment completed September 4, 2026 at www.thesliplab.com (release commit 6eb32d249). RAPIDAPI_KEY and PROPLINE_API_KEY are configured as encrypted GitHub repository secrets. Provider requests run in GitHub Actions; Vercel serves the resulting catalogs and does not need copies of those keys. Existing access controls remain in place, including the NCAAF member-data wrapper.
 
 Provider references: https://api.sportsbookapi.com/documentation/static/index.html and https://prop-line.com/docs
