@@ -1,0 +1,1331 @@
+{
+  "model": "opponent-adjusted-ridge-v2",
+  "selectedAt": "2026-09-04T14:36:30.756Z",
+  "selectionSeason": 2024,
+  "holdoutSeason": 2025,
+  "selectionRule": "Minimize 2024 walk-forward margin MAE + total MAE. No odds or 2025 outcomes used to select settings.",
+  "config": {
+    "ridge": 2,
+    "halfLifeDays": 240,
+    "windowDays": 730,
+    "minGames": 4,
+    "homePrior": 2.5,
+    "homeRidge": 20
+  },
+  "trials": [
+    {
+      "config": {
+        "ridge": 2,
+        "halfLifeDays": 240,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 26.297957298180492,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 13.331883436987283,
+          "rmse": 16.648337521212575,
+          "bias": 1.9567356622594971
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.966073861193209,
+          "rmse": 16.4491377444763,
+          "bias": -0.29940150232399154
+        },
+        "winner": {
+          "games": 808,
+          "correct": 544,
+          "accuracy": 0.6732673267326733
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 13.331883436987283,
+            "rmse": 16.648337521212575,
+            "bias": 1.9567356622594971
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.966073861193209,
+            "rmse": 16.4491377444763,
+            "bias": -0.29940150232399154
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": -0.9718899090973322,
+            "interval95": [
+              -1.6159481979457149,
+              -0.35584150130385306
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 13.220539012478051,
+            "rmse": 16.528118156238754,
+            "bias": 1.9166592461844605
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.961006569088568,
+            "rmse": 16.402396266289152,
+            "bias": -0.30218034833878316
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 520,
+            "accuracy": 0.6701030927835051
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 1.2321369506223845,
+            "interval95": [
+              0.6147929371620076,
+              1.8779829095024023
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": 0.15754946281456103,
+            "interval95": [
+              -0.12825659336614467,
+              0.5156219215182687
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 399,
+            "losses": 377,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5141752577319587,
+            "winRate95": [
+              0.4790262727123545,
+              0.5491845844668469
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 426,
+            "losses": 355,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5454545454545454,
+            "winRate95": [
+              0.5103949675802804,
+              0.580069146452411
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 415,
+            "wins": 203,
+            "losses": 212,
+            "pushes": 0,
+            "winRate": 0.4891566265060241,
+            "winRate95": [
+              0.4413820549930664,
+              0.5371301080776507
+            ],
+            "units": -27.466912189860494,
+            "roi": -0.0661853305779771
+          },
+          "total": {
+            "bets": 123,
+            "wins": 70,
+            "losses": 53,
+            "pushes": 0,
+            "winRate": 0.5691056910569106,
+            "winRate95": [
+              0.4808071908005235,
+              0.6532182393422689
+            ],
+            "units": 9.23412884688747,
+            "roi": 0.07507421826737781
+          },
+          "combined": {
+            "bets": 538,
+            "wins": 273,
+            "losses": 265,
+            "pushes": 0,
+            "winRate": 0.5074349442379182,
+            "winRate95": [
+              0.4652860962011938,
+              0.5494783663280768
+            ],
+            "units": -18.232783342972915,
+            "roi": -0.033889931864261924
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 538,
+            "wins": 273,
+            "losses": 265,
+            "pushes": 0,
+            "winRate": 0.5074349442379182,
+            "winRate95": [
+              0.4652860962011938,
+              0.5494783663280768
+            ],
+            "units": -18.232783342972915,
+            "roi": -0.033889931864261924
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "ridge": 2,
+        "halfLifeDays": 120,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 26.420524655791233,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 13.499611060331862,
+          "rmse": 16.908967925818445,
+          "bias": 2.659824838832647
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.92091359545937,
+          "rmse": 16.42991714703811,
+          "bias": -0.2334407829247207
+        },
+        "winner": {
+          "games": 808,
+          "correct": 541,
+          "accuracy": 0.6695544554455446
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 13.499611060331862,
+            "rmse": 16.908967925818445,
+            "bias": 2.659824838832647
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.92091359545937,
+            "rmse": 16.42991714703811,
+            "bias": -0.2334407829247207
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": -0.804162285752769,
+            "interval95": [
+              -1.356049378681286,
+              -0.27293717317627886
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 13.37862851716933,
+            "rmse": 16.76850275735437,
+            "bias": 2.6338142563385207
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.923452330597865,
+            "rmse": 16.383967875875708,
+            "bias": -0.22603163147697386
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 517,
+            "accuracy": 0.6662371134020618
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 1.3902264553136356,
+            "interval95": [
+              0.7316116599039644,
+              2.1138487750122397
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": 0.11999522432386216,
+            "interval95": [
+              -0.16091434105962327,
+              0.46100115453379814
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 393,
+            "losses": 383,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5064432989690721,
+            "winRate95": [
+              0.47132126576299815,
+              0.541501851136639
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 416,
+            "losses": 365,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5326504481434059,
+            "winRate95": [
+              0.4975837005439435,
+              0.5673975644654546
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 479,
+            "wins": 245,
+            "losses": 234,
+            "pushes": 0,
+            "winRate": 0.511482254697286,
+            "winRate95": [
+              0.46680370947822414,
+              0.5559780889417961
+            ],
+            "units": -12.030218566142773,
+            "roi": -0.025115278843721865
+          },
+          "total": {
+            "bets": 104,
+            "wins": 59,
+            "losses": 45,
+            "pushes": 0,
+            "winRate": 0.5673076923076923,
+            "winRate95": [
+              0.47136846913511526,
+              0.6584515632086184
+            ],
+            "units": 7.676131871349261,
+            "roi": 0.0738089603014352
+          },
+          "combined": {
+            "bets": 583,
+            "wins": 304,
+            "losses": 279,
+            "pushes": 0,
+            "winRate": 0.5214408233276158,
+            "winRate95": [
+              0.4808830472249619,
+              0.5617178863148553
+            ],
+            "units": -4.354086694793545,
+            "roi": -0.0074684162860952745
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 583,
+            "wins": 304,
+            "losses": 279,
+            "pushes": 0,
+            "winRate": 0.5214408233276158,
+            "winRate95": [
+              0.4808830472249619,
+              0.5617178863148553
+            ],
+            "units": -4.354086694793545,
+            "roi": -0.0074684162860952745
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "ridge": 5,
+        "halfLifeDays": 240,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 26.61702899872708,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 13.803001945888685,
+          "rmse": 17.319590057684085,
+          "bias": 2.816169747151144
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.814027052838396,
+          "rmse": 16.24531883871853,
+          "bias": -0.1943711405165453
+        },
+        "winner": {
+          "games": 808,
+          "correct": 535,
+          "accuracy": 0.6621287128712872
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 13.803001945888685,
+            "rmse": 17.319590057684085,
+            "bias": 2.816169747151144
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.814027052838396,
+            "rmse": 16.24531883871853,
+            "bias": -0.1943711405165453
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": -0.5007714001959247,
+            "interval95": [
+              -1.0361103031078862,
+              0.032133951816422326
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 13.673030281501223,
+            "rmse": 17.168238878617075,
+            "bias": 2.7990619903341525
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.801973710064907,
+            "rmse": 16.18209386145014,
+            "bias": -0.18882796374832778
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 514,
+            "accuracy": 0.6623711340206185
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 1.6846282196455373,
+            "interval95": [
+              0.9549706649877218,
+              2.4723393407157745
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": -0.0014833962090827347,
+            "interval95": [
+              -0.26819627475385566,
+              0.3144276215436598
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 396,
+            "losses": 380,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5103092783505154,
+            "winRate95": [
+              0.47517272473543726,
+              0.545344262303982
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 418,
+            "losses": 363,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5352112676056338,
+            "winRate95": [
+              0.5001441119809406,
+              0.5699337228331162
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 504,
+            "wins": 255,
+            "losses": 249,
+            "pushes": 0,
+            "winRate": 0.5059523809523809,
+            "winRate95": [
+              0.46242316277340306,
+              0.549391544804708
+            ],
+            "units": -16.90170982850367,
+            "roi": -0.03353513854861839
+          },
+          "total": {
+            "bets": 113,
+            "wins": 70,
+            "losses": 43,
+            "pushes": 0,
+            "winRate": 0.6194690265486725,
+            "winRate95": [
+              0.5274170845635211,
+              0.7036649957914209
+            ],
+            "units": 19.580061275278673,
+            "roi": 0.17327487854228915
+          },
+          "combined": {
+            "bets": 617,
+            "wins": 325,
+            "losses": 292,
+            "pushes": 0,
+            "winRate": 0.526742301458671,
+            "winRate95": [
+              0.48730171249990334,
+              0.5658519421521043
+            ],
+            "units": 2.678351446775035,
+            "roi": 0.004340926169813671
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 617,
+            "wins": 325,
+            "losses": 292,
+            "pushes": 0,
+            "winRate": 0.526742301458671,
+            "winRate95": [
+              0.48730171249990334,
+              0.5658519421521043
+            ],
+            "units": 2.678351446775035,
+            "roi": 0.004340926169813671
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "ridge": 5,
+        "halfLifeDays": 120,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 26.890648181544385,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 14.104788108595308,
+          "rmse": 17.76644657239024,
+          "bias": 3.492019965270863
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.78586007294908,
+          "rmse": 16.237655558377753,
+          "bias": -0.1324060623385107
+        },
+        "winner": {
+          "games": 808,
+          "correct": 531,
+          "accuracy": 0.6571782178217822
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 14.104788108595308,
+            "rmse": 17.76644657239024,
+            "bias": 3.492019965270863
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.78586007294908,
+            "rmse": 16.237655558377753,
+            "bias": -0.1324060623385107
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": -0.19898523748928645,
+            "interval95": [
+              -0.6993611215173271,
+              0.31241735889624267
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 13.954595105374402,
+            "rmse": 17.5841048835679,
+            "bias": 3.4764083553512304
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.773778919516763,
+            "rmse": 16.166918988458075,
+            "bias": -0.11486759649281722
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 510,
+            "accuracy": 0.6572164948453608
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 1.9661930435187387,
+            "interval95": [
+              1.1524586320057488,
+              2.87677953226766
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": -0.029678186757258265,
+            "interval95": [
+              -0.2821613975451825,
+              0.2745724040375604
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 405,
+            "losses": 371,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5219072164948454,
+            "winRate95": [
+              0.48673964078134224,
+              0.5568589566774238
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 420,
+            "losses": 361,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5377720870678617,
+            "winRate95": [
+              0.5027054433331143,
+              0.5724689612856012
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 544,
+            "wins": 280,
+            "losses": 264,
+            "pushes": 0,
+            "winRate": 0.5147058823529411,
+            "winRate95": [
+              0.472751170753528,
+              0.5564543514266057
+            ],
+            "units": -9.147461625709681,
+            "roi": -0.016815186811966327
+          },
+          "total": {
+            "bets": 101,
+            "wins": 64,
+            "losses": 37,
+            "pushes": 0,
+            "winRate": 0.6336633663366337,
+            "winRate95": [
+              0.5364085906465472,
+              0.721122770950376
+            ],
+            "units": 20.66988999728131,
+            "roi": 0.20465237621070603
+          },
+          "combined": {
+            "bets": 645,
+            "wins": 344,
+            "losses": 301,
+            "pushes": 0,
+            "winRate": 0.5333333333333333,
+            "winRate95": [
+              0.4947479998300855,
+              0.5715239531396379
+            ],
+            "units": 11.522428371571586,
+            "roi": 0.01786423003344432
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 645,
+            "wins": 344,
+            "losses": 301,
+            "pushes": 0,
+            "winRate": 0.5333333333333333,
+            "winRate95": [
+              0.4947479998300855,
+              0.5715239531396379
+            ],
+            "units": 11.522428371571586,
+            "roi": 0.01786423003344432
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "ridge": 10,
+        "halfLifeDays": 240,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 27.05216171086683,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 14.26605422968876,
+          "rmse": 18.012248383751732,
+          "bias": 3.2305534605995145
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.786107481178071,
+          "rmse": 16.18967957152798,
+          "bias": -0.11495303019143763
+        },
+        "winner": {
+          "games": 808,
+          "correct": 512,
+          "accuracy": 0.6336633663366337
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 14.26605422968876,
+            "rmse": 18.012248383751732,
+            "bias": 3.2305534605995145
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.786107481178071,
+            "rmse": 16.18967957152798,
+            "bias": -0.11495303019143763
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": -0.03771911639584893,
+            "interval95": [
+              -0.5148343057907658,
+              0.4399342760265087
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 14.112288991931694,
+            "rmse": 17.831556058258794,
+            "bias": 3.228222035723156
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.764203600615415,
+            "rmse": 16.108629604245746,
+            "bias": -0.1001017318308668
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 492,
+            "accuracy": 0.634020618556701
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 2.123886930076022,
+            "interval95": [
+              1.3177543462703756,
+              3.024211169922878
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": -0.03925350565860436,
+            "interval95": [
+              -0.3018738374171158,
+              0.2569928602641821
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 403,
+            "losses": 373,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5193298969072165,
+            "winRate95": [
+              0.48416758834053314,
+              0.5543017623583781
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 424,
+            "losses": 357,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5428937259923176,
+            "winRate95": [
+              0.5078308699880429,
+              0.5775366742399899
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 549,
+            "wins": 282,
+            "losses": 267,
+            "pushes": 0,
+            "winRate": 0.5136612021857924,
+            "winRate95": [
+              0.47190191610110677,
+              0.5552306296407478
+            ],
+            "units": -10.3802721035876,
+            "roi": -0.018907599460086705
+          },
+          "total": {
+            "bets": 126,
+            "wins": 80,
+            "losses": 46,
+            "pushes": 0,
+            "winRate": 0.6349206349206349,
+            "winRate95": [
+              0.5480188475637043,
+              0.7138386772973572
+            ],
+            "units": 25.36316874751658,
+            "roi": 0.20129499005965537
+          },
+          "combined": {
+            "bets": 675,
+            "wins": 362,
+            "losses": 313,
+            "pushes": 0,
+            "winRate": 0.5362962962962963,
+            "winRate95": [
+              0.49857623163609055,
+              0.5736055556910266
+            ],
+            "units": 14.982896643928939,
+            "roi": 0.02219688391693176
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 675,
+            "wins": 362,
+            "losses": 313,
+            "pushes": 0,
+            "winRate": 0.5362962962962963,
+            "winRate95": [
+              0.49857623163609055,
+              0.5736055556910266
+            ],
+            "units": 14.982896643928939,
+            "roi": 0.02219688391693176
+          }
+        }
+      }
+    },
+    {
+      "config": {
+        "ridge": 10,
+        "halfLifeDays": 120,
+        "windowDays": 730,
+        "minGames": 4,
+        "homePrior": 2.5,
+        "homeRidge": 20
+      },
+      "objective": 27.456276716070114,
+      "summary": {
+        "eligibleGames": 962,
+        "predictedGames": 808,
+        "skippedGames": 154,
+        "margin": {
+          "games": 808,
+          "mae": 14.64379742033292,
+          "rmse": 18.52523641432307,
+          "bias": 3.833518631171798
+        },
+        "total": {
+          "games": 808,
+          "mae": 12.812479295737196,
+          "rmse": 16.23447173242539,
+          "bias": -0.06235060258186768
+        },
+        "winner": {
+          "games": 808,
+          "correct": 497,
+          "accuracy": 0.6150990099009901
+        },
+        "baselineComparison": {
+          "games": 808,
+          "modelMargin": {
+            "games": 808,
+            "mae": 14.64379742033292,
+            "rmse": 18.52523641432307,
+            "bias": 3.833518631171798
+          },
+          "baselineMargin": {
+            "games": 808,
+            "mae": 14.303773346084618,
+            "rmse": 18.312695589572005,
+            "bias": -2.369351332454677
+          },
+          "modelTotal": {
+            "games": 808,
+            "mae": 12.812479295737196,
+            "rmse": 16.23447173242539,
+            "bias": -0.06235060258186768
+          },
+          "baselineTotal": {
+            "games": 808,
+            "mae": 12.864161750996534,
+            "rmse": 16.249344721374854,
+            "bias": 0.4426725038575291
+          },
+          "marginDifference": {
+            "games": 808,
+            "weeks": 22,
+            "meanDifference": 0.3400240742483023,
+            "interval95": [
+              -0.14198905446979784,
+              0.8318020453414793
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          }
+        },
+        "sportsbook": {
+          "spreadGames": 776,
+          "totalGames": 781,
+          "modelMargin": {
+            "games": 776,
+            "mae": 14.473920912214327,
+            "rmse": 18.317757295644576,
+            "bias": 3.824868574041771
+          },
+          "bookMargin": {
+            "games": 776,
+            "mae": 11.98840206185567,
+            "rmse": 15.28155009139702,
+            "bias": -0.9175257731958762
+          },
+          "modelTotal": {
+            "games": 781,
+            "mae": 12.78105773533406,
+            "rmse": 16.142837238040087,
+            "bias": -0.035261914400368716
+          },
+          "bookTotal": {
+            "games": 781,
+            "mae": 12.803457106274008,
+            "rmse": 16.247338007118017,
+            "bias": -1.734314980793854
+          },
+          "modelWinner": {
+            "games": 776,
+            "correct": 477,
+            "accuracy": 0.6146907216494846
+          },
+          "bookWinner": {
+            "games": 776,
+            "correct": 550,
+            "accuracy": 0.7087628865979382
+          },
+          "marginDifference": {
+            "games": 776,
+            "weeks": 22,
+            "meanDifference": 2.4855188503586447,
+            "interval95": [
+              1.6041177738751904,
+              3.4748757125145775
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "totalDifference": {
+            "games": 781,
+            "weeks": 22,
+            "meanDifference": -0.02239937093995378,
+            "interval95": [
+              -0.2859207504379083,
+              0.2900920184788972
+            ],
+            "definition": "Adjusted model MAE minus comparator MAE; negative favors adjusted model. 2,000 whole-week bootstrap samples."
+          },
+          "againstSpread": {
+            "games": 776,
+            "wins": 403,
+            "losses": 373,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5193298969072165,
+            "winRate95": [
+              0.48416758834053314,
+              0.5543017623583781
+            ]
+          },
+          "againstTotal": {
+            "games": 781,
+            "wins": 427,
+            "losses": 354,
+            "pushes": 0,
+            "passes": 0,
+            "winRate": 0.5467349551856594,
+            "winRate95": [
+              0.5116773629804703,
+              0.5813350359545504
+            ]
+          }
+        },
+        "strategy": {
+          "spread": {
+            "bets": 566,
+            "wins": 299,
+            "losses": 267,
+            "pushes": 0,
+            "winRate": 0.5282685512367491,
+            "winRate95": [
+              0.4870898123999567,
+              0.5690661439219404
+            ],
+            "units": 5.090623812090879,
+            "roi": 0.008994035003694133
+          },
+          "total": {
+            "bets": 145,
+            "wins": 93,
+            "losses": 52,
+            "pushes": 0,
+            "winRate": 0.6413793103448275,
+            "winRate95": [
+              0.5605945908864594,
+              0.7148660330251351
+            ],
+            "units": 31.15636656419266,
+            "roi": 0.21487149354615626
+          },
+          "combined": {
+            "bets": 711,
+            "wins": 392,
+            "losses": 319,
+            "pushes": 0,
+            "winRate": 0.5513361462728551,
+            "winRate95": [
+              0.5145989444014848,
+              0.5875215813205773
+            ],
+            "units": 36.24699037628349,
+            "roi": 0.05098029588788114
+          },
+          "baseline": {
+            "bets": 668,
+            "wins": 360,
+            "losses": 308,
+            "pushes": 0,
+            "winRate": 0.5389221556886228,
+            "winRate95": [
+              0.501004893873271,
+              0.5763943026039939
+            ],
+            "units": 18.293409141250233,
+            "roi": 0.027385343025823704
+          },
+          "modelOnBaselineGames": {
+            "bets": 711,
+            "wins": 392,
+            "losses": 319,
+            "pushes": 0,
+            "winRate": 0.5513361462728551,
+            "winRate95": [
+              0.5145989444014848,
+              0.5875215813205773
+            ],
+            "units": 36.24699037628349,
+            "roi": 0.05098029588788114
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import fs from "fs";
+import { isActiveRoster, hasCurrentOfficialReport } from "./launch_safety.js";
 import path from "path";
 
 const DATA = path.resolve("website/data");
@@ -24,24 +25,25 @@ function nextWeek(schedule) {
 }
 
 function practiceContract(pool, injuries, roles, week) {
-  const officialReportsActive = injuries.injuries.some(row => row.sourceCoverage === "official_weekly_practice_report");
+  const officialReportsActive = injuries.injuries.some(row => pool.players.some(player => hasCurrentOfficialReport(row, player, week, now)));
   const injuryByPlayer = new Map(injuries.injuries.map(row => [row.playerId, row]));
   const roleByPlayer = new Map(roles.roles.map(row => [row.playerId, row]));
   const players = pool.players.map(player => {
     const injury = injuryByPlayer.get(player.playerId) || null;
     const status = normalize(injury?.status);
-    const unavailable = /injured reserve|\bout\b|suspend|physically unable/.test(status);
+    const unavailable = !isActiveRoster(player) || /injured reserve|\bout\b|suspend|physically unable/.test(status);
+    const currentOfficialReport = hasCurrentOfficialReport(injury, player, week, now);
     const limited = /questionable|doubtful|limited/.test(status);
     const role = roleByPlayer.get(player.playerId);
     const roleEligible = role?.modelEligibility === true && role?.depth?.rank === 1 && role?.preseasonParticipationStatus !== "team_without_final_game";
     return {
       playerId: player.playerId, playerName: player.fullName, team: player.team, position: player.position,
       reportStatus: injury?.status || "no_official_report",
-      practiceParticipation: officialReportsActive ? (injury?.practiceParticipation || "not_listed") : "unavailable_pre_weekly_reports",
-      gameStatus: unavailable ? "out" : limited ? "uncertain" : officialReportsActive ? "not_listed" : "unconfirmed",
+      practiceParticipation: currentOfficialReport ? (injury?.practiceParticipation || "unknown") : "unverified",
+      gameStatus: unavailable ? "out" : limited ? "uncertain" : "unconfirmed",
       activeRosterGate: !unavailable,
       roleEligible,
-      regularSeasonRoleConfirmed: officialReportsActive && !unavailable && roleEligible,
+      regularSeasonRoleConfirmed: currentOfficialReport && !unavailable && !limited && roleEligible,
       source: injury?.sourceCoverage || "no_official_weekly_report"
     };
   });

@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
-import { isFreshForRefresh } from "./refresh_freshness.mjs";
+import { isFreshForRefresh, validHealthFreshnessWindow } from "./refresh_freshness.mjs";
 import { dataQualityPenaltyIssue } from "./lib/data_quality_confidence.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -172,7 +172,7 @@ function validateMarketOdds(expectedDate) {
   );
 
   if (payload?.schemaVersion !== "1.0") fail("mlb_market_odds.json has an invalid schemaVersion");
-  if (payload?.source !== "The Odds API" || payload?.market !== "batter_home_runs") {
+  if (!["The Odds API", "PropLine"].includes(payload?.source) || payload?.market !== "batter_home_runs") {
     fail("mlb_market_odds.json has invalid provider or market metadata");
   }
   if (payload?.date !== expectedDate) {
@@ -215,7 +215,7 @@ function validateMarketOdds(expectedDate) {
     if (!currentPlayers.has(identity)) {
       fail(`mlb_market_odds.json quote ${quote.quoteId} is not joined to the current canonical slate`);
     }
-    if (quote.date !== expectedDate || quote.market !== "batter_home_runs") {
+    if (quote.date !== expectedDate || quote.market !== "batter_home_runs" || Number(quote.point) !== 0.5) {
       fail(`mlb_market_odds.json quote ${quote.quoteId} has invalid slate or market identity`);
     }
     const updatedAt = Date.parse(quote.providerLastUpdate);
@@ -421,7 +421,15 @@ function validateHealthStatus(expectedDate, anchor) {
   if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
     fail("health_status.json monitoring timestamps do not identify the completed refresh");
   }
-  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+  const artifactDeadlines = Object.values(health.artifacts || {})
+    .filter(artifact => artifact?.required === true)
+    .map(artifact => Date.parse(artifact.timestamp) + Number(artifact.maxAgeSeconds) * 1000);
+  if (monitoring.refreshWindowSeconds !== 900 || !validHealthFreshnessWindow({
+    generatedAt,
+    freshUntil,
+    refreshWindowMs: MAX_REFRESH_AGE_MS,
+    artifactDeadlines
+  })) {
     fail("health_status.json monitoring freshness window is invalid");
   }
 

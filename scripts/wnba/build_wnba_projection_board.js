@@ -122,6 +122,9 @@ function main() {
   projections.sort((a, b) => b.confidence - a.confidence || b.roleScore - a.roleScore || a.player.localeCompare(b.player));
   const snapshot = {
     sport: "WNBA", date: gamesData.date, mode: "shadow", generatedAt: new Date().toISOString(), frozenPregame: true,
+    dataAsOf: [gamesData.fetchedAt || gamesData.generatedAt, playersData.dataAsOf || playersData.generatedAt, teamsData.dataAsOf || teamsData.generatedAt].every(t => Number.isFinite(Date.parse(t)))
+      ? new Date(Math.min(...[gamesData.fetchedAt || gamesData.generatedAt, playersData.dataAsOf || playersData.generatedAt, teamsData.dataAsOf || teamsData.generatedAt].map(t => Date.parse(t)))).toISOString() : null,
+    stale: Boolean(playersData.stale || teamsData.stale),
     source: "WNBA independent baselines plus today’s schedule and opponent environment", count: projections.length,
     excludedGames, projections,
     disclaimer: "Experimental shadow projections for calibration. Not verified recommendations, sportsbook odds, or guarantees."

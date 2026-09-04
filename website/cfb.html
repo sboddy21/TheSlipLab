@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <script src="./assets/member-data.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>College Football | The Slip Lab</title>
+  <meta name="description" content="The college football week at a glance: game odds, matchup scoring baselines, model leans, and an open results ledger.">
+  <link rel="icon" href="./favicon.ico"><link rel="stylesheet" href="./assets/site-header.css"><link rel="stylesheet" href="./assets/cfb.css">
+  <script defer src="./assets/site-header.js"></script><script type="module" src="./assets/cfb.js"></script>
+</head>
+<body class="tsl-editorial tsl-cfb-page">
+  <main class="cfb-wrap">
+    <div class="edition"><span>THE SLIP LAB / COLLEGE FOOTBALL</span><span id="edition-date">Weekly intelligence</span></div>
+    <section class="cfb-hero" aria-labelledby="pageTitle">
+      <div><p class="eyebrow">SATURDAYS HAVE A HOME.</p><h1 id="pageTitle">Read the field.<br><em>Find your angle.</em></h1><p class="intro">The whole college football week, in one place. Matchups, game lines, and the numbers behind the read.</p><a class="hero-link" href="#slate">Explore this week’s slate <span aria-hidden="true">↗</span></a></div>
+      <aside class="field"><div class="field-top">COLLEGE FOOTBALL <span>01 / GAME LAB</span></div><div class="field-art" aria-hidden="true"><span>X</span><span>↗</span><span>O</span><span>↗</span><span>X</span></div><div class="field-bottom"><strong>THE GAME IS THE PLAY.</strong><p>Spreads. Moneylines. Totals.</p></div></aside>
+    </section>
+    <div class="freshness-row"><div id="health" class="health" role="status">Connecting to the latest schedule and odds…</div><button type="button" id="refresh-now">Refresh now ↻</button></div>
+    <section class="metrics" aria-label="Weekly overview" id="metrics"></section>
+    <nav class="section-nav" aria-label="College football sections"><a href="#slate">Weekly slate</a><a href="#leans">Model leans</a><a href="#results">Results</a></nav>
+    <section id="slate"><div class="section-heading"><div><p class="eyebrow">01 / THE WEEK AHEAD</p><h2>Your weekly slate.</h2></div><p id="game-count" aria-live="polite"></p></div>
+      <form class="filters" id="filters" role="search"><label>Find a team<input type="search" id="search" placeholder="Search team or matchup"></label><label>Conference<select id="conference"><option value="all">All conferences</option></select></label><label>Kickoff day<select id="day"><option value="all">All days</option></select></label><label>Show<select id="status"><option value="all">All games</option><option value="pre">Upcoming</option><option value="in">In progress</option><option value="post">Final</option><option value="ranked">Ranked matchups</option></select></label><button type="reset">Reset</button></form>
+      <div class="market-tabs" role="group" aria-label="Select market"><button type="button" data-market="spread" aria-pressed="true">Spreads</button><button type="button" data-market="moneyline" aria-pressed="false">Moneylines</button><button type="button" data-market="total" aria-pressed="false">Totals</button></div>
+      <div id="games" class="game-grid"><p class="empty">Loading matchups…</p></div>
+    </section>
+    <section id="leans"><div class="section-heading"><div><p class="eyebrow">02 / A CLOSER LOOK</p><h2>Model leans.</h2></div><span class="badge">EXPERIMENTAL</span></div><p class="section-copy">Model estimates for upcoming games. Outcomes are not guaranteed.</p><div id="lean-list" class="lean-grid"><p class="empty">Checking model coverage…</p></div></section>
+    <section id="results"><div class="section-heading"><div><p class="eyebrow">03 / EVERY RECORDED CALL LEAVES A RECEIPT</p><h2>Tracked results.</h2></div><strong id="record"></strong></div><p class="section-copy">Current model leans, recorded before kickoff. Results update after games finish; units reflect one unit risked per lean.</p><div class="table-scroll"><table><caption class="sr-only">Recorded college football model leans</caption><thead><tr><th>Game</th><th>Recorded lean</th><th>Price</th><th>Saved (ET)</th><th>Result</th><th>Units</th></tr></thead><tbody id="ledger"></tbody></table></div></section>
+  </main>
+</body></html>

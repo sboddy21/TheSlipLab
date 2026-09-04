@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { isActiveRoster, depthMatchesPlayer } from "./launch_safety.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
@@ -47,6 +48,9 @@ if (schedule.gameCount < 272 || schedule.games?.length !== schedule.gameCount) f
 if (schedule.games.some(game => game.seasonType !== 2 || !game.gameId || !game.kickoffUTC)) fail("schedule contains an invalid game");
 if (new Set(schedule.games.map(game => game.gameId)).size !== schedule.gameCount) fail("game IDs must be unique");
 if (!pool.playerCount || pool.players?.length !== pool.playerCount) fail("player pool is empty or inconsistent");
+if (pool.players.some(player => !isActiveRoster(player))) fail("inactive roster record entered the player pool");
+const canonicalPlayers = new Map(pool.players.map(player => [String(player.playerId), player]));
+if (depth.entries.some(entry => !depthMatchesPlayer(entry, canonicalPlayers.get(String(entry.playerId))))) fail("depth ownership does not match the canonical roster");
 if (pool.players.some(player => !["QB", "RB", "WR", "TE"].includes(player.position))) fail("player pool contains an ineligible position");
 if (new Set(pool.players.map(player => player.playerId)).size !== pool.playerCount) fail("player IDs must be unique");
 if (depth.availability !== "available" || depth.teamCount !== 32 || !depth.entryCount) fail("depth-chart contract is incomplete");

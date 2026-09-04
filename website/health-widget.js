@@ -96,7 +96,7 @@
   document.body.appendChild(modal);
 
   const stateCopy = {
-    live: "Current production slate is verified.",
+    live: "Required MLB inputs are within their freshness windows. This is not a prediction-accuracy guarantee.",
     closed: "No MLB games are scheduled for the current slate.",
     updating: "The production refresh is currently updating.",
     delayed: "The last verified refresh is outside the production window.",
@@ -128,18 +128,35 @@
     if (declared === "delayed" || data?.status === "delayed") return "delayed";
 
     const freshUntil = Date.parse(data?.monitoring?.freshUntil);
-    if (["live", "closed", "updating"].includes(declared) && Number.isFinite(freshUntil) && Date.now() > freshUntil) {
+    const checkedAt = Date.parse(data?.monitoring?.checkedAt);
+    if (!Number.isFinite(freshUntil) || !Number.isFinite(checkedAt) || checkedAt > Date.now() + 1000 || freshUntil <= checkedAt) return "check";
+    if (Date.now() >= freshUntil) {
       return "delayed";
     }
     if (declared === "updating") return "updating";
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    if (data?.slateDate !== today || data?.errors?.length) return "check";
+    const required = Object.values(data?.artifacts || {}).filter(row => row.required);
+    if (!required.length) return "check";
+    if (required.some(row => ["missing", "invalid", "future", "stale_chain"].includes(artifactFreshness(row)))) return "check";
+    if (required.some(row => artifactFreshness(row) !== "current")) return "delayed";
     if (declared === "closed" || data?.label === "CLOSED") return "closed";
     if (declared === "live" && data?.status === "healthy") return "live";
     return "check";
   }
 
+  function artifactFreshness(artifact) {
+    if (artifact.freshness !== "current") return artifact.freshness || "invalid";
+    const timestamp = Date.parse(artifact.timestamp);
+    if (!Number.isFinite(timestamp)) return "invalid";
+    if (timestamp > Date.now() + 1000) return "future";
+    const maxAgeSeconds = artifact.maxAgeSeconds || (["mlb_home_runs.json", "game_pitcher_matchups.json"].includes(artifact.file) ? 4200 : 900);
+    return Date.now() - timestamp >= maxAgeSeconds * 1000 ? "delayed" : "current";
+  }
+
   function artifactRows(data) {
     return Object.values(data?.artifacts || {}).map(artifact => {
-      const freshness = artifact.freshness === "current" ? "current" : artifact.freshness || "check";
+      const freshness = artifactFreshness(artifact);
       return `
         <div class="sl-health-artifact">
           <strong>${escapeHtml(artifact.file || "Artifact")}</strong>
@@ -154,7 +171,13 @@
       const c = data.counts || {};
       const s = data.sources || {};
       const audit = s.launchAudit || {};
-      const state = Number(audit.criticalIdentityIssues) > 0 ? "check" : (Number(audit.blockerCount) > 0 ? "updating" : "live");
+      const checkedAt = Date.parse(audit.checkedAt);
+      const validAudit = Number.isInteger(audit.criticalIdentityIssues) && audit.criticalIdentityIssues >= 0
+        && Number.isInteger(audit.blockerCount) && audit.blockerCount >= 0 && Number.isFinite(checkedAt);
+      const state = data.status === "error" || !validAudit || checkedAt > Date.now() + 1000 || audit.criticalIdentityIssues > 0
+        ? "check"
+        : Date.now() - checkedAt >= 3600000 ? "delayed"
+        : audit.blockerCount > 0 || audit.publicNavigationEnabled !== true ? "updating" : "live";
       const stateLabel = state === "updating" ? "BUILDING" : state.toUpperCase();
       const updateTime = audit.checkedAt || data.generatedAt;
       root.dataset.state = state;
@@ -168,6 +191,9 @@
       `;
       const openModal = () => {
         const issues = [
+          ...(data.errors || []),
+          state === "delayed" ? "NFL audit is over one hour old; current readiness is unverified." : "",
+          !validAudit ? "A complete NFL health audit could not be verified." : "",
           s.practiceReports?.status === "waiting_for_official_weekly_reports" ? "Official Week 1 practice reports are pending." : "",
           Number(s.weather?.readyGames) < Number(s.weather?.games) ? `${Number(s.weather?.games) - Number(s.weather?.readyGames)} game still needs kickoff-hour weather.` : "",
           s.routes?.status === "unavailable" ? "Verified route participation is not available yet." : ""
@@ -242,13 +268,24 @@
     };
   }
 
+  let latestHealth = null;
+  function publishHealth(data) {
+    latestHealth = data;
+    render(data);
+  }
+
   async function loadHealth() {
     try {
-      const res = await fetch(`./data/${nflPage ? "nfl_data_health" : "health_status"}.json?ts=${Date.now()}`, { cache: "no-store" });
+      const headers = {};
+      if (nflPage && window.TSLAccount?.accessToken) {
+        const token = await window.TSLAccount.accessToken();
+        if (token) headers.Authorization = `Bearer ${token}`;
+      }
+      const res = await fetch(`./data/${nflPage ? "nfl_data_health" : "health_status"}.json?ts=${Date.now()}`, { cache: "no-store", headers, signal: AbortSignal.timeout(15000) });
       if (!res.ok) throw new Error(`Health request returned ${res.status}`);
-      render(await res.json());
+      publishHealth(await res.json());
     } catch (error) {
-      render({
+      publishHealth({
         status: "error",
         label: "CHECK",
         monitoring: { state: "check" },
@@ -263,4 +300,6 @@
 
   loadHealth();
   setInterval(loadHealth, 60000);
+  // Expire green status even if the next network request has not completed.
+  setInterval(() => { if (latestHealth) render(latestHealth); }, 15000);
 })();

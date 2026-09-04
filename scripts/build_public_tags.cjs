@@ -79,6 +79,7 @@ function americanOddsValue(value) {
 function oddsIndex(payload) {
   const index = new Map();
   for (const price of rows(payload)) {
+    if (price.market !== "batter_home_runs" || Number(price.point) !== 0.5) continue;
     const odds = americanOddsValue(price.overPriceAmerican || price.odds || price.hrOdds || price.bestOdds);
     if (odds === null) continue;
     const key = String(price.playerId || "") || norm(price.player || price.playerName || price.name);

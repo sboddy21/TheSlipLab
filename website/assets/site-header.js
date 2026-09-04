@@ -94,14 +94,16 @@
     ["MLB","./mlb.html",[]],
     ["WNBA","./wnba.html",[]],
     ["NFL","./nfl.html",[]],
+    ["College Football","./cfb.html",["/cfb.html"]],
     ["NBA","./nba.html",[]],
     ["My Account","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "NBA", "My Account"];
+  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "My Account"];
   const generalPaths = new Set(["/", "/index.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
+    "/cfb.html",
     "/ai-hall-of-fame.html",
     "/ai-says.html",
     "/bullpen-collapse.html",
@@ -140,6 +142,7 @@
   }
 
   function sectionForPath(path){
+    if (path === "/cfb.html") return "general";
     if (path === "/nfl.html") return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
     if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
@@ -326,6 +329,11 @@
   }
 
   function init(){
+    if (!document.querySelector('script[data-tsl-odds]')) {
+      const oddsScript = document.createElement('script');
+      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js';
+      oddsScript.dataset.tslOdds = 'true'; document.head.appendChild(oddsScript);
+    }
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
     const header = buildHeader();

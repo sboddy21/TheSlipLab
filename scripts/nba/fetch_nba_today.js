@@ -83,7 +83,8 @@ async function main() {
 
   const raw = await fetchJson(url);
 
-  const games = Array.isArray(raw?.scoreboard?.games)
+  const sourceCurrent = raw?.scoreboard?.gameDate === date;
+  const games = sourceCurrent && Array.isArray(raw?.scoreboard?.games)
     ? raw.scoreboard.games.map(normalizeGame)
     : [];
 
@@ -94,7 +95,9 @@ async function main() {
     nbaDate,
     fetchedAt: new Date().toISOString(),
     count: games.length,
-    availability: games.length ? "games_scheduled" : "no_games_scheduled",
+    availability: !sourceCurrent ? "schedule_unavailable" : games.length ? "games_scheduled" : "no_games_scheduled",
+    sourceDate: raw?.scoreboard?.gameDate || null,
+    stale: !sourceCurrent,
     error: "",
     games
   };

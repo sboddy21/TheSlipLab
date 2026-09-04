@@ -1,0 +1,46 @@
+{
+  "model": "opponent-adjusted-daily-v3",
+  "frozenAt": "2026-09-04T14:47:57.524Z",
+  "selectionSeason": 2024,
+  "config": {
+    "ridge": 2,
+    "halfLifeDays": 240,
+    "windowDays": 730,
+    "minGames": 4,
+    "homePrior": 2.5,
+    "homeRidge": 20,
+    "cadence": "daily"
+  },
+  "calibration": {
+    "spread": {
+      "intercept": 0.05951547932303323,
+      "slope": -0.1189459980216864,
+      "samples": 774,
+      "trainingSeason": 2024
+    },
+    "total": {
+      "intercept": 0.08887175635199357,
+      "slope": 0.2556892467118684,
+      "samples": 779,
+      "trainingSeason": 2024
+    }
+  },
+  "protocol": {
+    "version": "daily-calibrated-v3",
+    "selectionData": "2024 only; existing 2025 evaluation is reused diagnostic evidence, not a new untouched test",
+    "freshTest": "2026 completed games, evaluated only after the 2024 calibration is frozen",
+    "ratingConfig": "Use the existing 2024-selected ridge and half-life unchanged",
+    "cadence": "Daily 00:00 UTC; exclude kickoffs less than 24 hours before fit",
+    "calibration": "Regularized logistic mapping of signed model-line difference to home-cover or over probability, fit on 2024 walk-forward predictions only",
+    "minimumExpectedReturn": 0.05,
+    "promotion": {
+      "minimumFreshBetsPerMarket": 200,
+      "minimumFreshWeeks": 8,
+      "minimumWeeklyBootstrapROILowerBound": 0,
+      "positiveFirstAndSecondHalfROI": true
+    },
+    "interpretation": "All conditions must pass on fresh forward evidence before a market can be called statistically qualified. A passing backtest does not guarantee future profit. Do not tune to 2025 or 2026 outcomes."
+  },
+  "developmentGames": 806,
+  "sourceHash": "6a3535ecf916aa5068b189fe7945e46fe95561dafad5c8a7d7b9ef067878a655"
+}

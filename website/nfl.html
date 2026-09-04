@@ -445,6 +445,7 @@
 </head>
 <body class="tsl-editorial tsl-tool-page tsl-nfl-page">
   <main class="nfl-wrap">
+    <section class="rule-card" aria-label="NFL data readiness" role="status" id="launchReadiness">Checking NFL data readiness…</section>
     <div class="nfl-report-line"><span id="reportPhase">NFL usage engine</span><span id="reportStep">Phase three build</span></div>
 
     <section class="hero" aria-labelledby="pageTitle">
@@ -575,12 +576,17 @@
       "'": "&#39;"
     }[char]));
 
+    const dataProblems = [];
     async function loadJson(path, fallback){
       try{
         const response = await fetch(`${path}?v=${Date.now()}`, { cache: "no-store" });
         if(!response.ok) throw new Error(path);
-        return await response.json();
+        const data = await response.json();
+        if(data.sport !== "NFL" || !Number.isFinite(Date.parse(data.generatedAt))) throw new Error("Invalid NFL data");
+        if(Date.now() - Date.parse(data.generatedAt) > 24 * 3600000) dataProblems.push(`${path.split("/").pop()}: older than 24 hours`);
+        return data;
       }catch(error){
+        dataProblems.push(`${path.split("/").pop()}: unavailable`);
         return fallback;
       }
     }
@@ -681,7 +687,7 @@
       document.getElementById("tdGrid").innerHTML = rows.length ? rows.map(row => `<article class="td-card">
         <div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} ${escapeHtml(row.homeAway === "home" ? "vs" : "at")} ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.tdSignalScore)}</strong><span>TD signal</span></div></div>
         <div class="td-metrics"><div><span>Inside 10</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.inside10Carries + row.historicalPerGame?.inside10Targets))}</strong></div><div><span>Team TD base</span><strong>${escapeHtml(tdMetric(row.matchup?.projectedTeamTouchdownsBaseline))}</strong></div><div><span>Defense vuln.</span><strong>${escapeHtml(tdMetric(row.matchup?.defensiveVulnerabilityPercentile))}%</strong></div></div>
-        <p class="td-reason">${(row.strengths || []).slice(0,2).map(escapeHtml).join(" · ")}</p>
+        <section data-odds-sport="NFL" data-odds-player="${escapeHtml(row.playerName)}" data-odds-player-id="${escapeHtml(row.playerId)}" data-odds-game-id="${escapeHtml(row.gameId || '')}" data-odds-team="${escapeHtml(row.team)}"></section><p class="td-reason">${(row.strengths || []).slice(0,2).map(escapeHtml).join(" · ")}</p>
         <div class="td-gate">Verified Week ${escapeHtml(board.week || 1)} matchup · Market and role gated</div>
       </article>`).join("") : `<div class="td-empty">No players currently meet this private review filter.</div>`;
     }
@@ -702,18 +708,21 @@
     function renderReceivingBoard(board){
       const rows = (board.rows || []).slice(0, 12);
       document.getElementById("receivingStatus").innerHTML = `<span>Private shadow board</span><span>${escapeHtml(board.counts?.rankedPlayers || 0)} ranked</span><span>Player-data only</span><span>Not a yardage projection</span>`;
-      document.getElementById("receivingGrid").innerHTML = rows.map(row => `<article class="td-card"><div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} vs ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.receivingSignalScore)}</strong><span>REC signal</span></div></div><div class="td-metrics"><div><span>Targets/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.targets))}</strong></div><div><span>Yards/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.receivingYards))}</strong></div><div><span>Role gate</span><strong>${row.gates?.regularSeasonRoleConfirmed ? "Pass" : "Wait"}</strong></div></div><div class="td-gate">Private signal · Routes, role, matchup, and weather gated</div></article>`).join("");
+      document.getElementById("receivingGrid").innerHTML = rows.map(row => `<article class="td-card"><div class="td-card-head"><div><span class="td-card-rank">#${escapeHtml(row.shadowRank)} · ${escapeHtml(row.team)} vs ${escapeHtml(row.opponent)} · ${escapeHtml(row.position)}</span><h3>${escapeHtml(row.playerName)}</h3></div><div class="td-score"><strong>${escapeHtml(row.receivingSignalScore)}</strong><span>REC signal</span></div></div><div class="td-metrics"><div><span>Targets/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.targets))}</strong></div><div><span>Yards/game</span><strong>${escapeHtml(tdMetric(row.historicalPerGame?.receivingYards))}</strong></div><div><span>Role gate</span><strong>${row.gates?.regularSeasonRoleConfirmed ? "Pass" : "Wait"}</strong></div></div><section data-odds-sport="NFL" data-odds-player="${escapeHtml(row.playerName)}" data-odds-player-id="${escapeHtml(row.playerId)}" data-odds-game-id="${escapeHtml(row.gameId || '')}" data-odds-team="${escapeHtml(row.team)}"></section><div class="td-gate">Private signal · Routes, role, matchup, and weather gated</div></article>`).join("");
     }
 
     async function init(){
-      const [foundation, markets, publicStatus, roleBoard, tdBoard, receivingBoard] = await Promise.all([
+      const [foundation, markets, publicStatus, roleBoard, tdBoard, receivingBoard, audit] = await Promise.all([
         loadJson("./data/nfl_foundation.json", fallbackFoundation),
         loadJson("./data/nfl_markets.json", fallbackMarkets),
         loadJson("./data/nfl_public_status.json", fallbackStatus),
         loadJson("./data/nfl_preseason_role_board.json", { counts: {}, rows: [] }),
         loadJson("./data/nfl_td_decision_center.json", { counts: {}, sections: [], rows: [], scoreDisclaimer: "TD shadow signals are unavailable." }),
-        loadJson("./data/nfl_receiving_yards_board.json", { counts: {}, rows: [] })
+        loadJson("./data/nfl_receiving_yards_board.json", { counts: {}, rows: [] }),
+        loadJson("./data/nfl_launch_audit.json", { blockers: ["Launch readiness could not be verified."] })
       ]);
+      document.getElementById("launchReadiness").innerHTML = `<h2>NFL launch readiness</h2><p>TD and receiving boards are research signals, not published predictions. Rushing and passing projections are not available yet.</p><ul>${[...(audit.blockers || []), ...dataProblems].map(message => `<li>${escapeHtml(message)}</li>`).join("")}</ul><p>Last audit: ${escapeHtml(audit.generatedAt ? new Date(audit.generatedAt).toLocaleString() : "Unavailable")}</p><button type="button" id="retryNflData">Reload NFL data</button>`;
+      document.getElementById("retryNflData").onclick = () => location.reload();
 
       const current = foundation.currentPhase || fallbackFoundation.currentPhase;
       const launchMarkets = Array.isArray(markets.launchMarkets) ? markets.launchMarkets : [];

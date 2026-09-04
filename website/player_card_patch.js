@@ -25,43 +25,8 @@
   const key = v => String(v || "").toLowerCase().trim();
 
   function hrChance(row) {
-    const score = num(
-      row.hrConfidence ??
-      row.score ??
-      row.hrVolatilityScore ??
-      row.powerScore
-    );
-
-    const archetype = num(row.hrArchetypeScore);
-    const ceiling = num(row.multiHrCeilingScore);
-    const launch = num(row.launchHrProfileScore);
-    const pitch = num(row.pitchTypeDestructionScore);
-    const pitcherRisk = num(row.pitcherRisk);
-    const pullWind = num(row.pullWindHrScore);
-    const bullpen = num(row.bullpenInheritanceScore);
-
-    let chance =
-      3.5 +
-      score * 0.205 +
-      archetype * 0.028 +
-      ceiling * 0.025 +
-      launch * 0.020 +
-      pitch * 0.018 +
-      pitcherRisk * 0.018 +
-      pullWind * 0.014 +
-      bullpen * 0.010;
-
-    if (score >= 85) chance += 4.0;
-    else if (score >= 75) chance += 3.0;
-    else if (score >= 65) chance += 2.0;
-    else if (score >= 55) chance += 1.0;
-
-    if (ceiling >= 80) chance += 2.0;
-    if (archetype >= 90) chance += 2.0;
-    if (pitcherRisk >= 85) chance += 1.5;
-    if (launch >= 75) chance += 1.2;
-
-    return Math.max(2.5, Math.min(32, chance));
+    const value = row.realHrProbability;
+    return value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value)) ? Number(value) : null;
   }
 
 
@@ -443,8 +408,8 @@
     const chance = hrChance(row);
     const score = num(row.hrConfidence || row.score || row.truePowerScore);
 
-    if (strength >= 8.5 || chance >= 24 || score >= 90) return { label: "Green Light", cls: "green" };
-    if (strength >= 7 || chance >= 18 || score >= 75) return { label: "Strong Look", cls: "strong" };
+    if (strength >= 8.5 || chance >= 24 || score >= 90) return { label: "High power signal", cls: "green" };
+    if (strength >= 7 || chance >= 18 || score >= 75) return { label: "Strong power signal", cls: "strong" };
     if (strength >= 5.5 || chance >= 13 || score >= 58) return { label: "Live Bat", cls: "live" };
     return { label: "Watch Only", cls: "watch" };
   }
@@ -1346,7 +1311,6 @@
   function renderHero(row) {
     const h = stats(row);
     const conf = hrChance(row);
-    const prob = Math.max(3, Math.min(25, conf / 4));
     const theme = pcTheme(row);
 
     return `
@@ -1360,8 +1324,8 @@
           </div>
         </div>
         <div class="pcprob">
-          <b>${one(hrChance(row))}%</b>
-          <span>HR Chance</span>
+          <b>${hrChance(row)===null?"—":one(hrChance(row))+"%"}</b>
+          <span>Model HR estimate</span>
         </div>
       </div>
 
@@ -1370,7 +1334,7 @@
         ${metric("SLG", dec(h.SLG))}
         ${metric("HR", h.HR)}
         ${metric("OPS", dec(h.OPS))}
-        ${metric("HR Confidence", one(conf))}
+        ${metric("Model HR estimate", conf===null?"—":one(conf)+"%")}
         ${metric("Power", one(row.powerScore))}
         ${metric("Barrel %", statcastRate(row, "barrel"))}
         ${metric("Hard-Hit %", statcastRate(row, "hardHit"))}
@@ -1387,7 +1351,7 @@
       ${renderMatchupIntel(row)}
 
       <div class="pcbars">
-        ${bar("HR Chance", conf, 24, "%")}
+        ${conf===null?'':bar("Model HR estimate", conf, 100, "%")}
         ${bar("Power Score", row.powerScore, 100)}
         ${bar("Zone Power", row.hitterZonePower, 100)}
         ${bar("Pitcher Risk", row.pitcherRisk, 100)}
@@ -1563,6 +1527,7 @@
     document.getElementById("pcBox").innerHTML = `
       <button id="pcClose">Close</button>
       ${renderHero(activePlayer)}
+      <section data-odds-sport="MLB" data-odds-player="${esc(activePlayer.player)}" data-odds-player-id="${esc(activePlayer.playerId)}" data-odds-game-id="${esc(activePlayer.gamePk || '')}"></section>
       ${renderTabShell()}
     `;
 

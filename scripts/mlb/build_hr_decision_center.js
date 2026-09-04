@@ -300,6 +300,7 @@ function makeMarketOddsMap(rows) {
   const map = new Map();
 
   for (const row of rows) {
+    if (row.market !== "batter_home_runs" || Number(row.point) !== 0.5) continue;
     const key = playerKey(row);
     if (!key) continue;
     const current = map.get(key) || {

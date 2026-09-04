@@ -1,5 +1,8 @@
+import { catalogPropEvents } from '../odds/catalog-to-props.mjs';
 import fs from "fs";
 import path from "path";
+import { pathToFileURL } from "url";
+import { proplineSettings, proplineRequest, normalizePropLineBooks } from "../providers/propline.mjs";
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website", "data");
@@ -57,7 +60,7 @@ function round(value, places = 4) {
 
 function americanToDecimal(odds) {
   const value = Number(odds);
-  if (!Number.isFinite(value) || value === 0) return null;
+  if (!Number.isFinite(value) || Math.abs(value) < 100) return null;
   return value > 0 ? 1 + value / 100 : 1 + 100 / Math.abs(value);
 }
 
@@ -132,7 +135,7 @@ async function getJson(url) {
 }
 
 function currentGames(payload) {
-  return Array.isArray(payload?.games) ? payload.games : [];
+  return Array.isArray(payload?.games) ? payload.games.filter(g=>Date.parse(g.gameDate)>Date.now()) : [];
 }
 
 function rows(payload, key) {
@@ -154,7 +157,7 @@ function matchProviderEvents(games, providerEvents) {
         event,
         distance: Math.abs(Date.parse(event.commence_time) - Date.parse(game.gameDate))
       }))
-      .filter(row => Number.isFinite(row.distance) && row.distance <= 8 * 60 * 60 * 1000)
+      .filter(row => Number.isFinite(row.distance) && row.distance <= 30 * 60 * 1000)
       .sort((a, b) => a.distance - b.distance);
 
     if (!candidates.length) {
@@ -192,11 +195,10 @@ function probabilityIndex(tracking) {
   return index;
 }
 
-function quoteSides(bookmakers, now) {
+export function quoteSides(bookmakers, now) {
   const byBook = [];
   for (const bookmaker of bookmakers || []) {
-    const market = (bookmaker.markets || []).find(item => item.key === MARKET_KEY);
-    if (!market) continue;
+    for (const market of (bookmaker.markets || []).filter(item => item.key === MARKET_KEY)) {
     const providerLastUpdate = market.last_update || bookmaker.last_update;
     const updatedAt = Date.parse(providerLastUpdate);
     if (!Number.isFinite(updatedAt) || now - updatedAt > MAX_QUOTE_AGE_MS || updatedAt > now + 60000) continue;
@@ -205,6 +207,8 @@ function quoteSides(bookmakers, now) {
     for (const outcome of market.outcomes || []) {
       const playerName = String(outcome.description || "").trim();
       if (!playerName) continue;
+      // This model predicts at least one HR, never two or three HRs.
+      if (outcome.point === null || outcome.point === undefined || outcome.point === "" || Number(outcome.point) !== 0.5) continue;
       const key = normalize(playerName);
       const current = grouped.get(key) || { playerName };
       const side = normalize(outcome.name);
@@ -227,7 +231,7 @@ function quoteSides(bookmakers, now) {
         providerLastUpdate,
         playerName: group.playerName,
         overPriceAmerican: Number(group.over.price),
-        underPriceAmerican: group.under ? Number(group.under.price) : null,
+        underPriceAmerican: underDecimal ? Number(group.under.price) : null,
         point: Number.isFinite(Number(group.over.point)) ? Number(group.over.point) : 0.5,
         impliedProbability: overImplied,
         noVigProbability: noVig,
@@ -235,17 +239,28 @@ function quoteSides(bookmakers, now) {
       });
     }
   }
-  return byBook;
+  }
+  const unique = new Map();
+  for (const quote of byBook) {
+    const key = `${quote.bookmakerKey}|${normalize(quote.playerName)}`;
+    if (!unique.has(key) || Date.parse(quote.providerLastUpdate) > Date.parse(unique.get(key).providerLastUpdate)) unique.set(key, quote);
+  }
+  return [...unique.values()];
 }
 
 async function main() {
   const gamesPayload = read("mlb_games_today.json");
   const poolPayload = read("mlb_player_pool.json");
   const trackingPayload = read("hr_probability_tracking.json");
+  const usePropLine = Boolean(proplineSettings().key);
+  let catalog = null;
+  try { catalog = read('odds_mlb.json'); } catch {}
+  const catalogEvents = usePropLine && catalog ? catalogPropEvents(catalog) : null;
   const date = gamesPayload.date || todayET();
   const games = currentGames(gamesPayload);
   const envelope = baseEnvelope(date, "unavailable", "not_requested");
   envelope.coverage.slateGames = games.length;
+  if(usePropLine){envelope.source="PropLine";envelope.policy.timestampMeaning="Provider observation time; not necessarily bookmaker publication time";}
 
   if (!games.length) {
     Object.assign(envelope, { availability: "no_games_scheduled", reasonCode: "no_games_scheduled", detail: null });
@@ -254,7 +269,7 @@ async function main() {
   }
 
   const apiKey = String(process.env.ODDS_API_KEY || "").trim();
-  if (!apiKey) {
+  if (!apiKey && !usePropLine) {
     Object.assign(envelope, { availability: "unavailable", reasonCode: "missing_api_key", detail: "ODDS_API_KEY is not configured" });
     write(envelope);
     return envelope;
@@ -262,7 +277,7 @@ async function main() {
 
   try {
     const eventsUrl = `${API_ROOT}/sports/${SPORT_KEY}/events?apiKey=${encodeURIComponent(apiKey)}`;
-    const eventResponse = await getJson(eventsUrl);
+    const eventResponse = catalogEvents ? {data:catalogEvents,quota:catalog.quota} : usePropLine ? await proplineRequest(`/sports/${SPORT_KEY}/events`) : await getJson(eventsUrl);
     envelope.quota = eventResponse.quota;
     const matched = matchProviderEvents(games, Array.isArray(eventResponse.data) ? eventResponse.data : []);
     envelope.rejections.push(...matched.rejected);
@@ -273,8 +288,6 @@ async function main() {
     const players = playerIndex(pool);
     const probabilities = probabilityIndex(tracking);
     const bookmakers = String(process.env.ODDS_BOOKMAKERS || "").trim();
-    const now = Date.now();
-
     for (const match of matched.matches) {
       await sleep(REQUEST_SPACING_MS);
       const query = new URLSearchParams({
@@ -285,9 +298,13 @@ async function main() {
       });
       if (bookmakers) query.set("bookmakers", bookmakers);
       const url = `${API_ROOT}/sports/${SPORT_KEY}/events/${match.providerEvent.id}/odds?${query}`;
-      const response = await getJson(url);
+      const response = catalogEvents ? {data:catalogEvents.find(e=>e.id===match.providerEvent.id),quota:catalog.quota} : usePropLine ? await proplineRequest(`/sports/${SPORT_KEY}/events/${encodeURIComponent(match.providerEvent.id)}/odds?markets=${MARKET_KEY}`) : await getJson(url);
       if (response.quota) envelope.quota = response.quota;
-      const quotes = quoteSides(response.data?.bookmakers, now);
+      if (String(response.data?.id) !== String(match.providerEvent.id)) {
+        envelope.rejections.push({ gamePk: match.game.gamePk, providerEventId: match.providerEvent.id, reasonCode: "response_event_mismatch" });
+        continue;
+      }
+      const quotes = quoteSides(usePropLine ? normalizePropLineBooks(response.data) : response.data?.bookmakers, Date.now());
       let accepted = 0;
 
       for (const quote of quotes) {
@@ -316,7 +333,9 @@ async function main() {
           continue;
         }
 
-        const modelProbability = Number(modelRows[0].realHrProbability) / 100;
+        const rawProbability = modelRows[0].realHrProbability;
+        const modelProbability = Number(rawProbability) / 100;
+        if (rawProbability == null || rawProbability === "" || !Number.isFinite(modelProbability) || modelProbability < 0 || modelProbability > 1) continue;
         envelope.prices.push({
           quoteId: `${date}|${match.game.gamePk}|${player.playerId}|${quote.bookmakerKey}|${MARKET_KEY}`,
           date,
@@ -382,9 +401,12 @@ async function main() {
   }
 }
 
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 const result = await main();
 console.log("MARKET ODDS COMPLETE");
 console.log("Availability:", result.availability);
 console.log("Matched events:", result.coverage.matchedEvents);
 console.log("Verified quotes:", result.prices.length);
 console.log("Saved:", path.join(DATA, "mlb_market_odds.json"));
+
+}

@@ -115,6 +115,7 @@ export default async function handler(request, response) {
 
     const prompt = [
       "Analyze only the supplied WNBA slate data. The numerical projections are authoritative inputs; do not alter them or invent facts.",
+      "The confidence field is a heuristic role-support score, not a probability of winning. Do not describe it as a win percentage or high-confidence bet. Do not recommend over/under bets, invent sportsbook lines or prices, or claim a profitable edge. Describe the supplied projections and their limitations only.",
       "Identify the most meaningful players using expected minutes, role, recent-form deltas, pace, opponent defense, injuries, projection ranges, and confidence.",
       "Explain why each selected player stands out in specific basketball language. Avoid generic summaries and avoid repeating every number.",
       "Do not present sportsbook lines, wagers, guarantees, or fabricated news. Produce a concise daily overview and 4-8 distinct player insights."
