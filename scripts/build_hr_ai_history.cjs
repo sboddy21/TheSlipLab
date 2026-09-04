@@ -5,13 +5,19 @@ const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website/data");
 const OUT_FILE = path.join(DATA, "hr_ai_history.json");
 const MODEL_VERSION = "MLB-HR-1.0";
+const candidate = JSON.parse(fs.readFileSync(path.join(ROOT, "scripts/mlb/hr-calibration-candidate.json"), "utf8"));
+function shadowProbability(value) {
+  if (value == null || value === "" || !Number.isFinite(Number(value)) || value < 0 || value > 100) return null;
+  const p = Math.max(.0001, Math.min(.9999, Number(value) / 100));
+  return 1 / (1 + Math.exp(-(candidate.parameters.intercept + candidate.parameters.slope * Math.log(p / (1 - p)))));
+}
 
 function read(name, fallback = {}) {
   try { return JSON.parse(fs.readFileSync(path.join(DATA, name), "utf8")); }
   catch { return fallback; }
 }
 function norm(v) { return String(v || "").trim().toLowerCase().replace(/[^a-z0-9]/g, ""); }
-function num(v, fallback = null) { const n = Number(v); return Number.isFinite(n) ? n : fallback; }
+function num(v, fallback = null) { if (v == null || v === "") return fallback; const n = Number(v); return Number.isFinite(n) ? n : fallback; }
 function arr(v) { return Array.isArray(v) ? v : []; }
 function easternDate(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
@@ -70,6 +76,7 @@ const decisionRows = arr(decision.allPlayers);
 const vulnerability = arr(read("pitcher_vulnerability.json", { pitchers: [] }).pitchers);
 const weatherRows = arr(read("mlb_weather.json", { weather: [] }).weather);
 const games = arr(gamesPayload.games);
+const market = read("mlb_market_odds.json", { prices: [] });
 
 let history = read("hr_ai_history.json", { updatedAt: nowIso, history: {} });
 history.history ||= {};
@@ -132,6 +139,8 @@ Object.values(ai.players || {}).forEach((player, index) => {
     confidence: num(player.confidence, 0),
     probability: num(probability?.realHrProbability),
     probabilityRank: num(probability?.probabilityRank),
+    shadowCalibration: { version: candidate.version, frozenAt: candidate.frozenAt,
+      probability: shadowProbability(probability?.realHrProbability), status: "research_only" },
     probabilityTier: probability?.probabilityTier || "",
     rawHrEventScore: num(probability?.rawHrEventScore),
     pitcherRisk,
@@ -152,6 +161,16 @@ Object.values(ai.players || {}).forEach((player, index) => {
     tags,
     signals,
     headshot: player.headshot || masterRow?.headshot || "",
+    marketQuotes: arr(market.prices).filter(quote =>
+      Number(quote.gamePk) === gamePk && Number(quote.playerId) === playerId &&
+      quote.market === "batter_home_runs" && Number(quote.point) === 0.5 &&
+      quote.date === (gamesPayload.date || easternDate(now)) &&
+      Number.isFinite(Number(quote.overPriceAmerican)) && Math.abs(Number(quote.overPriceAmerican)) >= 100 &&
+      Date.parse(quote.providerLastUpdate) <= now.getTime() &&
+      now.getTime() - Date.parse(quote.providerLastUpdate) <= 15 * 60_000
+    ).map(quote => ({ quoteId: quote.quoteId, bookmakerKey: quote.bookmakerKey,
+      market: quote.market, point: quote.point, odds: quote.overPriceAmerican,
+      quotedAt: quote.providerLastUpdate, capturedAt: nowIso })),
     modelVersion: MODEL_VERSION,
     modelCommit: process.env.GITHUB_SHA || null,
     calloutTier: ["A+", "A"].includes(player.grade) ? "core" : player.grade === "B+" && num(player.agreementCount, 0) > 0 ? "secondary" : "watch"

@@ -224,7 +224,7 @@
       const tags=Array.isArray(p.tags)?p.tags:[];
       const topTags=tags.slice(0,14).map(t=>`<span class="tag">${html(t)}</span>`).join("");
 
-      document.getElementById("modalBody").innerHTML=`
+      document.getElementById("modalBody").innerHTML=`<section data-odds-sport="NBA" data-odds-player="${html(p.player)}" data-odds-player-id="${html(p.playerId)}" data-odds-game-id="${html(p.gameId || '')}" data-odds-team="${html(p.team)}"></section>
         <div class="modal-head">
           <div>
             <h2>${html(p.player)}</h2>

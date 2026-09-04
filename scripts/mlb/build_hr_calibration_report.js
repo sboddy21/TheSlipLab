@@ -33,10 +33,10 @@ for (const day of arr(results.days)) {
   hrByDay.set(day.date, map);
 }
 
-const exclusionCounts = { legacyUnverified: 0, missingIdentifiers: 0, afterFirstPitch: 0, incompleteResultDay: 0, missingProbability: 0 };
+const exclusionCounts = { legacyUnverified: 0, missingIdentifiers: 0, afterFirstPitch: 0, incompleteResultDay: 0, missingProbability: 0, duplicatePlayerGame: 0 };
 for (const snapshots of Object.values(history.history || {})) for (const row of arr(snapshots)) if (row?.verifiedPregame !== true) exclusionCounts.legacyUnverified++;
 
-const graded = [];
+const gradedByPlayerGame = new Map();
 for (const receipt of receipts) {
   if (!num(receipt.gamePk) || !num(receipt.playerId) || !receipt.slateDate) { exclusionCounts.missingIdentifiers++; continue; }
   const snapshotMs = Date.parse(receipt.snapshotAt || receipt.timestamp || "");
@@ -44,10 +44,17 @@ for (const receipt of receipts) {
   if (!Number.isFinite(snapshotMs) || !Number.isFinite(startMs) || snapshotMs >= startMs) { exclusionCounts.afterFirstPitch++; continue; }
   const day = resultDays.get(receipt.slateDate);
   if (!day || day.status !== "final") { exclusionCounts.incompleteResultDay++; continue; }
-  if (num(receipt.probability) === null) { exclusionCounts.missingProbability++; continue; }
+  if (optionalNum(receipt.probability) === null || Number(receipt.probability) < 0 || Number(receipt.probability) > 100) { exclusionCounts.missingProbability++; continue; }
   const hr = hrByDay.get(receipt.slateDate)?.get(key(receipt.gamePk, receipt.playerId)) || null;
-  graded.push({ ...receipt, hit: Boolean(hr), result: hr });
+  const identity = key(receipt.gamePk, receipt.playerId);
+  const previous = gradedByPlayerGame.get(identity);
+  if (previous) {
+    exclusionCounts.duplicatePlayerGame++;
+    if (Date.parse(previous.snapshotAt || previous.timestamp) >= snapshotMs) continue;
+  }
+  gradedByPlayerGame.set(identity, { ...receipt, hit: Boolean(hr), result: hr });
 }
+const graded = [...gradedByPlayerGame.values()];
 
 function basic(rows, label = null) {
   const predictions = rows.length;
@@ -123,7 +130,7 @@ function dailyReport() {
     if (excludedGamePks.has(Number(receipt.gamePk))) continue;
     const snapshotMs = Date.parse(receipt.snapshotAt || receipt.timestamp || "");
     const startMs = Date.parse(receipt.gameStartTime || "");
-    if (!Number.isFinite(snapshotMs) || !Number.isFinite(startMs) || snapshotMs >= startMs || num(receipt.probability) === null) continue;
+    if (!Number.isFinite(snapshotMs) || !Number.isFinite(startMs) || snapshotMs >= startMs || optionalNum(receipt.probability) === null || Number(receipt.probability) < 0 || Number(receipt.probability) > 100) continue;
     const receiptKey = key(receipt.gamePk, receipt.playerId);
     const prior = latestByPlayerGame.get(receiptKey);
     const priorMs = Date.parse(prior?.snapshotAt || prior?.timestamp || "");

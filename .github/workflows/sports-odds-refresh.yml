@@ -1,0 +1,54 @@
+name: The Slip Lab Sportsbook Odds
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '3,18,33,48 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: production-data-writers
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: node --test tests/sports-odds.test.mjs tests/propline-normalization.test.mjs tests/cfb.test.mjs
+      - name: Refresh current odds
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          RAPIDAPI_HOST: sportsbook-api2.p.rapidapi.com
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
+        run: node scripts/odds/refresh.mjs
+      - name: Attach NCAAF prices and settle receipts
+        continue-on-error: true
+        run: node scripts/cfb/refresh.mjs
+      - name: Attach MLB prices
+        continue-on-error: true
+        env:
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
+        run: node scripts/mlb/build_market_odds.js
+      - name: Attach WNBA prices
+        continue-on-error: true
+        env:
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
+        run: |
+          node scripts/wnba/build_wnba_market_lines.mjs
+          node scripts/wnba/build_wnba_verified_markets.js
+      - name: Commit odds and tracking
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add website/data/odds_*.json website/data/cfb_board.json data/cfb/live-history.json website/data/mlb_market_odds.json website/data/wnba_market_lines.json website/data/wnba_verified_markets.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Refresh sportsbook prices across sports"
+          git pull origin "$GITHUB_REF_NAME" --rebase
+          git push origin "HEAD:$GITHUB_REF_NAME"

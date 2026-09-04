@@ -102,7 +102,7 @@
     <section class="shadow-section" aria-labelledby="shadowTitle">
       <div class="section-head"><div><h2 id="shadowTitle">WNBA player projections</h2><p class="baseline-note">Daily matchup-adjusted estimates for points, rebounds, assists, threes, and expected minutes.</p></div><p id="shadowUpdated">Loading player projections…</p></div>
       <div class="calibration-grid" id="calibrationGrid"></div>
-      <div class="shadow-table-wrap"><table class="shadow-table"><thead><tr><th>Player</th><th>Matchup</th><th>Confidence</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody id="shadowRows"><tr><td colspan="8">Loading today’s WNBA player projections…</td></tr></tbody></table></div>
+      <div class="shadow-table-wrap"><table class="shadow-table"><thead><tr><th>Player</th><th>Matchup</th><th>Role support</th><th>Expected MIN</th><th>Points</th><th>Rebounds</th><th>Assists</th><th>Threes</th></tr></thead><tbody id="shadowRows"><tr><td colspan="8">Loading today’s WNBA player projections…</td></tr></tbody></table></div>
       <p class="baseline-note" id="shadowStatus">Model performance tracking updates automatically after completed games.</p>
     </section>
     <section aria-labelledby="gamesTitle">
@@ -137,7 +137,7 @@
       if(!reasons.length)reasons.push(`stable ${String(row.role||"rotation").toLowerCase()} role`);
       return reasons.slice(0,2).join(" · ");
     };
-    const intelPlayerMarkup=(row,player)=>`<article class="intel-player"><h4>${esc(row.player)} · ${esc(row.team)}</h4><small>${esc(row.expectedMinutes)} expected MIN · ${esc(row.confidence)}% confidence</small><div class="intel-line">${[["points","PTS"],["rebounds","REB"],["assists","AST"],["threes","3PM"]].map(([key,label])=>`<div><b>${esc(row.projections[key].value)}</b><span>${label}</span></div>`).join("")}</div><div class="intel-reason"><strong>Why:</strong> ${esc(trendReason(row,player))}</div></article>`;
+    const intelPlayerMarkup=(row,player)=>`<article class="intel-player"><h4>${esc(row.player)} · ${esc(row.team)}</h4><small>${esc(row.expectedMinutes)} expected MIN · ${esc(row.confidence)}/100 role support</small><div class="intel-line">${[["points","PTS"],["rebounds","REB"],["assists","AST"],["threes","3PM"]].map(([key,label])=>`<div><b>${esc(row.projections[key].value)}</b><span>${label}</span></div>`).join("")}</div><div class="intel-reason"><strong>Why:</strong> ${esc(trendReason(row,player))}</div></article>`;
     const gameMarkup=(game,projections,teamMap,playerMap)=>{
       const live=game.state==="in";
       const score=game.state==="pre"?"vs":`${game.awayTeam.score}–${game.homeTeam.score}`;
@@ -165,7 +165,7 @@
     };
     async function load(){
       try{
-        const responses=await Promise.all(["wnba_games_today.json","wnba_player_baselines.json","wnba_team_baselines.json","wnba_projection_board.json","wnba_calibration.json"].map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
+        const responses=await Promise.all(["wnba_games_today.json","wnba_player_baselines.json","wnba_team_baselines.json","wnba_live_snapshot.json","wnba_calibration.json"].map(file=>fetch(`./data/${file}?v=${Date.now()}`,{cache:"no-store"})));
         if(responses.some(response=>!response.ok))throw new Error("One or more WNBA data files are unavailable");
         const [data,playerData,teamData,projectionData,calibrationData]=await Promise.all(responses.map(response=>response.json()));
         const games=Array.isArray(data.games)?data.games:[];
@@ -174,16 +174,18 @@
         document.getElementById("finalCount").textContent=games.filter(game=>game.completed).length;
         document.getElementById("slateDate").textContent=data.date||"Current slate";
         document.getElementById("lastUpdated").textContent=data.fetchedAt?`Updated ${dateTime(data.fetchedAt)} ET`:"Update time unavailable";
-        baselinePlayers=Array.isArray(playerData.players)?playerData.players:[];
-        const teams=Array.isArray(teamData.teams)?teamData.teams:[];
+        const asOf=Date.parse(projectionData.dataAsOf||"");
+        const fresh=!projectionData.stale&&Number.isFinite(asOf)&&Date.now()-asOf>=0&&Date.now()-asOf<=20*60_000;
+        baselinePlayers=fresh&&Array.isArray(playerData.players)?playerData.players:[];
+        const teams=fresh&&Array.isArray(teamData.teams)?teamData.teams:[];
         const injured=baselinePlayers.filter(player=>player.injury);
         const playerMap=new Map(baselinePlayers.map(player=>[String(player.playerId),player]));
         const teamMap=new Map(teams.map(team=>[team.abbreviation,team]));
-        document.getElementById("playerCount").textContent=playerData.playerCount||baselinePlayers.length;
-        document.getElementById("historyCount").textContent=playerData.rotationHistoryCount||0;
-        document.getElementById("teamCount").textContent=teamData.teamCount||teams.length;
+        document.getElementById("playerCount").textContent=baselinePlayers.length;
+        document.getElementById("historyCount").textContent=fresh?(playerData.rotationHistoryCount||0):0;
+        document.getElementById("teamCount").textContent=teams.length;
         document.getElementById("injuryCount").textContent=injured.length;
-        document.getElementById("baselineUpdated").textContent=playerData.generatedAt?`Built ${dateTime(playerData.generatedAt)} ET`:"Baseline time unavailable";
+        document.getElementById("baselineUpdated").textContent=fresh?`Updated ${dateTime(projectionData.dataAsOf)} ET`:"Current player data unavailable";
         document.getElementById("teamFilter").insertAdjacentHTML("beforeend",teams.map(team=>`<option value="${esc(team.abbreviation)}">${esc(team.team)}</option>`).join(""));
         const envList=(title,rows,value)=>`<article class="environment-card"><h3>${esc(title)}</h3>${rows.slice(0,5).map(team=>`<div class="environment-row"><span>${esc(team.abbreviation)} · ${esc(team.environment.record||"")}</span><b>${esc(value(team))}</b></div>`).join("")}</article>`;
         const pace=[...teams].sort((a,b)=>b.environment.estimatedPace-a.environment.estimatedPace);
@@ -193,13 +195,22 @@
         document.getElementById("injuries").innerHTML=injured.slice(0,12).map(player=>`<article class="injury-card"><b>${esc(player.player)} · ${esc(player.teamAbbreviation)}</b><span>${esc(player.injury.status)}${player.injury.detail?` — ${esc(player.injury.detail)}`:""}</span></article>`).join("");
         const markets=["points","rebounds","assists","threes"];
         document.getElementById("calibrationGrid").innerHTML=markets.map(market=>{const row=calibrationData.markets?.[market]||{};return `<article class="calibration-card"><span>${esc(market)} projection</span><b>${row.mae==null?"Live":`${esc(row.mae)} avg. error`}</b></article>`}).join("");
-        const shadow=Array.isArray(projectionData.projections)?projectionData.projections:[];
+        const shadow=fresh&&Array.isArray(projectionData.projections)?projectionData.projections.filter(row=>Date.parse(row.gameTimeUTC)>Date.now()):[];
         renderDailyRead(shadow,playerMap,injured);
         document.getElementById("games").innerHTML=games.length?games.map(game=>gameMarkup(game,shadow,teamMap,playerMap)).join(""):`<div class="empty">No WNBA games are scheduled for ${esc(data.date||"today")}.</div>`;
-        document.getElementById("shadowRows").innerHTML=shadow.length?shadow.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td class="confidence">${esc(row.confidence)}%</td><td>${esc(row.expectedMinutes)}</td>${markets.map(market=>`<td><span class="projection-value">${esc(row.projections[market].value)}</span><small>${esc(row.projections[market].floor)}–${esc(row.projections[market].ceiling)}</small></td>`).join("")}</tr>`).join(""):`<tr><td colspan="8">No eligible pregame projection window remains on today’s slate.</td></tr>`;
-        document.getElementById("shadowUpdated").textContent=(projectionData.frozenAt||projectionData.generatedAt)?`Frozen ${dateTime(projectionData.frozenAt||projectionData.generatedAt)} ET`:"Snapshot unavailable";
-        document.getElementById("shadowStatus").textContent=`${projectionData.count||shadow.length} eligible players projected · ${calibrationData.gradedProjections||0} completed results tracked · ${projectionData.excludedGames?.length||0} game(s) unavailable after the pregame window closed.`;
+        document.getElementById("shadowRows").innerHTML=shadow.length?shadow.map(row=>`<tr><td>${esc(row.player)}<small>${esc(row.team)} · ${esc(row.role)}</small></td><td>${esc(row.team)} vs ${esc(row.opponent)}</td><td class="confidence">${esc(row.confidence)}/100</td><td>${esc(row.expectedMinutes)}</td>${markets.map(market=>`<td><span class="projection-value">${esc(row.projections[market].value)}</span><small>${esc(row.projections[market].floor)}–${esc(row.projections[market].ceiling)}</small></td>`).join("")}</tr>`).join(""):`<tr><td colspan="8">No eligible pregame projection window remains on today’s slate.</td></tr>`;
+        document.getElementById("shadowUpdated").textContent=(projectionData.frozenAt||projectionData.generatedAt)?`Updated ${dateTime(projectionData.dataAsOf||projectionData.generatedAt)} ET`:"Snapshot unavailable";
+        document.getElementById("shadowStatus").textContent=`${shadow.length} eligible players projected · ${calibrationData.gradedProjections||0} completed results tracked · ${projectionData.excludedGames?.length||0} game(s) unavailable after the pregame window closed.`;
         renderBaselines();
+        if(!fresh){
+          document.getElementById("dailyReadStatus").textContent="Waiting for updated player data";
+          document.getElementById("dailyReadGrid").innerHTML='<div class="empty">Current player projections are temporarily unavailable.</div>';
+          document.getElementById("shadowStatus").textContent="Waiting for updated player data";
+          document.getElementById("shadowRows").innerHTML='<tr><td colspan="8">Current player projections are temporarily unavailable.</td></tr>';
+          document.getElementById("injuryCount").textContent="—";
+          document.getElementById("injuries").innerHTML='<div class="empty">Current injury reports are unavailable.</div>';
+          document.getElementById("baselineRows").innerHTML='<tr><td colspan="9">Current player data is unavailable.</td></tr>';
+        }
       }catch(error){
         document.getElementById("dailyReadGrid").innerHTML=`<div class="empty error">Today’s WNBA intelligence summary is temporarily unavailable.</div>`;
         document.getElementById("dailyReadStatus").textContent="Data unavailable";

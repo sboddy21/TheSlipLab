@@ -35,9 +35,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Verify betting market safeguards
+        run: node --test tests/mlb-market-identity.test.mjs tests/mlb-receipt-prices.test.mjs tests/propline-normalization.test.mjs
       - name: Run MLB refresh only
         timeout-minutes: 18
         env:
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: npm run mlb:refresh
 

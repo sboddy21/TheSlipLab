@@ -19,6 +19,8 @@
     "wnba:projections": "node scripts/wnba/build_wnba_projection_board.js",
     "wnba:markets": "node scripts/wnba/build_wnba_verified_markets.js",
     "wnba:refresh": "node scripts/run_wnba_refresh.js",
+    "cfb:refresh": "node scripts/cfb/refresh.mjs",
+    "cfb:test": "node --test tests/cfb.test.mjs",
     "nfl:refresh": "node scripts/run_nfl_refresh.js",
     "nfl:availability": "node scripts/nfl/fetch_nfl_availability.js",
     "nfl:preseason": "node scripts/nfl/fetch_nfl_preseason_usage.js",
@@ -32,7 +34,16 @@
     "x:post-slate-thread": "node scripts/content/post_x_daily_slate_thread.js",
     "x:edge-posts": "node scripts/content/build_x_daily_edge_posts.js",
     "x:post-edge-posts": "node scripts/content/post_x_daily_edge_posts.js",
-    "worker:live-x:check": "node --check workers/live-x-alerts/src/index.js"
+    "worker:live-x:check": "node --check workers/live-x-alerts/src/index.js",
+    "cfb:history": "node scripts/cfb/fetch-history.mjs",
+    "cfb:develop": "node scripts/cfb/backtest.mjs --develop",
+    "cfb:backtest": "node scripts/cfb/backtest.mjs",
+    "cfb:develop-daily": "node scripts/cfb/develop-daily.mjs",
+    "cfb:current-history": "node scripts/cfb/fetch-current-season.mjs",
+    "cfb:backtest-daily": "node scripts/cfb/backtest-daily.mjs",
+    "cfb:dev": "node scripts/cfb/dev-server.mjs",
+    "odds:refresh": "node scripts/odds/refresh.mjs",
+    "odds:test": "node --test tests/sports-odds.test.mjs tests/propline-normalization.test.mjs"
   },
   "dependencies": {
     "canvas": "^3.2.3",
