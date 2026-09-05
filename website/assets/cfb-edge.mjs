@@ -3,11 +3,22 @@ export const logistic=x=>1/(1+Math.exp(-Math.max(-30,Math.min(30,x))));
 export const signal=x=>Math.max(-5,Math.min(5,x/10));
 export const payout=price=>Number.isFinite(price)&&Math.abs(price)>=100?(price>0?price/100:100/-price):null;
 export const implied=price=>{const profit=payout(price);return profit===null?null:1/(1+profit);};
+export const americanFromProbability=probability=>{
+  if(!Number.isFinite(probability)||probability<=0||probability>=1)return null;
+  return Math.round(probability>=0.5?-100*probability/(1-probability):100*(1-probability)/probability);
+};
 export function estimate(projection,market,calibration,kind) {
   const c=calibration?.[kind],line=kind==='spread'?market?.homeSpread:market?.total;
   if(!c||!Number.isFinite(line))return null;
   const edge=kind==='spread'?projection.margin+line:projection.total-line;
   return logistic(c.intercept+c.slope*signal(edge));
+}
+export function moneylineProjection(projection,calibration) {
+  if(!projection)return null;
+  const c=calibration?.spread;
+  if(!c||!Number.isFinite(c.intercept)||!Number.isFinite(c.slope))return null;
+  const homeProbability=logistic(c.intercept+c.slope*signal(projection.margin));
+  return {homeProbability,awayProbability:1-homeProbability,homeFairPrice:americanFromProbability(homeProbability),awayFairPrice:americanFromProbability(1-homeProbability)};
 }
 export function valuePicks(game,projection,calibration,now=Date.now(),minimumReturn=0.05) {
   if(!projection||!game.market||game.canceled||game.state!=='pre'||(game.statusName&&game.statusName!=='STATUS_SCHEDULED')||!game.timeValid||!Number.isFinite(Date.parse(game.date))||Date.parse(game.date)<=now)return [];

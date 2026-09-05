@@ -5,7 +5,7 @@ import { fitRatings,predictRatings,weekCutoff,trainingGames } from '../scripts/c
 import { closingMarket } from '../scripts/cfb/historical-odds.mjs';
 import { walkForward,summarizePicks } from '../scripts/cfb/evaluation.mjs';
 import { isFresh,mergeLiveGame } from '../website/assets/cfb-market.mjs';
-import { valuePicks,implied } from '../website/assets/cfb-edge.mjs';
+import { valuePicks,implied,moneylineProjection,americanFromProbability } from '../website/assets/cfb-edge.mjs';
 import { qualification,fitCalibration } from '../scripts/cfb/calibration.mjs';
 import { createLiveHandler } from '../website/api/cfb-live.mjs';
 const now = Date.parse('2026-09-04T12:00Z');
@@ -115,6 +115,14 @@ test('price-aware picks require positive estimated return, valid price and sched
   assert.equal(picks.length,1);assert.equal(picks[0].side,'home');assert.ok(picks[0].expectedReturn>=0.05);
   assert.equal(valuePicks({...game,statusName:'STATUS_POSTPONED'},{margin:10,total:50},calibration,now).length,0);
   assert.equal(valuePicks({...game,market:{...game.market,homePrice:null}},{margin:10,total:50},calibration,now).length,0);
+});
+test('moneyline projection derives calibrated win probability and internally consistent fair prices',()=>{
+  const read=moneylineProjection({margin:10},{spread:{intercept:0,slope:1}});
+  assert.ok(read.homeProbability>.5);
+  assert.equal(Number((read.homeProbability+read.awayProbability).toFixed(10)),1);
+  assert.equal(read.homeFairPrice,americanFromProbability(read.homeProbability));
+  assert.equal(implied(read.homeFairPrice).toFixed(2),read.homeProbability.toFixed(2));
+  assert.equal(moneylineProjection(null,{spread:{intercept:0,slope:1}}),null);
 });
 test('qualification cannot turn a tiny winning sample or a losing strategy into a proven edge',()=>{
   const rules={minimumFreshBetsPerMarket:200,minimumFreshWeeks:8};
