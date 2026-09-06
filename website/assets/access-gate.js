@@ -5,10 +5,15 @@
     "/bullpen-collapse.html",
     "/command-center.html",
     "/full-board.html",
+    "/heat-check.html",
     "/hr-decision-center.html",
     "/decision-center.html",
     "/live-game-center.html",
+    "/live-extra-bases.html",
+    "/live-hard-hit.html",
     "/live-heatmap.html",
+    "/live-home-runs.html",
+    "/live-near-home-runs.html",
     "/live-platform.html",
     "/matchup-lab.html",
     "/mlb.html",
@@ -30,6 +35,11 @@
     "/pitcher-vulnerability.html",
     "/player-intelligence.html",
     "/power-zones.html",
+    "/platoon-edge.html",
+    "/quick-target.html",
+    "/results.html",
+    "/streak-lab.html",
+    "/weather.html",
     "/tags.html"
   ]);
 
@@ -41,9 +51,7 @@
     "/blog-hr-shortlist.html",
     "/blog-pitcher-vulnerability.html",
     "/blog-signal-stack.html",
-    "/how-to-use.html",
-    "/results.html",
-    "/weather.html"
+    "/how-to-use.html"
   ]);
 
   function normalizedPath(){
@@ -54,7 +62,8 @@
 
   function isProtected(){
     const path = normalizedPath();
-    return protectedPaths.has(path) && !openPaths.has(path);
+    const sportPrefix = /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf)(?:-|\.|\/)/.test(path);
+    return (protectedPaths.has(path) || sportPrefix) && !openPaths.has(path);
   }
 
   function accountUrl(){
@@ -141,7 +150,7 @@
       updateGateCard({
         eyebrow: "Premium access",
         title: "Subscribe to unlock this board.",
-        body: "The premium MLB slate, AI boards, matchup tools, and live edge pages are now reserved for active Slip Lab members.",
+        body: "All Slip Lab sport pages, AI boards, matchup tools, trackers, and results are reserved for active members.",
         action: checkoutActions()
       });
     } catch (error) {

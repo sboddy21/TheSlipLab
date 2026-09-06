@@ -109,10 +109,15 @@
     "/bullpen-collapse.html",
     "/command-center.html",
     "/full-board.html",
+    "/heat-check.html",
     "/hr-decision-center.html",
     "/decision-center.html",
     "/live-game-center.html",
+    "/live-extra-bases.html",
+    "/live-hard-hit.html",
     "/live-heatmap.html",
+    "/live-home-runs.html",
+    "/live-near-home-runs.html",
     "/live-platform.html",
     "/matchup-lab.html",
     "/mlb.html",
@@ -135,8 +140,16 @@
     "/platoon-edge.html",
     "/player-intelligence.html",
     "/power-zones.html",
+    "/quick-target.html",
+    "/results.html",
+    "/streak-lab.html",
+    "/weather.html",
     "/tags.html"
   ]);
+
+  function isProtectedPath(path){
+    return protectedPaths.has(path) || /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf)(?:-|\.|\/)/.test(path);
+  }
 
   function itemIsActive(activePaths, path){
     return activePaths.includes(path);
@@ -351,9 +364,9 @@
       accountScript.dataset.tslAccountClient = "true";
       document.head.appendChild(accountScript);
     }
-    if (protectedPaths.has(window.location.pathname) && !document.querySelector('script[data-tsl-access-gate]')) {
+    if (isProtectedPath(window.location.pathname) && !document.querySelector('script[data-tsl-access-gate]')) {
       const gateScript = document.createElement("script");
-      gateScript.src = "./assets/access-gate.js";
+      gateScript.src = "./assets/access-gate.js?v=20260906-members1";
       gateScript.dataset.tslAccessGate = "true";
       document.head.appendChild(gateScript);
     }
