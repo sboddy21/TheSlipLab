@@ -68,16 +68,15 @@
   ];
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const nflItems = [
-    ["NFL Home","#pageTitle",["/nfl.html"]],
-    ["Anytime TD","#anytime-td",[]],
-    ["Rec Yds","#receiving-yards",[]],
-    ["Rush Yds","#market-rushing-yards",[]],
-    ["Pass Yds","#market-passing-yards",[]],
-    ["Status","#nfl-status",[]],
+    ["NFL Home","./nfl.html#dashboard",["/nfl.html"]],
+    ["Anytime TD","./nfl.html#touchdowns",[]],
+    ["Rec Yds","./nfl.html#receiving",[]],
+    ["Rush Yds","./nfl.html#rushing",[]],
+    ["Pass Yds","./nfl.html#passing",[]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds", "Status"];
+  const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds"];
   const nbaItems = [
     ["NBA Home","./nba.html",["/nba.html"]],
     ["Points","./nba-points.html",["/nba-points.html"]],
@@ -309,7 +308,7 @@
   function buildFooter(){
     const section = document.documentElement.dataset.sport || sectionForPath(window.location.pathname);
     const links = section === "nfl"
-      ? [["NFL Home","./nfl.html#dashboard"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"],["Status","./nfl.html#status"]]
+      ? [["NFL Home","./nfl.html#dashboard"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"]]
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
