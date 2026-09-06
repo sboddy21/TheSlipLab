@@ -9,14 +9,45 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: production-data-writers
-  cancel-in-progress: false
-
 jobs:
+  check_live_games:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      live_games: ${{ steps.mlb_status.outputs.live_games }}
+      live_game_count: ${{ steps.mlb_status.outputs.live_game_count }}
+    steps:
+      - name: Check for live MLB games
+        id: mlb_status
+        shell: bash
+        run: |
+          slate_date="$(TZ=America/New_York date +%F)"
+          schedule_url="https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${slate_date}"
+          schedule="$(curl --fail --silent --show-error --retry 2 --max-time 20 "${schedule_url}")"
+          live_game_count="$(jq '[.dates[]?.games[]? | select(.status.abstractGameState == "Live")] | length' <<<"${schedule}")"
+
+          echo "live_game_count=${live_game_count}" >> "${GITHUB_OUTPUT}"
+          if (( live_game_count > 0 )); then
+            echo "live_games=true" >> "${GITHUB_OUTPUT}"
+            echo "Found ${live_game_count} live MLB game(s); HR results refresh will run."
+          else
+            echo "live_games=false" >> "${GITHUB_OUTPUT}"
+            echo "No live MLB games; skipping the HR results refresh."
+          fi
+
   update-hr-results:
+    needs: check_live_games
+    # Cloudflare dispatches this workflow every five minutes. Only live games need
+    # that cadence; the daily scheduled run remains as a final reconciliation.
+    if: >-
+      ${{ always() &&
+          (github.event_name == 'schedule' ||
+           needs.check_live_games.outputs.live_games == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 12
+    concurrency:
+      group: production-data-writers
+      cancel-in-progress: false
 
     steps:
       - name: Checkout repository
