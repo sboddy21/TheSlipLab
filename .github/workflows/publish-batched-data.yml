@@ -1,0 +1,43 @@
+name: Publish Batched Data to Vercel
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Six production publishes per day. High-frequency refresh commits accumulate
+    # between these snapshots without launching a Vercel build for every commit.
+    - cron: "17 1,5,9,13,17,21 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: production-data-writers
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+
+      - name: Publish the latest accumulated data snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull origin "${GITHUB_REF_NAME}" --rebase
+          git commit --allow-empty -m "Publish batched data snapshot"
+
+          for i in 1 2 3; do
+            git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0
+            echo "Push failed. Syncing and retrying..."
+            git pull origin "${GITHUB_REF_NAME}" --rebase
+            sleep 10
+          done
+
+          echo "Push failed after retries"
+          exit 1
