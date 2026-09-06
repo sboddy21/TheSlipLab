@@ -1,5 +1,5 @@
 (() => {
-  const storageKey = "tsl:nfl-coming-soon:seen:v1";
+  const storageKey = "tsl:football-live:seen:v2";
   const rootId = "tsl-nfl-launch";
 
   if (document.getElementById(rootId) || window.__tslNflLaunchShown) return;
@@ -53,15 +53,15 @@
     root.setAttribute("aria-labelledby", `${rootId}-title`);
     root.innerHTML = `
       <section class="nfl-launch-card">
-        <button class="nfl-launch-close" type="button" aria-label="Close NFL coming soon announcement">×</button>
+        <button class="nfl-launch-close" type="button" aria-label="Close football launch announcement">×</button>
         <div class="nfl-launch-copy">
-          <div class="nfl-launch-kicker">Now building in The Lab</div>
-          <h2 id="${rootId}-title">NFL Intelligence <span>Coming Soon</span></h2>
-          <p>Roles. Usage. Matchups. Availability. The next Slip Lab is being built to make every NFL slate easier to read.</p>
-          <div class="nfl-launch-pills" aria-label="Upcoming NFL features"><span>Role tracking</span><span>Usage signals</span><span>Matchup context</span></div>
-          <div class="nfl-launch-actions"><button class="nfl-launch-action primary" type="button" data-nfl-dismiss>Keep exploring</button></div>
+          <div class="nfl-launch-kicker">Football is live in The Lab</div>
+          <h2 id="${rootId}-title">NFL + NCAAF <span>Live Now</span></h2>
+          <p>Pro and college football now have dedicated live labs for weekly matchups, player roles, usage, availability, and game context.</p>
+          <div class="nfl-launch-pills" aria-label="Live football coverage"><span>NFL player intelligence</span><span>NCAAF weekly slate</span><span>Live matchup context</span></div>
+          <div class="nfl-launch-actions"><a class="nfl-launch-action primary" href="./nfl.html">Open NFL</a><a class="nfl-launch-action" href="./cfb.html">Open NCAAF</a><button class="nfl-launch-action" type="button" data-nfl-dismiss>Keep exploring</button></div>
         </div>
-        <div class="nfl-launch-visual" aria-hidden="true"><span class="nfl-launch-season">The next lab is loading</span></div>
+        <div class="nfl-launch-visual" aria-hidden="true"><span class="nfl-launch-season">NFL + NCAAF are live</span></div>
       </section>`;
 
     const handleKeydown = (event) => {
