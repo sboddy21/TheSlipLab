@@ -343,11 +343,8 @@
   }
 
   function init(){
-    if (document.documentElement.dataset.disableOdds !== "true" && !document.querySelector('script[data-tsl-odds]')) {
-      const oddsScript = document.createElement('script');
-      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js';
-      oddsScript.dataset.tslOdds = 'true'; document.head.appendChild(oddsScript);
-    }
+    // Sportsbook prices remain available to the data and ranking pipelines, but
+    // the public odds-comparison UI is intentionally not mounted.
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
     const header = buildHeader();
