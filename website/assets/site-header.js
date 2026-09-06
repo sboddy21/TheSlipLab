@@ -309,7 +309,7 @@
   function buildFooter(){
     const section = document.documentElement.dataset.sport || sectionForPath(window.location.pathname);
     const links = section === "nfl"
-      ? [["NFL Home","./nfl.html"],["Anytime TD","./nfl.html#anytime-td"],["Rec Yds","./nfl.html#receiving-yards"],["Status","./nfl.html#nfl-status"]]
+      ? [["NFL Home","./nfl.html#dashboard"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"],["Status","./nfl.html#status"]]
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
@@ -329,9 +329,9 @@
   }
 
   function init(){
-    if (!document.querySelector('script[data-tsl-odds]')) {
+    if (document.documentElement.dataset.disableOdds !== "true" && !document.querySelector('script[data-tsl-odds]')) {
       const oddsScript = document.createElement('script');
-      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js?v=player-card-prices-20260904-3';
+      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js';
       oddsScript.dataset.tslOdds = 'true'; document.head.appendChild(oddsScript);
     }
     if (document.querySelector(".tsl-site-header")) return;
