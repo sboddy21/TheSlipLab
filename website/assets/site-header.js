@@ -69,6 +69,7 @@
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const nflItems = [
     ["NFL Home","./nfl.html#dashboard",["/nfl.html"]],
+    ["Touchdown AI","./nfl-touchdown-ai.html",["/nfl-touchdown-ai.html"]],
     ["Anytime TD","./nfl.html#touchdowns",[]],
     ["Rec Yds","./nfl.html#receiving",[]],
     ["Rush Yds","./nfl.html#rushing",[]],
@@ -76,7 +77,7 @@
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds"];
+  const nflPrimaryOrder = ["NFL Home", "Touchdown AI", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds"];
   const nbaItems = [
     ["NBA Home","./nba.html",["/nba.html"]],
     ["Points","./nba-points.html",["/nba-points.html"]],
@@ -129,6 +130,7 @@
     "/wnba-full-board.html",
     "/wnba-quick-target.html",
     "/nfl.html",
+    "/nfl-touchdown-ai.html",
     "/pitcher-vulnerability.html",
     "/platoon-edge.html",
     "/player-intelligence.html",
@@ -142,7 +144,7 @@
 
   function sectionForPath(path){
     if (path === "/cfb.html") return "general";
-    if (path === "/nfl.html") return "nfl";
+    if (path === "/nfl.html" || path.startsWith("/nfl-")) return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
     if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
     if (generalPaths.has(path)) return "general";
@@ -308,7 +310,7 @@
   function buildFooter(){
     const section = document.documentElement.dataset.sport || sectionForPath(window.location.pathname);
     const links = section === "nfl"
-      ? [["NFL Home","./nfl.html#dashboard"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"]]
+      ? [["NFL Home","./nfl.html#dashboard"],["Touchdown AI","./nfl-touchdown-ai.html"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"]]
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"

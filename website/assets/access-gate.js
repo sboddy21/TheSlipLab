@@ -26,6 +26,7 @@
     "/wnba-full-board.html",
     "/wnba-quick-target.html",
     "/nfl.html",
+    "/nfl-touchdown-ai.html",
     "/pitcher-vulnerability.html",
     "/player-intelligence.html",
     "/power-zones.html",
