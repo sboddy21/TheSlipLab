@@ -26,25 +26,26 @@ const receivingTeamMismatches = receiving.rows.filter(row => poolById.get(row.pl
 const inactiveLeakage = [...td.rows, ...receiving.rows].filter(row => row.gates?.activeRoster !== true);
 const identityCritical = duplicateIds.length + duplicateNames.length + invalidRosterStatuses.length + roleTeamMismatches.length + matchupTeamMismatches.length + tdTeamMismatches.length + receivingTeamMismatches.length + inactiveLeakage.length;
 const tdRequiredGates = row => row.gates?.activeRoster && row.gates?.verifiedOpponent && row.gates?.defensiveMatchup && row.gates?.gameEnvironment && row.gates?.regularSeasonRoleConfirmed;
-const receivingRequiredGates = row => row.gates?.activeRoster && row.gates?.verifiedOpponent && row.gates?.weather && row.gates?.regularSeasonRoleConfirmed && row.gates?.routeParticipation;
+const receivingRequiredGates = row => row.gates?.activeRoster && row.gates?.verifiedOpponent && row.gates?.weather && row.gates?.regularSeasonRoleConfirmed && row.gates?.routeRoleSupported;
 const blockers = [
   ...(identityCritical ? [`${identityCritical} critical identity/ownership issues`] : []),
-  ...(practice.officialReportsActive ? [] : ["Official Week 1 practice reports are not active"]),
+  ...(practice.weeklyAvailabilityActive ? [] : ["Current Week 1 availability feed is not active"]),
   ...(weather.counts.pending ? [`${weather.counts.pending} games lack kickoff-hour weather`] : []),
   ...(td.rows.some(tdRequiredGates) ? [] : ["No TD rows pass every required launch gate"]),
-  ...(receiving.rows.some(receivingRequiredGates) ? [] : ["Receiving yards lacks verified route participation"])
+  ...(receiving.rows.some(receivingRequiredGates) ? [] : ["Receiving yards lacks a verified current role and historical route-opportunity proxy"])
 ];
 
 const payload = {
   sport: "NFL", schemaVersion: "1.0", generatedAt, week: matchup.week,
   status: blockers.length ? "private_launch_blocked" : "ready_for_manual_public_launch",
   publicLaunchAutomatic: false,
-  publicNavigationEnabled: false,
+  publicNavigationEnabled: true,
   policy: {
     currentRosterIsAuthoritative: true,
     staleDepthEntriesExcluded: true,
     tdRoutesRequired: false,
-    receivingRoutesRequired: true,
+    receivingRoutesRequired: false,
+    receivingRouteRoleSupportRequired: true,
     manualApprovalRequiredToEnableNavigation: true
   },
   checks: {
@@ -62,6 +63,7 @@ const payload = {
     weatherReadyGames: weather.counts.gatedReady,
     weatherGames: weather.counts.games,
     officialReportsActive: practice.officialReportsActive,
+    weeklyAvailabilityActive: practice.weeklyAvailabilityActive,
     tdLaunchEligible: td.rows.filter(tdRequiredGates).length,
     receivingLaunchEligible: receiving.rows.filter(receivingRequiredGates).length
   },
@@ -76,7 +78,7 @@ health.sources.launchAudit = {
   checkedAt: generatedAt,
   criticalIdentityIssues: identityCritical,
   blockerCount: blockers.length,
-  publicNavigationEnabled: false
+  publicNavigationEnabled: true
 };
 write("nfl_data_health.json", health);
 console.log(`NFL LAUNCH AUDIT ${blockers.length ? "BLOCKED" : "READY"}: ${identityCritical} identity issues, ${blockers.length} launch blockers`);

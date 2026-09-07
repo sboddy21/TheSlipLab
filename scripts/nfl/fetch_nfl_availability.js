@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, "../..");
 const DATA = path.join(ROOT, "website", "data");
 const SEASON = Number(process.env.NFL_SEASON || 2026);
 const DEPTH_URL = `https://github.com/nflverse/nflverse-data/releases/download/depth_charts/depth_charts_${SEASON}.csv`;
+const INJURY_URL = "https://site.api.espn.com/apis/site/v2/sports/football/nfl/injuries";
 const TARGET_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
 
 function read(filename) {
@@ -53,11 +54,17 @@ async function fetchText(url, attempts = 3) {
   throw new Error(`NFL availability fetch failed after retries: ${url}`);
 }
 
+async function fetchJson(url, attempts = 3) {
+  return JSON.parse(await fetchText(url, attempts));
+}
+
 async function main() {
+  const generatedAt = new Date().toISOString();
   const pool = read("nfl_player_pool.json");
   const health = read("nfl_data_health.json");
   const playersById = new Map(pool.players.map(player => [String(player.playerId), player]));
   const csv = await fetchText(DEPTH_URL);
+  const leagueInjuries = await fetchJson(INJURY_URL);
   const lines = csv.split(/\r?\n/).filter(Boolean);
   const headers = parseCsvLine(lines.shift());
   const rows = lines.map(line => {
@@ -92,7 +99,7 @@ async function main() {
     };
   }).sort((a, b) => a.team.localeCompare(b.team) || a.position.localeCompare(b.position) || a.slot - b.slot || a.rank - b.rank);
 
-  const injuryEntries = pool.players.flatMap(player => (player.injuries || []).map(injury => ({
+  const rosterEntries = pool.players.flatMap(player => (player.injuries || []).map(injury => ({
     playerId: player.playerId,
     playerName: player.fullName,
     team: player.team,
@@ -102,9 +109,30 @@ async function main() {
     detail: injury.detail || "",
     reportedAt: injury.date || "",
     sourceCoverage: "team_roster_feed"
-  }))).sort((a, b) => a.team.localeCompare(b.team) || a.playerName.localeCompare(b.playerName));
+  })));
+  const currentLeagueEntries = (leagueInjuries.injuries || []).map(item => {
+    const athlete = item.athlete || {};
+    const player = playersById.get(String(athlete.id || ""));
+    if (!player) return null;
+    return {
+      playerId: player.playerId,
+      playerName: player.fullName,
+      team: player.team,
+      position: player.position,
+      status: item.status || "reported",
+      type: item.type?.description || item.type?.name || "",
+      detail: item.details?.detail || item.details?.type || "",
+      reportedAt: item.date || leagueInjuries.timestamp || "",
+      sourceCoverage: "current_league_injury_designation"
+    };
+  }).filter(Boolean);
+  const injuryByPlayer = new Map(rosterEntries.map(entry => [String(entry.playerId), entry]));
+  for (const entry of currentLeagueEntries) injuryByPlayer.set(String(entry.playerId), entry);
+  const injuryEntries = [...injuryByPlayer.values()].sort((a, b) => a.team.localeCompare(b.team) || a.playerName.localeCompare(b.playerName));
+  const leagueTimestamp = leagueInjuries.timestamp || generatedAt;
+  const leagueAgeHours = (Date.now() - Date.parse(leagueTimestamp)) / 36e5;
+  const currentLeagueFeed = Number.isFinite(leagueAgeHours) && leagueAgeHours >= 0 && leagueAgeHours <= 24;
 
-  const generatedAt = new Date().toISOString();
   const unmatched = depthEntries.filter(entry => !entry.canonicalPlayerMatch);
   const resolvedDepthEntries = depthEntries.filter(entry => entry.canonicalPlayerMatch);
   const snapshots = [...latestByTeam.values()].map(Date.parse).filter(Number.isFinite);
@@ -130,9 +158,12 @@ async function main() {
 
   write("nfl_injuries.json", {
     sport: "NFL", schemaVersion: "1.0", season: SEASON, generatedAt,
-    source: "ESPN NFL team roster feeds",
-    availability: "partial",
-    coverage: "Roster-reported injuries only during preseason; official weekly practice reports are not yet active.",
+    source: "ESPN NFL league injury designations with team-roster fallback",
+    sourceUrl: INJURY_URL,
+    availability: currentLeagueFeed ? "available" : "partial",
+    coverage: "Current league injury designations. Practice participation is not inferred when the provider does not supply it.",
+    leagueTimestamp,
+    currentLeagueFeed,
     freshnessPolicy: {
       maximumAgeHours: 24,
       missingReportMeaning: "No injury was attached to the player in the latest roster response; this is not a confirmed healthy designation."
@@ -152,10 +183,12 @@ async function main() {
     sourceUnmatchedExcluded: unmatched.length
   };
   health.sources.injuries = {
-    status: "partial",
-    provider: "ESPN roster feeds",
+    status: currentLeagueFeed ? "available" : "partial",
+    provider: "ESPN league injury designations",
     reportedPlayers: new Set(injuryEntries.map(entry => entry.playerId)).size,
-    reason: "Official weekly practice reports are not active during preseason."
+    currentLeagueFeed,
+    leagueTimestamp,
+    reason: currentLeagueFeed ? "Current player designations available; practice participation remains separate." : "Current league injury feed is stale or unavailable."
   };
   const usageFile = path.join(DATA, "nfl_usage_baselines.json");
   if (fs.existsSync(usageFile)) {

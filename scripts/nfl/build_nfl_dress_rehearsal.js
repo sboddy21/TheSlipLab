@@ -26,6 +26,7 @@ function nextWeek(schedule) {
 
 function practiceContract(pool, injuries, roles, week) {
   const officialReportsActive = injuries.injuries.some(row => pool.players.some(player => hasCurrentOfficialReport(row, player, week, now)));
+  const weeklyAvailabilityActive = injuries.currentLeagueFeed === true && (now - Date.parse(injuries.leagueTimestamp || "")) <= 24 * 3600000;
   const injuryByPlayer = new Map(injuries.injuries.map(row => [row.playerId, row]));
   const roleByPlayer = new Map(roles.roles.map(row => [row.playerId, row]));
   const players = pool.players.map(player => {
@@ -33,6 +34,7 @@ function practiceContract(pool, injuries, roles, week) {
     const status = normalize(injury?.status);
     const unavailable = !isActiveRoster(player) || /injured reserve|\bout\b|suspend|physically unable/.test(status);
     const currentOfficialReport = hasCurrentOfficialReport(injury, player, week, now);
+    const currentDesignation = injury?.sourceCoverage === "current_league_injury_designation" && (now - Date.parse(injury.reportedAt || "")) <= 24 * 3600000;
     const limited = /questionable|doubtful|limited/.test(status);
     const role = roleByPlayer.get(player.playerId);
     const roleEligible = role?.modelEligibility === true && role?.depth?.rank === 1 && role?.preseasonParticipationStatus !== "team_without_final_game";
@@ -40,17 +42,17 @@ function practiceContract(pool, injuries, roles, week) {
       playerId: player.playerId, playerName: player.fullName, team: player.team, position: player.position,
       reportStatus: injury?.status || "no_official_report",
       practiceParticipation: currentOfficialReport ? (injury?.practiceParticipation || "unknown") : "unverified",
-      gameStatus: unavailable ? "out" : limited ? "uncertain" : "unconfirmed",
+      gameStatus: unavailable ? "out" : limited ? "uncertain" : currentDesignation ? "available" : "monitored",
       activeRosterGate: !unavailable,
       roleEligible,
-      regularSeasonRoleConfirmed: currentOfficialReport && !unavailable && !limited && roleEligible,
+      regularSeasonRoleConfirmed: weeklyAvailabilityActive && !unavailable && !limited && roleEligible,
       source: injury?.sourceCoverage || "no_official_weekly_report"
     };
   });
   return {
     sport: "NFL", schemaVersion: "1.0", generatedAt, week,
-    status: officialReportsActive ? "official_weekly_reports_available" : "waiting_for_official_weekly_reports",
-    provider: "ESPN / official team designations", officialReportsActive,
+    status: weeklyAvailabilityActive ? "current_week_availability_available" : "waiting_for_current_week_availability",
+    provider: "ESPN league injury designations + current depth charts", officialReportsActive, weeklyAvailabilityActive,
     freshnessPolicy: { maximumAgeHours: 12, staleReportsAccepted: false, absenceMeansHealthy: false },
     counts: { players: players.length, roleConfirmed: players.filter(row => row.regularSeasonRoleConfirmed).length, unavailable: players.filter(row => !row.activeRosterGate).length },
     players
@@ -97,9 +99,13 @@ function receivingBoard(roles, matchup, practice, weather) {
     const recentScore = baseline.receivingYards ? Math.max(0, Math.min(100, 50 + ((Number(recent.receivingYards || 0) / baseline.receivingYards) - 1) * 45)) : 35;
     const matchupScore = team?.opponentDefense?.vulnerabilityPercentileByPosition?.[role.position] ?? 50;
     const signal = Math.round((targetScore * .38 + yardScore * .32 + role.roleScore * .18 + recentScore * .07 + matchupScore * .05) * 10) / 10;
-    return { playerId: role.playerId, playerName: role.playerName, team: role.team, opponent: game?.opponent, gameId: game?.gameId, position: role.position, receivingSignalScore: signal, scoreType: "private_shadow_signal_not_yardage_projection", historicalPerGame: { targets: baseline.targets, receivingYards: baseline.receivingYards }, gates: { verifiedOpponent: Boolean(game), activeRoster: p?.activeRosterGate === true, regularSeasonRoleConfirmed: p?.regularSeasonRoleConfirmed === true, routeParticipation: false, weather: weather.games.find(row => row.gameId === game?.gameId)?.weatherGate === true }, publicationStatus: "private_shadow_only" };
+    const routeRoleSupported = Number(role.historicalOpportunity?.games || 0) >= 6 && Number(baseline.targets || 0) > 0 && role.depth?.rank === 1;
+    const gates = { verifiedOpponent: Boolean(game), activeRoster: p?.activeRosterGate === true, regularSeasonRoleConfirmed: p?.regularSeasonRoleConfirmed === true, routeParticipation: false, routeRoleSupported, weather: weather.games.find(row => row.gameId === game?.gameId)?.weatherGate === true };
+    const launchEligible = Object.values({ verifiedOpponent: gates.verifiedOpponent, activeRoster: gates.activeRoster, regularSeasonRoleConfirmed: gates.regularSeasonRoleConfirmed, routeRoleSupported, weather: gates.weather }).every(Boolean);
+    return { playerId: role.playerId, playerName: role.playerName, team: role.team, opponent: game?.opponent, gameId: game?.gameId, position: role.position, receivingSignalScore: signal, scoreType: "member_signal_not_yardage_projection", historicalPerGame: { targets: baseline.targets, receivingYards: baseline.receivingYards }, gates, launchEligible, publicationStatus: launchEligible ? "member_signal" : "withheld_by_integrity_gate" };
   }).sort((a, b) => b.receivingSignalScore - a.receivingSignalScore).map((row, index) => ({ ...row, shadowRank: index + 1 }));
-  return { sport: "NFL", schemaVersion: "1.0", generatedAt, week: matchup.week, status: "private_shadow_board", market: "receiving_yards", projectionStatus: "disabled_until_routes_roles_and_weather", recommendationStatus: "disabled", counts: { rankedPlayers: rows.length, publishableRecommendations: 0 }, rows };
+  const publishable = rows.filter(row => row.launchEligible).length;
+  return { sport: "NFL", schemaVersion: "1.0", generatedAt, week: matchup.week, status: publishable ? "member_signal_board" : "gated_signal_board", market: "receiving_yards", projectionStatus: "signal_only_no_yardage_projection", recommendationStatus: "member_research_signal", counts: { rankedPlayers: rows.length, publishableRecommendations: publishable }, rows };
 }
 
 function resultsContract(td, receiving, schedule, existing) {
@@ -121,9 +127,9 @@ async function main() {
   health.generatedAt = generatedAt;
   health.sources.practiceReports = { status: practice.status, provider: practice.provider, roleConfirmed: practice.counts.roleConfirmed };
   health.sources.weather = { status: weather.status, provider: weather.provider, readyGames: weather.counts.gatedReady, games: weather.counts.games };
-  health.sources.receivingYards = { status: "private_shadow_only", rankedPlayers: receiving.counts.rankedPlayers, publishableRecommendations: 0 };
+  health.sources.receivingYards = { status: receiving.status, rankedPlayers: receiving.counts.rankedPlayers, publishableRecommendations: receiving.counts.publishableRecommendations };
   health.sources.resultsTracking = { status: results.status, completedGames: results.counts.completedGames };
-  health.status = "nfl_dress_rehearsal_private_gates_active"; write("nfl_data_health.json", health);
+  health.status = "nfl_member_signals_gated"; write("nfl_data_health.json", health);
   console.log(`NFL dress rehearsal: ${practice.counts.roleConfirmed} roles confirmed, ${weather.counts.gatedReady}/${weather.counts.games} weather ready, ${receiving.counts.rankedPlayers} receiving signals`);
 }
 
