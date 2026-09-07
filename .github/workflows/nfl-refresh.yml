@@ -4,8 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     # Three lean daily passes: after late games, morning reconciliation, and pregame roster refresh.
-    # The final-game gate prevents live games from changing usage conclusions.
+    # Game-window passes keep member trackers current without running continuously all week.
     - cron: "17 5,14,22 * 1-2,8-12 *"
+    - cron: "*/30 0-5,17-23 * 1-2,8-12 0-4"
 
 permissions:
   contents: write
@@ -28,7 +29,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Refresh NFL foundation and final-game usage
+      - name: Refresh NFL signals, live stats, and final results
         run: node scripts/run_nfl_refresh.js
       - name: Commit refreshed NFL data
         run: |
