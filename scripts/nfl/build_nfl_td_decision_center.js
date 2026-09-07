@@ -80,7 +80,7 @@ function scoreRow(role, assignment, context, practice, weather) {
     tdSignalScore,
     baseTdSignalScore,
     dataConfidence: round(dataConfidence),
-    scoreType: "private_shadow_signal_not_probability",
+    scoreType: "member_signal_not_probability",
     trend,
     historicalPerGame: baseline,
     recentSixPerGame: recent,
@@ -115,7 +115,7 @@ function scoreRow(role, assignment, context, practice, weather) {
     practiceReport: practice || null,
     weather: weather || null,
     launchEligible: Boolean(practice?.regularSeasonRoleConfirmed && weather?.weatherGate && role.readiness?.status !== "unavailable"),
-    publicationStatus: "private_shadow_only"
+    publicationStatus: Boolean(practice?.regularSeasonRoleConfirmed && weather?.weatherGate && role.readiness?.status !== "unavailable") ? "member_signal" : "withheld_by_integrity_gate"
   };
 }
 
@@ -151,18 +151,19 @@ function main() {
   const goalLine = eligible.filter(row => row.components.goalLineOpportunity >= 45).slice(0, 30);
   const redZoneTargets = eligible.filter(row => ["WR", "TE", "RB"].includes(row.position) && row.historicalPerGame.redZoneTargets >= 0.45).slice(0, 30);
   const surges = eligible.filter(row => row.trend === "opportunity_surge").slice(0, 30);
+  const publishable = eligible.filter(row => row.launchEligible).length;
 
   const payload = {
     sport: "NFL",
     schemaVersion: "1.0",
     generatedAt,
     week: matchup.week,
-    status: "private_shadow_board",
+    status: publishable ? "member_signal_board" : "gated_signal_board",
     market: "anytime_touchdown",
-    recommendationStatus: "disabled",
-    projectionStatus: "disabled",
+    recommendationStatus: "member_research_signal",
+    projectionStatus: "signal_only_not_probability",
     scoreLabel: "TD Signal Score",
-    scoreDisclaimer: "The TD Signal Score is a private opportunity-ranking score. It is not a touchdown probability, betting recommendation, or published projection.",
+    scoreDisclaimer: "The TD Signal Score is a comparative opportunity-ranking signal. It is not a touchdown probability, betting recommendation, or guaranteed outcome.",
     launchGate: "Requires verified regular-season role, opponent, defensive matchup, and game environment before recommendations can be considered.",
     inputs: {
       available: ["Canonical player identity", "Current team", "Depth chart", "Verified Week 1 opponent", "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
@@ -175,7 +176,7 @@ function main() {
       goalLineElite: goalLine.length,
       redZoneTargets: redZoneTargets.length,
       opportunitySurges: surges.length,
-      publishableRecommendations: 0,
+      publishableRecommendations: publishable,
       verifiedOpponentAssignments: eligible.length,
       matchupAdjustedPlayers: eligible.length,
       launchEligiblePlayers: eligible.filter(row => row.launchEligible).length
@@ -198,15 +199,15 @@ function main() {
   write("nfl_td_decision_center.json", payload);
   health.generatedAt = generatedAt;
   health.sources.tdDecisionCenter = {
-    status: "private_shadow_only",
+    status: payload.status,
     provider: "The Slip Lab",
     market: "anytime_touchdown",
     rankedPlayers: eligible.length,
-    publishableRecommendations: 0,
+    publishableRecommendations: publishable,
   };
-  health.status = "nfl_dress_rehearsal_private_gates_active";
+  health.status = "nfl_member_signals_gated";
   write("nfl_data_health.json", health);
-  console.log(`Built private NFL TD Decision Center: ${eligible.length} ranked players, 0 publishable recommendations`);
+  console.log(`Built NFL TD Decision Center: ${eligible.length} ranked players, ${publishable} publishable member signals`);
 }
 
 try {
