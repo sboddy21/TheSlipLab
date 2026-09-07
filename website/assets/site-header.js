@@ -69,11 +69,14 @@
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const nflItems = [
     ["NFL Home","./nfl.html#dashboard",["/nfl.html"]],
+    ["Game Lab","./nfl.html#games",[]],
     ["Touchdown AI","./nfl-touchdown-ai.html",["/nfl-touchdown-ai.html"]],
     ["Anytime TD","./nfl.html#touchdowns",[]],
     ["Rec Yds","./nfl.html#receiving",[]],
     ["Rush Yds","./nfl.html#rushing",[]],
     ["Pass Yds","./nfl.html#passing",[]],
+    ["Live Tracker","./nfl.html#live",[]],
+    ["Results","./nfl.html#results",[]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
@@ -304,6 +307,18 @@
     inner.appendChild(brand);
     inner.appendChild(nav);
     header.appendChild(inner);
+    if (section === "nfl" && path === "/nfl.html") {
+      const syncNFLActiveLink = () => {
+        const currentHash = window.location.hash || "#dashboard";
+        header.querySelectorAll('a[href*="nfl.html#"]').forEach(link => {
+          const targetHash = new URL(link.href, window.location.href).hash;
+          link.classList.toggle("active", targetHash === currentHash);
+        });
+        menuButton.classList.toggle("active", Array.from(panel.querySelectorAll("a.active")).length > 0);
+      };
+      syncNFLActiveLink();
+      window.addEventListener("hashchange", syncNFLActiveLink);
+    }
     return header;
   }
 
