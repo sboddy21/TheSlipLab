@@ -19,7 +19,7 @@ test('player profiles join role, matchup, weather, availability and headshot dat
   for (const source of ['nfl_matchup_context', 'nfl_player_pool', 'nfl_weather', 'nfl_practice_reports']) {
     assert.ok(js.includes(`get('${source}')`), `missing ${source}`);
   }
-  for (const label of ['OPPORTUNITY', 'MATCHUP', 'GAME CONDITIONS', 'WHY THIS PLAYER']) {
+  for (const label of ['WEEK PROJECTION', 'FORM COMPARISON', 'MATCHUP', 'GAME CONDITIONS', 'WHY THIS PLAYER']) {
     assert.ok(js.includes(label), `missing ${label}`);
   }
   assert.match(js, /base\*\.65\+recent\*\.35/);
@@ -33,7 +33,20 @@ test('cards and profile sheet include responsive premium styling', () => {
   assert.match(css, /@media\(max-width:720px\).*\.player-card-grid\{grid-template-columns:1fr\}/s);
 });
 
+test('position-aware cards and profiles expose actionable volume and scoring data', () => {
+  for (const label of ['Pass attempts', 'Completions', 'Completion rate', 'Passing TDs', 'Rush attempts', 'Receptions', 'Catch rate']) {
+    assert.ok(js.includes(label), `missing ${label}`);
+  }
+  for (const metric of ['passAttempts', 'completions', 'passingTds', 'carries', 'receptions', 'targets']) {
+    assert.ok(js.includes(`projection(role,'${metric}')`), `missing projection for ${metric}`);
+  }
+  assert.match(js, /WEEK PROJECTION/);
+  assert.match(js, /WEIGHTED BASELINE/);
+  assert.match(js, /RECENT SIX/);
+  assert.match(css, /\.card-stats\{display:grid;grid-template-columns:repeat\(4,1fr\)/);
+});
+
 test('NFL page cache-busts the card release assets', () => {
-  assert.match(html, /nfl-lab\.css\?v=20260907-cards1/);
-  assert.match(html, /nfl-lab\.js\?v=20260907-cards1/);
+  assert.match(html, /nfl-lab\.css\?v=20260909-stats1/);
+  assert.match(html, /nfl-lab\.js\?v=20260909-stats1/);
 });
