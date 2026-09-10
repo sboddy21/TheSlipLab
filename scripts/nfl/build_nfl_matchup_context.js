@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { gunzipSync } from "zlib";
 import { fileURLToPath } from "url";
+import { selectWeekGames } from "./week_schedule.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
@@ -218,7 +219,8 @@ async function main() {
     ? { builtAt: existing.historicalBuiltAt, seasons: existing.historicalSeasons, weights: existing.historicalWeights, sources: existing.historicalSources, teamBaselines: existing.historicalTeamBaselines }
     : await buildHistoricalBaselines(depth);
   const week = mainWeek(schedule);
-  const games = schedule.games.filter(game => game.week === week && game.state === "pre" && !game.completed);
+  // Matchup ownership is a schedule fact and must survive pre -> in -> post transitions.
+  const games = selectWeekGames(schedule, week);
   const gameByTeam = new Map();
   for (const game of games) {
     for (const [team, opponent, homeAway] of [[game.homeTeam.abbreviation, game.awayTeam.abbreviation, "home"], [game.awayTeam.abbreviation, game.homeTeam.abbreviation, "away"]]) {

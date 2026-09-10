@@ -1,6 +1,7 @@
 import fs from "fs";
 import { isActiveRoster, hasCurrentOfficialReport } from "./launch_safety.js";
 import path from "path";
+import { selectWeekGames } from "./week_schedule.js";
 
 const DATA = path.resolve("website/data");
 const read = file => JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -118,7 +119,7 @@ function resultsContract(td, receiving, schedule, existing) {
 
 async function main() {
   const schedule = read("nfl_schedule.json"), pool = read("nfl_player_pool.json"), injuries = read("nfl_injuries.json"), roles = read("nfl_role_engine.json"), matchup = read("nfl_matchup_context.json"), td = read("nfl_td_decision_center.json"), health = read("nfl_data_health.json");
-  const week = nextWeek(schedule); const games = schedule.games.filter(game => game.week === week && !game.completed);
+  const week = nextWeek(schedule); const games = selectWeekGames(schedule, week);
   const practice = practiceContract(pool, injuries, roles, week); write("nfl_practice_reports.json", practice);
   const weather = await weatherContract(games, week); write("nfl_weather.json", weather);
   const receiving = receivingBoard(roles, matchup, practice, weather); write("nfl_receiving_yards_board.json", receiving);
