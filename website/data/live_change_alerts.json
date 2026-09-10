@@ -1,17 +1,625 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-09-10T21:57:47.753Z",
+  "generatedAt": "2026-09-10T23:54:44.030Z",
   "date": "2026-09-10",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-09-10T21:55:29.056Z",
-    "mlb_player_pool.json": "2026-09-10T21:55:30.334Z",
-    "game_pitcher_matchups.json": "2026-09-10T21:56:11.944Z",
-    "player_card_data.json": "2026-09-10T21:57:47.668Z",
-    "hr_probability_tracking.json": "2026-09-10T21:56:10.576Z",
-    "pitcher_vulnerability.json": "2026-09-10T21:56:11.948Z"
+    "mlb_games_today.json": "2026-09-10T23:52:32.804Z",
+    "mlb_player_pool.json": "2026-09-10T23:52:33.842Z",
+    "game_pitcher_matchups.json": "2026-09-10T23:53:10.261Z",
+    "player_card_data.json": "2026-09-10T23:54:43.904Z",
+    "hr_probability_tracking.json": "2026-09-10T23:53:09.900Z",
+    "pitcher_vulnerability.json": "2026-09-10T23:53:10.264Z"
   },
   "alerts": [
+    {
+      "id": "f39e09d5df27911016d0",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "553869",
+      "entityName": "Elias Díaz",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Elias Díaz confirmed in the lineup",
+      "message": "Elias Díaz is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "3719c78a5f8d3c41030b",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "553869",
+      "entityName": "Elias Díaz",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Elias Díaz's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 6.4%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 6.4
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "83a26b64de8262367dff",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "553869",
+      "entityName": "Elias Díaz",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Elias Díaz's model score rose",
+      "message": "The live model score rose from 0 to 38.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 38.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "f9be9956b97d3b51ddad",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "592626",
+      "entityName": "Joc Pederson",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Joc Pederson removed from the confirmed lineup",
+      "message": "Joc Pederson's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "496c939e9e369e03f0ca",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592626",
+      "entityName": "Joc Pederson",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Joc Pederson's HR probability fell",
+      "message": "Tracked HR probability fell from 24% to 0%.",
+      "previous": {
+        "probability": 24
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "251dd54c5a3204e8cd29",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592626",
+      "entityName": "Joc Pederson",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Joc Pederson's model score fell",
+      "message": "The live model score fell from 50.1 to 0.",
+      "previous": {
+        "modelScore": 50.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d44f88d93aa30e138e64",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "642215",
+      "entityName": "Weston Wilson",
+      "team": "Seattle Mariners",
+      "gamePk": 823088,
+      "title": "Weston Wilson confirmed in the lineup",
+      "message": "Weston Wilson is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "ba005cfb81292442c434",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642215",
+      "entityName": "Weston Wilson",
+      "team": "Seattle Mariners",
+      "gamePk": 823088,
+      "title": "Weston Wilson's model score rose",
+      "message": "The live model score rose from 0 to 25.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 25
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "3615e25b707b1706dbea",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "643376",
+      "entityName": "Danny Jansen",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Danny Jansen removed from the confirmed lineup",
+      "message": "Danny Jansen's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "20db981e56d05bee27d2",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "643376",
+      "entityName": "Danny Jansen",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Danny Jansen's model score fell",
+      "message": "The live model score fell from 31.8 to 0.",
+      "previous": {
+        "modelScore": 31.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "f0443edf09ceceaa18d3",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "670032",
+      "entityName": "Nicky Lopez",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Nicky Lopez removed from the confirmed lineup",
+      "message": "Nicky Lopez's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "53e71560cfd1fdbe0e5a",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "670032",
+      "entityName": "Nicky Lopez",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Nicky Lopez's model score fell",
+      "message": "The live model score fell from 20.7 to 0.",
+      "previous": {
+        "modelScore": 20.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "67db0796d6e8afe43158",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671277",
+      "entityName": "Luis García Jr.",
+      "team": "New York Yankees",
+      "gamePk": 823499,
+      "title": "Luis García Jr.'s verified signals changed",
+      "message": "Added: hotLately.",
+      "previous": {
+        "signals": [
+          "hotLook"
+        ]
+      },
+      "current": {
+        "signals": [
+          "hotLately",
+          "hotLook"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "e167cb1db04695fe80ca",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "679822",
+      "entityName": "Justin Foscue",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Justin Foscue confirmed in the lineup",
+      "message": "Justin Foscue is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b235a706262cbd30a544",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "679822",
+      "entityName": "Justin Foscue",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Justin Foscue's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 20.8%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 20.8
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "35affc1757c6b5271060",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "679822",
+      "entityName": "Justin Foscue",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Justin Foscue's model score rose",
+      "message": "The live model score rose from 0 to 47.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 47
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "dfae987cffd4cac49179",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "679822",
+      "entityName": "Justin Foscue",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Justin Foscue's verified signals changed",
+      "message": "Added: due.",
+      "previous": {
+        "signals": []
+      },
+      "current": {
+        "signals": [
+          "due"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8a02aba9e2ae1cbc4ce7",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "681198",
+      "entityName": "TJ Rumfield",
+      "team": "Colorado Rockies",
+      "gamePk": 823499,
+      "title": "TJ Rumfield's verified signals changed",
+      "message": "Removed: hotLately.",
+      "previous": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "current": {
+        "signals": []
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d587d3e0532b83285356",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683227",
+      "entityName": "Cody Freeman",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Cody Freeman confirmed in the lineup",
+      "message": "Cody Freeman is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "dd937b0f5575c661cba1",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683227",
+      "entityName": "Cody Freeman",
+      "team": "Texas Rangers",
+      "gamePk": 823088,
+      "title": "Cody Freeman's model score rose",
+      "message": "The live model score rose from 0 to 22.6.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 22.6
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a0e680507cfb66d96366",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "691182",
+      "entityName": "Adael Amador",
+      "team": "Colorado Rockies",
+      "gamePk": 823499,
+      "title": "Adael Amador's verified signals changed",
+      "message": "Removed: hotLook.",
+      "previous": {
+        "signals": [
+          "hotLately",
+          "hotLook"
+        ]
+      },
+      "current": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "fb9b8aa76964bc566ce8",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "691720",
+      "entityName": "Kyle Karros",
+      "team": "Colorado Rockies",
+      "gamePk": 823499,
+      "title": "Kyle Karros's verified signals changed",
+      "message": "Added: hotLately.",
+      "previous": {
+        "signals": []
+      },
+      "current": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8f3e4c4505b224fa51b7",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "801126",
+      "entityName": "Brock Rodden",
+      "team": "Seattle Mariners",
+      "gamePk": 823088,
+      "title": "Brock Rodden removed from the confirmed lineup",
+      "message": "Brock Rodden's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5f72617eb2c9314ff788",
+      "createdAt": "2026-09-10T23:54:44.030Z",
+      "date": "2026-09-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "801126",
+      "entityName": "Brock Rodden",
+      "team": "Seattle Mariners",
+      "gamePk": 823088,
+      "title": "Brock Rodden's model score fell",
+      "message": "The live model score fell from 22 to 0.",
+      "previous": {
+        "modelScore": 22
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "fb0f1e1bae9df6525b26",
       "createdAt": "2026-09-10T21:57:47.753Z",
@@ -5697,32 +6305,6 @@
       "sourceFiles": [
         "mlb_player_pool.json"
       ]
-    },
-    {
-      "id": "5696bab6f0e3187ec765",
-      "createdAt": "2026-09-10T12:21:51.104Z",
-      "date": "2026-09-10",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "700250",
-      "entityName": "Ben Rice",
-      "team": "New York Yankees",
-      "gamePk": 823499,
-      "title": "Ben Rice's verified signals changed",
-      "message": "Removed: hotLook.",
-      "previous": {
-        "signals": [
-          "hotLook"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
     }
   ],
   "snapshot": {
@@ -5799,7 +6381,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 24,
-        "modelScore": 51.9,
+        "modelScore": 51.5,
         "signals": [
           "due"
         ]
@@ -5810,13 +6392,13 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 6.4,
+        "modelScore": 38.9,
         "signals": []
       },
       "571657": {
@@ -5846,7 +6428,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 23.3,
-        "modelScore": 44,
+        "modelScore": 43.5,
         "signals": []
       },
       "573262": {
@@ -5861,7 +6443,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 4,
-        "modelScore": 26.8,
+        "modelScore": 26.4,
         "signals": []
       },
       "592450": {
@@ -5887,13 +6469,13 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 24,
-        "modelScore": 50.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -5954,8 +6536,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 9.5,
-        "modelScore": 39.8,
+        "probability": 9.4,
+        "modelScore": 39.3,
         "signals": []
       },
       "607208": {
@@ -5970,7 +6552,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 9.7,
-        "modelScore": 40.4,
+        "modelScore": 39.9,
         "signals": [
           "hotLately"
         ]
@@ -5987,7 +6569,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 24,
-        "modelScore": 48.6,
+        "modelScore": 48.1,
         "signals": [
           "hotLately"
         ]
@@ -6019,7 +6601,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 24,
-        "modelScore": 49.2,
+        "modelScore": 48.8,
         "signals": [
           "due"
         ]
@@ -6050,8 +6632,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
-        "probability": 6.1,
-        "modelScore": 35.6,
+        "probability": 5.6,
+        "modelScore": 35.2,
         "signals": []
       },
       "640902": {
@@ -6080,8 +6662,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
-        "probability": 15.8,
-        "modelScore": 42.6,
+        "probability": 15.7,
+        "modelScore": 42.1,
         "signals": []
       },
       "641487": {
@@ -6096,7 +6678,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 4.2,
-        "modelScore": 32.3,
+        "modelScore": 31.9,
         "signals": []
       },
       "641857": {
@@ -6111,7 +6693,7 @@
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
         "probability": 4.4,
-        "modelScore": 30.9,
+        "modelScore": 30.4,
         "signals": []
       },
       "642086": {
@@ -6135,13 +6717,13 @@
         "team": "Seattle Mariners",
         "opponent": "Texas Rangers",
         "gamePk": 823088,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 2.2,
+        "modelScore": 25,
         "signals": []
       },
       "642708": {
@@ -6170,8 +6752,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 12.4,
-        "modelScore": 42.9,
+        "probability": 13.6,
+        "modelScore": 42.5,
         "signals": []
       },
       "643289": {
@@ -6186,7 +6768,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 3.1,
-        "modelScore": 30.2,
+        "modelScore": 29.8,
         "signals": []
       },
       "643376": {
@@ -6195,13 +6777,13 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 4.3,
-        "modelScore": 31.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "645277": {
@@ -6216,7 +6798,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 12.2,
-        "modelScore": 39,
+        "modelScore": 38.6,
         "signals": []
       },
       "645302": {
@@ -6261,7 +6843,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 1.7,
-        "modelScore": 25.9,
+        "modelScore": 25.5,
         "signals": []
       },
       "650333": {
@@ -6276,7 +6858,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 4.1,
-        "modelScore": 33.7,
+        "modelScore": 33.2,
         "signals": []
       },
       "650490": {
@@ -6291,7 +6873,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 24,
-        "modelScore": 49.9,
+        "modelScore": 49.4,
         "signals": []
       },
       "650559": {
@@ -6323,7 +6905,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 13.5,
-        "modelScore": 48,
+        "modelScore": 47.6,
         "signals": []
       },
       "656775": {
@@ -6338,7 +6920,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 6.4,
-        "modelScore": 34.2,
+        "modelScore": 33.7,
         "signals": []
       },
       "656941": {
@@ -6353,7 +6935,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 24,
-        "modelScore": 55.1,
+        "modelScore": 54.6,
         "signals": [
           "hotLately",
           "hotLook"
@@ -6386,7 +6968,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 24,
-        "modelScore": 49.1,
+        "modelScore": 48.6,
         "signals": [
           "hotLately"
         ]
@@ -6403,7 +6985,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 4.4,
-        "modelScore": 33.8,
+        "modelScore": 33.3,
         "signals": []
       },
       "663586": {
@@ -6418,7 +7000,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 7,
-        "modelScore": 34.7,
+        "modelScore": 34.2,
         "signals": []
       },
       "663611": {
@@ -6448,7 +7030,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 15.8,
-        "modelScore": 44.2,
+        "modelScore": 43.8,
         "signals": []
       },
       "663743": {
@@ -6463,7 +7045,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 1.3,
-        "modelScore": 21.2,
+        "modelScore": 20.8,
         "signals": []
       },
       "663968": {
@@ -6478,7 +7060,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 2.2,
-        "modelScore": 26,
+        "modelScore": 25.6,
         "signals": []
       },
       "664040": {
@@ -6492,8 +7074,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 22.8,
-        "modelScore": 47.5,
+        "probability": 24,
+        "modelScore": 47,
         "signals": [
           "due"
         ]
@@ -6510,7 +7092,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 11.7,
-        "modelScore": 44.6,
+        "modelScore": 44.2,
         "signals": []
       },
       "664774": {
@@ -6554,8 +7136,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 19.4,
-        "modelScore": 44.4,
+        "probability": 22.2,
+        "modelScore": 43.9,
         "signals": []
       },
       "665161": {
@@ -6570,7 +7152,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 19.8,
-        "modelScore": 41.5,
+        "modelScore": 41,
         "signals": []
       },
       "665561": {
@@ -6599,8 +7181,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 22.8,
-        "modelScore": 42.6,
+        "probability": 24,
+        "modelScore": 42.3,
         "signals": [
           "due"
         ]
@@ -6617,7 +7199,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 15.5,
-        "modelScore": 39.3,
+        "modelScore": 38.9,
         "signals": [
           "hotLately"
         ]
@@ -6649,7 +7231,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 3.7,
-        "modelScore": 26.5,
+        "modelScore": 26.1,
         "signals": []
       },
       "668227": {
@@ -6664,7 +7246,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 24,
-        "modelScore": 44.2,
+        "modelScore": 43.8,
         "signals": [
           "due"
         ]
@@ -6680,8 +7262,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 2.4,
-        "modelScore": 24,
+        "probability": 2.2,
+        "modelScore": 23.5,
         "signals": []
       },
       "668723": {
@@ -6696,7 +7278,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 19.9,
-        "modelScore": 45,
+        "modelScore": 44.6,
         "signals": []
       },
       "668804": {
@@ -6710,8 +7292,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 17.9,
-        "modelScore": 46.3,
+        "probability": 19.7,
+        "modelScore": 45.8,
         "signals": []
       },
       "669016": {
@@ -6758,7 +7340,7 @@
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
         "probability": 3.9,
-        "modelScore": 34.2,
+        "modelScore": 33.8,
         "signals": []
       },
       "669394": {
@@ -6773,7 +7355,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 22.3,
-        "modelScore": 43,
+        "modelScore": 42.7,
         "signals": [
           "hotLately"
         ]
@@ -6789,8 +7371,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
-        "probability": 1.6,
-        "modelScore": 27.7,
+        "probability": 1.7,
+        "modelScore": 27.2,
         "signals": []
       },
       "669707": {
@@ -6804,8 +7386,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 1.4,
-        "modelScore": 18.6,
+        "probability": 1.3,
+        "modelScore": 18.1,
         "signals": []
       },
       "670032": {
@@ -6814,13 +7396,13 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 1.3,
-        "modelScore": 20.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "670541": {
@@ -6835,7 +7417,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 24,
-        "modelScore": 51.7,
+        "modelScore": 51.2,
         "signals": []
       },
       "670623": {
@@ -6850,7 +7432,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 17.2,
-        "modelScore": 39.9,
+        "modelScore": 39.5,
         "signals": []
       },
       "671218": {
@@ -6882,8 +7464,9 @@
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
         "probability": 24,
-        "modelScore": 56.7,
+        "modelScore": 56.5,
         "signals": [
+          "hotLately",
           "hotLook"
         ]
       },
@@ -6899,7 +7482,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 24,
-        "modelScore": 44.6,
+        "modelScore": 44.2,
         "signals": []
       },
       "671976": {
@@ -6913,8 +7496,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 18,
-        "modelScore": 43.4,
+        "probability": 17,
+        "modelScore": 42.9,
         "signals": [
           "due"
         ]
@@ -6931,7 +7514,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 6.7,
-        "modelScore": 32.1,
+        "modelScore": 31.7,
         "signals": []
       },
       "673490": {
@@ -6946,7 +7529,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 1.3,
-        "modelScore": 15.4,
+        "modelScore": 14.9,
         "signals": []
       },
       "676356": {
@@ -7022,7 +7605,7 @@
         "lineupSpot": 5,
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
-        "probability": 11.8,
+        "probability": 12.8,
         "modelScore": 37.2,
         "signals": []
       },
@@ -7037,8 +7620,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 21.2,
-        "modelScore": 47.6,
+        "probability": 21.1,
+        "modelScore": 47.1,
         "signals": []
       },
       "678246": {
@@ -7052,8 +7635,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 22.8,
-        "modelScore": 46.4,
+        "probability": 24,
+        "modelScore": 45.9,
         "signals": []
       },
       "678489": {
@@ -7082,8 +7665,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 3.5,
-        "modelScore": 25.8,
+        "probability": 3.2,
+        "modelScore": 25.4,
         "signals": []
       },
       "679822": {
@@ -7092,14 +7675,16 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 0,
-        "modelScore": 0,
-        "signals": []
+        "probability": 20.8,
+        "modelScore": 47,
+        "signals": [
+          "due"
+        ]
       },
       "680700": {
         "id": "680700",
@@ -7145,7 +7730,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 6.3,
-        "modelScore": 36.6,
+        "modelScore": 36.1,
         "signals": []
       },
       "681198": {
@@ -7159,11 +7744,9 @@
         "lineupSpot": 4,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 14.6,
-        "modelScore": 43.1,
-        "signals": [
-          "hotLately"
-        ]
+        "probability": 15.8,
+        "modelScore": 42.6,
+        "signals": []
       },
       "681351": {
         "id": "681351",
@@ -7191,8 +7774,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 4.7,
-        "modelScore": 32.3,
+        "probability": 5.4,
+        "modelScore": 31.8,
         "signals": []
       },
       "682668": {
@@ -7236,8 +7819,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
-        "probability": 17.2,
-        "modelScore": 45.9,
+        "probability": 16.3,
+        "modelScore": 45.2,
         "signals": []
       },
       "683011": {
@@ -7252,7 +7835,7 @@
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
         "probability": 1.3,
-        "modelScore": 21,
+        "modelScore": 20.6,
         "signals": []
       },
       "683227": {
@@ -7261,13 +7844,13 @@
         "team": "Texas Rangers",
         "opponent": "Seattle Mariners",
         "gamePk": 823088,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 22.6,
         "signals": []
       },
       "683748": {
@@ -7282,7 +7865,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 24,
-        "modelScore": 42.4,
+        "modelScore": 41.9,
         "signals": [
           "hotLately"
         ]
@@ -7299,7 +7882,7 @@
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
         "probability": 24,
-        "modelScore": 48.7,
+        "modelScore": 48.3,
         "signals": []
       },
       "686668": {
@@ -7329,7 +7912,7 @@
         "opposingPitcherId": "607259",
         "opposingPitcher": "Nick Martinez",
         "probability": 24,
-        "modelScore": 43.6,
+        "modelScore": 43.2,
         "signals": []
       },
       "687462": {
@@ -7343,8 +7926,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 4.6,
-        "modelScore": 28.5,
+        "probability": 4.3,
+        "modelScore": 28.1,
         "signals": []
       },
       "687597": {
@@ -7358,8 +7941,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 1.4,
-        "modelScore": 17,
+        "probability": 1.3,
+        "modelScore": 16.5,
         "signals": []
       },
       "687859": {
@@ -7389,7 +7972,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 15.3,
-        "modelScore": 38.4,
+        "modelScore": 37.9,
         "signals": []
       },
       "691019": {
@@ -7420,8 +8003,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
-        "probability": 5.6,
-        "modelScore": 37.2,
+        "probability": 5.5,
+        "modelScore": 36.7,
         "signals": []
       },
       "691182": {
@@ -7435,11 +8018,10 @@
         "lineupSpot": 7,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 22.8,
-        "modelScore": 52.6,
+        "probability": 22.3,
+        "modelScore": 51.6,
         "signals": [
-          "hotLately",
-          "hotLook"
+          "hotLately"
         ]
       },
       "691406": {
@@ -7454,7 +8036,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 24,
-        "modelScore": 51.2,
+        "modelScore": 50.8,
         "signals": [
           "hotLately"
         ]
@@ -7470,9 +8052,11 @@
         "lineupSpot": 6,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 11.9,
-        "modelScore": 37,
-        "signals": []
+        "probability": 15.1,
+        "modelScore": 37.8,
+        "signals": [
+          "hotLately"
+        ]
       },
       "691728": {
         "id": "691728",
@@ -7502,8 +8086,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 2.9,
-        "modelScore": 34,
+        "probability": 3.1,
+        "modelScore": 33.5,
         "signals": []
       },
       "694249": {
@@ -7517,8 +8101,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 8.7,
-        "modelScore": 37.5,
+        "probability": 9.2,
+        "modelScore": 37,
         "signals": []
       },
       "694378": {
@@ -7548,7 +8132,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 2.8,
-        "modelScore": 29.6,
+        "modelScore": 29.1,
         "signals": []
       },
       "694671": {
@@ -7563,7 +8147,7 @@
         "opposingPitcherId": "669302",
         "opposingPitcher": "Logan Gilbert",
         "probability": 24,
-        "modelScore": 51.5,
+        "modelScore": 51,
         "signals": []
       },
       "695257": {
@@ -7607,8 +8191,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 22.8,
-        "modelScore": 51.9,
+        "probability": 24,
+        "modelScore": 51.4,
         "signals": [
           "hotLately"
         ]
@@ -7624,8 +8208,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 4.4,
-        "modelScore": 32.3,
+        "probability": 4.5,
+        "modelScore": 31.8,
         "signals": []
       },
       "696100": {
@@ -7639,8 +8223,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "608331",
         "opposingPitcher": "Max Fried",
-        "probability": 22.8,
-        "modelScore": 50,
+        "probability": 24,
+        "modelScore": 49.5,
         "signals": []
       },
       "699013": {
@@ -7672,7 +8256,7 @@
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
         "probability": 24,
-        "modelScore": 57.6,
+        "modelScore": 57.2,
         "signals": [
           "hotLook"
         ]
@@ -7721,7 +8305,7 @@
         "opposingPitcherId": "554430",
         "opposingPitcher": "Zack Wheeler",
         "probability": 15.4,
-        "modelScore": 37.1,
+        "modelScore": 36.7,
         "signals": [
           "hotLately"
         ]
@@ -7738,7 +8322,7 @@
         "opposingPitcherId": "664299",
         "opposingPitcher": "Cristian Javier",
         "probability": 1.3,
-        "modelScore": 22.2,
+        "modelScore": 21.8,
         "signals": []
       },
       "702284": {
@@ -7752,8 +8336,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
-        "probability": 7,
-        "modelScore": 32.4,
+        "probability": 6.9,
+        "modelScore": 31.9,
         "signals": []
       },
       "703155": {
@@ -7767,8 +8351,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
-        "probability": 21.5,
-        "modelScore": 43.5,
+        "probability": 19.9,
+        "modelScore": 42.5,
         "signals": []
       },
       "703197": {
@@ -7792,13 +8376,13 @@
         "team": "Seattle Mariners",
         "opponent": "Texas Rangers",
         "gamePk": 823088,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "594798",
         "opposingPitcher": "Jacob deGrom",
-        "probability": 1.3,
-        "modelScore": 22,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "802415": {
@@ -7813,7 +8397,7 @@
         "opposingPitcherId": "527048",
         "opposingPitcher": "Martín Pérez",
         "probability": 1.5,
-        "modelScore": 23.9,
+        "modelScore": 23.5,
         "signals": []
       },
       "803011": {
@@ -7827,8 +8411,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 5,
-        "modelScore": 34.7,
+        "probability": 5.8,
+        "modelScore": 34.2,
         "signals": []
       },
       "804606": {
@@ -7842,8 +8426,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 3.2,
-        "modelScore": 32.6,
+        "probability": 3.7,
+        "modelScore": 32.1,
         "signals": []
       },
       "804668": {
@@ -7857,8 +8441,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 22.8,
-        "modelScore": 47.4,
+        "probability": 23.3,
+        "modelScore": 47,
         "signals": []
       },
       "805367": {
@@ -7872,8 +8456,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 6.2,
-        "modelScore": 30.4,
+        "probability": 6.1,
+        "modelScore": 30,
         "signals": []
       },
       "806146": {
@@ -7887,8 +8471,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "663372",
         "opposingPitcher": "Ryan Feltner",
-        "probability": 4.5,
-        "modelScore": 35.5,
+        "probability": 4.2,
+        "modelScore": 34.7,
         "signals": []
       },
       "808959": {
@@ -7902,8 +8486,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "683003",
         "opposingPitcher": "Jared Jones",
-        "probability": 22.8,
-        "modelScore": 53.3,
+        "probability": 24,
+        "modelScore": 52.8,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7957,7 +8541,7 @@
         "team": "Colorado Rockies",
         "opponent": "New York Yankees",
         "gamePk": 823499,
-        "vulnerability": 68
+        "vulnerability": 70
       },
       "664299": {
         "id": "664299",
@@ -7989,7 +8573,7 @@
         "team": "Chicago White Sox",
         "opponent": "Pittsburgh Pirates",
         "gamePk": 824550,
-        "vulnerability": 23
+        "vulnerability": 22
       }
     }
   }
