@@ -58,6 +58,6 @@ test('NFL market boards use a contained scrolling workspace and multi-game filte
 });
 
 test('NFL page cache-busts the card release assets', () => {
-  assert.match(html, /nfl-lab\.css\?v=20260910-workspace1/);
-  assert.match(html, /nfl-lab\.js\?v=20260910-workspace1/);
+  assert.match(html, /nfl-lab\.css\?v=20260910-gamelab1/);
+  assert.match(html, /nfl-lab\.js\?v=20260910-gamelab1/);
 });
