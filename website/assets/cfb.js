@@ -9,7 +9,7 @@ const dateLabel = value => new Date(value).toLocaleString('en-US',{timeZone:'Ame
 const dayKey = value => new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
 const conferences = {'1':'ACC','4':'Big 12','5':'Big Ten','8':'SEC','9':'Pac-12','12':'Conference USA','15':'MAC','17':'Mountain West','18':'FBS Independents','37':'Sun Belt','151':'American'};
 const conferenceName = id => conferences[id] || (id ? `Conference ${id}` : 'Other');
-let board, snapshot, liveAsOf=null, liveError=true, refreshing=false, market = 'spread';
+let board, snapshot, liveAsOf=null, liveError=true, refreshing=false, market = 'spread', aiByGame=new Map(), aiState='loading';
 const fresh = () => !liveError && isFresh(liveAsOf);
 const upcoming = game => game.state === 'pre' && game.timeValid && Date.parse(game.date) > Date.now();
 function leanLabel(pick,game) {
@@ -18,6 +18,7 @@ function leanLabel(pick,game) {
 const pct=value=>Number.isFinite(value)?`${(value*100).toFixed(1)}%`:'—';
 const qualityLabel=p=>p.dataQuality==='full'?'Full team-history model':p.dataQuality==='limited'?'Limited-history model':'National-prior baseline';
 function gameAiRead(game,p,m) {
+  const generated=aiByGame.get(String(game.id));
   const projection=moneylineProjection(p,snapshot?.calibration);
   if(!projection)return '';
   const favorite=projection.homeProbability>=.5?'home':'away',team=game[favorite],probability=projection[`${favorite}Probability`],fair=projection[`${favorite}FairPrice`];
@@ -32,11 +33,19 @@ function gameAiRead(game,p,m) {
   const totalEstimate=m?.total==null?null:estimate(p,m,snapshot?.calibration,'total');
   const totalSide=totalEstimate===null?null:(totalEstimate>=.5?'over':'under');
   const totalProbability=totalEstimate===null?null:Math.max(totalEstimate,1-totalEstimate);
-  let says=`The model favors ${team.name} by ${Math.abs(p.margin).toFixed(1)} points with a ${pct(probability)} win projection and projects ${projectedTotal.toFixed(1)} total points.`;
-  if(expectedReturn!==null&&expectedReturn>=.05)says+=` The current ${signed(price)} price shows ${(expectedReturn*100).toFixed(1)}% estimated return before uncertainty.`;
-  else if(freshQuote)says+=' The current price does not clear the model’s 5% value threshold.';
-  else says+=' A fresh sportsbook price is needed before evaluating value.';
-  return `<div class="ai-read"><div class="ai-read-head"><span>AI says</span><b>${confidence} confidence · ${esc(qualityLabel(p))}</b></div><p>${esc(says)}</p><div class="ml-grid ai-category-grid"><div><small>Moneyline</small><strong>${esc(team.short)} ${pct(probability)}</strong><em>Fair price ${signed(fair)}${freshQuote?` · ${esc(quote.book)} ${signed(price)}`:' · market unavailable'}</em></div><div><small>Spread</small><strong>${esc(game[spreadPick].short)} ${m?.homeSpread==null?signed(fairSpread):signed(spreadPick==='home'?m.homeSpread:-m.homeSpread)}</strong><em>${spreadProbability===null?`Model fair spread · ${esc(game[spreadSide].short)} ${signed(fairSpread)}`:`${pct(spreadProbability)} cover projection`}</em></div><div><small>Over / Under</small><strong>${totalSide?`${totalSide==='over'?'Over':'Under'} ${m.total}`:`Model total ${projectedTotal.toFixed(1)}`}</strong><em>${totalProbability===null?'Sportsbook total unavailable':`${pct(totalProbability)} projection`}</em></div></div>${freshQuote?`<small class="price-source">Moneyline: ${esc(quote.book)} · verified ${esc(dateLabel(quote.quotedAt))} ET</small>`:'<small class="price-source">Model numbers shown for every category; sportsbook comparisons require a verified current line.</small>'}</div>`;
+  let says=generated?.overview||`The model favors ${team.name} by ${Math.abs(p.margin).toFixed(1)} points with a ${pct(probability)} win projection and projects ${projectedTotal.toFixed(1)} total points.`;
+  if(!generated){if(expectedReturn!==null&&expectedReturn>=.05)says+=` The current ${signed(price)} price shows ${(expectedReturn*100).toFixed(1)}% estimated return before uncertainty.`;else if(freshQuote)says+=' The current price does not clear the model’s 5% value threshold.';else says+=' A fresh sportsbook price is needed before evaluating value.';}
+  const source=generated?`OpenAI-generated · ${esc(generated.headline)}`:aiState==='loading'?'OpenAI analysis loading…':'Statistical model view · OpenAI temporarily unavailable';
+  return `<div class="ai-read"><div class="ai-read-head"><span>AI says</span><b>${confidence} confidence · ${esc(qualityLabel(p))}</b></div><small class="ai-source-label">${source}</small><p>${esc(says)}</p><div class="ml-grid ai-category-grid"><div><small>Moneyline</small><strong>${esc(team.short)} ${pct(probability)}</strong><em>${esc(generated?.moneyline||`Fair price ${signed(fair)}${freshQuote?` · ${quote.book} ${signed(price)}`:' · market unavailable'}`)}</em></div><div><small>Spread</small><strong>${esc(game[spreadPick].short)} ${m?.homeSpread==null?signed(fairSpread):signed(spreadPick==='home'?m.homeSpread:-m.homeSpread)}</strong><em>${esc(generated?.spread||(spreadProbability===null?`Model fair spread · ${game[spreadSide].short} ${signed(fairSpread)}`:`${pct(spreadProbability)} cover projection`))}</em></div><div><small>Over / Under</small><strong>${totalSide?`${totalSide==='over'?'Over':'Under'} ${m.total}`:`Model total ${projectedTotal.toFixed(1)}`}</strong><em>${esc(generated?.total||(totalProbability===null?'Sportsbook total unavailable':`${pct(totalProbability)} projection`))}</em></div></div>${generated?.risks?.length?`<p class="ai-risk"><strong>AI risk check:</strong> ${esc(generated.risks.join(' · '))}</p>`:''}${freshQuote?`<small class="price-source">Moneyline: ${esc(quote.book)} · verified ${esc(dateLabel(quote.quotedAt))} ET</small>`:'<small class="price-source">Model numbers shown for every category; sportsbook comparisons require a verified current line.</small>'}</div>`;
+}
+
+async function accountToken(){for(let i=0;i<60&&!window.TSLAccount;i++)await new Promise(r=>setTimeout(r,100));if(!window.TSLAccount)throw Error('Account session unavailable');await window.TSLAccount.ready;const token=await window.TSLAccount.accessToken();if(!token)throw Error('Sign in to use NCAAF AI Says');return token}
+async function loadGenuineAi(){
+  const games=(snapshot?.games||[]).filter(upcoming).filter(g=>g.projection);if(!games.length)return;
+  aiState='loading';renderGames();
+  try{const token=await accountToken(),version=snapshot.generatedAt||'current';for(let i=0;i<games.length;i+=8){const rows=games.slice(i,i+8),key=`tsl_cfb_ai_v1_${version}_${i}`;let result=JSON.parse(localStorage.getItem(key)||'null');if(!result?.games?.length){const payload=rows.map(g=>{const ml=moneylineProjection(g.projection,snapshot.calibration);return {gameId:g.id,kickoff:g.date,away:g.away.name,home:g.home.name,venue:g.venue,neutral:g.neutral,dataQuality:g.projection.dataQuality,projection:{awayScore:g.projection.awayScore,homeScore:g.projection.homeScore,homeMargin:g.projection.margin,total:g.projection.total,awayWinProbability:ml?.awayProbability,homeWinProbability:ml?.homeProbability,awayOffense:g.projection.away.offense,awayDefense:g.projection.away.defense,homeOffense:g.projection.home.offense,homeDefense:g.projection.home.defense},market:g.market?{homeSpread:g.market.homeSpread,total:g.market.total,homeMoneyline:g.market.homeML,awayMoneyline:g.market.awayML,provider:g.market.provider}:null}});const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({games:payload})});result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'NCAAF AI analysis unavailable');localStorage.setItem(key,JSON.stringify(result))}for(const row of result.games)aiByGame.set(String(row.gameId),row);renderGames()}
+    aiState='ready';renderGames();
+  }catch(error){console.error('NCAAF OpenAI:',error);aiState='error';renderGames()}
 }
 function currentQuote(game,marketName,side) {
   const quote=game.market?.quoteDetails?.[marketName]?.[side];
@@ -165,6 +174,7 @@ document.querySelectorAll('[data-market]').forEach(button=>button.addEventListen
 $('lean-list').addEventListener('click',event=>{if(event.target.closest('[data-show-game]')) { $('filters').reset(); renderGames(); }});
 $('refresh-now').addEventListener('click',()=>refreshLive());
 await load();
+await loadGenuineAi();
 await refreshLive();
 setInterval(()=>{if(!document.hidden)refreshLive();},60000);
 setInterval(async()=>{if(!document.hidden){await load();await refreshLive();}},300000);

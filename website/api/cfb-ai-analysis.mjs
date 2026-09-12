@@ -1,0 +1,23 @@
+const MODEL="gpt-5.6-sol",cache=new Map();
+const json=(r,s,p)=>{r.setHeader("Cache-Control","private, no-store, max-age=0");return r.status(s).json(p)};
+const token=req=>String(req.headers.authorization||"").match(/^Bearer\s+(.+)$/i)?.[1]||"";
+async function user(req){const t=token(req),url=process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SERVICE_KEY;if(!t||!url||!key)return null;const r=await fetch(`${url.replace(/\/+$/,"")}/auth/v1/user`,{headers:{apikey:key,authorization:`Bearer ${t}`}});return r.ok?r.json():null}
+const n=v=>Number.isFinite(Number(v))?Number(v):null,s=(v,l=100)=>String(v||"").slice(0,l);
+function clean(g){return {gameId:s(g.gameId,40),kickoff:s(g.kickoff,40),away:s(g.away,80),home:s(g.home,80),venue:s(g.venue,120),neutral:Boolean(g.neutral),dataQuality:s(g.dataQuality,30),projection:{awayScore:n(g.projection?.awayScore),homeScore:n(g.projection?.homeScore),homeMargin:n(g.projection?.homeMargin),total:n(g.projection?.total),awayWinProbability:n(g.projection?.awayWinProbability),homeWinProbability:n(g.projection?.homeWinProbability),awayOffense:n(g.projection?.awayOffense),awayDefense:n(g.projection?.awayDefense),homeOffense:n(g.projection?.homeOffense),homeDefense:n(g.projection?.homeDefense)},market:g.market?{homeSpread:n(g.market.homeSpread),total:n(g.market.total),homeMoneyline:n(g.market.homeMoneyline),awayMoneyline:n(g.market.awayMoneyline),provider:s(g.market.provider,50)}:null}}
+const schema={type:"object",additionalProperties:false,required:["games"],properties:{games:{type:"array",minItems:1,maxItems:10,items:{type:"object",additionalProperties:false,required:["gameId","headline","overview","moneyline","spread","total","risks"],properties:{gameId:{type:"string"},headline:{type:"string"},overview:{type:"string"},moneyline:{type:"string"},spread:{type:"string"},total:{type:"string"},risks:{type:"array",minItems:1,maxItems:3,items:{type:"string"}}}}}}};
+function output(p){if(typeof p?.output_text==="string")return p.output_text;return (p?.output||[]).flatMap(x=>x.content||[]).filter(x=>x.type==="output_text").map(x=>x.text||"").join("")}
+export default async function handler(req,res){
+ if(req.method==="GET")return json(res,200,{configured:Boolean(process.env.OPENAI_API_KEY),model:MODEL});
+ if(req.method!=="POST")return json(res,405,{error:"Method not allowed"});
+ try{
+  if(!process.env.OPENAI_API_KEY)return json(res,503,{error:"AI analysis is not configured"});
+  if(!(await user(req))?.id)return json(res,401,{error:"Sign in to use NCAAF AI Says"});
+  const games=(Array.isArray(req.body?.games)?req.body.games:[]).slice(0,10).map(clean).filter(g=>g.gameId&&g.home&&g.away);
+  if(!games.length)return json(res,400,{error:"No NCAAF games supplied"});
+  const key=games.map(g=>`${g.gameId}:${JSON.stringify(g.projection)}:${JSON.stringify(g.market)}`).join("|");if(cache.has(key))return json(res,200,cache.get(key));
+  const prompt="You are the NCAAF analyst for The Slip Lab. Analyze every supplied game and return exactly one entry for each gameId. Use only supplied opponent-adjusted projections and verified market fields. Explain the moneyline, model fair spread, and projected total in football terms. If a sportsbook field is null, explicitly call it a model-only view and never invent a line, price, injury, weather, roster fact, or news. Treat limited-history and national-prior inputs as materially lower confidence. Do not guarantee wins or describe a model-only number as a bet or market edge.";
+  const r=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{Authorization:`Bearer ${process.env.OPENAI_API_KEY}`,"Content-Type":"application/json"},body:JSON.stringify({model:MODEL,reasoning:{effort:"low"},input:[{role:"developer",content:[{type:"input_text",text:prompt}]},{role:"user",content:[{type:"input_text",text:JSON.stringify({sport:"NCAAF",games})}]}],text:{verbosity:"medium",format:{type:"json_schema",name:"cfb_game_analysis",strict:true,schema}},max_output_tokens:7000}),signal:AbortSignal.timeout(55000)});
+  const payload=await r.json().catch(()=>({}));if(!r.ok)throw Error(payload?.error?.message||"OpenAI analysis failed");const parsed=JSON.parse(output(payload));
+  const result={source:"openai",model:MODEL,generatedAt:new Date().toISOString(),games:parsed.games};cache.set(key,result);if(cache.size>20)cache.delete(cache.keys().next().value);return json(res,200,result);
+ }catch(e){return json(res,502,{error:e?.name==="TimeoutError"?"OpenAI analysis took too long":e.message||"NCAAF AI analysis failed"})}
+}
