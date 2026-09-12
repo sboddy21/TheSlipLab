@@ -81,6 +81,15 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const nflPrimaryOrder = ["NFL Home", "Touchdown AI", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds"];
+  const cfbItems = [
+    ["NCAAF Home","./cfb.html",["/cfb.html"]],
+    ["AI Says","./cfb.html#leans",[]],
+    ["Game Lab","./cfb.html#slate",[]],
+    ["Results","./cfb.html#results",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab", "Results"];
   const nbaItems = [
     ["NBA Home","./nba.html",["/nba.html"]],
     ["Points","./nba-points.html",["/nba-points.html"]],
@@ -159,7 +168,7 @@
   }
 
   function sectionForPath(path){
-    if (path === "/cfb.html") return "general";
+    if (path === "/cfb.html") return "cfb";
     if (path === "/nfl.html" || path.startsWith("/nfl-")) return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
     if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
@@ -200,8 +209,8 @@
     const path = window.location.pathname;
     const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : "");
     const section = bodySection || sectionForPath(path);
-    const navItems = section === "nfl" ? nflItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "general" ? generalItems : mlbItems;
-    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
+    const navItems = section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "general" ? generalItems : mlbItems;
+    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = `tsl-site-header tsl-${section}-header`;
