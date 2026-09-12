@@ -1,6 +1,6 @@
 import {fresh as quoteFresh} from './odds-core.mjs';
 import { isFresh,mergeLiveGame,MAX_MODEL_AGE_MS } from './cfb-market.mjs';
-import { valuePicks, moneylineProjection, implied, payout } from './cfb-edge.mjs';
+import { valuePicks, moneylineProjection, implied, payout, estimate } from './cfb-edge.mjs';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const signed = n => n === null || n === undefined ? '—' : n > 0 ? `+${n}` : `${n}`;
@@ -29,6 +29,33 @@ function moneylineRead(game,p,m) {
   else if(freshQuote)says+=' The current price does not clear the model’s 5% value threshold.';
   else says+=' A fresh sportsbook price is needed before evaluating value.';
   return `<div class="ai-read"><div class="ai-read-head"><span>AI says</span><b>${confidence} model confidence</b></div><p>${esc(says)}</p><div class="ml-grid"><div><small>Win projection</small><strong>${esc(team.short)} ${pct(probability)}</strong></div><div><small>Model fair line</small><strong>${signed(fair)}</strong></div><div><small>Sportsbook line</small><strong>${freshQuote?signed(price):'—'}</strong></div><div><small>Model vs market</small><strong>${gap===null?'—':signed((gap*100).toFixed(1))+' pts'}</strong></div></div>${freshQuote?`<small class="price-source">${esc(quote.book)} · quoted ${esc(dateLabel(quote.quotedAt))} ET</small>`:''}</div>`;
+}
+function currentQuote(game,marketName,side) {
+  const quote=game.market?.quoteDetails?.[marketName]?.[side];
+  return quote&&quoteFresh(quote.quotedAt)?quote:null;
+}
+function rankedMarketReads(kind) {
+  if(!board)return [];
+  const reads=[];
+  for(const game of board.games.filter(upcoming)) {
+    const p=game.projection,m=game.market;if(!p)continue;
+    if(kind==='moneyline') {
+      const ml=moneylineProjection(p,snapshot?.calibration);if(!ml)continue;
+      const side=ml.homeProbability>=ml.awayProbability?'home':'away',probability=ml[`${side}Probability`],quote=currentQuote(game,'moneyline',side);
+      reads.push({game,probability,edge:probability-.5,label:game[side].short,detail:`Win projection ${pct(probability)} · fair ${signed(ml[`${side}FairPrice`])}`,quote});
+    } else if(m) {
+      const base=estimate(p,m,snapshot?.calibration,kind);if(base===null)continue;
+      const side=kind==='spread'?(base>=.5?'home':'away'):(base>=.5?'over':'under'),probability=base>=.5?base:1-base;
+      const line=kind==='spread'?(side==='home'?m.homeSpread:-m.homeSpread):m.total,quote=currentQuote(game,kind,side);
+      const label=kind==='spread'?`${game[side].short} ${signed(line)}`:`${side==='over'?'Over':'Under'} ${line}`;
+      reads.push({game,probability,edge:kind==='spread'?Math.abs(p.margin+m.homeSpread):Math.abs(p.total-m.total),label,detail:`${pct(probability)} model estimate · ${kind==='spread'?'projected margin '+signed(Number(p.margin.toFixed(1))):'projected total '+p.total.toFixed(1)}`,quote});
+    }
+  }
+  return reads.sort((a,b)=>b.edge-a.edge).slice(0,5);
+}
+function aiMarketColumn(kind,title) {
+  const rows=rankedMarketReads(kind);
+  return `<section class="ai-market"><div class="ai-market-title"><span>${esc(title)}</span><small>Top model reads</small></div>${rows.length?rows.map((r,index)=>`<article class="ai-pick"><b>${index+1}</b><div><small>${esc(r.game.away.short)} @ ${esc(r.game.home.short)} · ${esc(dateLabel(r.game.date))} ET</small><h3>${esc(r.label)}</h3><p>${esc(r.detail)}</p>${r.quote?`<span class="ai-price">${esc(r.quote.book)} ${signed(r.quote.price)} · verified ${esc(dateLabel(r.quote.quotedAt))} ET</span>`:'<span class="ai-price waiting">Fresh sportsbook price unavailable</span>'}</div><a href="#game-${esc(r.game.id)}" data-show-game aria-label="Open ${esc(r.game.away.short)} at ${esc(r.game.home.short)} matchup">↗</a></article>`).join(''):'<p class="ai-market-empty">No eligible projections in this market.</p>'}</section>`;
 }
 function card(game) {
   const m = game.state==='pre'&&(!upcoming(game)||(game.market?.source==='RapidAPI'&&!Object.values(game.market.quoteDetails||{}).flatMap(Object.values).some(q=>quoteFresh(q.quotedAt))))?null:game.market, p = game.projection;
@@ -67,8 +94,9 @@ function renderSummary() {
   const modelReady=board.games.some(g=>g.projection&&isFresh(g.projection.trainingCutoff,Date.now(),MAX_MODEL_AGE_MS));
   $('health').classList.toggle('warning',!fresh()||!modelReady);
   $('health').textContent=fresh()?`ESPN scores · RapidAPI odds · Checked ${dateLabel(liveAsOf)} ET${modelReady?"":" · Projections unavailable"}`:`Live updates unavailable. Leans paused. Last update: ${liveAsOf?dateLabel(liveAsOf)+' ET':'not yet available'}.`;
-  $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[board.games.filter(g=>g.market).length,'Games with odds'],[active.length,'Model leans']].map(([n,label])=>`<div class="metric"><strong>${n}</strong><span>${label}</span></div>`).join('');
-  $('lean-list').innerHTML=active.length?active.slice(0,6).map(({game,pick})=>`<article class="lean"><small>${esc(game.away.short)} @ ${esc(game.home.short)} · ${esc(dateLabel(game.date))} ET</small><h3>${esc(leanLabel(pick,game))}</h3><span class="difference">${(100*pick.probability).toFixed(1)}% model estimate</span><p>${esc(pick.book || game.market.provider)} · ${signed(pick.price)}${pick.quotedAt?` · ${esc(dateLabel(pick.quotedAt))} ET`:''}</p><a href="#game-${esc(game.id)}" data-show-game>Read the matchup ↗</a></article>`).join(''):`<p class="empty">${fresh()?'No model leans available right now.':'Leans will return when live updates resume.'}</p>`;
+  const rankedReadCount=modelReady&&fresh()?['moneyline','spread','total'].reduce((sum,kind)=>sum+rankedMarketReads(kind).length,0):0;
+  $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[board.games.filter(g=>g.market).length,'Games with odds'],[rankedReadCount,'Ranked AI reads']].map(([n,label])=>`<div class="metric"><strong>${n}</strong><span>${label}</span></div>`).join('');
+  $('lean-list').innerHTML=modelReady&&fresh()?[aiMarketColumn('moneyline','Best Moneylines'),aiMarketColumn('spread','Best Spreads'),aiMarketColumn('total','Best Over / Unders')].join(''):`<p class="empty">${fresh()?'Model projections are unavailable for this slate.':'AI rankings will return when live updates resume.'}</p>`;
   const archive=(board.archive||[]).filter(p=>p.model===board.model),settled=archive.filter(p=>p.model===board.model&&['win','loss','push'].includes(p.result));
   const count=result=>settled.filter(p=>p.result===result).length;
   $('record').textContent=settled.length?`${count('win')}–${count('loss')}–${count('push')} · ${signed(Number(settled.reduce((s,p)=>s+(p.units||0),0).toFixed(2)))}u`:'Awaiting results';
