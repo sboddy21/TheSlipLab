@@ -16,7 +16,8 @@ function leanLabel(pick,game) {
   return pick.market === 'spread' ? `${game?.[pick.side]?.short || pick.team} ${signed(pick.line)}` : `${pick.side === 'over' ? 'Over' : 'Under'} ${pick.line}`;
 }
 const pct=value=>Number.isFinite(value)?`${(value*100).toFixed(1)}%`:'—';
-function moneylineRead(game,p,m) {
+const qualityLabel=p=>p.dataQuality==='full'?'Full team-history model':p.dataQuality==='limited'?'Limited-history model':'National-prior baseline';
+function gameAiRead(game,p,m) {
   const projection=moneylineProjection(p,snapshot?.calibration);
   if(!projection)return '';
   const favorite=projection.homeProbability>=.5?'home':'away',team=game[favorite],probability=projection[`${favorite}Probability`],fair=projection[`${favorite}FairPrice`];
@@ -24,11 +25,18 @@ function moneylineRead(game,p,m) {
   const freshQuote=quote&&quoteFresh(quote.quotedAt),marketProbability=freshQuote?implied(price):null,profit=freshQuote?payout(price):null;
   const expectedReturn=profit===null?null:probability*profit-(1-probability),gap=marketProbability===null?null:probability-marketProbability;
   const confidence=probability>=.72?'High':probability>=.62?'Medium':'Lean';
-  let says=`The model favors ${team.name} by ${Math.abs(p.margin).toFixed(1)} points with a ${pct(probability)} win projection.`;
+  const spreadSide=p.margin>=0?'home':'away',fairSpread=-Math.abs(p.margin),projectedTotal=p.total;
+  const spreadEstimate=m?.homeSpread==null?null:estimate(p,m,snapshot?.calibration,'spread');
+  const spreadPick=spreadEstimate===null?spreadSide:(spreadEstimate>=.5?'home':'away');
+  const spreadProbability=spreadEstimate===null?null:Math.max(spreadEstimate,1-spreadEstimate);
+  const totalEstimate=m?.total==null?null:estimate(p,m,snapshot?.calibration,'total');
+  const totalSide=totalEstimate===null?null:(totalEstimate>=.5?'over':'under');
+  const totalProbability=totalEstimate===null?null:Math.max(totalEstimate,1-totalEstimate);
+  let says=`The model favors ${team.name} by ${Math.abs(p.margin).toFixed(1)} points with a ${pct(probability)} win projection and projects ${projectedTotal.toFixed(1)} total points.`;
   if(expectedReturn!==null&&expectedReturn>=.05)says+=` The current ${signed(price)} price shows ${(expectedReturn*100).toFixed(1)}% estimated return before uncertainty.`;
   else if(freshQuote)says+=' The current price does not clear the model’s 5% value threshold.';
   else says+=' A fresh sportsbook price is needed before evaluating value.';
-  return `<div class="ai-read"><div class="ai-read-head"><span>AI says</span><b>${confidence} model confidence</b></div><p>${esc(says)}</p><div class="ml-grid"><div><small>Win projection</small><strong>${esc(team.short)} ${pct(probability)}</strong></div><div><small>Model fair line</small><strong>${signed(fair)}</strong></div><div><small>Sportsbook line</small><strong>${freshQuote?signed(price):'—'}</strong></div><div><small>Model vs market</small><strong>${gap===null?'—':signed((gap*100).toFixed(1))+' pts'}</strong></div></div>${freshQuote?`<small class="price-source">${esc(quote.book)} · quoted ${esc(dateLabel(quote.quotedAt))} ET</small>`:''}</div>`;
+  return `<div class="ai-read"><div class="ai-read-head"><span>AI says</span><b>${confidence} confidence · ${esc(qualityLabel(p))}</b></div><p>${esc(says)}</p><div class="ml-grid ai-category-grid"><div><small>Moneyline</small><strong>${esc(team.short)} ${pct(probability)}</strong><em>Fair price ${signed(fair)}${freshQuote?` · ${esc(quote.book)} ${signed(price)}`:' · market unavailable'}</em></div><div><small>Spread</small><strong>${esc(game[spreadPick].short)} ${m?.homeSpread==null?signed(fairSpread):signed(spreadPick==='home'?m.homeSpread:-m.homeSpread)}</strong><em>${spreadProbability===null?`Model fair spread · ${esc(game[spreadSide].short)} ${signed(fairSpread)}`:`${pct(spreadProbability)} cover projection`}</em></div><div><small>Over / Under</small><strong>${totalSide?`${totalSide==='over'?'Over':'Under'} ${m.total}`:`Model total ${projectedTotal.toFixed(1)}`}</strong><em>${totalProbability===null?'Sportsbook total unavailable':`${pct(totalProbability)} projection`}</em></div></div>${freshQuote?`<small class="price-source">Moneyline: ${esc(quote.book)} · verified ${esc(dateLabel(quote.quotedAt))} ET</small>`:'<small class="price-source">Model numbers shown for every category; sportsbook comparisons require a verified current line.</small>'}</div>`;
 }
 function currentQuote(game,marketName,side) {
   const quote=game.market?.quoteDetails?.[marketName]?.[side];
@@ -43,12 +51,19 @@ function rankedMarketReads(kind) {
       const ml=moneylineProjection(p,snapshot?.calibration);if(!ml)continue;
       const side=ml.homeProbability>=ml.awayProbability?'home':'away',probability=ml[`${side}Probability`],quote=currentQuote(game,'moneyline',side);
       reads.push({game,probability,edge:probability-.5,label:game[side].short,detail:`Win projection ${pct(probability)} · fair ${signed(ml[`${side}FairPrice`])}`,quote});
-    } else if(m) {
-      const base=estimate(p,m,snapshot?.calibration,kind);if(base===null)continue;
-      const side=kind==='spread'?(base>=.5?'home':'away'):(base>=.5?'over':'under'),probability=base>=.5?base:1-base;
-      const line=kind==='spread'?(side==='home'?m.homeSpread:-m.homeSpread):m.total,quote=currentQuote(game,kind,side);
-      const label=kind==='spread'?`${game[side].short} ${signed(line)}`:`${side==='over'?'Over':'Under'} ${line}`;
-      reads.push({game,probability,edge:kind==='spread'?Math.abs(p.margin+m.homeSpread):Math.abs(p.total-m.total),label,detail:`${pct(probability)} model estimate · ${kind==='spread'?'projected margin '+signed(Number(p.margin.toFixed(1))):'projected total '+p.total.toFixed(1)}`,quote});
+    } else {
+      const hasLine=kind==='spread'?Number.isFinite(m?.homeSpread):Number.isFinite(m?.total);
+      const base=hasLine?estimate(p,m,snapshot?.calibration,kind):null;
+      if(kind==='spread') {
+        const fairSide=p.margin>=0?'home':'away',side=base===null?fairSide:(base>=.5?'home':'away');
+        const probability=base===null?moneylineProjection(p,snapshot?.calibration)?.[`${fairSide}Probability`]:Math.max(base,1-base);
+        const line=hasLine?(side==='home'?m.homeSpread:-m.homeSpread):-Math.abs(p.margin);
+        const quote=hasLine?currentQuote(game,'spread',side):null;
+        reads.push({game,probability,edge:hasLine?Math.abs(p.margin+m.homeSpread):Math.abs(p.margin),label:`${game[side].short} ${signed(Number(line.toFixed(1)))}`,detail:hasLine?`${pct(probability)} cover projection · model margin ${signed(Number(p.margin.toFixed(1)))}`:`Model fair spread · projected margin ${signed(Number(p.margin.toFixed(1)))} · ${qualityLabel(p)}`,quote});
+      } else {
+        const side=base===null?null:(base>=.5?'over':'under'),probability=base===null?null:Math.max(base,1-base),quote=side?currentQuote(game,'total',side):null;
+        reads.push({game,probability,edge:hasLine?Math.abs(p.total-m.total):Math.abs(p.total-55),label:side?`${side==='over'?'Over':'Under'} ${m.total}`:`Model total ${p.total.toFixed(1)}`,detail:hasLine?`${pct(probability)} projection · model total ${p.total.toFixed(1)}`:`Projected score ${game.away.short} ${p.awayScore.toFixed(1)}, ${game.home.short} ${p.homeScore.toFixed(1)} · ${qualityLabel(p)}`,quote});
+      }
     }
   }
   return reads.sort((a,b)=>b.edge-a.edge).slice(0,5);
@@ -73,7 +88,7 @@ function card(game) {
   const status = game.canceled ? 'CANCELED' : game.statusName && !['STATUS_SCHEDULED','STATUS_FINAL','STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD'].includes(game.statusName) ? esc(game.status) : game.completed ? 'FINAL' : game.state === 'in' ? 'IN PROGRESS' : !game.timeValid ? 'TIME TBD' : !upcoming(game) ? 'AWAITING UPDATE' : 'PREGAME';
   const times=Object.values(details||{}).map(q=>q.quotedAt).sort();
   const note = m ? m.source==='RapidAPI' ? `Sportsbook API · ${times.length?'Observed '+esc(dateLabel(times[0]))+' ET':'This market is unavailable'}` : `${esc(m.provider)} · Archived ESPN line` : 'No fresh sportsbook line available';
-  return `<article class="game-card" id="game-${esc(game.id)}"><div class="game-meta"><span>${esc(game.timeValid ? dateLabel(game.date)+' ET' : dayKey(game.date)+' · Time TBD')}<br>${esc(game.broadcast)}</span><span>${status}</span></div>${teamRow('away')}${teamRow('home')}<div class="market-note">${note}</div>${p&&upcoming(game)?moneylineRead(game,p,m):''}${m&&game.sportsbookQuotes?.some(q=>quoteFresh(q.quotedAt))?`<details><summary>Compare sportsbook prices</summary><div class="odds-comparison">${game.sportsbookQuotes.filter(q=>q.market===market&&quoteFresh(q.quotedAt)).map(q=>`<p>${esc(q.book)} · ${esc(q.side==='home'?game.home.short:q.side==='away'?game.away.short:q.side)} ${q.line==null?'':esc(signed(q.line))} · <strong>${esc(signed(q.price))}</strong></p>`).join('')||'<p>This market is unavailable.</p>'}</div></details>`:''}<div class="projection"><span>Projected score</span><strong>${p ? `${esc(game.away.short)} ${fmt(p.awayScore)}<br>${esc(game.home.short)} ${fmt(p.homeScore)}` : game.state === 'post' ? 'Final result above' : 'Current projection unavailable'}</strong></div><details><summary>Inside the matchup</summary><p>${esc(game.venue)}${game.neutral ? ' · Neutral site' : ''}${game.weather ? `<br>${esc(game.weather)}` : ''}</p>${p ? `<div class="context-grid">${['away','home'].map(side=>`<div><strong>${esc(game[side].short)}</strong><br>${signed(Number(p[side].offense.toFixed(1)))} offense vs average<br>${signed(Number(p[side].defense.toFixed(1)))} defense (higher is better)<br>${signed(Number(p[side].rating.toFixed(1)))} net rating</div>`).join('')}</div><p>Projected total: ${fmt(p.total)} · Home margin: ${signed(Number(p.margin.toFixed(1)))}</p>` : '<p>A projection is not available for this matchup yet.</p>'}<a href="https://www.espn.com/college-football/game/_/gameId/${encodeURIComponent(game.id)}" target="_blank" rel="noopener noreferrer">View game on ESPN ↗</a></details></article>`;
+  return `<article class="game-card" id="game-${esc(game.id)}"><div class="game-meta"><span>${esc(game.timeValid ? dateLabel(game.date)+' ET' : dayKey(game.date)+' · Time TBD')}<br>${esc(game.broadcast)}</span><span>${status}</span></div>${teamRow('away')}${teamRow('home')}<div class="market-note">${note}</div>${p&&upcoming(game)?gameAiRead(game,p,m):''}${m&&game.sportsbookQuotes?.some(q=>quoteFresh(q.quotedAt))?`<details><summary>Compare sportsbook prices</summary><div class="odds-comparison">${game.sportsbookQuotes.filter(q=>q.market===market&&quoteFresh(q.quotedAt)).map(q=>`<p>${esc(q.book)} · ${esc(q.side==='home'?game.home.short:q.side==='away'?game.away.short:q.side)} ${q.line==null?'':esc(signed(q.line))} · <strong>${esc(signed(q.price))}</strong></p>`).join('')||'<p>This market is unavailable.</p>'}</div></details>`:''}<div class="projection"><span>Projected score</span><strong>${p ? `${esc(game.away.short)} ${fmt(p.awayScore)}<br>${esc(game.home.short)} ${fmt(p.homeScore)}` : game.state === 'post' ? 'Final result above' : 'Current projection unavailable'}</strong></div><details><summary>Inside the matchup</summary><p>${esc(game.venue)}${game.neutral ? ' · Neutral site' : ''}${game.weather ? `<br>${esc(game.weather)}` : ''}</p>${p ? `<div class="context-grid">${['away','home'].map(side=>`<div><strong>${esc(game[side].short)}</strong><br>${signed(Number(p[side].offense.toFixed(1)))} offense vs average<br>${signed(Number(p[side].defense.toFixed(1)))} defense (higher is better)<br>${signed(Number(p[side].rating.toFixed(1)))} net rating</div>`).join('')}</div><p>Projected total: ${fmt(p.total)} · Home margin: ${signed(Number(p.margin.toFixed(1)))}</p>` : '<p>A projection is not available for this matchup yet.</p>'}<a href="https://www.espn.com/college-football/game/_/gameId/${encodeURIComponent(game.id)}" target="_blank" rel="noopener noreferrer">View game on ESPN ↗</a></details></article>`;
 }
 function renderGames() {
   if (!board) return;

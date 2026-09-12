@@ -1,5 +1,5 @@
 export const RATING_MODEL = 'opponent-adjusted-ridge-v2';
-export const DAILY_MODEL = 'opponent-adjusted-daily-v3';
+export const DAILY_MODEL = 'opponent-adjusted-daily-v4';
 export function dayCutoff(date) { const d=new Date(date); d.setUTCHours(0,0,0,0); return d.getTime(); }
 export const DEFAULT_CONFIG = Object.freeze({ ridge: 5, halfLifeDays: 180, windowDays: 730, minGames: 4, homePrior: 2.5, homeRidge: 20 });
 const DAY = 86400000;
@@ -66,11 +66,22 @@ export function fitRatings(history, cutoff, options = {}) {
 }
 export function predictRatings(game, fit) {
   if (!fit?.converged || Date.parse(game.date)<Date.parse(fit.cutoff)) return null;
-  const home = fit.teams[game.home.id], away = fit.teams[game.away.id];
-  if (!home || !away || home.games<fit.config.minGames || away.games<fit.config.minGames) return null;
+  // Cold-start teams use the fitted national prior. Partially observed teams are
+  // shrunk toward that prior, so every scheduled game gets a projection without
+  // pretending sparse teams have the same evidence as fully observed teams.
+  const prior=id=>({id,offense:0,defense:0,rating:0,games:0,lastGame:null,pointsFor:fit.mean,pointsAgainst:fit.mean});
+  const rawHome = fit.teams[game.home.id] || prior(game.home.id), rawAway = fit.teams[game.away.id] || prior(game.away.id);
+  const shrink=team=>{
+    const reliability=Math.min(1,team.games/fit.config.minGames);
+    const offense=team.offense*reliability,defense=team.defense*reliability;
+    return {...team,offense,defense,rating:offense+defense,reliability};
+  };
+  const home=shrink(rawHome),away=shrink(rawAway);
   const field = game.neutral ? 0 : fit.homeAdvantage/2;
   const homeScore = Math.max(0,fit.mean+home.offense-away.defense+field);
   const awayScore = Math.max(0,fit.mean+away.offense-home.defense-field);
-  return {model:fit.model,homeScore,awayScore,margin:homeScore-awayScore,total:homeScore+awayScore,home,away,
+  const coverage=Math.min(home.reliability,away.reliability);
+  return {model:fit.model,homeScore,awayScore,margin:homeScore-awayScore,total:homeScore+awayScore,home,away,coverage,
+    dataQuality:coverage>=1?'full':coverage>0?'limited':'prior-only',
     trainingCutoff:fit.cutoff,trainingCount:fit.trainingCount,homeAdvantage:game.neutral?0:fit.homeAdvantage};
 }

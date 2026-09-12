@@ -16,7 +16,7 @@ test('missing market values remain absent; side-specific spreads win over ambigu
   const result = normalize({id:'1',competitions:[{competitors:[{homeAway:'home',team:{id:'h'}},{homeAway:'away',team:{id:'a'}}],odds:[{spread:7,pointSpread:{home:{close:{line:'+7'}},away:{close:{line:'-7'}}}}]}]});
   assert.equal(result.market.homeSpread,7); assert.equal(result.market.total,null); assert.equal(result.market.homeML,null);
 });
-test('projection excludes future games, incomplete games and own result; requires four games per team',()=>{
+test('baseline projection excludes future games, incomplete games and own result; requires four games per team',()=>{
   const history = Array.from({length:4},(_,i)=>({id:String(i),date:`2026-08-${10+i}T16:00Z`,completed:true,home:{id:'h',score:30},away:{id:'a',score:20}}));
   const expected = project(game,history,now);
   assert.ok(expected); assert.equal(expected.home.games,4);
@@ -25,6 +25,11 @@ test('projection excludes future games, incomplete games and own result; require
   assert.deepEqual(project(game,[...history,...contaminants],now),expected);
   const neutral = project({...game,neutral:true},history,now);
   assert.equal(Number((expected.margin-neutral.margin).toFixed(2)),2.5);
+});
+test('unseen teams receive national-prior projections with explicit prior-only quality',()=>{
+  const fit=fitRatings(schedule(),Date.parse('2024-10-14T00:00Z'));
+  const p=predictRatings({date:'2024-10-19T12:00Z',neutral:false,home:{id:'new-home'},away:{id:'new-away'}},fit);
+  assert.ok(p);assert.equal(p.dataQuality,'prior-only');assert.equal(p.coverage,0);assert.ok(p.homeScore>p.awayScore);
 });
 test('spread direction, total threshold, and price gates',()=>{
   const picks = candidates(game,{margin:10,total:60},now);
