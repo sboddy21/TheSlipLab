@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { exactGameFromModelSources } = require("./lib/pregame_game_identity.cjs");
 
 const ROOT = process.cwd();
 const DATA = path.join(ROOT, "website/data");
@@ -88,7 +89,11 @@ let skippedAfterStart = 0;
 Object.values(ai.players || {}).forEach((player, index) => {
   const name = playerName(player) || `player_${index}`;
   const playerId = num(player.playerId);
-  const game = findGame(games, player);
+  const probability = matchPlayer(probabilities, player, player.team);
+  const masterRow = matchPlayer(master, player, player.team);
+  const decisionRow = matchPlayer(decisionRows, player, player.team);
+  const game = exactGameFromModelSources(games, player, masterRow, probability, decisionRow)
+    || findGame(games, player);
   const gamePk = num(game?.gamePk);
   const gameStartTime = game?.gameDate || game?.gameStartTime || "";
   const startMs = Date.parse(gameStartTime);
@@ -103,9 +108,6 @@ Object.values(ai.players || {}).forEach((player, index) => {
     return;
   }
 
-  const probability = matchPlayer(probabilities, player, player.team);
-  const masterRow = matchPlayer(master, player, player.team);
-  const decisionRow = matchPlayer(decisionRows, player, player.team);
   const pitcher = opposingPitcher(game, player.team);
   const pitcherRow = vulnerability.find(row => (pitcher.id && num(row?.pitcherId || row?.id) === pitcher.id) || norm(row?.pitcher || row?.name) === norm(pitcher.name)) || null;
   const weather = weatherRows.find(row => norm(row?.venue || row?.venueName) === norm(game?.venue?.name || game?.venue)) || null;
@@ -199,11 +201,35 @@ for (const [name, snapshots] of Object.entries(history.history)) {
 history.updatedAt = nowIso;
 history.schemaVersion = "2.0";
 history.modelVersion = MODEL_VERSION;
-history.verification = { verifiedReceiptCount, legacySnapshotCount, captured, updated, skippedAfterStart };
+const slateDate = gamesPayload.date || easternDate(now);
+const analysisGamePks = [...new Set(master.map(row => num(row?.gamePk)).filter(Boolean))].sort((a, b) => a - b);
+const capturedAnalysisGamePks = [...new Set(
+  Object.values(history.history).flatMap(arr)
+    .filter(row => row?.verifiedPregame === true && row?.slateDate === slateDate)
+    .map(row => num(row?.gamePk))
+    .filter(gamePk => analysisGamePks.includes(gamePk))
+)].sort((a, b) => a - b);
+const missingAnalysisGamePks = analysisGamePks.filter(gamePk => !capturedAnalysisGamePks.includes(gamePk));
+history.verification = {
+  verifiedReceiptCount,
+  legacySnapshotCount,
+  captured,
+  updated,
+  skippedAfterStart,
+  currentSlateAnalysis: {
+    slateDate,
+    expectedGamePks: analysisGamePks,
+    capturedGamePks: capturedAnalysisGamePks,
+    missingGamePks: missingAnalysisGamePks,
+    complete: missingAnalysisGamePks.length === 0
+  }
+};
 fs.writeFileSync(OUT_FILE, JSON.stringify(history, null, 2));
 
 console.log("AI HISTORY COMPLETE");
 console.log("Players:", Object.keys(history.history).length);
 console.log("Verified receipts:", verifiedReceiptCount);
 console.log("Captured / updated / skipped after start:", captured, updated, skippedAfterStart);
+console.log("Current analysis game coverage:", `${capturedAnalysisGamePks.length}/${analysisGamePks.length}`);
+if (missingAnalysisGamePks.length) console.log("Missing analysis gamePks:", missingAnalysisGamePks.join(", "));
 console.log("Saved:", OUT_FILE);

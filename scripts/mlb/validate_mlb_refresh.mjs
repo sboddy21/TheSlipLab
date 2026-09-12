@@ -140,6 +140,14 @@ function validateVerifiedPregameReceipts() {
   if (Number(payload?.verification?.verifiedReceiptCount) !== verifiedCount) {
     fail("hr_ai_history.json verified receipt count does not match stored receipts");
   }
+  const coverage = payload?.verification?.currentSlateAnalysis;
+  if (!coverage || !Array.isArray(coverage.expectedGamePks)
+    || !Array.isArray(coverage.capturedGamePks) || !Array.isArray(coverage.missingGamePks)) {
+    fail("hr_ai_history.json is missing current slate analysis coverage");
+  }
+  if (coverage.missingGamePks.length || coverage.complete !== true) {
+    fail(`hr_ai_history.json is missing verified pregame coverage for analysis gamePks: ${coverage.missingGamePks.join(", ")}`);
+  }
 }
 
 function validateCalibrationReport() {
