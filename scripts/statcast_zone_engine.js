@@ -1,13 +1,15 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { readStatcastRefreshRows } from "./mlb/lib/statcast_refresh_cache.js";
 
 const ROOT = process.cwd();
 const WEBSITE_DATA_DIR = path.join(ROOT, "website", "data");
 
 const OUT_WEB = path.join(WEBSITE_DATA_DIR, "statcast_zones.json");
 const SOURCE = "baseball_savant_statcast_pitch_detail_csv";
-const FETCH_CONCURRENCY = 4;
+const FETCH_CONCURRENCY = Math.min(12, Math.max(1, Number(process.env.MLB_STATCAST_CONCURRENCY) || 8));
+const REQUEST_TIMEOUT_MS = 25_000;
 
 function easternDate(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
@@ -223,6 +225,7 @@ async function fetchStatcast(playerId, playerType) {
   const url = `https://baseballsavant.mlb.com/statcast_search/csv?${params.toString()}`;
 
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     headers: {
       accept: "text/csv,*/*",
       "user-agent": "Mozilla/5.0 TheSlipLab Statcast Zone Engine"
@@ -596,7 +599,19 @@ async function main() {
 
       let statcastRows;
       try {
-        statcastRows = await fetchWithRetries(item.id, item.kind);
+        statcastRows = item.kind === "batter"
+          ? readStatcastRefreshRows({
+              slateDate: SLATE_DATE,
+              season: SEASON,
+              playerType: "batter",
+              playerId: item.id
+            })
+          : null;
+        if (statcastRows) {
+          console.log(`Reusing current-run Statcast rows for batter: ${item.name} ${item.id}`);
+        } else {
+          statcastRows = await fetchWithRetries(item.id, item.kind);
+        }
       } catch (error) {
         failure = new Error(
           `Statcast zone refresh failed for ${item.name}; existing output was not replaced: ${error.message}`
@@ -637,7 +652,6 @@ async function main() {
 
       done++;
       console.log(`[${done}/${totalProfiles}] OK ${item.kind}: ${item.name} rows ${statcastRows.length} zones ${zonePitchCount}`);
-      await sleep(250);
     }
   }
 

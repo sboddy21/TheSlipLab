@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { writeStatcastRefreshRows } from "./lib/statcast_refresh_cache.js";
 
 const ROOT = process.cwd();
 const DATA_DIR = path.join(ROOT, "website", "data");
@@ -7,9 +8,10 @@ const DATA_DIR = path.join(ROOT, "website", "data");
 const PLAYER_POOL_FILE = path.join(DATA_DIR, "mlb_player_pool.json");
 const OUT_FILE = path.join(DATA_DIR, "pitch_type_damage.json");
 const CACHE_FILE = path.join(DATA_DIR, "pitch_type_damage_cache.json");
-const FETCH_CONCURRENCY = 4;
+const FETCH_CONCURRENCY = Math.min(12, Math.max(1, Number(process.env.MLB_STATCAST_CONCURRENCY) || 8));
 const MAX_FETCH_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 1000;
+const REQUEST_TIMEOUT_MS = 25_000;
 
 function easternDate(value = new Date()) {
   const date = value instanceof Date ? value : new Date(value);
@@ -143,6 +145,7 @@ async function fetchStatcastRows(playerId) {
   for (let attempt = 1; attempt <= MAX_FETCH_ATTEMPTS; attempt++) {
     try {
       const res = await fetch(url, {
+        signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
         headers: {
           "user-agent": "Mozilla/5.0"
         }
@@ -458,6 +461,13 @@ async function main() {
 
       try {
         const statcastRows = await fetchStatcastRows(playerId);
+        writeStatcastRefreshRows({
+          slateDate: SLATE_DATE,
+          season: SEASON,
+          playerType: "batter",
+          playerId,
+          rows: statcastRows
+        });
         const pitchDamage = buildPitchDamage(statcastRows);
         const cachedAt = new Date().toISOString();
 
@@ -482,7 +492,6 @@ async function main() {
         };
 
         console.log("OK", player, Object.keys(pitchDamage).join(", ") || "no sample");
-        await sleep(150);
       } catch (err) {
         console.log("FAIL", player, err.message);
         firstFailure = new Error(
