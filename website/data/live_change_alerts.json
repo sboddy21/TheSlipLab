@@ -1,17 +1,1966 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-09-17T20:36:02.918Z",
+  "generatedAt": "2026-09-17T23:09:06.952Z",
   "date": "2026-09-17",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-09-17T20:34:20.337Z",
-    "mlb_player_pool.json": "2026-09-17T20:34:20.911Z",
-    "game_pitcher_matchups.json": "2026-09-17T20:34:43.491Z",
-    "player_card_data.json": "2026-09-17T20:36:02.827Z",
-    "hr_probability_tracking.json": "2026-09-17T20:34:40.672Z",
-    "pitcher_vulnerability.json": "2026-09-17T20:34:43.499Z"
+    "mlb_games_today.json": "2026-09-17T23:07:27.831Z",
+    "mlb_player_pool.json": "2026-09-17T23:07:28.450Z",
+    "game_pitcher_matchups.json": "2026-09-17T23:07:49.091Z",
+    "player_card_data.json": "2026-09-17T23:09:06.862Z",
+    "hr_probability_tracking.json": "2026-09-17T23:07:46.226Z",
+    "pitcher_vulnerability.json": "2026-09-17T23:07:49.098Z"
   },
   "alerts": [
+    {
+      "id": "8f0bf146432264b65736",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "518595",
+      "entityName": "Travis d'Arnaud",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Travis d'Arnaud's model score fell",
+      "message": "The live model score fell from 16.7 to 0.",
+      "previous": {
+        "modelScore": 16.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "e7f38d0ec5198ccfe6f5",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "545361",
+      "entityName": "Mike Trout",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Mike Trout confirmed in the lineup",
+      "message": "Mike Trout is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cd5dbf7dbec753fc34d0",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "592518",
+      "entityName": "Manny Machado",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Manny Machado removed from the confirmed lineup",
+      "message": "Manny Machado's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8c22e21b5d82baf4aedf",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592518",
+      "entityName": "Manny Machado",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Manny Machado's HR probability fell",
+      "message": "Tracked HR probability fell from 24% to 0%.",
+      "previous": {
+        "probability": 24
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "5264ca9901b893ed4c57",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592518",
+      "entityName": "Manny Machado",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Manny Machado's model score fell",
+      "message": "The live model score fell from 51.8 to 0.",
+      "previous": {
+        "modelScore": 51.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0a4d95f796bc9e3749de",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "595879",
+      "entityName": "Javier Báez",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Javier Báez confirmed in the lineup",
+      "message": "Javier Báez is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "754dd3070408ff94ed84",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "595879",
+      "entityName": "Javier Báez",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Javier Báez's model score rose",
+      "message": "The live model score rose from 0 to 21.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 21.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5f771bf03135146ef67e",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "605137",
+      "entityName": "Josh Bell",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Josh Bell confirmed in the lineup",
+      "message": "Josh Bell is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8a71f093f45fa716be83",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "605170",
+      "entityName": "Victor Caratini",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Victor Caratini confirmed in the lineup",
+      "message": "Victor Caratini is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "9d7ab24c6e085badf796",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "623168",
+      "entityName": "Tyler Heineman",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Tyler Heineman confirmed in the lineup",
+      "message": "Tyler Heineman is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "3f89a67c29af334b0794",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "624428",
+      "entityName": "Adam Frazier",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Adam Frazier's model score fell",
+      "message": "The live model score fell from 20.7 to 0.",
+      "previous": {
+        "modelScore": 20.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "1c0ce60cc6e67a3dcd57",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "642350",
+      "entityName": "Jose Siri",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Jose Siri confirmed in the lineup",
+      "message": "Jose Siri is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8f2e555f046bb5ed8e13",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Gleyber Torres confirmed in the lineup",
+      "message": "Gleyber Torres is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0916eef24b6363275c7b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "650402",
+      "entityName": "Gleyber Torres",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Gleyber Torres's model score rose",
+      "message": "The live model score rose from 0 to 31.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 31.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ebddea75b5670af70324",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656577",
+      "entityName": "Alex Jackson",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Alex Jackson's model score fell",
+      "message": "The live model score fell from 26.9 to 0.",
+      "previous": {
+        "modelScore": 26.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "fefdc09b76b443ad0138",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656716",
+      "entityName": "Zach McKinstry",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Zach McKinstry confirmed in the lineup",
+      "message": "Zach McKinstry is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d1460a2f5b05bd59b230",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656716",
+      "entityName": "Zach McKinstry",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Zach McKinstry's model score rose",
+      "message": "The live model score rose from 0 to 25.1.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 25.1
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5071d593f59e47fd3025",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663616",
+      "entityName": "Trevor Larnach",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Trevor Larnach's HR probability fell",
+      "message": "Tracked HR probability fell from 11.8% to 0%.",
+      "previous": {
+        "probability": 11.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "d33e1cc757c67575f624",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663616",
+      "entityName": "Trevor Larnach",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Trevor Larnach's model score fell",
+      "message": "The live model score fell from 33.4 to 0.",
+      "previous": {
+        "modelScore": 33.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "f0f19448d32c7d963363",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "664034",
+      "entityName": "Ty France",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Ty France's verified signals changed",
+      "message": "Removed: hotLook.",
+      "previous": {
+        "signals": [
+          "due",
+          "hotLook"
+        ]
+      },
+      "current": {
+        "signals": [
+          "due"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d4f4d1c928ba99227ebd",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "664983",
+      "entityName": "Jake McCarthy",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Jake McCarthy removed from the confirmed lineup",
+      "message": "Jake McCarthy's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d8a1566826e425295c7e",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "664983",
+      "entityName": "Jake McCarthy",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Jake McCarthy's HR probability fell",
+      "message": "Tracked HR probability fell from 23.9% to 0%.",
+      "previous": {
+        "probability": 23.9
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "507486e30ea7e053815f",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "664983",
+      "entityName": "Jake McCarthy",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Jake McCarthy's model score fell",
+      "message": "The live model score fell from 46.3 to 0.",
+      "previous": {
+        "modelScore": 46.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "83acd4a94ad0fb9ba507",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "665019",
+      "entityName": "Kody Clemens",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Kody Clemens confirmed in the lineup",
+      "message": "Kody Clemens is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "1dc3c39c47bde7be7b6f",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "665487",
+      "entityName": "Fernando Tatis Jr.",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Fernando Tatis Jr. removed from the confirmed lineup",
+      "message": "Fernando Tatis Jr.'s verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "aff3f809ac41e58027d7",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "665487",
+      "entityName": "Fernando Tatis Jr.",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Fernando Tatis Jr.'s HR probability fell",
+      "message": "Tracked HR probability fell from 24% to 0%.",
+      "previous": {
+        "probability": 24
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "fbfa3dfefc28f46ebfdf",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "665487",
+      "entityName": "Fernando Tatis Jr.",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Fernando Tatis Jr.'s model score fell",
+      "message": "The live model score fell from 47.8 to 0.",
+      "previous": {
+        "modelScore": 47.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "07743a0b52d02735780b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666023",
+      "entityName": "Freddy Fermin",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Freddy Fermin confirmed in the lineup",
+      "message": "Freddy Fermin is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "fb2b0ca76c4d5d5bb857",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666023",
+      "entityName": "Freddy Fermin",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Freddy Fermin's model score rose",
+      "message": "The live model score rose from 0 to 25.5.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 25.5
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d86920e6087c4c5642ae",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666139",
+      "entityName": "Josh Lowe",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Josh Lowe confirmed in the lineup",
+      "message": "Josh Lowe is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "10cbd6112f5797f00cab",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668885",
+      "entityName": "Austin Martin",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Austin Martin's model score fell",
+      "message": "The live model score fell from 20.2 to 0.",
+      "previous": {
+        "modelScore": 20.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "1572381657b2688ec63f",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "668904",
+      "entityName": "Royce Lewis",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Royce Lewis confirmed in the lineup",
+      "message": "Royce Lewis is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "28cc6b3a12bb30c55364",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668952",
+      "entityName": "Ryan Kreidler",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Ryan Kreidler's HR probability fell",
+      "message": "Tracked HR probability fell from 5.5% to 0%.",
+      "previous": {
+        "probability": 5.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "56423ab2fe3f864f521f",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668952",
+      "entityName": "Ryan Kreidler",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Ryan Kreidler's model score fell",
+      "message": "The live model score fell from 32.2 to 0.",
+      "previous": {
+        "modelScore": 32.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "3f4963bd237f0d0fee0c",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669134",
+      "entityName": "Luis Campusano",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Luis Campusano removed from the confirmed lineup",
+      "message": "Luis Campusano's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "053543b4f191c1a8e4a8",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669134",
+      "entityName": "Luis Campusano",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Luis Campusano's HR probability fell",
+      "message": "Tracked HR probability fell from 12.5% to 0%.",
+      "previous": {
+        "probability": 12.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "8c94285265188bd8303c",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669134",
+      "entityName": "Luis Campusano",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Luis Campusano's model score fell",
+      "message": "The live model score fell from 47.8 to 0.",
+      "previous": {
+        "modelScore": 47.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "24878bd2958a54893228",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669720",
+      "entityName": "Austin Hays",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Austin Hays confirmed in the lineup",
+      "message": "Austin Hays is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5402d15277970071e17c",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669720",
+      "entityName": "Austin Hays",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Austin Hays's model score rose",
+      "message": "The live model score rose from 0 to 41.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 41.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "26d3903d5cd5fa2c63ad",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "672724",
+      "entityName": "Oswald Peraza",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Oswald Peraza confirmed in the lineup",
+      "message": "Oswald Peraza is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "292fbe9c00202e2694cc",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "677347",
+      "entityName": "Kyren Paris",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Kyren Paris's model score fell",
+      "message": "The live model score fell from 21.6 to 0.",
+      "previous": {
+        "modelScore": 21.6
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8b5f86dbfab1094b194b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "680777",
+      "entityName": "Ryan Jeffers",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Ryan Jeffers's HR probability fell",
+      "message": "Tracked HR probability fell from 22.6% to 0%.",
+      "previous": {
+        "probability": 22.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "2862b4b25f0044a78509",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "680777",
+      "entityName": "Ryan Jeffers",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Ryan Jeffers's model score fell",
+      "message": "The live model score fell from 41 to 0.",
+      "previous": {
+        "modelScore": 41
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ecebb0c25b798bc9db25",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "681198",
+      "entityName": "TJ Rumfield",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "TJ Rumfield removed from the confirmed lineup",
+      "message": "TJ Rumfield's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "73d6ade0a4bde478a40e",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "681198",
+      "entityName": "TJ Rumfield",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "TJ Rumfield's HR probability fell",
+      "message": "Tracked HR probability fell from 15.6% to 0%.",
+      "previous": {
+        "probability": 15.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "dee1fdcc4781a2baae75",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "681198",
+      "entityName": "TJ Rumfield",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "TJ Rumfield's model score fell",
+      "message": "The live model score fell from 41.2 to 0.",
+      "previous": {
+        "modelScore": 41.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "465247bf6e44f972709a",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "685133",
+      "entityName": "Wade Meckler",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Wade Meckler confirmed in the lineup",
+      "message": "Wade Meckler is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "07de6c3967e74ef0f063",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "686797",
+      "entityName": "Brooks Lee",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Brooks Lee confirmed in the lineup",
+      "message": "Brooks Lee is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "dc012cd5c7baed0d0e12",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687093",
+      "entityName": "Vaughn Grissom",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Vaughn Grissom's HR probability fell",
+      "message": "Tracked HR probability fell from 6.6% to 0%.",
+      "previous": {
+        "probability": 6.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "b641b3e2461abf9b5e9b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687093",
+      "entityName": "Vaughn Grissom",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Vaughn Grissom's model score fell",
+      "message": "The live model score fell from 31.2 to 0.",
+      "previous": {
+        "modelScore": 31.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "f886cf4b99cba833eb27",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "687263",
+      "entityName": "Zach Neto",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Zach Neto confirmed in the lineup",
+      "message": "Zach Neto is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "55e5a713428fce237116",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "687597",
+      "entityName": "Jordan Beck",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Jordan Beck confirmed in the lineup",
+      "message": "Jordan Beck is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "da3956b84cc719c7b9da",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687597",
+      "entityName": "Jordan Beck",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Jordan Beck's model score rose",
+      "message": "The live model score rose from 0 to 21.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 21.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "730eddaaf97258aaf252",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "687749",
+      "entityName": "Jase Bowen",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Jase Bowen confirmed in the lineup",
+      "message": "Jase Bowen is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "1308bb423b935657811a",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687749",
+      "entityName": "Jase Bowen",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Jase Bowen's model score rose",
+      "message": "The live model score rose from 0 to 34.4.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 34.4
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8b74e558934b2ba4b28b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Colt Keith removed from the confirmed lineup",
+      "message": "Colt Keith's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "126ca0d674b37cc1d58b",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Colt Keith's HR probability fell",
+      "message": "Tracked HR probability fell from 7.3% to 0%.",
+      "previous": {
+        "probability": 7.3
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "9b2007e4484ebe55e4fc",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "690993",
+      "entityName": "Colt Keith",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Colt Keith's model score fell",
+      "message": "The live model score fell from 39.3 to 0.",
+      "previous": {
+        "modelScore": 39.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a66aad3ff66a124285ba",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "691181",
+      "entityName": "Emmanuel Rodriguez",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Emmanuel Rodriguez confirmed in the lineup",
+      "message": "Emmanuel Rodriguez is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "dc0ae3a86ca1b2c3e169",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "691182",
+      "entityName": "Adael Amador",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Adael Amador confirmed in the lineup",
+      "message": "Adael Amador is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "3d379319961a23803588",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "691182",
+      "entityName": "Adael Amador",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Adael Amador's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 17.1%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 17.1
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "be1c9852d5df856a1fa9",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "691182",
+      "entityName": "Adael Amador",
+      "team": "Colorado Rockies",
+      "gamePk": 824305,
+      "title": "Adael Amador's model score rose",
+      "message": "The live model score rose from 0 to 41.7.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 41.7
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "c2d9cbd599bb2585ffb0",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "694203",
+      "entityName": "Denzer Guzman",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Denzer Guzman confirmed in the lineup",
+      "message": "Denzer Guzman is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "fbcd1a1d98364c4659fd",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "694208",
+      "entityName": "Moisés Ballesteros",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Moisés Ballesteros confirmed in the lineup",
+      "message": "Moisés Ballesteros is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "07828d56f38bea4e1440",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "695681",
+      "entityName": "Christian Moore",
+      "team": "Los Angeles Angels",
+      "gamePk": 823978,
+      "title": "Christian Moore's model score fell",
+      "message": "The live model score fell from 18.8 to 0.",
+      "previous": {
+        "modelScore": 18.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "263cedb365cf3ba13d34",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701538",
+      "entityName": "Jackson Merrill",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Jackson Merrill removed from the confirmed lineup",
+      "message": "Jackson Merrill's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "6059f710489a433902e3",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701538",
+      "entityName": "Jackson Merrill",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Jackson Merrill's HR probability fell",
+      "message": "Tracked HR probability fell from 19.8% to 0%.",
+      "previous": {
+        "probability": 19.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "d4e4c7b91db252283192",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701538",
+      "entityName": "Jackson Merrill",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Jackson Merrill's model score fell",
+      "message": "The live model score fell from 48.4 to 0.",
+      "previous": {
+        "modelScore": 48.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "32bf4d03ea0bc481c331",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Hao-Yu Lee removed from the confirmed lineup",
+      "message": "Hao-Yu Lee's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "6b9e15d11f1d816b9a9f",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Hao-Yu Lee's HR probability fell",
+      "message": "Tracked HR probability fell from 7.4% to 0%.",
+      "previous": {
+        "probability": 7.4
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "03db8bb3022420183510",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701678",
+      "entityName": "Hao-Yu Lee",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Hao-Yu Lee's model score fell",
+      "message": "The live model score fell from 38.8 to 0.",
+      "previous": {
+        "modelScore": 38.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "313a5b8a842d552ad184",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "805346",
+      "entityName": "Ben Ross",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Ben Ross confirmed in the lineup",
+      "message": "Ben Ross is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8b87a7d6eec0466b382d",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "805805",
+      "entityName": "Walker Jenkins",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Walker Jenkins confirmed in the lineup",
+      "message": "Walker Jenkins is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "c8c6125f058a3ac8c141",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "807712",
+      "entityName": "Luke Keaschall",
+      "team": "Minnesota Twins",
+      "gamePk": 823978,
+      "title": "Luke Keaschall confirmed in the lineup",
+      "message": "Luke Keaschall is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "db94e9beac64c2dd34b4",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "814430",
+      "entityName": "Brett Callahan",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Brett Callahan removed from the confirmed lineup",
+      "message": "Brett Callahan's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a8c3ce6cef54bf8f01b4",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "814430",
+      "entityName": "Brett Callahan",
+      "team": "Detroit Tigers",
+      "gamePk": 824548,
+      "title": "Brett Callahan's model score fell",
+      "message": "The live model score fell from 32.4 to 0.",
+      "previous": {
+        "modelScore": 32.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "f81d0c7cc868cd366a07",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "823550",
+      "entityName": "Sung-Mun Song",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Sung-Mun Song confirmed in the lineup",
+      "message": "Sung-Mun Song is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "4b9ac7b241b981efeeb8",
+      "createdAt": "2026-09-17T23:09:06.952Z",
+      "date": "2026-09-17",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "823550",
+      "entityName": "Sung-Mun Song",
+      "team": "San Diego Padres",
+      "gamePk": 824305,
+      "title": "Sung-Mun Song's model score rose",
+      "message": "The live model score rose from 0 to 24.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 24.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "5018b309531b0e71487a",
       "createdAt": "2026-09-17T20:36:02.918Z",
@@ -4314,1972 +6263,6 @@
       "sourceFiles": [
         "mlb_player_pool.json"
       ]
-    },
-    {
-      "id": "45a0fa7448677e05774f",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "695506",
-      "entityName": "Jac Caglianone",
-      "team": "Kansas City Royals",
-      "gamePk": 824141,
-      "title": "Jac Caglianone's model score rose",
-      "message": "The live model score rose from 39.1 to 49.4.",
-      "previous": {
-        "modelScore": 39.1
-      },
-      "current": {
-        "modelScore": 49.4
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "18eb071ec093dbcd08b6",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "695600",
-      "entityName": "Carter Jensen",
-      "team": "Kansas City Royals",
-      "gamePk": 824141,
-      "title": "Carter Jensen confirmed in the lineup",
-      "message": "Carter Jensen is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "6d959a53e9d077c4565f",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "695600",
-      "entityName": "Carter Jensen",
-      "team": "Kansas City Royals",
-      "gamePk": 824141,
-      "title": "Carter Jensen's model score rose",
-      "message": "The live model score rose from 42 to 51.9.",
-      "previous": {
-        "modelScore": 42
-      },
-      "current": {
-        "modelScore": 51.9
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "b513e52bef5222b48fe2",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "695657",
-      "entityName": "Colson Montgomery",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Colson Montgomery's HR probability fell",
-      "message": "Tracked HR probability fell from 22.8% to 0%.",
-      "previous": {
-        "probability": 22.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "1fba5344dfa7986ce4bd",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "695657",
-      "entityName": "Colson Montgomery",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Colson Montgomery's model score fell",
-      "message": "The live model score fell from 46 to 0.",
-      "previous": {
-        "modelScore": 46
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "319998d8bf5ba66f7af6",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "695657",
-      "entityName": "Colson Montgomery",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Colson Montgomery's verified signals changed",
-      "message": "Removed: sleeper.",
-      "previous": {
-        "signals": [
-          "sleeper"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "7e8e62e5ab621277685a",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "695731",
-      "entityName": "Braden Montgomery",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Braden Montgomery confirmed in the lineup",
-      "message": "Braden Montgomery is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "551711c22d712cd3d0ee",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "696030",
-      "entityName": "Alejandro Osuna",
-      "team": "Texas Rangers",
-      "gamePk": 822845,
-      "title": "Alejandro Osuna's model score fell",
-      "message": "The live model score fell from 19.1 to 0.",
-      "previous": {
-        "modelScore": 19.1
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "9f94c9df9c6e0592f7d7",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "699115",
-      "entityName": "Carlos Jorge",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Carlos Jorge confirmed in the lineup",
-      "message": "Carlos Jorge is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "f7f7fe55259a52929a97",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "699115",
-      "entityName": "Carlos Jorge",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Carlos Jorge's model score rose",
-      "message": "The live model score rose from 0 to 27.2.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 27.2
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "cf28cf256112ce0082fb",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "701162",
-      "entityName": "Ben Malgeri",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "Ben Malgeri's model score fell",
-      "message": "The live model score fell from 26.2 to 0.",
-      "previous": {
-        "modelScore": 26.2
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "3f9ad1047a14de0467af",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "701350",
-      "entityName": "Roman Anthony",
-      "team": "Boston Red Sox",
-      "gamePk": 822845,
-      "title": "Roman Anthony confirmed in the lineup",
-      "message": "Roman Anthony is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "e5ba895fca1dbd25d5fc",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "701358",
-      "entityName": "Cam Smith",
-      "team": "Houston Astros",
-      "gamePk": 824141,
-      "title": "Cam Smith confirmed in the lineup",
-      "message": "Cam Smith is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "cbf5e6e237f926a52c89",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "701398",
-      "entityName": "Sal Stewart",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Sal Stewart's verified signals changed",
-      "message": "Removed: due.",
-      "previous": {
-        "signals": [
-          "due"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "4ca6457393301b2df5eb",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "701538",
-      "entityName": "Jackson Merrill",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Jackson Merrill's verified signals changed",
-      "message": "Removed: hotLately.",
-      "previous": {
-        "signals": [
-          "hotLately"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "ec7e0982e2926e014446",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "701678",
-      "entityName": "Hao-Yu Lee",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "Hao-Yu Lee confirmed in the lineup",
-      "message": "Hao-Yu Lee is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "4d1ca29e5d21494a8641",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "701807",
-      "entityName": "Carson Benge",
-      "team": "New York Mets",
-      "gamePk": 823573,
-      "title": "Carson Benge confirmed in the lineup",
-      "message": "Carson Benge is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "8a441ff2f915115dc0d0",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "702222",
-      "entityName": "Justin Crawford",
-      "team": "Philadelphia Phillies",
-      "gamePk": 823573,
-      "title": "Justin Crawford confirmed in the lineup",
-      "message": "Justin Crawford is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "3453b1c4b062a9569932",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "702332",
-      "entityName": "Caleb Durbin",
-      "team": "Boston Red Sox",
-      "gamePk": 822845,
-      "title": "Caleb Durbin confirmed in the lineup",
-      "message": "Caleb Durbin is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "d26bd8a208176726269f",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "703492",
-      "entityName": "Nick Morabito",
-      "team": "New York Mets",
-      "gamePk": 823573,
-      "title": "Nick Morabito confirmed in the lineup",
-      "message": "Nick Morabito is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "932e0938574717cb843a",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "703601",
-      "entityName": "Max Clark",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "Max Clark confirmed in the lineup",
-      "message": "Max Clark is confirmed batting 6.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 6
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "cbf330312207b424cbb3",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "803011",
-      "entityName": "Sam Antonacci",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Sam Antonacci's model score fell",
-      "message": "The live model score fell from 32.6 to 0.",
-      "previous": {
-        "modelScore": 32.6
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "f80987f24874f23ea886",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "805367",
-      "entityName": "Chase Meidroth",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Chase Meidroth confirmed in the lineup",
-      "message": "Chase Meidroth is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "41cc0b9b5d63f1379350",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "805808",
-      "entityName": "Kevin McGonigle",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "Kevin McGonigle confirmed in the lineup",
-      "message": "Kevin McGonigle is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "6f49fbe5b97d7603d4cc",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "805999",
-      "entityName": "A.J. Ewing",
-      "team": "New York Mets",
-      "gamePk": 823573,
-      "title": "A.J. Ewing confirmed in the lineup",
-      "message": "A.J. Ewing is confirmed batting 6.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 6
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "7593f8101671cad0bba0",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "806198",
-      "entityName": "Cooper Pratt",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Cooper Pratt confirmed in the lineup",
-      "message": "Cooper Pratt is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "NOT IN LINEUP",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "332d09a6ae03e8d1f121",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "806198",
-      "entityName": "Cooper Pratt",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Cooper Pratt's model score rose",
-      "message": "The live model score rose from 0 to 23.",
-      "previous": {
-        "modelScore": 0
-      },
-      "current": {
-        "modelScore": 23
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "599db2913564c15f972a",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "807726",
-      "entityName": "John Peck",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "John Peck confirmed in the lineup",
-      "message": "John Peck is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "86430b5514e22ef5d5b6",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "808959",
-      "entityName": "Munetaka Murakami",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Munetaka Murakami confirmed in the lineup",
-      "message": "Munetaka Murakami is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "d4bfc123f814def8c908",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "808959",
-      "entityName": "Munetaka Murakami",
-      "team": "Chicago White Sox",
-      "gamePk": 824548,
-      "title": "Munetaka Murakami's verified signals changed",
-      "message": "Added: hotLook. Removed: sleeper.",
-      "previous": {
-        "signals": [
-          "sleeper"
-        ]
-      },
-      "current": {
-        "signals": [
-          "hotLook"
-        ]
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "d721f233622d7cb3a25c",
-      "createdAt": "2026-09-17T20:36:02.918Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "814430",
-      "entityName": "Brett Callahan",
-      "team": "Detroit Tigers",
-      "gamePk": 824548,
-      "title": "Brett Callahan confirmed in the lineup",
-      "message": "Brett Callahan is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "e041a31acc40c463e89a",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "500743",
-      "entityName": "Miguel Rojas",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Miguel Rojas confirmed in the lineup",
-      "message": "Miguel Rojas is confirmed batting 9.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 9
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "c1ab7c81846aaf21fc66",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "518692",
-      "entityName": "Freddie Freeman",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Freddie Freeman confirmed in the lineup",
-      "message": "Freddie Freeman is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "1e99ef9bf4e443846d40",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "553993",
-      "entityName": "Eugenio Suárez",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Eugenio Suárez's HR probability fell",
-      "message": "Tracked HR probability fell from 22.8% to 0%.",
-      "previous": {
-        "probability": 22.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "52456d49a57f7dec349d",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "553993",
-      "entityName": "Eugenio Suárez",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Eugenio Suárez's model score fell",
-      "message": "The live model score fell from 45 to 0.",
-      "previous": {
-        "modelScore": 45
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "75a9588ffc836cdecdb8",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "571771",
-      "entityName": "Enrique Hernández",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Enrique Hernández's model score fell",
-      "message": "The live model score fell from 30.1 to 0.",
-      "previous": {
-        "modelScore": 30.1
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "4463b3785a2d7da5be4f",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "571970",
-      "entityName": "Max Muncy",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Max Muncy confirmed in the lineup",
-      "message": "Max Muncy is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "b962af3555e6ae4524bf",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "571970",
-      "entityName": "Max Muncy",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Max Muncy's verified signals changed",
-      "message": "Removed: hotLately.",
-      "previous": {
-        "signals": [
-          "hotLately"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "2d69b3387affa60dcea9",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "592518",
-      "entityName": "Manny Machado",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Manny Machado confirmed in the lineup",
-      "message": "Manny Machado is confirmed batting 3.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "6ace84ee6028642f5aad",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "592885",
-      "entityName": "Christian Yelich",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Christian Yelich's HR probability fell",
-      "message": "Tracked HR probability fell from 7.8% to 0%.",
-      "previous": {
-        "probability": 7.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "adde495783fb6e50e1aa",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "592885",
-      "entityName": "Christian Yelich",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Christian Yelich's model score fell",
-      "message": "The live model score fell from 32.9 to 0.",
-      "previous": {
-        "modelScore": 32.9
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "63379c2f67c56acd8796",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "593428",
-      "entityName": "Xander Bogaerts",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Xander Bogaerts confirmed in the lineup",
-      "message": "Xander Bogaerts is confirmed batting 6.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 6
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "fa169b2a881be65a8630",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "596142",
-      "entityName": "Gary Sánchez",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Gary Sánchez confirmed in the lineup",
-      "message": "Gary Sánchez is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "c033498ecf6df4eb532a",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "605141",
-      "entityName": "Mookie Betts",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Mookie Betts's HR probability fell",
-      "message": "Tracked HR probability fell from 19% to 0%.",
-      "previous": {
-        "probability": 19
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "1d5103c91a50006a683f",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "605141",
-      "entityName": "Mookie Betts",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Mookie Betts's model score fell",
-      "message": "The live model score fell from 43.7 to 0.",
-      "previous": {
-        "modelScore": 43.7
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "fa6165d099280185c53f",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "606192",
-      "entityName": "Teoscar Hernández",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Teoscar Hernández confirmed in the lineup",
-      "message": "Teoscar Hernández is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "e28e29d28d39e6410892",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "622268",
-      "entityName": "Donovan Walton",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Donovan Walton confirmed in the lineup",
-      "message": "Donovan Walton is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "e56bf64dea4995c18fc4",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "signal_change",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "622268",
-      "entityName": "Donovan Walton",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Donovan Walton's verified signals changed",
-      "message": "Removed: hotLately.",
-      "previous": {
-        "signals": [
-          "hotLately"
-        ]
-      },
-      "current": {
-        "signals": []
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "d60deb585b20565debe9",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "622761",
-      "entityName": "Jorge Mateo",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Jorge Mateo's model score fell",
-      "message": "The live model score fell from 23.5 to 0.",
-      "previous": {
-        "modelScore": 23.5
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "fe627e3b00aeda2c8b9d",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "624431",
-      "entityName": "Jose Trevino",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Jose Trevino's model score fell",
-      "message": "The live model score fell from 31.3 to 0.",
-      "previous": {
-        "modelScore": 31.3
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "1b935fecd5617e4359e9",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "630105",
-      "entityName": "Jake Cronenworth",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Jake Cronenworth confirmed in the lineup",
-      "message": "Jake Cronenworth is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "0b393972de0b11a5848e",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "641343",
-      "entityName": "Jake Bauers",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Jake Bauers's HR probability fell",
-      "message": "Tracked HR probability fell from 24% to 0%.",
-      "previous": {
-        "probability": 24
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "b1ad3f9a83e9ac89cab7",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "641343",
-      "entityName": "Jake Bauers",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "Jake Bauers's model score fell",
-      "message": "The live model score fell from 45.2 to 0.",
-      "previous": {
-        "modelScore": 45.2
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "f27da8bad8a9739da5d3",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "641584",
-      "entityName": "Jake Fraley",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Jake Fraley's HR probability fell",
-      "message": "Tracked HR probability fell from 5% to 0%.",
-      "previous": {
-        "probability": 5
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "035a561cd446bc50201a",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "641584",
-      "entityName": "Jake Fraley",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Jake Fraley's model score fell",
-      "message": "The live model score fell from 31 to 0.",
-      "previous": {
-        "modelScore": 31
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "cf8b254f5618b76725f8",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "641680",
-      "entityName": "Jonah Heim",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Jonah Heim confirmed in the lineup",
-      "message": "Jonah Heim is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "bf4f5edd0cae7781511e",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "643446",
-      "entityName": "Jeff McNeil",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Jeff McNeil confirmed in the lineup",
-      "message": "Jeff McNeil is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "a587e74dfd61f0502db2",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "650490",
-      "entityName": "Yandy Díaz",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Yandy Díaz confirmed in the lineup",
-      "message": "Yandy Díaz is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "720b392021304c73dde9",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "656775",
-      "entityName": "Cedric Mullins",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Cedric Mullins's HR probability fell",
-      "message": "Tracked HR probability fell from 6.9% to 0%.",
-      "previous": {
-        "probability": 6.9
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "10fa4f5fd27f3729ffaf",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "656775",
-      "entityName": "Cedric Mullins",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Cedric Mullins's model score fell",
-      "message": "The live model score fell from 34 to 0.",
-      "previous": {
-        "modelScore": 34
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "3b7ef78635c7935af49d",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "656811",
-      "entityName": "Ryan O'Hearn",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823334,
-      "title": "Ryan O'Hearn's HR probability fell",
-      "message": "Tracked HR probability fell from 18.2% to 0%.",
-      "previous": {
-        "probability": 18.2
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "b349e9134b38804dfa28",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "656811",
-      "entityName": "Ryan O'Hearn",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823334,
-      "title": "Ryan O'Hearn's model score fell",
-      "message": "The live model score fell from 35.9 to 0.",
-      "previous": {
-        "modelScore": 35.9
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "7e896a7db3df017d4ffe",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "661388",
-      "entityName": "William Contreras",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "William Contreras's HR probability fell",
-      "message": "Tracked HR probability fell from 18.4% to 0%.",
-      "previous": {
-        "probability": 18.4
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "077f154e953d09f2ee0f",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "661388",
-      "entityName": "William Contreras",
-      "team": "Milwaukee Brewers",
-      "gamePk": 823334,
-      "title": "William Contreras's model score fell",
-      "message": "The live model score fell from 40.6 to 0.",
-      "previous": {
-        "modelScore": 40.6
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "c7cdec8460e9af405138",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "661531",
-      "entityName": "Brian Serven",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Brian Serven's HR probability fell",
-      "message": "Tracked HR probability fell from 9.7% to 0%.",
-      "previous": {
-        "probability": 9.7
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
-      "id": "868f1b903e540a885747",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "661531",
-      "entityName": "Brian Serven",
-      "team": "Athletics",
-      "gamePk": 822924,
-      "title": "Brian Serven's model score fell",
-      "message": "The live model score fell from 31.1 to 0.",
-      "previous": {
-        "modelScore": 31.1
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "f32a10038fd26c8a5c80",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "663647",
-      "entityName": "Ke'Bryan Hayes",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Ke'Bryan Hayes confirmed in the lineup",
-      "message": "Ke'Bryan Hayes is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "cfabf35c0872ca0296ec",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "663656",
-      "entityName": "Kyle Tucker",
-      "team": "Los Angeles Dodgers",
-      "gamePk": 824464,
-      "title": "Kyle Tucker confirmed in the lineup",
-      "message": "Kyle Tucker is confirmed batting 3.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 3
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "4313aa9f4c62daf5fc6b",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "663743",
-      "entityName": "Nick Fortes",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Nick Fortes's model score fell",
-      "message": "The live model score fell from 27.5 to 0.",
-      "previous": {
-        "modelScore": 27.5
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "286527067786d9a65bbd",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "663886",
-      "entityName": "Tyler Stephenson",
-      "team": "Cincinnati Reds",
-      "gamePk": 824464,
-      "title": "Tyler Stephenson confirmed in the lineup",
-      "message": "Tyler Stephenson is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "645793924eaac3769a6a",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "model_score_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "663968",
-      "entityName": "Jake Mangum",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823334,
-      "title": "Jake Mangum's model score fell",
-      "message": "The live model score fell from 23.4 to 0.",
-      "previous": {
-        "modelScore": 23.4
-      },
-      "current": {
-        "modelScore": 0
-      },
-      "sourceFiles": [
-        "player_card_data.json"
-      ]
-    },
-    {
-      "id": "7c79fb474136af9a3e8c",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "664034",
-      "entityName": "Ty France",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Ty France confirmed in the lineup",
-      "message": "Ty France is confirmed batting 4.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 4
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "c3dc276043b7d045fe6a",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "664040",
-      "entityName": "Brandon Lowe",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823334,
-      "title": "Brandon Lowe confirmed in the lineup",
-      "message": "Brandon Lowe is confirmed batting 5.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 5
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "e2d9adad08fca597ef7c",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "664954",
-      "entityName": "Brett Sullivan",
-      "team": "Colorado Rockies",
-      "gamePk": 824305,
-      "title": "Brett Sullivan confirmed in the lineup",
-      "message": "Brett Sullivan is confirmed batting 8.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 8
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "c70c109b599b5fe5cb61",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "664983",
-      "entityName": "Jake McCarthy",
-      "team": "Colorado Rockies",
-      "gamePk": 824305,
-      "title": "Jake McCarthy confirmed in the lineup",
-      "message": "Jake McCarthy is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "096494ab51b997126dc2",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "665487",
-      "entityName": "Fernando Tatis Jr.",
-      "team": "San Diego Padres",
-      "gamePk": 824305,
-      "title": "Fernando Tatis Jr. confirmed in the lineup",
-      "message": "Fernando Tatis Jr. is confirmed batting 1.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 1
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "29981c04bd536b374ef5",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "665833",
-      "entityName": "Oneil Cruz",
-      "team": "Pittsburgh Pirates",
-      "gamePk": 823334,
-      "title": "Oneil Cruz confirmed in the lineup",
-      "message": "Oneil Cruz is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
-    },
-    {
-      "id": "996e4b019acf2ec6570b",
-      "createdAt": "2026-09-17T17:36:42.068Z",
-      "date": "2026-09-17",
-      "sport": "MLB",
-      "kind": "lineup_confirmed",
-      "severity": "high",
-      "entityType": "player",
-      "entityId": "666018",
-      "entityName": "Jonathan Aranda",
-      "team": "Tampa Bay Rays",
-      "gamePk": 822924,
-      "title": "Jonathan Aranda confirmed in the lineup",
-      "message": "Jonathan Aranda is confirmed batting 2.",
-      "previous": {
-        "lineupStatus": "PROJECTED",
-        "lineupSpot": null
-      },
-      "current": {
-        "lineupStatus": "CONFIRMED",
-        "lineupSpot": 2
-      },
-      "sourceFiles": [
-        "mlb_player_pool.json"
-      ]
     }
   ],
   "snapshot": {
@@ -6296,7 +6279,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 4,
-        "modelScore": 30,
+        "modelScore": 29.8,
         "signals": []
       },
       "502054": {
@@ -6310,8 +6293,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 2,
-        "modelScore": 26,
+        "probability": 2.2,
+        "modelScore": 25.3,
         "signals": []
       },
       "514888": {
@@ -6325,8 +6308,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 8.6,
-        "modelScore": 39.6,
+        "probability": 9.4,
+        "modelScore": 39.5,
         "signals": []
       },
       "518595": {
@@ -6335,13 +6318,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 1.4,
-        "modelScore": 16.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "518692": {
@@ -6372,8 +6355,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 13.4,
-        "modelScore": 44.1,
+        "probability": 13.7,
+        "modelScore": 44,
         "signals": []
       },
       "543760": {
@@ -6417,8 +6400,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 22.8,
-        "modelScore": 50.1,
+        "probability": 24,
+        "modelScore": 49.4,
         "signals": []
       },
       "545361": {
@@ -6427,13 +6410,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 22.8,
-        "modelScore": 42.9,
+        "modelScore": 47.8,
         "signals": []
       },
       "547180": {
@@ -6447,8 +6430,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 22.8,
-        "modelScore": 53.8,
+        "probability": 24,
+        "modelScore": 53.1,
         "signals": [
           "hotLook"
         ]
@@ -6496,8 +6479,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
-        "probability": 3.9,
-        "modelScore": 35.9,
+        "probability": 4.5,
+        "modelScore": 35.8,
         "signals": []
       },
       "571912": {
@@ -6527,7 +6510,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 24,
-        "modelScore": 53.8,
+        "modelScore": 53.6,
         "signals": [
           "hotLook"
         ]
@@ -6558,8 +6541,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 22.8,
-        "modelScore": 55.3,
+        "probability": 24,
+        "modelScore": 55.1,
         "signals": [
           "hotLook"
         ]
@@ -6570,13 +6553,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 3,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 24,
-        "modelScore": 51.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -6640,7 +6623,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 2.8,
-        "modelScore": 33,
+        "modelScore": 32.6,
         "signals": []
       },
       "595879": {
@@ -6649,13 +6632,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.9,
+        "modelScore": 21.9,
         "signals": []
       },
       "596019": {
@@ -6669,8 +6652,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 18.5,
-        "modelScore": 43.5,
+        "probability": 21.3,
+        "modelScore": 43.3,
         "signals": [
           "hotLately"
         ]
@@ -6687,7 +6670,7 @@
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
         "probability": 1.4,
-        "modelScore": 24.6,
+        "modelScore": 24.4,
         "signals": []
       },
       "596117": {
@@ -6701,8 +6684,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 1.4,
-        "modelScore": 20.3,
+        "probability": 1.3,
+        "modelScore": 19.6,
         "signals": []
       },
       "596142": {
@@ -6726,13 +6709,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 14.7,
-        "modelScore": 40,
+        "modelScore": 45.1,
         "signals": [
           "hotLately"
         ]
@@ -6760,13 +6743,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 1.9,
-        "modelScore": 29.6,
+        "modelScore": 31.1,
         "signals": []
       },
       "606192": {
@@ -6797,8 +6780,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 8.5,
-        "modelScore": 36.1,
+        "probability": 9.3,
+        "modelScore": 36,
         "signals": []
       },
       "607208": {
@@ -6812,8 +6795,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 8.1,
-        "modelScore": 41.4,
+        "probability": 9.3,
+        "modelScore": 40.7,
         "signals": []
       },
       "608369": {
@@ -6827,8 +6810,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 20.6,
-        "modelScore": 44.3,
+        "probability": 23.2,
+        "modelScore": 44.1,
         "signals": [
           "hotLately"
         ]
@@ -6884,13 +6867,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 1.4,
-        "modelScore": 19.7,
+        "modelScore": 19.6,
         "signals": []
       },
       "624428": {
@@ -6899,13 +6882,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 1.4,
-        "modelScore": 20.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "624431": {
@@ -6950,7 +6933,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 1.3,
-        "modelScore": 24.2,
+        "modelScore": 23.8,
         "signals": []
       },
       "641343": {
@@ -6981,8 +6964,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
-        "probability": 4.9,
-        "modelScore": 36.2,
+        "probability": 5.2,
+        "modelScore": 36,
         "signals": []
       },
       "641680": {
@@ -6997,7 +6980,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 6.9,
-        "modelScore": 33.2,
+        "modelScore": 33,
         "signals": []
       },
       "642350": {
@@ -7006,13 +6989,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 7.2,
-        "modelScore": 37.5,
+        "modelScore": 37.2,
         "signals": []
       },
       "643217": {
@@ -7041,8 +7024,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 4.8,
-        "modelScore": 31.8,
+        "probability": 4.5,
+        "modelScore": 31.6,
         "signals": []
       },
       "643396": {
@@ -7086,8 +7069,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 4.1,
-        "modelScore": 37.3,
+        "probability": 4.5,
+        "modelScore": 36.6,
         "signals": []
       },
       "650402": {
@@ -7096,13 +7079,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 3.1,
+        "modelScore": 31.9,
         "signals": []
       },
       "650490": {
@@ -7117,7 +7100,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 24,
-        "modelScore": 49.1,
+        "modelScore": 48.9,
         "signals": [
           "due"
         ]
@@ -7173,13 +7156,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
-        "probability": 2.3,
-        "modelScore": 26.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "656716": {
@@ -7188,13 +7171,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 25.1,
         "signals": []
       },
       "656775": {
@@ -7208,8 +7191,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
-        "probability": 6.8,
-        "modelScore": 36.8,
+        "probability": 6.7,
+        "modelScore": 36.6,
         "signals": []
       },
       "656811": {
@@ -7238,8 +7221,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 22.8,
-        "modelScore": 54.7,
+        "probability": 24,
+        "modelScore": 54.1,
         "signals": [
           "hotLately",
           "hotLook"
@@ -7303,8 +7286,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 3.8,
-        "modelScore": 34,
+        "probability": 3.9,
+        "modelScore": 33.8,
         "signals": []
       },
       "663330": {
@@ -7318,8 +7301,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 5.8,
-        "modelScore": 35.8,
+        "probability": 6.6,
+        "modelScore": 35.6,
         "signals": []
       },
       "663616": {
@@ -7328,13 +7311,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
-        "probability": 11.8,
-        "modelScore": 33.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -7351,7 +7334,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 1.3,
-        "modelScore": 22,
+        "modelScore": 21.8,
         "signals": []
       },
       "663656": {
@@ -7366,7 +7349,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 11.5,
-        "modelScore": 45.8,
+        "modelScore": 45.7,
         "signals": [
           "hotLately"
         ]
@@ -7428,10 +7411,9 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 24,
-        "modelScore": 52.1,
+        "modelScore": 51.9,
         "signals": [
-          "due",
-          "hotLook"
+          "due"
         ]
       },
       "664040": {
@@ -7446,7 +7428,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 24,
-        "modelScore": 47.2,
+        "modelScore": 47.1,
         "signals": [
           "hotLately"
         ]
@@ -7462,8 +7444,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 1.6,
-        "modelScore": 24.4,
+        "probability": 1.5,
+        "modelScore": 24.2,
         "signals": []
       },
       "664761": {
@@ -7477,8 +7459,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 10.8,
-        "modelScore": 46.4,
+        "probability": 11.4,
+        "modelScore": 45.7,
         "signals": []
       },
       "664774": {
@@ -7492,8 +7474,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 2.8,
-        "modelScore": 28.4,
+        "probability": 2.6,
+        "modelScore": 28.2,
         "signals": []
       },
       "664954": {
@@ -7507,8 +7489,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 5.5,
-        "modelScore": 30.4,
+        "probability": 5.6,
+        "modelScore": 30.3,
         "signals": []
       },
       "664983": {
@@ -7517,13 +7499,13 @@
         "team": "Colorado Rockies",
         "opponent": "San Diego Padres",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 23.9,
-        "modelScore": 46.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -7534,13 +7516,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 22.8,
-        "modelScore": 45.4,
+        "modelScore": 50.3,
         "signals": []
       },
       "665161": {
@@ -7554,8 +7536,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 20.1,
-        "modelScore": 44.9,
+        "probability": 23.1,
+        "modelScore": 44.7,
         "signals": [
           "hotLately"
         ]
@@ -7566,13 +7548,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 24,
-        "modelScore": 47.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -7618,8 +7600,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 22.8,
-        "modelScore": 50.2,
+        "probability": 24,
+        "modelScore": 50,
         "signals": []
       },
       "665833": {
@@ -7634,7 +7616,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 24,
-        "modelScore": 44.1,
+        "modelScore": 44,
         "signals": [
           "hotLately"
         ]
@@ -7651,7 +7633,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 19.8,
-        "modelScore": 45.6,
+        "modelScore": 45.4,
         "signals": [
           "hotLately"
         ]
@@ -7662,13 +7644,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.6,
+        "modelScore": 25.5,
         "signals": []
       },
       "666126": {
@@ -7692,13 +7674,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 5.4,
-        "modelScore": 33.7,
+        "modelScore": 36.6,
         "signals": []
       },
       "666152": {
@@ -7728,7 +7710,7 @@
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
         "probability": 23.3,
-        "modelScore": 45.4,
+        "modelScore": 45.2,
         "signals": []
       },
       "666182": {
@@ -7742,8 +7724,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 7.5,
-        "modelScore": 39.7,
+        "probability": 8.4,
+        "modelScore": 39.6,
         "signals": []
       },
       "666211": {
@@ -7757,8 +7739,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 3.7,
-        "modelScore": 31.1,
+        "probability": 3.6,
+        "modelScore": 30.9,
         "signals": []
       },
       "666310": {
@@ -7773,7 +7755,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 2.2,
-        "modelScore": 25.7,
+        "modelScore": 25.6,
         "signals": [
           "hotLately"
         ]
@@ -7819,8 +7801,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 2.1,
-        "modelScore": 24.7,
+        "probability": 2,
+        "modelScore": 23.9,
         "signals": []
       },
       "668709": {
@@ -7865,7 +7847,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 19.4,
-        "modelScore": 45.8,
+        "modelScore": 45.6,
         "signals": []
       },
       "668885": {
@@ -7874,13 +7856,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
-        "probability": 1.4,
-        "modelScore": 20.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "668901": {
@@ -7906,13 +7888,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 9.4,
-        "modelScore": 35.8,
+        "modelScore": 38.8,
         "signals": []
       },
       "668930": {
@@ -7927,7 +7909,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 23.6,
-        "modelScore": 44.1,
+        "modelScore": 43.9,
         "signals": [
           "hotLately"
         ]
@@ -7943,8 +7925,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 12.1,
-        "modelScore": 41.8,
+        "probability": 12.8,
+        "modelScore": 41.6,
         "signals": []
       },
       "668942": {
@@ -7968,13 +7950,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
-        "probability": 5.5,
-        "modelScore": 32.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "669003": {
@@ -7988,8 +7970,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
-        "probability": 12,
-        "modelScore": 44.1,
+        "probability": 12.7,
+        "modelScore": 43.9,
         "signals": [
           "hotLately"
         ]
@@ -8005,8 +7987,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 12.7,
-        "modelScore": 38.1,
+        "probability": 12.4,
+        "modelScore": 37.4,
         "signals": []
       },
       "669127": {
@@ -8030,13 +8012,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 12.5,
-        "modelScore": 47.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "669242": {
@@ -8051,7 +8033,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 5.1,
-        "modelScore": 38.1,
+        "modelScore": 37.9,
         "signals": []
       },
       "669257": {
@@ -8080,8 +8062,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 2,
-        "modelScore": 27,
+        "probability": 2.1,
+        "modelScore": 26.9,
         "signals": []
       },
       "669394": {
@@ -8095,8 +8077,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 21.7,
-        "modelScore": 43.3,
+        "probability": 22.1,
+        "modelScore": 43.1,
         "signals": []
       },
       "669397": {
@@ -8126,7 +8108,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 1.3,
-        "modelScore": 17.6,
+        "modelScore": 17.5,
         "signals": []
       },
       "669720": {
@@ -8135,13 +8117,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.7,
+        "modelScore": 41.9,
         "signals": []
       },
       "669743": {
@@ -8155,8 +8137,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
-        "probability": 1.4,
-        "modelScore": 29.2,
+        "probability": 1.6,
+        "modelScore": 29,
         "signals": []
       },
       "670032": {
@@ -8171,7 +8153,7 @@
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
         "probability": 1.4,
-        "modelScore": 18.6,
+        "modelScore": 18.5,
         "signals": []
       },
       "670231": {
@@ -8185,8 +8167,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 12.1,
-        "modelScore": 36.9,
+        "probability": 11.8,
+        "modelScore": 36.7,
         "signals": [
           "hotLately"
         ]
@@ -8202,8 +8184,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 22.8,
-        "modelScore": 54.4,
+        "probability": 24,
+        "modelScore": 54.2,
         "signals": [
           "hotLately",
           "hotLook"
@@ -8220,8 +8202,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 17.6,
-        "modelScore": 45.5,
+        "probability": 19.5,
+        "modelScore": 45.3,
         "signals": [
           "hotLately"
         ]
@@ -8238,7 +8220,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 1.3,
-        "modelScore": 20,
+        "modelScore": 19.9,
         "signals": []
       },
       "670770": {
@@ -8253,7 +8235,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 1.3,
-        "modelScore": 22.9,
+        "modelScore": 22.8,
         "signals": []
       },
       "671732": {
@@ -8268,7 +8250,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 12.3,
-        "modelScore": 39.5,
+        "modelScore": 39.3,
         "signals": [
           "hotLately"
         ]
@@ -8300,7 +8282,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 1.3,
-        "modelScore": 15.6,
+        "modelScore": 15.4,
         "signals": []
       },
       "672580": {
@@ -8314,8 +8296,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 2.8,
-        "modelScore": 33.9,
+        "probability": 3.1,
+        "modelScore": 33.8,
         "signals": []
       },
       "672613": {
@@ -8339,13 +8321,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 1.9,
-        "modelScore": 26.7,
+        "modelScore": 28.1,
         "signals": []
       },
       "673237": {
@@ -8359,8 +8341,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 11.5,
-        "modelScore": 43.7,
+        "probability": 12.2,
+        "modelScore": 43.6,
         "signals": []
       },
       "673962": {
@@ -8374,8 +8356,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 11.5,
-        "modelScore": 42.8,
+        "probability": 12.9,
+        "modelScore": 42.6,
         "signals": [
           "due"
         ]
@@ -8392,7 +8374,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 6.6,
-        "modelScore": 38.5,
+        "modelScore": 38.3,
         "signals": []
       },
       "676356": {
@@ -8439,7 +8421,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 1.4,
-        "modelScore": 25.7,
+        "modelScore": 25.6,
         "signals": []
       },
       "676724": {
@@ -8453,8 +8435,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 7.4,
-        "modelScore": 39.8,
+        "probability": 7.8,
+        "modelScore": 39.6,
         "signals": []
       },
       "677347": {
@@ -8463,13 +8445,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 1.4,
-        "modelScore": 21.6,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "677649": {
@@ -8483,8 +8465,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 17.5,
-        "modelScore": 42.9,
+        "probability": 20.2,
+        "modelScore": 42.7,
         "signals": []
       },
       "677800": {
@@ -8498,8 +8480,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 22.8,
-        "modelScore": 45.4,
+        "probability": 24,
+        "modelScore": 45.2,
         "signals": []
       },
       "677943": {
@@ -8513,8 +8495,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 1.4,
-        "modelScore": 25.2,
+        "probability": 1.6,
+        "modelScore": 25,
         "signals": []
       },
       "677951": {
@@ -8528,8 +8510,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 17,
-        "modelScore": 43.7,
+        "probability": 19.3,
+        "modelScore": 43.5,
         "signals": []
       },
       "678246": {
@@ -8543,8 +8525,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 22.8,
-        "modelScore": 48.2,
+        "probability": 24,
+        "modelScore": 47.5,
         "signals": []
       },
       "678489": {
@@ -8585,11 +8567,11 @@
         "gamePk": 824548,
         "lineupStatus": "CONFIRMED",
         "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupSpot": 5,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 22.8,
-        "modelScore": 44.2,
+        "probability": 22.3,
+        "modelScore": 46.6,
         "signals": [
           "hotLately"
         ]
@@ -8638,7 +8620,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 7.7,
-        "modelScore": 35.9,
+        "modelScore": 35.7,
         "signals": []
       },
       "680664": {
@@ -8670,7 +8652,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 5.7,
-        "modelScore": 38.5,
+        "modelScore": 38.3,
         "signals": []
       },
       "680776": {
@@ -8684,8 +8666,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 8.2,
-        "modelScore": 33.9,
+        "probability": 8,
+        "modelScore": 33.7,
         "signals": []
       },
       "680777": {
@@ -8694,13 +8676,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
-        "probability": 22.6,
-        "modelScore": 41,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -8717,7 +8699,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 4.7,
-        "modelScore": 31.1,
+        "modelScore": 30.9,
         "signals": [
           "hotLately"
         ]
@@ -8734,7 +8716,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 24,
-        "modelScore": 48.4,
+        "modelScore": 48.2,
         "signals": []
       },
       "681082": {
@@ -8748,8 +8730,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 5.7,
-        "modelScore": 35.7,
+        "probability": 5.9,
+        "modelScore": 35,
         "signals": []
       },
       "681198": {
@@ -8758,13 +8740,13 @@
         "team": "Colorado Rockies",
         "opponent": "San Diego Padres",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 4,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 15.6,
-        "modelScore": 41.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -8780,8 +8762,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 6.6,
-        "modelScore": 38.5,
+        "probability": 6.5,
+        "modelScore": 38.2,
         "signals": []
       },
       "681508": {
@@ -8825,8 +8807,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 9.1,
-        "modelScore": 38.1,
+        "probability": 8.9,
+        "modelScore": 37.9,
         "signals": []
       },
       "682668": {
@@ -8840,8 +8822,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 1.4,
-        "modelScore": 25.3,
+        "probability": 1.3,
+        "modelScore": 24.6,
         "signals": []
       },
       "682829": {
@@ -8856,7 +8838,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 24,
-        "modelScore": 56.9,
+        "modelScore": 56.8,
         "signals": [
           "hotLately",
           "hotLook"
@@ -8874,7 +8856,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 5.4,
-        "modelScore": 38.5,
+        "modelScore": 38.4,
         "signals": []
       },
       "682927": {
@@ -8903,8 +8885,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 22.8,
-        "modelScore": 49.9,
+        "probability": 24,
+        "modelScore": 49.8,
         "signals": []
       },
       "683021": {
@@ -8918,8 +8900,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
-        "probability": 3.6,
-        "modelScore": 34.1,
+        "probability": 3.8,
+        "modelScore": 34,
         "signals": [
           "due"
         ]
@@ -8935,8 +8917,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 5.4,
-        "modelScore": 37.3,
+        "probability": 5.1,
+        "modelScore": 37.1,
         "signals": []
       },
       "683227": {
@@ -8966,7 +8948,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 13.7,
-        "modelScore": 44.3,
+        "modelScore": 44.1,
         "signals": [
           "due"
         ]
@@ -8994,13 +8976,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 2.8,
-        "modelScore": 32.2,
+        "modelScore": 36.8,
         "signals": []
       },
       "686217": {
@@ -9015,7 +8997,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 1.4,
-        "modelScore": 20.8,
+        "modelScore": 20.6,
         "signals": []
       },
       "686469": {
@@ -9059,8 +9041,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 1.8,
-        "modelScore": 22.9,
+        "probability": 1.6,
+        "modelScore": 22.7,
         "signals": []
       },
       "686668": {
@@ -9075,7 +9057,7 @@
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
         "probability": 1.4,
-        "modelScore": 24.1,
+        "modelScore": 23.3,
         "signals": []
       },
       "686681": {
@@ -9089,8 +9071,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 14.7,
-        "modelScore": 43,
+        "probability": 15.5,
+        "modelScore": 42.8,
         "signals": []
       },
       "686765": {
@@ -9104,8 +9086,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 6.8,
-        "modelScore": 34,
+        "probability": 6.2,
+        "modelScore": 33.8,
         "signals": []
       },
       "686797": {
@@ -9114,13 +9096,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 20.2,
-        "modelScore": 42.3,
+        "modelScore": 47.2,
         "signals": []
       },
       "687093": {
@@ -9129,13 +9111,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 6.6,
-        "modelScore": 31.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "687263": {
@@ -9144,13 +9126,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 22.8,
-        "modelScore": 44.2,
+        "modelScore": 48.9,
         "signals": [
           "hotLately"
         ]
@@ -9167,7 +9149,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 4.7,
-        "modelScore": 33.3,
+        "modelScore": 33.1,
         "signals": []
       },
       "687462": {
@@ -9191,13 +9173,13 @@
         "team": "Colorado Rockies",
         "opponent": "San Diego Padres",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 21.2,
         "signals": []
       },
       "687749": {
@@ -9206,13 +9188,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 2.1,
+        "modelScore": 34.4,
         "signals": []
       },
       "687859": {
@@ -9226,8 +9208,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 3.3,
-        "modelScore": 28.5,
+        "probability": 3.1,
+        "modelScore": 28,
         "signals": []
       },
       "687957": {
@@ -9242,7 +9224,7 @@
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
         "probability": 2,
-        "modelScore": 35.7,
+        "modelScore": 33.9,
         "signals": []
       },
       "689414": {
@@ -9257,7 +9239,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 15.3,
-        "modelScore": 43.7,
+        "modelScore": 43.6,
         "signals": [
           "due"
         ]
@@ -9289,7 +9271,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 1.3,
-        "modelScore": 26.1,
+        "modelScore": 25.9,
         "signals": []
       },
       "690993": {
@@ -9298,13 +9280,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 3,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 7.3,
-        "modelScore": 39.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "691019": {
@@ -9328,13 +9310,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 19,
-        "modelScore": 44.6,
+        "modelScore": 49.1,
         "signals": []
       },
       "691182": {
@@ -9343,13 +9325,13 @@
         "team": "Colorado Rockies",
         "opponent": "San Diego Padres",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 17.1,
+        "modelScore": 41.7,
         "signals": []
       },
       "691406": {
@@ -9364,7 +9346,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 24,
-        "modelScore": 56.9,
+        "modelScore": 56.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -9382,7 +9364,7 @@
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
         "probability": 18.3,
-        "modelScore": 46.1,
+        "modelScore": 45.9,
         "signals": [
           "hotLately"
         ]
@@ -9398,8 +9380,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 8.3,
-        "modelScore": 35.1,
+        "probability": 5.7,
+        "modelScore": 33,
         "signals": []
       },
       "691777": {
@@ -9413,8 +9395,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
-        "probability": 9,
-        "modelScore": 39.8,
+        "probability": 10.2,
+        "modelScore": 39.6,
         "signals": []
       },
       "693304": {
@@ -9429,7 +9411,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 2.8,
-        "modelScore": 31.7,
+        "modelScore": 31.5,
         "signals": []
       },
       "693307": {
@@ -9440,11 +9422,11 @@
         "gamePk": 824548,
         "lineupStatus": "CONFIRMED",
         "confirmedLineup": true,
-        "lineupSpot": 5,
+        "lineupSpot": 3,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 22.8,
-        "modelScore": 46,
+        "probability": 24,
+        "modelScore": 46.2,
         "signals": []
       },
       "694192": {
@@ -9459,7 +9441,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 24,
-        "modelScore": 48.9,
+        "modelScore": 48.7,
         "signals": []
       },
       "694203": {
@@ -9468,13 +9450,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 3.7,
-        "modelScore": 32.7,
+        "modelScore": 36.9,
         "signals": []
       },
       "694208": {
@@ -9483,13 +9465,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
         "probability": 3.3,
-        "modelScore": 31,
+        "modelScore": 35.9,
         "signals": [
           "hotLately"
         ]
@@ -9505,8 +9487,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 16.2,
-        "modelScore": 42.2,
+        "probability": 16.3,
+        "modelScore": 42.1,
         "signals": [
           "hotLately"
         ]
@@ -9537,8 +9519,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 2.6,
-        "modelScore": 26.3,
+        "probability": 2.4,
+        "modelScore": 26.1,
         "signals": []
       },
       "694671": {
@@ -9552,8 +9534,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "543243",
         "opposingPitcher": "Sonny Gray",
-        "probability": 22.8,
-        "modelScore": 49.6,
+        "probability": 24,
+        "modelScore": 49.5,
         "signals": []
       },
       "695257": {
@@ -9568,7 +9550,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 1.4,
-        "modelScore": 23.6,
+        "modelScore": 23.5,
         "signals": []
       },
       "695506": {
@@ -9582,8 +9564,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 22.8,
-        "modelScore": 49.4,
+        "probability": 24,
+        "modelScore": 49.2,
         "signals": [
           "due"
         ]
@@ -9599,8 +9581,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "699044",
         "opposingPitcher": "Miguel Ullola",
-        "probability": 22.8,
-        "modelScore": 51.9,
+        "probability": 24,
+        "modelScore": 51.7,
         "signals": [
           "hotLately"
         ]
@@ -9626,13 +9608,13 @@
         "team": "Los Angeles Angels",
         "opponent": "Minnesota Twins",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "671737",
         "opposingPitcher": "Taj Bradley",
-        "probability": 1.4,
-        "modelScore": 18.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "695720": {
@@ -9647,7 +9629,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 1.5,
-        "modelScore": 26.7,
+        "modelScore": 26.5,
         "signals": []
       },
       "695731": {
@@ -9661,8 +9643,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 3.4,
-        "modelScore": 29.2,
+        "probability": 3.1,
+        "modelScore": 28.5,
         "signals": []
       },
       "696030": {
@@ -9708,8 +9690,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
-        "probability": 1.4,
-        "modelScore": 27.2,
+        "probability": 1.7,
+        "modelScore": 27,
         "signals": []
       },
       "699302": {
@@ -9724,7 +9706,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 6.6,
-        "modelScore": 37.2,
+        "modelScore": 37,
         "signals": []
       },
       "701162": {
@@ -9753,8 +9735,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 4.6,
-        "modelScore": 39.1,
+        "probability": 5.4,
+        "modelScore": 38.9,
         "signals": []
       },
       "701358": {
@@ -9768,8 +9750,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "607625",
         "opposingPitcher": "Seth Lugo",
-        "probability": 12.6,
-        "modelScore": 39.8,
+        "probability": 11.9,
+        "modelScore": 39.6,
         "signals": [
           "hotLately"
         ]
@@ -9786,7 +9768,7 @@
         "opposingPitcherId": "680736",
         "opposingPitcher": "Justin Wrobleski",
         "probability": 24,
-        "modelScore": 48.6,
+        "modelScore": 48.5,
         "signals": []
       },
       "701538": {
@@ -9795,13 +9777,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 5,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 19.8,
-        "modelScore": 48.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "701678": {
@@ -9810,13 +9792,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 2,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 7.4,
-        "modelScore": 38.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "701807": {
@@ -9830,8 +9812,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 12.5,
-        "modelScore": 42.1,
+        "probability": 13.6,
+        "modelScore": 42,
         "signals": [
           "hotLately"
         ]
@@ -9847,8 +9829,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "690997",
         "opposingPitcher": "Nolan McLean",
-        "probability": 1.4,
-        "modelScore": 25.2,
+        "probability": 1.3,
+        "modelScore": 24.6,
         "signals": []
       },
       "702332": {
@@ -9862,8 +9844,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "641302",
         "opposingPitcher": "Tyler Alexander",
-        "probability": 6.1,
-        "modelScore": 33.5,
+        "probability": 5.7,
+        "modelScore": 33.3,
         "signals": []
       },
       "703492": {
@@ -9877,8 +9859,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 1.4,
-        "modelScore": 21.9,
+        "probability": 1.3,
+        "modelScore": 21.7,
         "signals": []
       },
       "703601": {
@@ -9889,11 +9871,11 @@
         "gamePk": 824548,
         "lineupStatus": "CONFIRMED",
         "confirmedLineup": true,
-        "lineupSpot": 6,
+        "lineupSpot": 7,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 9.1,
-        "modelScore": 44.9,
+        "probability": 9.3,
+        "modelScore": 41.9,
         "signals": []
       },
       "703607": {
@@ -9908,7 +9890,7 @@
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
         "probability": 7.7,
-        "modelScore": 38.8,
+        "modelScore": 38.6,
         "signals": [
           "hotLately"
         ]
@@ -9925,7 +9907,7 @@
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
         "probability": 1.6,
-        "modelScore": 22.6,
+        "modelScore": 22.4,
         "signals": []
       },
       "800543": {
@@ -9940,7 +9922,7 @@
         "opposingPitcherId": "663903",
         "opposingPitcher": "Brady Singer",
         "probability": 8.7,
-        "modelScore": 41.1,
+        "modelScore": 40.9,
         "signals": []
       },
       "802415": {
@@ -9955,7 +9937,7 @@
         "opposingPitcherId": "605488",
         "opposingPitcher": "Jeffrey Springs",
         "probability": 1.4,
-        "modelScore": 27.7,
+        "modelScore": 27.6,
         "signals": []
       },
       "803011": {
@@ -9985,7 +9967,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 3.7,
-        "modelScore": 30.3,
+        "modelScore": 30.1,
         "signals": []
       },
       "804668": {
@@ -10000,7 +9982,7 @@
         "opposingPitcherId": "690986",
         "opposingPitcher": "Kyle Harrison",
         "probability": 22,
-        "modelScore": 46.7,
+        "modelScore": 46.5,
         "signals": []
       },
       "805346": {
@@ -10009,13 +9991,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 2.1,
-        "modelScore": 22.7,
+        "modelScore": 21.9,
         "signals": []
       },
       "805367": {
@@ -10029,8 +10011,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 8.7,
-        "modelScore": 38,
+        "probability": 9.8,
+        "modelScore": 37,
         "signals": [
           "hotLately"
         ]
@@ -10041,13 +10023,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 1.8,
-        "modelScore": 26.7,
+        "modelScore": 27.3,
         "signals": []
       },
       "805808": {
@@ -10061,8 +10043,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 14.4,
-        "modelScore": 44.6,
+        "probability": 16.7,
+        "modelScore": 43.2,
         "signals": []
       },
       "805999": {
@@ -10076,8 +10058,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
-        "probability": 5.1,
-        "modelScore": 36.4,
+        "probability": 5.2,
+        "modelScore": 36.2,
         "signals": [
           "hotLately"
         ]
@@ -10093,8 +10075,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "696062",
         "opposingPitcher": "Wilber Dotel",
-        "probability": 1.4,
-        "modelScore": 23,
+        "probability": 1.3,
+        "modelScore": 22.8,
         "signals": []
       },
       "806956": {
@@ -10120,13 +10102,13 @@
         "team": "Minnesota Twins",
         "opponent": "Los Angeles Angels",
         "gamePk": 823978,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "700712",
         "opposingPitcher": "Walbert Ureña",
         "probability": 3.6,
-        "modelScore": 29.3,
+        "modelScore": 33.7,
         "signals": []
       },
       "807726": {
@@ -10137,11 +10119,11 @@
         "gamePk": 824548,
         "lineupStatus": "CONFIRMED",
         "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupSpot": 8,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 1.4,
-        "modelScore": 19.4,
+        "probability": 1.3,
+        "modelScore": 20.6,
         "signals": []
       },
       "808959": {
@@ -10155,8 +10137,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "664285",
         "opposingPitcher": "Framber Valdez",
-        "probability": 22.8,
-        "modelScore": 53.2,
+        "probability": 24,
+        "modelScore": 52.4,
         "signals": [
           "hotLook"
         ]
@@ -10167,13 +10149,13 @@
         "team": "Detroit Tigers",
         "opponent": "Chicago White Sox",
         "gamePk": 824548,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "607200",
         "opposingPitcher": "Erick Fedde",
-        "probability": 3.7,
-        "modelScore": 32.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "823550": {
@@ -10182,13 +10164,13 @@
         "team": "San Diego Padres",
         "opponent": "Colorado Rockies",
         "gamePk": 824305,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "685299",
         "opposingPitcher": "Tanner Gordon",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 24.2,
         "signals": []
       }
     },
