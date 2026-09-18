@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { auditSnapshotCoverage } from "./results_tracking_integrity.js";
 
 const DATA = path.resolve("website/data"), generatedAt = new Date().toISOString();
 const read = file => JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -59,6 +60,7 @@ async function main() {
     methodology: { snapshotRequiredBeforeKickoff: true, retroactiveSelectionsForbidden: true, gradingProvider: "ESPN live and completed-game box scores", receivingIsOutcomeNotLineGrade: true },
     counts: { completedGames: completed.size, liveGames, snapshots: snapshots.length, tdSelectionsGraded: tdGrades.length, receivingSelectionsGraded: receivingOutcomes.length, providerFailures: failures.length },
     snapshots, games: gameResults, playerResults, tdGrades, receivingOutcomes, failures };
+  output.snapshotCoverage = auditSnapshotCoverage(output, schedule);
   write("nfl_results_tracking.json", output); console.log(`NFL RESULTS TRACKING: ${liveGames} live, ${completed.size} final, ${snapshots.length} pre-kickoff locks`);
 }
 main().catch(error => { console.error("NFL RESULTS TRACKING FAILED"); console.error(error); process.exit(1); });
