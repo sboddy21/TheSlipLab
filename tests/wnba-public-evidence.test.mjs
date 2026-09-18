@@ -27,6 +27,13 @@ test('landing page does not advertise MLB or WNBA as live before current data is
  assert.match(landing,/health_status\.json/);
  assert.match(landing,/Recommendations withheld/);
 });
+test('scheduled refreshes cannot be blocked by presentation tests or hide attachment failures',()=>{
+ const wnbaWorkflow=fs.readFileSync('.github/workflows/wnba-refresh.yml','utf8');
+ const oddsWorkflow=fs.readFileSync('.github/workflows/sports-odds-refresh.yml','utf8');
+ assert.doesNotMatch(wnbaWorkflow,/wnba-public-evidence\.test\.mjs/);
+ assert.match(wnbaWorkflow,/wnba-market-gate\.test\.mjs/);
+ assert.doesNotMatch(oddsWorkflow,/continue-on-error:\s*true/);
+});
 test('WNBA Decision Center distinguishes a no-game day from filtered-out players',()=>{
  const center=fs.readFileSync('website/assets/wnba-decision-center.js','utf8');
  assert.match(center,/No WNBA games are scheduled for today\. No player rankings are published\./);

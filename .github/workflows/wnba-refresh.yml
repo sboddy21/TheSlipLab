@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Verify betting market safeguards
-        run: node --test tests/wnba-market-gate.test.mjs tests/wnba-public-evidence.test.mjs
+        run: node --test tests/wnba-market-gate.test.mjs
       - name: Refresh WNBA foundation data
         env:
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}

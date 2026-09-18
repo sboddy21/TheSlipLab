@@ -29,15 +29,12 @@ jobs:
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
         run: node scripts/odds/refresh.mjs
       - name: Attach NCAAF prices and settle receipts
-        continue-on-error: true
         run: node scripts/cfb/refresh.mjs
       - name: Attach MLB prices
-        continue-on-error: true
         env:
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
         run: node scripts/mlb/build_market_odds.js
       - name: Attach WNBA prices
-        continue-on-error: true
         env:
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
         run: |
