@@ -28,11 +28,37 @@
   <header class="site-header"><div class="nav wrap"><a class="brand" href="./index.html" aria-label="The Slip Lab home">The Slip <span>Lab</span></a><span class="nav-note">Sports intelligence, simplified.</span><div class="nav-actions"><a class="sign-in" href="./account.html" data-tsl-account-link>Sign in</a><a class="button primary" href="./account.html?mode=signup">Join free</a></div></div></header>
   <main>
     <section class="hero"><div class="hero-grid wrap"><div class="hero-copy"><div class="eyebrow">The game moves fast. Move with it.</div><h1>See the game. <span>Catch the edge.</span></h1><p>One clean feed for the matchups, players, and live context that matter—across every sport you follow.</p><div class="hero-cta"><a class="button primary" href="./account.html?mode=signup">Create your free account</a><small>No credit card required.</small></div></div><div class="scoreboard" aria-label="The Slip Lab covers live sports intelligence"><div class="board-top"><span>The Slip Lab</span><span class="pulse">Live data</span></div><div class="board-mark"><strong>01</strong><span>Your daily sports edge</span></div><div class="board-bottom"><span><b>One feed.</b><br>Every sport.</span><span>Built for fans<br>who want the signal.</span></div></div></div></section>
-    <nav class="league-bar" aria-label="Sports"><div class="league-list wrap"><a class="league live" href="./mlb.html"><strong>MLB</strong><span>Live</span></a><a class="league live" href="./nfl.html"><strong>NFL</strong><span>Live</span></a><a class="league live" href="./cfb.html"><strong>CFB</strong><span>Live</span></a><a class="league live" href="./wnba.html"><strong>WNBA</strong><span>Live</span></a><div class="league"><strong>NBA</strong><span>Not in season</span></div><div class="league"><strong>NHL</strong><span>Not in season</span></div></div></nav>
+    <nav class="league-bar" aria-label="Sports"><div class="league-list wrap"><a class="league" href="./mlb.html" data-sport-status="mlb"><strong>MLB</strong><span>Checking</span></a><a class="league" href="./nfl.html" data-sport-status="nfl"><strong>NFL</strong><span>Checking</span></a><a class="league" href="./cfb.html" data-sport-status="cfb"><strong>CFB</strong><span>Checking</span></a><a class="league" href="./wnba.html" data-sport-status="wnba"><strong>WNBA</strong><span>Checking</span></a><div class="league"><strong>NBA</strong><span>Not in season</span></div><div class="league"><strong>NHL</strong><span>Not in season</span></div></div></nav>
     <section class="value"><div class="value-grid wrap"><h2>Less noise.<br>More game.</h2><div class="value-copy"><p>The Slip Lab brings live context, clear analysis, and verified results into one place. Choose your sports, follow the players you care about, and get to the useful part faster.</p><div class="proof"><span>Personalized feed</span><span>Clear model reasoning</span><span>Verified results</span></div><a class="button primary" href="./account.html?mode=signup">Start free</a></div></div></section>
     <section class="pricing" aria-labelledby="pricing-title"><div class="wrap"><div class="pricing-head"><span>Simple pricing</span><h2 id="pricing-title">Pick your season.</h2></div><div class="plans"><article class="plan"><h3>Weekly</h3><div class="price">$5 <small>/ week</small></div><p>Full access with the shortest commitment.</p><a class="button" href="./account.html?plan=weekly" data-pricing-plan="weekly">Choose weekly</a></article><article class="plan recommended"><span class="recommended-label">Recommended</span><h3>Monthly</h3><div class="price">$15 <small>/ month</small></div><p>The best fit for staying current throughout the season.</p><a class="button" href="./account.html?plan=monthly" data-pricing-plan="monthly">Choose monthly</a></article><article class="plan"><h3>Annual</h3><div class="price">$99 <small>/ year</small></div><p>The lowest price for year-round access.</p><a class="button" href="./account.html?plan=annual" data-pricing-plan="annual">Choose annual</a></article></div></div></section>
   </main>
   <footer class="footer"><div class="footer-row wrap"><p>© 2026 The Slip Lab. Sports analytics for informational use only.</p><nav class="footer-links" aria-label="Footer"><a href="./account.html">My Account</a><a href="./how-to-use.html">How to Use</a><a href="./disclaimer.html">Disclaimer</a><a href="https://x.com/TheSlip_Lab">X ↗</a></nav></div></footer>
+  <script>
+    (() => {
+      const MAX_AGE = 90 * 60 * 1000;
+      const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+      const fresh = value => Number.isFinite(Date.parse(value)) && Date.now() - Date.parse(value) <= MAX_AGE && Date.parse(value) <= Date.now() + 5 * 60 * 1000;
+      const load = file => fetch(`./data/${file}?v=${Date.now()}`, { cache: "no-store", signal: AbortSignal.timeout(10000) }).then(response => {
+        if (!response.ok) throw new Error(`${file}: ${response.status}`);
+        return response.json();
+      });
+      const setStatus = (sport, ready, label = "Current") => {
+        const link = document.querySelector(`[data-sport-status="${sport}"]`);
+        if (!link) return;
+        link.classList.toggle("live", ready);
+        link.querySelector("span").textContent = ready ? label : "Updating";
+        link.title = ready ? "Current verified data is available" : "Recommendations withheld until current data is verified";
+      };
+      Promise.allSettled([
+        load("health_status.json").then(data => setStatus("mlb", data.status === "healthy" && data.slateDate === today && fresh(data.monitoring?.lastSuccessfulAt))),
+        load("odds_nfl.json").then(data => setStatus("nfl", data.status === "available" && fresh(data.retrievedAt))),
+        Promise.all([load("cfb_board.json"), load("odds_ncaaf.json")]).then(([board, odds]) => setStatus("cfb", fresh(board.generatedAt) && odds.status === "available" && fresh(odds.retrievedAt))),
+        Promise.all([load("wnba_games_today.json"), load("wnba_verified_markets.json")]).then(([games, markets]) => setStatus("wnba", games.date === today && fresh(games.fetchedAt) && markets.date === today && fresh(markets.generatedAt))),
+      ]).then(results => results.forEach((result, index) => {
+        if (result.status === "rejected") setStatus(["mlb", "nfl", "cfb", "wnba"][index], false);
+      }));
+    })();
+  </script>
   <script type="module" src="./assets/account-client.js"></script>
 </body>
 </html>
