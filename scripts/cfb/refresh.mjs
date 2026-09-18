@@ -8,6 +8,7 @@ import { fitRatings,predictRatings,dayCutoff } from './ratings.mjs';
 import { valuePicks } from '../../website/assets/cfb-edge.mjs';
 import { qualification } from './calibration.mjs';
 import { weekCutoff } from './ratings.mjs';
+import { fetchScoreboardRange } from './espn-scoreboard.mjs';
 
 const output = fileURLToPath(new URL('../../website/data/cfb_board.json', import.meta.url));
 const configText=await fs.readFile(new URL('./daily-model.json',import.meta.url),'utf8');
@@ -18,15 +19,7 @@ const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', y
 const monday = new Date(`${today}T12:00:00Z`);
 monday.setUTCDate(monday.getUTCDate() - (monday.getUTCDay()+6)%7);
 const end = new Date(monday); end.setUTCDate(end.getUTCDate()+6);
-const iso = d => d.toISOString().slice(0,10), compact = d => iso(d).replaceAll('-','');
-async function scoreboard(start, finish) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${compact(start)}-${compact(finish)}&groups=80&limit=1000`;
-  const response = await fetch(url, { signal: AbortSignal.timeout(30000) });
-  if (!response.ok) throw new Error(`ESPN returned ${response.status}`);
-  const data = await response.json();
-  if (!Array.isArray(data.events) || data.events.length >= 1000) throw new Error('Missing or truncated ESPN events');
-  return data.events.map(normalize).filter(Boolean);
-}
+const iso = d => d.toISOString().slice(0,10);
 let previous = { archive: [] };
 try { previous = JSON.parse(await fs.readFile(output,'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
 // Persist the score history; fetch only recent games on frequent refreshes.
@@ -38,14 +31,14 @@ const horizon=now.getTime()-(config.windowDays+3)*86400000;
 const history=cached.games.filter(g=>Date.parse(g.date)>=horizon);
 const latest=history.reduce((n,g)=>Math.max(n,Date.parse(g.date)),horizon);
 const recentStart=new Date(Math.max(horizon,Math.min(latest,now.getTime())-14*86400000));
-for(let start=recentStart;start<=end;) {
-  const finish=new Date(Math.min(start.getTime()+59*86400000,end.getTime()));
-  history.push(...await scoreboard(start,finish));
-  start=new Date(finish.getTime()+86400000);
-}
+const fetchedHistory=await fetchScoreboardRange(recentStart,end,{fallback:history});
+history.push(...fetchedHistory.map(event=>event.home&&event.away?event:normalize(event)).filter(Boolean));
 let odds={events:[],quotes:[]};
 try{odds=JSON.parse(await fs.readFile(new URL('../../website/data/odds_ncaaf.json',import.meta.url),'utf8'));}catch{}
-const slate = (await scoreboard(monday,end)).map(g=>attachCfbOdds(g,odds,now.getTime()));
+const slateFallback=[...(previous.games||[]),...history];
+const slateEvents=await fetchScoreboardRange(monday,end,{fallback:slateFallback});
+const slate=slateEvents.map(event=>event.home&&event.away?event:normalize(event)).filter(Boolean).map(g=>attachCfbOdds(g,odds,now.getTime()));
+if(!slate.length)throw new Error('No current-week games available from ESPN or the last-known-good board');
 const all = [...new Map([...history,...slate].map(g => [g.id,g])).values()];
 const marketPolicy='rapidapi-best-same-line-v1';
 const archive = previous.archive || [];
