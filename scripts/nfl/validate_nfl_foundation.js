@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { isActiveRoster, depthMatchesPlayer } from "./launch_safety.js";
+import { auditSnapshotCoverage } from "./results_tracking_integrity.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
@@ -83,7 +84,9 @@ if (!["member_signal_board", "gated_signal_board"].includes(receiving.status) ||
 if (receiving.rows.some(row => !["member_signal", "withheld_by_integrity_gate"].includes(row.publicationStatus) || row.scoreType !== "member_signal_not_yardage_projection" || row.gates?.routeParticipation !== false)) fail("receiving-yards board published an unsupported projection");
 if (receiving.counts?.publishableRecommendations !== receiving.rows.filter(row => row.launchEligible).length) fail("receiving publishable count is invalid");
 if (results.methodology?.snapshotRequiredBeforeKickoff !== true || results.methodology?.retroactiveSelectionsForbidden !== true) fail("results tracking lacks anti-leakage rules");
-if (results.counts?.snapshots !== 16 || results.snapshots.some(row => !row.gameId || !row.kickoffUTC || Date.parse(row.snapshotAt) >= Date.parse(row.kickoffUTC))) fail("results tracking lacks one valid pre-kickoff lock per Week 1 game");
+const snapshotCoverage = auditSnapshotCoverage(results, schedule);
+if (results.counts?.snapshots !== results.snapshots.length || snapshotCoverage.invalidSnapshotIds.length || snapshotCoverage.duplicateKeys.length || snapshotCoverage.missingRequiredGameIds.length) fail("results tracking has invalid, duplicate, or missing eligible pre-kickoff locks");
+if (JSON.stringify(results.snapshotCoverage) !== JSON.stringify(snapshotCoverage)) fail("results tracking snapshot coverage audit is stale or inconsistent");
 if (!Array.isArray(results.playerResults) || !Array.isArray(results.tdGrades) || !Array.isArray(results.receivingOutcomes) || results.counts?.providerFailures !== results.failures?.length) fail("live results contract is incomplete");
 if (!["member_signal_board", "gated_signal_board"].includes(tdBoard.status) || tdBoard.market !== "anytime_touchdown" || tdBoard.projectionStatus !== "signal_only_not_probability") fail("TD Decision Center identity is invalid");
 if (!tdBoard.rows?.length || tdBoard.rows.length !== tdBoard.counts?.rankedPlayers || tdBoard.counts?.publishableRecommendations !== tdBoard.rows.filter(row => row.launchEligible).length) fail("TD Decision Center counts are invalid");

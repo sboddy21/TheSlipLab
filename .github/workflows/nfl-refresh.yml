@@ -29,6 +29,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify NFL results tracking safeguards
+        run: node --test tests/nfl-results-tracking.test.mjs
       - name: Refresh NFL signals, live stats, and final results
         run: node scripts/run_nfl_refresh.js
       - name: Commit refreshed NFL data
