@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { auditSnapshotCoverage } from "./results_tracking_integrity.js";
+import { extractTouchdownEvents } from "./touchdown_events.js";
 
 const DATA = path.resolve("website/data"), generatedAt = new Date().toISOString();
 const read = file => JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -47,10 +48,10 @@ function lockSnapshots(existing, games, td, receiving) {
 async function main() {
   const schedule = read("nfl_schedule.json"), td = read("nfl_td_decision_center.json"), receiving = read("nfl_receiving_yards_board.json"), existing = read("nfl_results_tracking.json");
   const games = schedule.games.filter(game => game.seasonType === 2 && game.week === td.week), snapshots = lockSnapshots(existing, games, td, receiving);
-  const gameResults = [], playerResults = [], failures = [];
+  const gameResults = [], playerResults = [], touchdownEvents = [], failures = [];
   for (const game of games.filter(row => row.completed || Date.parse(row.kickoffUTC) <= Date.now())) try {
     const summary = await fetchSummary(game.gameId), status = summary.header?.competitions?.[0]?.status?.type || {};
-    gameResults.push({ gameId: game.gameId, completed: Boolean(status.completed), state: status.state || "unknown", detail: status.detail || "" }); playerResults.push(...extractPlayers(summary, game.gameId));
+    gameResults.push({ gameId: game.gameId, completed: Boolean(status.completed), state: status.state || "unknown", detail: status.detail || "" }); playerResults.push(...extractPlayers(summary, game.gameId)); touchdownEvents.push(...extractTouchdownEvents(summary, game));
   } catch (error) { failures.push({ gameId: game.gameId, error: error.message }); }
   const completed = new Set(gameResults.filter(row => row.completed).map(row => row.gameId)), byKey = new Map(playerResults.map(row => [`${row.gameId}|${row.playerId}`, row]));
   const tdGrades = snapshots.flatMap(s => completed.has(s.gameId) ? s.anytimeTouchdown.map(row => ({ ...row, gameId: s.gameId, hit: byKey.get(`${s.gameId}|${row.playerId}`)?.anytimeTouchdown === true })) : []);
@@ -58,9 +59,9 @@ async function main() {
   const liveGames = gameResults.filter(row => row.state === "in").length;
   const output = { sport: "NFL", schemaVersion: "1.0", generatedAt, week: td.week, status: liveGames ? "live_games_available" : completed.size ? "regular_season_results_available" : "waiting_for_kickoff",
     methodology: { snapshotRequiredBeforeKickoff: true, retroactiveSelectionsForbidden: true, gradingProvider: "ESPN live and completed-game box scores", receivingIsOutcomeNotLineGrade: true },
-    counts: { completedGames: completed.size, liveGames, snapshots: snapshots.length, tdSelectionsGraded: tdGrades.length, receivingSelectionsGraded: receivingOutcomes.length, providerFailures: failures.length },
-    snapshots, games: gameResults, playerResults, tdGrades, receivingOutcomes, failures };
+    counts: { completedGames: completed.size, liveGames, touchdowns: touchdownEvents.length, uniqueScorers: new Set(touchdownEvents.map(row => row.scorerName)).size, snapshots: snapshots.length, tdSelectionsGraded: tdGrades.length, receivingSelectionsGraded: receivingOutcomes.length, providerFailures: failures.length },
+    snapshots, games: gameResults, playerResults, touchdownEvents, tdGrades, receivingOutcomes, failures };
   output.snapshotCoverage = auditSnapshotCoverage(output, schedule);
-  write("nfl_results_tracking.json", output); console.log(`NFL RESULTS TRACKING: ${liveGames} live, ${completed.size} final, ${snapshots.length} pre-kickoff locks`);
+  write("nfl_results_tracking.json", output); console.log(`NFL RESULTS TRACKING: ${liveGames} live, ${completed.size} final, ${touchdownEvents.length} touchdowns, ${snapshots.length} pre-kickoff locks`);
 }
 main().catch(error => { console.error("NFL RESULTS TRACKING FAILED"); console.error(error); process.exit(1); });
