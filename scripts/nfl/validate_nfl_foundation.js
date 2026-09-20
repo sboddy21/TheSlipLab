@@ -70,8 +70,12 @@ if (roles.status !== "role_estimation_only" || roles.playerCount !== pool.player
 if (roles.roles.some(role => role.projectionStatus !== "disabled_pending_preseason_usage_and_market_lines")) fail("role engine must keep projections disabled");
 if (roles.roles.some(role => role.confidence?.score > roles.methodology?.confidenceCeiling)) fail("role confidence exceeds the missing-preseason ceiling");
 if (matchup.status !== "private_week_matchup_context" || matchup.contextType !== "historical_baseline_without_live_weather") fail("matchup context identity is invalid");
-if (matchup.counts?.games !== 16 || matchup.counts?.teamContexts !== 32 || matchup.counts?.playerAssignments !== pool.playerCount || matchup.counts?.duplicatePlayerAssignments !== 0 || matchup.counts?.missingTeamAssignments !== 0) fail("matchup assignment counts are invalid");
-if (new Set(matchup.playerAssignments.map(row => row.playerId)).size !== pool.playerCount) fail("players must have exactly one matchup assignment");
+const expectedMatchupGames = schedule.games.filter(game => game.seasonType === 2 && game.week === matchup.week).length;
+const expectedMatchupTeams = expectedMatchupGames * 2;
+const matchupTeamIds = new Set(matchup.teamContexts.map(row => row.team));
+const expectedAssignedPlayers = pool.players.filter(player => matchupTeamIds.has(player.team)).length;
+if (matchup.counts?.games !== expectedMatchupGames || matchup.counts?.teamContexts !== expectedMatchupTeams || matchup.counts?.playerAssignments !== expectedAssignedPlayers || matchup.counts?.duplicatePlayerAssignments !== 0 || matchup.counts?.missingTeamAssignments !== 0 || matchup.counts?.byeTeams !== 32 - expectedMatchupTeams) fail("matchup assignment counts are invalid");
+if (new Set(matchup.playerAssignments.map(row => row.playerId)).size !== expectedAssignedPlayers) fail("scheduled players must have exactly one matchup assignment");
 const matchupGames = new Map(matchup.games.map(game => [game.gameId, game]));
 if (matchup.playerAssignments.some(row => { const game = matchupGames.get(row.gameId); return !game || ![game.homeTeam, game.awayTeam].includes(row.team) || ![game.homeTeam, game.awayTeam].includes(row.opponent) || row.team === row.opponent; })) fail("a player has an invalid game or opponent assignment");
 if (matchup.teamContexts.some(row => !row.opponent || !Number.isFinite(row.scoringEnvironment?.projectedTeamTouchdownsBaseline) || !Number.isFinite(row.scoringEnvironment?.paceIndex))) fail("matchup context contains invalid scoring data");
@@ -79,7 +83,7 @@ if (matchup.teamContexts.some(row => !["available_with_position_coverage", "part
 if (!Number.isFinite(Date.parse(matchup.historicalBuiltAt)) || matchup.freshness?.historicalAgeHours > 30) fail("historical matchup cache is stale");
 if (practice.players?.length !== pool.playerCount || practice.freshnessPolicy?.absenceMeansHealthy !== false) fail("practice-report contract is incomplete or unsafe");
 if (practice.players.some(row => row.regularSeasonRoleConfirmed && (!practice.weeklyAvailabilityActive || !row.roleEligible || !row.activeRosterGate || row.gameStatus === "uncertain"))) fail("role confirmation bypassed role or availability gates");
-if (weather.games?.length !== 16 || weather.freshnessPolicy?.staleForecastsAccepted !== false || weather.games.some(row => row.weatherGate && !["indoor_verified", "forecast_available"].includes(row.status))) fail("weather contract is incomplete or stale-open");
+if (weather.games?.length !== expectedMatchupGames || weather.freshnessPolicy?.staleForecastsAccepted !== false || weather.games.some(row => row.weatherGate && !["indoor_verified", "forecast_available"].includes(row.status))) fail("weather contract is incomplete or stale-open");
 if (!["member_signal_board", "gated_signal_board"].includes(receiving.status) || receiving.projectionStatus !== "signal_only_no_yardage_projection" || !receiving.rows?.length) fail("receiving-yards signal board is invalid");
 if (receiving.rows.some(row => !["member_signal", "withheld_by_integrity_gate"].includes(row.publicationStatus) || row.scoreType !== "member_signal_not_yardage_projection" || row.gates?.routeParticipation !== false)) fail("receiving-yards board published an unsupported projection");
 if (receiving.counts?.publishableRecommendations !== receiving.rows.filter(row => row.launchEligible).length) fail("receiving publishable count is invalid");
@@ -101,11 +105,12 @@ if (!["available", "partial"].includes(health.sources?.injuries?.status) || heal
 if (health.sources?.usageBaselines?.status !== "available" || health.sources?.routes?.status !== "unavailable") fail("health contract must distinguish usage baselines from unavailable routes");
 if (health.sources?.roleEngine?.status !== "available" || !["available", "waiting"].includes(health.sources?.preseasonUsage?.status) || !health.sources?.preseasonUsage?.finalGameGate) fail("health contract must report final-gated preseason usage");
 if (!["member_signal_board", "gated_signal_board"].includes(health.sources?.tdDecisionCenter?.status)) fail("health contract must report the TD Decision Center state");
-if (health.sources?.matchupContext?.status !== "available_historical_baseline" || health.sources?.matchupContext?.teamContexts !== 32) fail("health contract must report complete matchup context");
+if (health.sources?.matchupContext?.status !== "available_historical_baseline" || health.sources?.matchupContext?.teamContexts !== expectedMatchupTeams) fail("health contract must report complete matchup context");
 if (!health.sources?.practiceReports || !health.sources?.weather) fail("health contract is missing launch sources");
 if (launchAudit.publicLaunchAutomatic !== false || launchAudit.publicNavigationEnabled !== true || launchAudit.checks?.duplicatePlayerIds || launchAudit.checks?.roleTeamMismatches || launchAudit.checks?.matchupTeamMismatches || launchAudit.checks?.inactiveRowsLeaked || launchAudit.checks?.unresolvedDepthEntries) fail("launch audit failed identity, ownership, or navigation policy");
 if (launchAudit.policy?.tdRoutesRequired !== false || launchAudit.policy?.receivingRoutesRequired !== false || launchAudit.policy?.receivingRouteRoleSupportRequired !== true) fail("launch audit has invalid route policy");
-if (publicStatus.weekOneGames?.length !== 16 || publicStatus.counts?.roleEligible !== roles.modelEligibleCount || publicStatus.counts?.completedPreseasonGames !== preseason.processedGameCount || !publicStatus.preseasonUsage?.finalGameGate) fail("public NFL status is incomplete");
+const expectedCurrentWeekGames = schedule.games.filter(game => game.seasonType === 2 && game.week === matchup.week).length;
+if (publicStatus.week !== matchup.week || publicStatus.currentWeekGames?.length !== expectedCurrentWeekGames || publicStatus.counts?.roleEligible !== roles.modelEligibleCount || publicStatus.counts?.completedPreseasonGames !== preseason.processedGameCount || !publicStatus.preseasonUsage?.finalGameGate) fail("public NFL status is incomplete or stale");
 if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
 if (foundation.currentPhase?.id === "foundation" && foundation.date >= "2026-08-21") fail("roadmap regressed to the completed foundation phase");
 if (foundation.phases?.filter(phase => phase.status === "active").length > 1) fail("roadmap contains multiple active phases");

@@ -40,8 +40,8 @@ const phaseDefinitions = [
   },
   {
     id: "dress_rehearsal", label: "Dress Rehearsal", window: "August 28 – September 8", start: "2026-08-28", end: "2026-09-08",
-    objective: "Run shadow projections, automated updates, result grading, and the final Week 1 integrity sweep.",
-    tasks: ["Automated updates", "Shadow projections", "Results framework", "Market freshness tests", "Bug sweep before Week 1"]
+    objective: "Run shadow projections, automated updates, result grading, and recurring weekly integrity sweeps.",
+    tasks: ["Automated updates", "Shadow projections", "Results framework", "Market freshness tests", "Weekly integrity sweep"]
   }
 ];
 const phaseStatus = phase => date < phase.start ? "queued" : date > phase.end ? "complete" : "active";
@@ -200,10 +200,10 @@ const foundation = {
     "Every market must eventually connect to a result-tracking path."
   ],
   nextBuildSteps: [
-    "Activate official weekly practice reports when providers begin publishing Week 1 designations.",
+    "Refresh official weekly practice reports as providers publish current-week designations.",
     "Require complete kickoff-hour weather coverage once every game enters the forecast horizon.",
     "Keep routes optional for TD candidates and mandatory for receiving-yards recommendations.",
-    "Run TD and receiving-yards shadow boards through Week 1 and grade only pre-kickoff snapshots."
+    "Run TD and receiving-yards shadow boards weekly and grade only pre-kickoff snapshots."
   ]
 };
 
@@ -230,12 +230,16 @@ const usage = readJson("nfl_usage_baselines.json");
 const preseason = readJson("nfl_preseason_usage.json");
 const roles = readJson("nfl_role_engine.json");
 const health = readJson("nfl_data_health.json");
+const matchup = readJson("nfl_matchup_context.json");
+const currentWeek = matchup.week;
+const currentWeekGames = schedule.games.filter(game => game.seasonType === 2 && game.week === currentWeek);
 writeJson("nfl_public_status.json", {
   sport: "NFL",
   schemaVersion: "1.0",
   season: 2026,
   generatedAt: now.toISOString(),
   status: health.status,
+  week: currentWeek,
   counts: {
     games: schedule.gameCount,
     players: pool.playerCount,
@@ -253,11 +257,14 @@ writeJson("nfl_public_status.json", {
     playerProfiles: preseason.playerCount,
     unavailableFields: preseason.coverage.unavailable
   },
-  weekOneGames: schedule.games.filter(game => game.week === 1).map(game => ({
+  currentWeekGames: currentWeekGames.map(game => ({
     gameId: game.gameId,
+    week: game.week,
     kickoffUTC: game.kickoffUTC,
     venue: game.venue,
     broadcasts: game.broadcasts,
+    completed: game.completed,
+    state: game.state,
     homeTeam: { abbreviation: game.homeTeam.abbreviation },
     awayTeam: { abbreviation: game.awayTeam.abbreviation }
   })),

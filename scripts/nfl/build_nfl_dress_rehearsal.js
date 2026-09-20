@@ -93,7 +93,7 @@ function receivingBoard(roles, matchup, practice, weather) {
   const assignment = new Map(matchup.playerAssignments.map(row => [row.playerId, row]));
   const context = new Map(matchup.teamContexts.map(row => [row.team, row]));
   const practiceByPlayer = new Map(practice.players.map(row => [row.playerId, row]));
-  const rows = roles.roles.filter(role => ["WR", "TE", "RB"].includes(role.position) && role.historicalOpportunity && role.modelEligibility).map(role => {
+  const rows = roles.roles.filter(role => ["WR", "TE", "RB"].includes(role.position) && role.historicalOpportunity && role.modelEligibility && assignment.has(role.playerId)).map(role => {
     const game = assignment.get(role.playerId); const team = context.get(role.team); const p = practiceByPlayer.get(role.playerId);
     const baseline = role.historicalOpportunity.weightedPerGame; const recent = role.historicalOpportunity.recentSixGamesPerGame;
     const targetScore = Math.min(100, Number(baseline.targets || 0) * 10); const yardScore = Math.min(100, Number(baseline.receivingYards || 0) * 1.25);

@@ -136,6 +136,7 @@ function main() {
   const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
   const eligible = roles.roles
     .filter(role => role.modelEligibility && role.historicalOpportunity && role.readiness?.status !== "unavailable")
+    .filter(role => assignmentByPlayer.has(role.playerId))
     .map(role => {
       const assignment = assignmentByPlayer.get(role.playerId);
       const context = contextByTeam.get(role.team);
@@ -166,7 +167,7 @@ function main() {
     scoreDisclaimer: "The TD Signal Score is a comparative opportunity-ranking signal. It is not a touchdown probability, betting recommendation, or guaranteed outcome.",
     launchGate: "Requires verified regular-season role, opponent, defensive matchup, and game environment before recommendations can be considered.",
     inputs: {
-      available: ["Canonical player identity", "Current team", "Depth chart", "Verified Week 1 opponent", "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
+      available: ["Canonical player identity", "Current team", "Depth chart", `Verified Week ${matchup.week} opponent`, "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
       gated: ["Regular-season role confirmation", "Weather"]
     },
     weights: { historicalOpportunityComposite: 0.80, scoringEnvironment: 0.12, defensiveVulnerability: 0.06, pace: 0.02 },

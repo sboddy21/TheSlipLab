@@ -228,7 +228,8 @@ async function main() {
       gameByTeam.set(team, { gameId: game.gameId, opponent, homeAway, kickoffUTC: game.kickoffUTC, venue: game.venue, indoor: game.indoor, neutralSite: game.neutralSite });
     }
   }
-  if (gameByTeam.size !== 32) throw new Error(`Expected 32 Week ${week} team assignments, received ${gameByTeam.size}`);
+  const expectedTeamAssignments = games.length * 2;
+  if (gameByTeam.size !== expectedTeamAssignments) throw new Error(`Expected ${expectedTeamAssignments} Week ${week} team assignments, received ${gameByTeam.size}`);
   const baselineByTeam = new Map(history.teamBaselines.map(row => [row.team, row]));
   const leagueTdAverage = round(history.teamBaselines.reduce((sum, row) => sum + row.offense.touchdownsPerGame, 0) / history.teamBaselines.length);
   const leaguePaceAverage = round(history.teamBaselines.reduce((sum, row) => sum + row.offense.playsPerGame, 0) / history.teamBaselines.length);
@@ -264,10 +265,10 @@ async function main() {
     };
   }).sort((a, b) => Date.parse(a.kickoffUTC) - Date.parse(b.kickoffUTC) || a.team.localeCompare(b.team));
   const teamContextByTeam = new Map(teamContexts.map(row => [row.team, row]));
-  const playerAssignments = pool.players.map(player => {
+  const playerAssignments = pool.players.flatMap(player => {
     const context = teamContextByTeam.get(player.team);
-    if (!context) throw new Error(`No Week ${week} game assignment for ${player.fullName} (${player.team})`);
-    return { playerId: player.playerId, playerName: player.fullName, team: player.team, position: player.position, gameId: context.gameId, opponent: context.opponent, homeAway: context.homeAway };
+    if (!context) return [];
+    return [{ playerId: player.playerId, playerName: player.fullName, team: player.team, position: player.position, gameId: context.gameId, opponent: context.opponent, homeAway: context.homeAway }];
   });
   const duplicatePlayers = playerAssignments.filter((row, index, all) => all.findIndex(other => other.playerId === row.playerId) !== index);
   if (duplicatePlayers.length) throw new Error(`Duplicate player matchup assignments: ${duplicatePlayers.slice(0, 5).map(row => row.playerId).join(", ")}`);
@@ -281,16 +282,18 @@ async function main() {
       projectedTeamTouchdownsBaseline: "55% weighted team offensive TD/game plus 45% opponent defensive TD allowed/game, with a small non-neutral home/away adjustment.",
       paceIndex: "Team offensive plays/game blended with opponent defensive plays/game and indexed to league average 100.",
       defensiveVulnerability: "Percentile rank of weighted TDs allowed per game to the player position; scorer-position rates are coverage-normalized and higher is more vulnerable.",
-      warning: "These are matchup context scores, not touchdown probabilities. Live weather and confirmed Week 1 roles remain gated."
+      warning: `These are matchup context scores, not touchdown probabilities. Live weather and confirmed Week ${week} roles remain gated.`
     },
     freshness: { historicalCacheHours: CACHE_HOURS, historicalAgeHours: round((Date.now() - Date.parse(history.builtAt)) / 36e5, 2) },
-    counts: { games: games.length, teamContexts: teamContexts.length, playerAssignments: playerAssignments.length, duplicatePlayerAssignments: 0, missingTeamAssignments: 0 },
+    counts: { games: games.length, teamContexts: teamContexts.length, playerAssignments: playerAssignments.length, duplicatePlayerAssignments: 0, missingTeamAssignments: expectedTeamAssignments - teamContexts.length, byeTeams: 32 - teamContexts.length },
     games: games.map(game => ({ gameId: game.gameId, week: game.week, kickoffUTC: game.kickoffUTC, venue: game.venue, indoor: game.indoor, neutralSite: game.neutralSite, homeTeam: game.homeTeam.abbreviation, awayTeam: game.awayTeam.abbreviation })),
     teamContexts, playerAssignments,
     historicalTeamBaselines: history.teamBaselines
   };
   write("nfl_matchup_context.json", payload);
   health.generatedAt = generatedAt;
+  const { weekOneGames: _legacyWeekOneGames, ...healthCounts } = health.counts || {};
+  health.counts = { ...healthCounts, currentWeek: week, currentWeekGames: games.length };
   health.sources.matchupContext = { status: "available_historical_baseline", provider: "The Slip Lab / nflverse", week, games: games.length, teamContexts: teamContexts.length, playerAssignments: playerAssignments.length, historicalBuiltAt: history.builtAt };
   health.status = "matchup_context_ready_projections_gated";
   write("nfl_data_health.json", health);

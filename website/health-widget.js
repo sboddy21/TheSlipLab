@@ -169,6 +169,8 @@
   function render(data) {
     if (nflPage) {
       const c = data.counts || {};
+      const week = Number(c.currentWeek) || 1;
+      const weekGames = Number(c.currentWeekGames) || 0;
       const s = data.sources || {};
       const audit = s.launchAudit || {};
       const checkedAt = Date.parse(audit.checkedAt);
@@ -184,7 +186,7 @@
       document.getElementById("slHealthLabel").textContent = `NFL ${stateLabel}`;
       document.getElementById("slHealthSub").textContent = ago(updateTime);
       document.getElementById("slHealthTip").innerHTML = `
-        <div><span>Week 1 games</span><b>${Number(c.weekOneGames) || 0}</b></div>
+        <div><span>Week ${week} games</span><b>${weekGames}</b></div>
         <div><span>Players</span><b>${Number(c.eligiblePlayers) || 0}</b></div>
         <div><span>Weather</span><b>${Number(s.weather?.readyGames) || 0}/${Number(s.weather?.games) || 0} ready</b></div>
         <div><span>Status</span><b>${stateLabel}</b></div>
@@ -194,7 +196,7 @@
           ...(data.errors || []),
           state === "delayed" ? "NFL audit is over one hour old; current readiness is unverified." : "",
           !validAudit ? "A complete NFL health audit could not be verified." : "",
-          s.practiceReports?.status === "waiting_for_official_weekly_reports" ? "Official Week 1 practice reports are pending." : "",
+          s.practiceReports?.status === "waiting_for_official_weekly_reports" ? `Official Week ${week} practice reports are pending.` : "",
           Number(s.weather?.readyGames) < Number(s.weather?.games) ? `${Number(s.weather?.games) - Number(s.weather?.readyGames)} game still needs kickoff-hour weather.` : "",
           s.routes?.status === "unavailable" ? "Verified route participation is not available yet." : ""
         ].filter(Boolean);
@@ -202,11 +204,11 @@
         modal.innerHTML = `
           <div class="sl-health-modal">
             <h3>NFL Build Status</h3>
-            <p>Week 1 • ${escapeHtml(ago(updateTime))}</p>
+            <p>Week ${week} • ${escapeHtml(ago(updateTime))}</p>
             <div class="sl-health-banner">${escapeHtml(stateLabel)} — NFL data gates remain visible while the member preview is reviewed.</div>
             <div class="sl-health-grid">
               <div class="sl-health-card"><small>Teams</small><strong>${Number(c.teams) || 0}</strong></div>
-              <div class="sl-health-card"><small>Week 1 Games</small><strong>${Number(c.weekOneGames) || 0}</strong></div>
+              <div class="sl-health-card"><small>Week ${week} Games</small><strong>${weekGames}</strong></div>
               <div class="sl-health-card"><small>Players</small><strong>${Number(c.eligiblePlayers) || 0}</strong></div>
               <div class="sl-health-card"><small>Weather Ready</small><strong>${Number(s.weather?.readyGames) || 0}/${Number(s.weather?.games) || 0}</strong></div>
               <div class="sl-health-card"><small>TD Signals</small><strong>${Number(s.tdDecisionCenter?.rankedPlayers) || 0}</strong></div>

@@ -2,6 +2,7 @@ import fs from "fs";
 import { isActiveRoster } from "./launch_safety.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { currentScheduleWeek } from "./week_schedule.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -187,7 +188,8 @@ async function main() {
   if (duplicateIds.length) throw new Error(`Duplicate player IDs found: ${duplicateIds.slice(0, 5).map(p => p.playerId).join(", ")}`);
 
   const currentDateGames = allGames.filter(game => game.dateET === date);
-  const weekOne = games.filter(game => game.week === 1);
+  const currentWeek = currentScheduleWeek({ games });
+  const currentWeekGames = games.filter(game => game.week === currentWeek);
   const nextKickoff = games.find(game => Date.parse(game.kickoffUTC) >= Date.now()) || games[0];
   const generatedAt = new Date().toISOString();
   const common = { sport: "NFL", schemaVersion: "1.0", season: SEASON, generatedAt };
@@ -214,7 +216,7 @@ async function main() {
   });
   writeJson("nfl_data_health.json", {
     ...common, status: "foundation_ready", startedAt,
-    counts: { teams: teams.length, regularSeasonGames: games.length, weekOneGames: weekOne.length, eligiblePlayers: players.length },
+    counts: { teams: teams.length, regularSeasonGames: games.length, currentWeek, currentWeekGames: currentWeekGames.length, eligiblePlayers: players.length },
     nextKickoff: nextKickoff ? { gameId: nextKickoff.gameId, kickoffUTC: nextKickoff.kickoffUTC, matchup: nextKickoff.shortName } : null,
     sources: {
       schedule: { status: "available", provider: "ESPN" },

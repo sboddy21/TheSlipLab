@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { selectWeekGames } from "../scripts/nfl/week_schedule.js";
+import { currentScheduleWeek, selectWeekGames } from "../scripts/nfl/week_schedule.js";
 
 const game = (gameId, home, away, state, completed = false) => ({
   gameId,
@@ -28,3 +28,12 @@ test("week assignments fail closed on duplicate teams", () => {
   assert.throws(() => selectWeekGames(schedule, 1), /assigns a team to multiple games/);
 });
 
+test("current week rolls forward after the prior slate ends", () => {
+  const schedule = { games: [
+    {...game("w1", "SEA", "NE", "post", true), kickoffUTC: "2026-09-10T00:20:00Z"},
+    {...game("w2", "LAR", "SF", "pre"), week: 2, kickoffUTC: "2026-09-21T00:20:00Z"},
+    {...game("w3", "PHI", "DAL", "pre"), week: 3, kickoffUTC: "2026-09-28T00:20:00Z"}
+  ]};
+  assert.equal(currentScheduleWeek(schedule, Date.parse("2026-09-20T12:00:00Z")), 2);
+  assert.equal(currentScheduleWeek(schedule, Date.parse("2026-09-22T12:00:00Z")), 3);
+});

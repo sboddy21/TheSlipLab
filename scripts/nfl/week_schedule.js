@@ -1,5 +1,13 @@
 const canonicalTeam = value => ({ LA: "LAR", JAC: "JAX", WAS: "WSH" })[value] || value;
 
+export function currentScheduleWeek(schedule, now = Date.now()) {
+  const weeks = [...new Set((schedule?.games || []).filter(game => game.seasonType === 2).map(game => game.week))]
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+  if (!weeks.length) throw new Error("Regular-season schedule has no weeks");
+  return weeks.find(week => schedule.games.some(game => game.seasonType === 2 && game.week === week && Date.parse(game.kickoffUTC) >= now)) || weeks[weeks.length - 1];
+}
+
 export function selectWeekGames(schedule, week) {
   const games = (schedule?.games || []).filter(game => game.seasonType === 2 && game.week === week);
   const gameIds = new Set();
@@ -20,4 +28,3 @@ export function selectWeekGames(schedule, week) {
   if (!games.length) throw new Error(`Week ${week} has no regular-season games`);
   return games;
 }
-
