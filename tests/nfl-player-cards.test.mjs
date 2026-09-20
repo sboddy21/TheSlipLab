@@ -47,7 +47,7 @@ test('position-aware cards and profiles expose actionable volume and scoring dat
 });
 
 test('NFL market boards use a contained scrolling workspace and multi-game filters', () => {
-  assert.match(js, /state=\{view:"dashboard",query:"",team:"all",games:\[\]/);
+  assert.match(js, /state=\{view:"dashboard",query:"",team:"all",games:\[\],selectedWeek:null/);
   assert.match(js, /function marketWorkspace/);
   assert.match(js, /class="market-results-scroll"/);
   assert.match(js, /state\.games\.includes\(id\)/);
@@ -59,5 +59,5 @@ test('NFL market boards use a contained scrolling workspace and multi-game filte
 
 test('NFL page cache-busts the card release assets', () => {
   assert.match(html, /nfl-lab\.css\?v=20260910-gamelab1/);
-  assert.match(html, /nfl-lab\.js\?v=20260920-week-rollover1/);
+  assert.match(html, /nfl-lab\.js\?v=20260920-week-navigation1/);
 });

@@ -30,3 +30,17 @@ test("NFL tools are consolidated into the primary header", () => {
     assert.match(header, new RegExp(`\\["${label}","\\./nfl\\.html#${view}"`));
   }
 });
+
+test("NFL week controls navigate the full regular-season schedule", () => {
+  const page = fs.readFileSync("website/nfl.html", "utf8");
+  for (const id of ["weekPrevious", "weekNext", "weekCurrent"]) assert.match(page, new RegExp(`id="${id}"`));
+  assert.doesNotMatch(page, /id="weekPrevious"[^>]*disabled/);
+  assert.doesNotMatch(page, /id="weekNext"[^>]*disabled/);
+  assert.match(router, /get\('nfl_schedule'\)/);
+  assert.match(router, /function availableWeeks\(\)/);
+  assert.match(router, /function selectWeek\(direction\)/);
+  assert.match(router, /weekPrevious"\)\.onclick=\(\)=>selectWeek\('previous'\)/);
+  assert.match(router, /weekNext"\)\.onclick=\(\)=>selectWeek\('next'\)/);
+  assert.match(router, /weekCurrent"\)\.onclick=\(\)=>selectWeek\('current'\)/);
+  assert.match(router, /Player signals remain tied to the verified current week/);
+});
