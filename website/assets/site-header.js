@@ -101,6 +101,16 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const nbaPrimaryOrder = ["NBA Home", "Points", "Rebounds", "Assists", "Threes", "Matchups"];
+  const nhlItems = [
+    ["NHL Home","./nhl.html#dashboard",["/nhl.html"]],
+    ["Matchups","./nhl.html#games",[]],
+    ["Goal Scorers","./nhl.html#goals",[]],
+    ["Shots","./nhl.html#shots",[]],
+    ["Live Ice","./nhl.html#live",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const nhlPrimaryOrder = ["NHL Home", "Matchups", "Goal Scorers", "Shots", "Live Ice"];
   const generalItems = [
     ["Home","./index.html",["/index.html","/"]],
     ["MLB","./mlb.html",[]],
@@ -108,11 +118,12 @@
     ["NFL","./nfl.html",[]],
     ["College Football","./cfb.html",["/cfb.html"]],
     ["NBA","./nba.html",[]],
+    ["NHL","./nhl.html",[]],
     ["My Account","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "My Account"];
+  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "NHL", "My Account"];
   const generalPaths = new Set(["/", "/index.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/cfb.html",
@@ -172,6 +183,7 @@
     if (path === "/nfl.html" || path.startsWith("/nfl-")) return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
     if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
+    if (path === "/nhl.html" || path.startsWith("/nhl-")) return "nhl";
     if (generalPaths.has(path)) return "general";
     return "mlb";
   }
@@ -207,10 +219,10 @@
 
   function buildHeader(){
     const path = window.location.pathname;
-    const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : "");
+    const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : (document.body?.classList.contains("tsl-nhl-page") ? "nhl" : ""));
     const section = bodySection || sectionForPath(path);
-    const navItems = section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "general" ? generalItems : mlbItems;
-    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
+    const navItems = section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "nhl" ? nhlItems : section === "general" ? generalItems : mlbItems;
+    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "nhl" ? nhlPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = `tsl-site-header tsl-${section}-header`;
@@ -352,6 +364,8 @@
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
           ? [["NBA Home","./nba.html"],["Points","./nba-points.html"],["Rebounds","./nba-rebounds.html"],["Matchups","./nba-matchups.html"]]
+          : section === "nhl"
+            ? [["NHL Home","./nhl.html#dashboard"],["Matchups","./nhl.html#games"],["Goal Scorers","./nhl.html#goals"],["Shots","./nhl.html#shots"],["Live Ice","./nhl.html#live"]]
           : section === "mlb"
             ? [["MLB Slate","./mlb.html"],["Decision Center","./hr-decision-center.html"],["Results","./results.html"],["AI Says","./ai-says.html"]]
             : [["Home","./index.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
