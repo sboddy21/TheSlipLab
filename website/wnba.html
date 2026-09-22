@@ -121,11 +121,11 @@
       <div class="injuries" id="injuries"></div>
     </section>
   </main>
-  <script>
+  <script type="module">
+    import { teamScoringLeaderText, wnbaSlateFreshness } from "./assets/wnba-slate-core.js?v=20260922-1";
     const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
     const dateTime=value=>value?new Intl.DateTimeFormat("en-US",{timeZone:"America/New_York",weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(value)):"Time TBD";
     const teamMarkup=(team,home=false)=>`<div class="team ${home?"home":""}">${team.logo?`<img src="${esc(team.logo)}" alt="" loading="lazy">`:""}<div class="team-info"><div class="team-name">${esc(team.name||"TBD")}</div><div class="team-record">${esc(team.record||"Record unavailable")}</div></div></div>`;
-    const leaderText=(team,key,label)=>team?.leaders?.[key]?.player?`${team.leaders[key].player} · ${team.leaders[key].value} ${label}`:"Leader data pending";
     const trendReason=(row,player)=>{
       const reasons=[];
       const minuteDelta=player?.recent?.minutes!=null?player.recent.minutes-player.season.minutes:0;
@@ -148,7 +148,7 @@
       const pace=awayEnv&&homeEnv?((awayEnv.estimatedPace+homeEnv.estimatedPace)/2).toFixed(1):null;
       const environment=[pace?`${pace} projected possessions`:null,awayEnv&&homeEnv?`${awayEnv.pointsFor.toFixed(1)} / ${homeEnv.pointsFor.toFixed(1)} team PPG`:null].filter(Boolean).join(" · ")||"Environment updating";
       const intel=gamePlayers.length?gamePlayers.map(row=>intelPlayerMarkup(row,playerMap.get(String(row.playerId)))).join(""):`<div class="intel-empty">${game.state==="pre"?"Player projections are building for this matchup.":"The pregame projection window is closed; live score and team context remain available."}</div>`;
-      return `<article class="game"><div class="game-top"><span class="status ${live?"live":""}">${esc(game.statusDetail||game.status)}</span><span class="game-meta">${esc(dateTime(game.gameTimeUTC))}</span></div><div class="matchup">${teamMarkup(game.awayTeam)}<div class="score">${esc(score)}</div>${teamMarkup(game.homeTeam,true)}</div><div class="context"><div><b>Game environment</b>${esc(environment)}</div><div><b>Broadcast</b>${esc(game.broadcasts?.join(", ")||"Listing pending")}<br>${esc(place)}</div><div><b>Season scoring leaders</b>${esc(leaderText(game.awayTeam,"points","PPG"))}<br>${esc(leaderText(game.homeTeam,"points","PPG"))}</div></div><div class="game-intel"><div class="intel-head"><b>Players to know</b><span>Model-ranked projections and recent-form signals</span></div><div class="intel-grid">${intel}</div></div></article>`;
+      return `<article class="game"><div class="game-top"><span class="status ${live?"live":""}">${esc(game.statusDetail||game.status)}</span><span class="game-meta">${esc(dateTime(game.gameTimeUTC))}</span></div><div class="matchup">${teamMarkup(game.awayTeam)}<div class="score">${esc(score)}</div>${teamMarkup(game.homeTeam,true)}</div><div class="context"><div><b>Game environment</b>${esc(environment)}</div><div><b>Broadcast</b>${esc(game.broadcasts?.join(", ")||"Broadcast not listed")}<br>${esc(place)}</div><div><b>Season scoring leaders</b>${esc(teamScoringLeaderText(game.awayTeam.abbreviation,playerMap.values()))}<br>${esc(teamScoringLeaderText(game.homeTeam.abbreviation,playerMap.values()))}</div></div><div class="game-intel"><div class="intel-head"><b>Players to know</b><span>Model-ranked projections and recent-form signals</span></div><div class="intel-grid">${intel}</div></div></article>`;
     };
     const renderDailyRead=(rows,playerMap,injured)=>{
       const markets=[["points","Projected points"],["rebounds","Projected rebounds"],["assists","Projected assists"],["threes","Projected threes"]];
@@ -174,8 +174,8 @@
         document.getElementById("finalCount").textContent=games.filter(game=>game.completed).length;
         document.getElementById("slateDate").textContent=data.date||"Current slate";
         document.getElementById("lastUpdated").textContent=data.fetchedAt?`Updated ${dateTime(data.fetchedAt)} ET`:"Update time unavailable";
-        const asOf=Date.parse(projectionData.dataAsOf||"");
-        const fresh=!projectionData.stale&&Number.isFinite(asOf)&&Date.now()-asOf>=0&&Date.now()-asOf<=20*60_000;
+        const freshness=wnbaSlateFreshness({projectionData,slateDate:data.date});
+        const fresh=freshness.usable;
         baselinePlayers=fresh&&Array.isArray(playerData.players)?playerData.players:[];
         const teams=fresh&&Array.isArray(teamData.teams)?teamData.teams:[];
         const injured=baselinePlayers.filter(player=>player.injury);
@@ -185,7 +185,7 @@
         document.getElementById("historyCount").textContent=fresh?(playerData.rotationHistoryCount||0):0;
         document.getElementById("teamCount").textContent=teams.length;
         document.getElementById("injuryCount").textContent=injured.length;
-        document.getElementById("baselineUpdated").textContent=fresh?`Updated ${dateTime(projectionData.dataAsOf)} ET`:"Current player data unavailable";
+        document.getElementById("baselineUpdated").textContent=fresh?`${freshness.delayed?"Last successful refresh":"Updated"} ${dateTime(projectionData.dataAsOf)} ET`:"Current player data unavailable";
         document.getElementById("teamFilter").insertAdjacentHTML("beforeend",teams.map(team=>`<option value="${esc(team.abbreviation)}">${esc(team.team)}</option>`).join(""));
         const envList=(title,rows,value)=>`<article class="environment-card"><h3>${esc(title)}</h3>${rows.slice(0,5).map(team=>`<div class="environment-row"><span>${esc(team.abbreviation)} · ${esc(team.environment.record||"")}</span><b>${esc(value(team))}</b></div>`).join("")}</article>`;
         const pace=[...teams].sort((a,b)=>b.environment.estimatedPace-a.environment.estimatedPace);
