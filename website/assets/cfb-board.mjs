@@ -1,4 +1,4 @@
-import { moneylineProjection, implied } from './cfb-edge.mjs';
+import { moneylineProjection, implied, estimate } from './cfb-edge.mjs';
 
 const finite=value=>value===null||value===undefined||value===''?null:Number.isFinite(Number(value))?Number(value):null;
 
@@ -13,9 +13,10 @@ export function boardRow(game,calibration){
   const marketWin=noVigProbability(m?.homeML,m?.awayML);
   const spreadGap=p&&Number.isFinite(m?.homeSpread)?p.margin+m.homeSpread:null;
   const totalGap=p&&Number.isFinite(m?.total)?p.total-m.total:null;
+  const overProbability=p&&m?estimate(p,m,calibration,'total'):null;
   const winGap=ml&&marketWin?(ml.homeProbability-marketWin.home)*100:null;
   const maxGap=Math.max(Math.abs(spreadGap??0),Math.abs(totalGap??0),Math.abs(winGap??0));
-  return {game,matchup:`${game.away.short} @ ${game.home.short}`,kickoff:Date.parse(game.date),modelSpread:p?.margin??null,marketSpread:m?.homeSpread??null,spreadGap,modelTotal:p?.total??null,marketTotal:m?.total??null,totalGap,modelWin:ml,marketWin,winGap,maxGap};
+  return {game,matchup:`${game.away.short} @ ${game.home.short}`,kickoff:Date.parse(game.date),modelSpread:p?.margin??null,marketSpread:m?.homeSpread??null,spreadGap,modelTotal:p?.total??null,marketTotal:m?.total??null,totalGap,overProbability,modelWin:ml,marketWin,winGap,maxGap};
 }
 
 export function boardRows(games,calibration){return games.map(game=>boardRow(game,calibration));}
