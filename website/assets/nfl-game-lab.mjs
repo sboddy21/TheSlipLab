@@ -29,3 +29,36 @@ export function playerOverProbability(projection, line, market) {
   if (line === null || line === undefined || !Number.isFinite(Number(projection)) || !Number.isFinite(Number(line))) return null;
   return clampProbability(logistic((Number(projection) - Number(line)) / scale));
 }
+
+export function americanPrice(probability) {
+  const p = Math.max(0.01, Math.min(0.99, Number(probability)));
+  return Math.round(p >= 0.5 ? -(p / (1 - p)) * 100 : ((1 - p) / p) * 100);
+}
+
+export function rankGameMarkets(games = [], contexts = [], marketForGame = () => ({})) {
+  const context = new Map(contexts.map(row => [row.team, row]));
+  const reads = { moneyline: [], spread: [], total: [] };
+  for (const game of games) {
+    const home = typeof game.homeTeam === "object" ? game.homeTeam.abbreviation : game.homeTeam;
+    const away = typeof game.awayTeam === "object" ? game.awayTeam.abbreviation : game.awayTeam;
+    const market = marketForGame(game) || {};
+    const model = projectGame(context.get(home), context.get(away), market);
+    if (!model) continue;
+    const base = { game, model, market, home, away };
+    const mlSide = model.homeWinProbability >= model.awayWinProbability ? "home" : "away";
+    const mlProbability = model[`${mlSide}WinProbability`];
+    reads.moneyline.push({ ...base, side: mlSide, probability: mlProbability, edge: mlProbability - 0.5 });
+    if (model.homeCoverProbability !== null) {
+      const side = model.homeCoverProbability >= model.awayCoverProbability ? "home" : "away";
+      const probability = model[`${side}CoverProbability`];
+      reads.spread.push({ ...base, side, probability, edge: probability - 0.5 });
+    }
+    if (model.overProbability !== null) {
+      const side = model.overProbability >= model.underProbability ? "over" : "under";
+      const probability = model[`${side}Probability`];
+      reads.total.push({ ...base, side, probability, edge: probability - 0.5 });
+    }
+  }
+  for (const key of Object.keys(reads)) reads[key].sort((a, b) => b.edge - a.edge);
+  return reads;
+}

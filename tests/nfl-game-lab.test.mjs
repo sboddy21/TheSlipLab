@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { projectGame, playerOverProbability } from '../website/assets/nfl-game-lab.mjs';
+import { americanPrice, projectGame, playerOverProbability, rankGameMarkets } from '../website/assets/nfl-game-lab.mjs';
 
 const context = (td, pace = 100) => ({scoringEnvironment:{projectedTeamTouchdownsBaseline:td,paceIndex:pace}});
 
@@ -23,6 +23,17 @@ test('missing market lines stay unavailable instead of becoming zero', () => {
 test('player market probability follows projection versus line', () => {
   assert.ok(playerOverProbability(75, 60, 'player_rush_yds') > .5);
   assert.ok(playerOverProbability(45, 60, 'player_rush_yds') < .5);
+});
+
+test('NFL AI board ranks the strongest read in each game market', () => {
+  const contexts = ['AAA','BBB','CCC','DDD'].map((team,index)=>({team,scoringEnvironment:{projectedTeamTouchdownsBaseline:2+index*.5,paceIndex:100}}));
+  const games = [{gameId:'1',awayTeam:'AAA',homeTeam:'BBB'},{gameId:'2',awayTeam:'CCC',homeTeam:'DDD'}];
+  const ranked = rankGameMarkets(games,contexts,()=>({homeSpread:-1.5,total:45.5}));
+  assert.equal(ranked.moneyline.length,2);
+  assert.ok(ranked.moneyline[0].edge>=ranked.moneyline[1].edge);
+  assert.equal(ranked.spread.length,2);
+  assert.equal(ranked.total.length,2);
+  assert.equal(americanPrice(.6),-150);
 });
 
 test('Game Lab renders expandable team and player intelligence', async () => {
