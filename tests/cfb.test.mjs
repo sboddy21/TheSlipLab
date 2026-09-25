@@ -113,6 +113,15 @@ test('freshness rejects expired/future timestamps, old ratings and changed neutr
   assert.equal(mergeLiveGame(live,{...snapshot,projection:{...snapshot.projection,trainingCutoff:new Date(now-37*3600000).toISOString()}},new Date(now).toISOString(),now).projection,null);
   assert.equal(mergeLiveGame(live,snapshot,new Date(now-181000).toISOString(),now).leans.length,0);
 });
+test('score refresh preserves the last sportsbook market without treating it as a fresh recommendation',()=>{
+  const saved={...game,market:{...game.market,provider:'Sportsbook API'},sportsbookQuotes:[{quoteId:'q1'}],oddsRetrievedAt:new Date(now-2*3600000).toISOString(),projection:{margin:10,total:60,trainingCutoff:new Date(now-3600000).toISOString()}};
+  const scoreOnly={...game,market:null,sportsbookQuotes:[],oddsRetrievedAt:null};
+  const merged=mergeLiveGame(scoreOnly,saved,new Date(now).toISOString(),now);
+  assert.equal(merged.market.homeSpread,-3);
+  assert.equal(merged.sportsbookQuotes[0].quoteId,'q1');
+  assert.equal(merged.oddsRetrievedAt,saved.oddsRetrievedAt);
+  assert.deepEqual(merged.leans,[]);
+});
 test('price-aware picks require positive estimated return, valid price and scheduled status',()=>{
   const calibration={spread:{intercept:0,slope:1},total:{intercept:0,slope:1}};
   assert.equal(implied(-110),110/210);

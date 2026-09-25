@@ -20,5 +20,15 @@ export function candidates(game,projection,now=Date.now()) {
 export function mergeLiveGame(live,snapshot,asOf,now=Date.now()) {
   const compatible=snapshot&&snapshot.home.id===live.home.id&&snapshot.away.id===live.away.id&&snapshot.neutral===live.neutral;
   const projection=compatible&&isFresh(snapshot.projection?.trainingCutoff,now,MAX_MODEL_AGE_MS)?snapshot.projection:null;
-  return {...live,projection,oddsRetrievedAt:asOf,leans:projection&&isFresh(asOf,now)?candidates(live,projection,now):[]};
+  // ESPN score refreshes and sportsbook refreshes are independent. A valid
+  // live score row often has no market object, especially between scheduled
+  // RapidAPI workflow runs. Preserve the last observed book market for display
+  // instead of blanking every price when the score poll lands first.
+  const market=live.market??(compatible?snapshot.market:null);
+  const sportsbookQuotes=live.sportsbookQuotes?.length?live.sportsbookQuotes:(compatible?snapshot.sportsbookQuotes:[]);
+  const oddsRetrievedAt=live.market?live.oddsRetrievedAt:(compatible?snapshot.oddsRetrievedAt:null);
+  const merged={...live,market,sportsbookQuotes,oddsRetrievedAt,projection};
+  // Betting recommendations still require a genuinely fresh live market.
+  const freshMarket=Boolean(live.market)&&isFresh(live.oddsRetrievedAt||asOf,now);
+  return {...merged,leans:projection&&freshMarket?candidates(merged,projection,now):[]};
 }

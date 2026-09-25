@@ -1,4 +1,4 @@
-import { attachCfbOdds } from '../odds/cfb.mjs';
+import { attachCfbOdds,preserveLastCfbOdds } from '../odds/cfb.mjs';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import crypto from 'node:crypto';
@@ -37,7 +37,8 @@ let odds={events:[],quotes:[]};
 try{odds=JSON.parse(await fs.readFile(new URL('../../website/data/odds_ncaaf.json',import.meta.url),'utf8'));}catch{}
 const slateFallback=[...(previous.games||[]),...history];
 const slateEvents=await fetchScoreboardRange(monday,end,{fallback:slateFallback});
-const slate=slateEvents.map(event=>event.home&&event.away?event:normalize(event)).filter(Boolean).map(g=>attachCfbOdds(g,odds,now.getTime()));
+const previousById=new Map((previous.games||[]).map(game=>[String(game.id),game]));
+const slate=slateEvents.map(event=>event.home&&event.away?event:normalize(event)).filter(Boolean).map(g=>preserveLastCfbOdds(attachCfbOdds(g,odds,now.getTime()),previousById.get(String(g.id))));
 if(!slate.length)throw new Error('No current-week games available from ESPN or the last-known-good board');
 const all = [...new Map([...history,...slate].map(g => [g.id,g])).values()];
 const marketPolicy='rapidapi-best-same-line-v1';

@@ -119,7 +119,7 @@ function renderIntelligenceBoard(){
   $('week-ai-takeaways').innerHTML=slateAi?.takeaways?.map(item=>`<button type="button" data-jump-game="${esc(item.gameId)}"><strong>${esc(item.label)}</strong><span>${esc(item.detail)}</span></button>`).join('')||'';
 }
 function card(game) {
-  const m = game.state==='pre'&&(!upcoming(game)||(game.market?.source==='RapidAPI'&&!Object.values(game.market.quoteDetails||{}).flatMap(Object.values).some(q=>quoteFresh(q.quotedAt))))?null:game.market, p = game.projection;
+  const m = game.state==='pre'?game.market:null, p = game.projection;
   const details=m?.quoteDetails?.[market];
   const teamRow = side => {
     const t = game[side];
@@ -133,7 +133,8 @@ function card(game) {
   };
   const status = game.canceled ? 'CANCELED' : game.statusName && !['STATUS_SCHEDULED','STATUS_FINAL','STATUS_IN_PROGRESS','STATUS_HALFTIME','STATUS_END_PERIOD'].includes(game.statusName) ? esc(game.status) : game.completed ? 'FINAL' : game.state === 'in' ? 'IN PROGRESS' : !game.timeValid ? 'TIME TBD' : !upcoming(game) ? 'AWAITING UPDATE' : 'PREGAME';
   const times=Object.values(details||{}).map(q=>q.quotedAt).sort();
-  const note = m ? m.source==='RapidAPI' ? `Sportsbook API · ${times.length?'Observed '+esc(dateLabel(times[0]))+' ET':'This market is unavailable'}` : `${esc(m.provider)} · Archived ESPN line` : 'No fresh sportsbook line available';
+  const newest=times.at(-1),isCurrent=newest&&quoteFresh(newest);
+  const note = m ? m.source==='RapidAPI' ? `Sportsbook API · ${times.length?`${isCurrent?'Live':'Last observed'} ${esc(dateLabel(newest))} ET`:'This market is unavailable'}` : `${esc(m.provider)} · Archived ESPN line` : 'Sportsbook has not posted a matched line';
   return `<article class="game-card" id="game-${esc(game.id)}"><div class="game-meta"><span>${esc(game.timeValid ? dateLabel(game.date)+' ET' : dayKey(game.date)+' · Time TBD')}<br>${esc(game.broadcast)}</span><span>${status}</span></div>${teamRow('away')}${teamRow('home')}<div class="market-note">${note}</div>${p&&upcoming(game)?gameAiRead(game,p,m):''}${m&&game.sportsbookQuotes?.some(q=>quoteFresh(q.quotedAt))?`<details><summary>Compare sportsbook prices</summary><div class="odds-comparison">${game.sportsbookQuotes.filter(q=>q.market===market&&quoteFresh(q.quotedAt)).map(q=>`<p>${esc(q.book)} · ${esc(q.side==='home'?game.home.short:q.side==='away'?game.away.short:q.side)} ${q.line==null?'':esc(signed(q.line))} · <strong>${esc(signed(q.price))}</strong></p>`).join('')||'<p>This market is unavailable.</p>'}</div></details>`:''}<div class="projection"><span>Projected score</span><strong>${p ? `${esc(game.away.short)} ${fmt(p.awayScore)}<br>${esc(game.home.short)} ${fmt(p.homeScore)}` : game.state === 'post' ? 'Final result above' : 'Current projection unavailable'}</strong></div><details><summary>Inside the matchup</summary><p>${esc(game.venue)}${game.neutral ? ' · Neutral site' : ''}${game.weather ? `<br>${esc(game.weather)}` : ''}</p>${p ? `<div class="context-grid">${['away','home'].map(side=>`<div><strong>${esc(game[side].short)}</strong><br>${signed(Number(p[side].offense.toFixed(1)))} offense vs average<br>${signed(Number(p[side].defense.toFixed(1)))} defense (higher is better)<br>${signed(Number(p[side].rating.toFixed(1)))} net rating</div>`).join('')}</div><p>Projected total: ${fmt(p.total)} · Home margin: ${signed(Number(p.margin.toFixed(1)))}</p>` : '<p>A projection is not available for this matchup yet.</p>'}<a href="https://www.espn.com/college-football/game/_/gameId/${encodeURIComponent(game.id)}" target="_blank" rel="noopener noreferrer">View game on ESPN ↗</a></details></article>`;
 }
 function renderGames() {
@@ -171,8 +172,9 @@ async function refreshLive() {
     const live=await response.json();
     if(live.schemaVersion!==1||!Array.isArray(live.games)||!isFresh(live.retrievedAt))throw new Error('Stale or invalid live feed');
     liveAsOf=live.retrievedAt;liveError=false;
-    if(snapshot){board={...snapshot,weekStart:live.weekStart,weekEnd:live.weekEnd,games:live.games.map(game=>{
-      const merged=mergeLiveGame(game,snapshot.games.find(g=>g.id===game.id),liveAsOf);
+    if(snapshot){const liveById=new Map(live.games.map(game=>[String(game.id),game]));board={...snapshot,weekStart:live.weekStart,weekEnd:live.weekEnd,games:snapshot.games.map(saved=>{
+      const current=liveById.get(String(saved.id));if(!current)return saved;
+      const merged=mergeLiveGame(current,saved,liveAsOf);
       merged.leans=merged.projection?valuePicks(merged,merged.projection,snapshot.calibration):[];return merged;
     })};$('edition-date').textContent=`${board.weekStart} — ${board.weekEnd}`;}
   } catch {liveError=true;}

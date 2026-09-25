@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {rapidQuotes,mainMarkets,bestComparable} from '../scripts/odds/core.mjs';
-import {attachCfbOdds} from '../scripts/odds/cfb.mjs';
+import {attachCfbOdds,preserveLastCfbOdds} from '../scripts/odds/cfb.mjs';
 import {valuePicks} from '../website/assets/cfb-edge.mjs';
 import {grade} from '../scripts/cfb/core.mjs';
 import {catalogPropEvents} from '../scripts/odds/catalog-to-props.mjs';
@@ -38,6 +38,13 @@ test('NCAAF keeps paired spread and total lines and rejects mismatched kickoff/t
  assert.equal(attachCfbOdds({...game,date:new Date(now+8*3600000).toISOString()},feed,now).market,null);
  const bad={...m,outcomes:{DRAFT_KINGS:[q('h'),q('a',{modifier:4.5})]}};
  assert.equal(attachCfbOdds(game,{...feed,quotes:rapidQuotes(e,[bad],now)},now).market,null);
+});
+test('an independent CFB refresh cannot erase the last observed sportsbook market',()=>{
+ const base={id:'game',date:kickoff,state:'pre',neutral:false,home:{id:'h',name:'Home'},away:{id:'a',name:'Away'}};
+ const previous={...base,market:{homeSpread:-3.5,total:51,homeML:-150},sportsbookQuotes:[{quoteId:'saved'}],oddsRetrievedAt:stamp};
+ const preserved=preserveLastCfbOdds({...base,market:null},previous);
+ assert.equal(preserved.market.homeSpread,-3.5);assert.equal(preserved.sportsbookQuotes[0].quoteId,'saved');
+ assert.equal(preserveLastCfbOdds({...base,home:{id:'other',name:'Other'},market:null},previous).market,null);
 });
 test('best price compares identical player, market, side, line and event only',()=>{
  const a={providerEventId:'1',player:'A',market:'hits',side:'over',line:0.5,decimalOdds:2,quoteId:'a'};

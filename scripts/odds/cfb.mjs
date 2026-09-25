@@ -1,4 +1,10 @@
 import {matchEvent,fresh} from './core.mjs';
+export function preserveLastCfbOdds(game,previous){
+ if(game.market||game.state!=='pre'||!previous?.market)return game;
+ const compatible=String(game.id)===String(previous.id)&&game.home?.id===previous.home?.id&&game.away?.id===previous.away?.id&&game.neutral===previous.neutral;
+ if(!compatible)return game;
+ return {...game,market:previous.market,sportsbookQuotes:previous.sportsbookQuotes||[],oddsRetrievedAt:previous.oddsRetrievedAt||null};
+}
 export function attachCfbOdds(game,feed,now=Date.now()){
  if(game.state!=='pre')return game;
  const e=matchEvent({homeNames:[game.home.name,game.home.location,game.home.short],awayNames:[game.away.name,game.away.location,game.away.short],kickoff:game.date},feed?.events||[]);
