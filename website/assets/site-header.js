@@ -113,6 +113,7 @@
   const nhlPrimaryOrder = ["NHL Home", "Matchups", "Goal Scorers", "Shots", "Live Ice"];
   const generalItems = [
     ["Home","./index.html",["/index.html","/"]],
+    ["Sponsor","./sponsor.html",["/sponsor.html"]],
     ["MLB","./mlb.html",[]],
     ["WNBA","./wnba.html",[]],
     ["NFL","./nfl.html",[]],
@@ -124,7 +125,7 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "NHL", "My Account"];
-  const generalPaths = new Set(["/", "/index.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
+  const generalPaths = new Set(["/", "/index.html", "/sponsor.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/cfb.html",
     "/ai-hall-of-fame.html",
@@ -368,7 +369,7 @@
             ? [["NHL Home","./nhl.html#dashboard"],["Matchups","./nhl.html#games"],["Goal Scorers","./nhl.html#goals"],["Shots","./nhl.html#shots"],["Live Ice","./nhl.html#live"]]
           : section === "mlb"
             ? [["MLB Slate","./mlb.html"],["Decision Center","./hr-decision-center.html"],["Results","./results.html"],["AI Says","./ai-says.html"]]
-            : [["Home","./index.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
+            : [["Home","./index.html"],["Sponsor","./sponsor.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
     const footer = document.createElement("footer");
     footer.className = "tsl-site-footer";
     footer.innerHTML = `
