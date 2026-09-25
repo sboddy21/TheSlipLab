@@ -1,6 +1,7 @@
 import {fresh as quoteFresh} from './odds-core.mjs';
 import { isFresh,mergeLiveGame,MAX_MODEL_AGE_MS } from './cfb-market.mjs';
 import { valuePicks, moneylineProjection, implied, payout, estimate } from './cfb-edge.mjs';
+import { boardRows, boardHighlights, sortBoard } from './cfb-board.mjs';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const signed = n => n === null || n === undefined ? '—' : n > 0 ? `+${n}` : `${n}`;
@@ -9,7 +10,7 @@ const dateLabel = value => new Date(value).toLocaleString('en-US',{timeZone:'Ame
 const dayKey = value => new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
 const conferences = {'1':'ACC','4':'Big 12','5':'Big Ten','8':'SEC','9':'Pac-12','12':'Conference USA','15':'MAC','17':'Mountain West','18':'FBS Independents','37':'Sun Belt','151':'American'};
 const conferenceName = id => conferences[id] || (id ? `Conference ${id}` : 'Other');
-let board, snapshot, liveAsOf=null, liveError=true, refreshing=false, market = 'spread', aiByGame=new Map(), aiState='loading';
+let board, snapshot, liveAsOf=null, liveError=true, refreshing=false, market = 'spread', aiByGame=new Map(), aiState='loading', slateAi=null, boardSort={key:'kickoff',direction:'asc'};
 const fresh = () => !liveError && isFresh(liveAsOf);
 const upcoming = game => game.state === 'pre' && game.timeValid && Date.parse(game.date) > Date.now();
 function leanLabel(pick,game) {
@@ -26,7 +27,7 @@ function gameAiRead(game,p,m) {
   const freshQuote=quote&&quoteFresh(quote.quotedAt),marketProbability=freshQuote?implied(price):null,profit=freshQuote?payout(price):null;
   const expectedReturn=profit===null?null:probability*profit-(1-probability),gap=marketProbability===null?null:probability-marketProbability;
   const confidence=probability>=.72?'High':probability>=.62?'Medium':'Lean';
-  const spreadSide=p.margin>=0?'home':'away',fairSpread=-Math.abs(p.margin),projectedTotal=p.total;
+  const spreadSide=p.margin>=0?'home':'away',fairSpread=Number((-Math.abs(p.margin)).toFixed(1)),projectedTotal=p.total;
   const spreadEstimate=m?.homeSpread==null?null:estimate(p,m,snapshot?.calibration,'spread');
   const spreadPick=spreadEstimate===null?spreadSide:(spreadEstimate>=.5?'home':'away');
   const spreadProbability=spreadEstimate===null?null:Math.max(spreadEstimate,1-spreadEstimate);
@@ -40,12 +41,15 @@ function gameAiRead(game,p,m) {
 }
 
 async function accountToken(){for(let i=0;i<60&&!window.TSLAccount;i++)await new Promise(r=>setTimeout(r,100));if(!window.TSLAccount)throw Error('Account session unavailable');await window.TSLAccount.ready;const token=await window.TSLAccount.accessToken();if(!token)throw Error('Sign in to use NCAAF AI Says');return token}
+function aiPayload(g){const ml=moneylineProjection(g.projection,snapshot?.calibration);return {gameId:g.id,kickoff:g.date,away:g.away.name,home:g.home.name,venue:g.venue,neutral:g.neutral,dataQuality:g.projection.dataQuality,projection:{awayScore:g.projection.awayScore,homeScore:g.projection.homeScore,homeMargin:g.projection.margin,total:g.projection.total,awayWinProbability:ml?.awayProbability,homeWinProbability:ml?.homeProbability,awayOffense:g.projection.away.offense,awayDefense:g.projection.away.defense,homeOffense:g.projection.home.offense,homeDefense:g.projection.home.defense},market:g.market?{homeSpread:g.market.homeSpread,total:g.market.total,homeMoneyline:g.market.homeML,awayMoneyline:g.market.awayML,provider:g.market.provider}:null}}
 async function loadGenuineAi(){
   const games=(snapshot?.games||[]).filter(upcoming).filter(g=>g.projection);if(!games.length)return;
   aiState='loading';renderGames();
-  try{const token=await accountToken(),version=snapshot.generatedAt||'current';for(let i=0;i<games.length;i+=8){const rows=games.slice(i,i+8),key=`tsl_cfb_ai_v1_${version}_${i}`;let result=JSON.parse(localStorage.getItem(key)||'null');if(!result?.games?.length){const payload=rows.map(g=>{const ml=moneylineProjection(g.projection,snapshot.calibration);return {gameId:g.id,kickoff:g.date,away:g.away.name,home:g.home.name,venue:g.venue,neutral:g.neutral,dataQuality:g.projection.dataQuality,projection:{awayScore:g.projection.awayScore,homeScore:g.projection.homeScore,homeMargin:g.projection.margin,total:g.projection.total,awayWinProbability:ml?.awayProbability,homeWinProbability:ml?.homeProbability,awayOffense:g.projection.away.offense,awayDefense:g.projection.away.defense,homeOffense:g.projection.home.offense,homeDefense:g.projection.home.defense},market:g.market?{homeSpread:g.market.homeSpread,total:g.market.total,homeMoneyline:g.market.homeML,awayMoneyline:g.market.awayML,provider:g.market.provider}:null}});const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({games:payload})});result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'NCAAF AI analysis unavailable');localStorage.setItem(key,JSON.stringify(result))}for(const row of result.games)aiByGame.set(String(row.gameId),row);renderGames()}
-    aiState='ready';renderGames();
-  }catch(error){console.error('NCAAF OpenAI:',error);aiState='error';renderGames()}
+  try{const token=await accountToken(),version=snapshot.generatedAt||'current';for(let i=0;i<games.length;i+=8){const rows=games.slice(i,i+8),key=`tsl_cfb_ai_v2_${version}_${i}`;let result=JSON.parse(localStorage.getItem(key)||'null');if(!result?.games?.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({games:rows.map(aiPayload)})});result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'NCAAF AI analysis unavailable');localStorage.setItem(key,JSON.stringify(result))}for(const row of result.games)aiByGame.set(String(row.gameId),row);renderGames();renderIntelligenceBoard()}
+    const signal=boardRows(games,snapshot.calibration).sort((a,b)=>b.maxGap-a.maxGap).slice(0,6).map(row=>row.game),slateKey=`tsl_cfb_slate_ai_v1_${version}`;slateAi=JSON.parse(localStorage.getItem(slateKey)||'null');
+    if(!slateAi?.overview&&signal.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mode:'slate',games:signal.map(aiPayload)})});slateAi=await response.json().catch(()=>({}));if(!response.ok)throw Error(slateAi.error||'NCAAF weekly analysis unavailable');localStorage.setItem(slateKey,JSON.stringify(slateAi))}
+    aiState='ready';renderGames();renderIntelligenceBoard();
+  }catch(error){console.error('NCAAF OpenAI:',error);aiState='error';renderGames();renderIntelligenceBoard()}
 }
 function currentQuote(game,marketName,side) {
   const quote=game.market?.quoteDetails?.[marketName]?.[side];
@@ -80,6 +84,39 @@ function rankedMarketReads(kind) {
 function aiMarketColumn(kind,title) {
   const rows=rankedMarketReads(kind);
   return `<section class="ai-market"><div class="ai-market-title"><span>${esc(title)}</span><small>Top model reads</small></div>${rows.length?rows.map((r,index)=>`<article class="ai-pick"><b>${index+1}</b><div><small>${esc(r.game.away.short)} @ ${esc(r.game.home.short)} · ${esc(dateLabel(r.game.date))} ET</small><h3>${esc(r.label)}</h3><p>${esc(r.detail)}</p>${r.quote?`<span class="ai-price">${esc(r.quote.book)} ${signed(r.quote.price)} · verified ${esc(dateLabel(r.quote.quotedAt))} ET</span>`:'<span class="ai-price waiting">Fresh sportsbook price unavailable</span>'}</div><a href="#game-${esc(r.game.id)}" data-show-game aria-label="Open ${esc(r.game.away.short)} at ${esc(r.game.home.short)} matchup">↗</a></article>`).join(''):'<p class="ai-market-empty">No eligible projections in this market.</p>'}</section>`;
+}
+const one=n=>Number.isFinite(n)?n.toFixed(1):'—';
+const spreadText=row=>{if(!row.game.projection)return '—';const side=row.modelSpread>=0?'home':'away';return `${row.game[side].short} ${signed(Number((-Math.abs(row.modelSpread)).toFixed(1)))}`};
+const quoteText=(quote,label)=>quote?`<strong>${esc(label)} ${quote.line==null?'':esc(label==='O'||label==='U'?quote.line:signed(quote.line))}</strong><small>${esc(signed(quote.price))} · ${esc(quote.book)}</small>`:'—';
+function marketWinText(row){return row.marketWin?`${row.game.away.short} ${pct(row.marketWin.away)}<br>${row.game.home.short} ${pct(row.marketWin.home)}`:'—'}
+function modelWinText(row){return row.modelWin?`${row.game.away.short} ${pct(row.modelWin.awayProbability)}<br>${row.game.home.short} ${pct(row.modelWin.homeProbability)}`:'—'}
+function boardAiCell(row){
+  const ai=aiByGame.get(String(row.game.id));
+  if(ai)return `<button class="ai-open" type="button" data-open-game="${esc(row.game.id)}"><strong>${esc(ai.headline)}</strong><span>${esc(ai.overview)}</span></button>`;
+  return `<button class="ai-open" type="button" data-open-game="${esc(row.game.id)}"><strong>${aiState==='loading'?'Analyzing…':'Model read'}</strong><span>${esc(row.game.projection?`${spreadText(row)} · ${one(row.modelTotal)} projected total`:'Projection unavailable')}</span></button>`;
+}
+function boardTableRow(row){
+  const g=row.game,m=g.market,q=m?.quoteDetails||{},spreadSide=row.spreadGap===null?null:(row.spreadGap>=0?'home':'away'),totalSide=row.totalGap===null?null:(row.totalGap>=0?'over':'under'),mlSide=row.modelWin?(row.modelWin.homeProbability>=row.modelWin.awayProbability?'home':'away'):null;
+  const spreadQuote=spreadSide?q.spread?.[spreadSide]:null,totalQuote=totalSide?q.total?.[totalSide]:null,mlQuote=mlSide?q.moneyline?.[mlSide]:null;
+  const status=g.completed?'Final':g.state==='in'?'Live':upcoming(g)?'Scheduled':'Awaiting update';
+  return `<tr id="board-game-${esc(g.id)}" data-game-id="${esc(g.id)}"><td class="matchup-cell"><strong>${g.away.rank?`#${g.away.rank} `:''}${esc(g.away.name)}</strong><span>@</span><strong>${g.home.rank?`#${g.home.rank} `:''}${esc(g.home.name)}</strong></td><td>${esc(dateLabel(g.date))} ET</td><td><span class="status-dot ${g.state}"></span>${status}</td><td>${g.state==='post'?`${g.away.score}–${g.home.score}`:'—'}</td><td>${esc(spreadText(row))}</td><td>${quoteText(spreadQuote,spreadSide?g[spreadSide].short:'')}</td><td class="gap ${Math.abs(row.spreadGap??0)>=7?'hot':''}">${row.spreadGap===null?'—':`${row.spreadGap>=0?g.home.short:g.away.short} ${one(Math.abs(row.spreadGap))}`}</td><td>${one(row.modelTotal)}</td><td>${quoteText(totalQuote,totalSide==='over'?'O':'U')}</td><td class="gap ${Math.abs(row.totalGap??0)>=7?'hot':''}">${row.totalGap===null?'—':`${row.totalGap>=0?'OVER':'UNDER'} ${one(Math.abs(row.totalGap))}`}</td><td>${modelWinText(row)}</td><td>${marketWinText(row)}</td><td class="gap ${Math.abs(row.winGap??0)>=7?'hot':''}">${row.winGap===null?'—':`${row.winGap>=0?g.home.short:g.away.short} ${one(Math.abs(row.winGap))}%`}</td><td>${quoteText(mlQuote,mlSide?g[mlSide].short:'')}</td><td class="ai-cell">${boardAiCell(row)}</td></tr>`;
+}
+function filteredBoardRows(){
+  const search=$('board-search')?.value.trim().toLowerCase()||'',status=$('board-status')?.value||'all',tier=$('board-tier')?.value||'all',conference=$('board-conference')?.value||'all',ranked=$('board-ranked')?.value||'all';
+  let rows=boardRows(board?.games||[],snapshot?.calibration).filter(row=>{const g=row.game;return (!search||`${g.home.name} ${g.home.short} ${g.away.name} ${g.away.short}`.toLowerCase().includes(search))&&(status==='all'||g.state===status)&&(tier==='all'||row.maxGap>=(tier==='strong'?7:3))&&(conference==='all'||g.home.conference===conference||g.away.conference===conference)&&(ranked==='all'||g.home.rank||g.away.rank)});
+  return sortBoard(rows,boardSort.key,boardSort.direction);
+}
+function renderIntelligenceBoard(){
+  if(!board)return;
+  $('week-label').textContent=`${board.weekStart} — ${board.weekEnd}`;
+  const allRows=boardRows(board.games,snapshot?.calibration),rows=filteredBoardRows(),highlights=boardHighlights(allRows);
+  $('matchup-pills').innerHTML=allRows.map(row=>`<button type="button" data-jump-game="${esc(row.game.id)}"><i></i>${esc(row.matchup)} <small>${row.game.completed?'FINAL':row.game.timeValid?new Date(row.game.date).toLocaleTimeString('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit'}):'TBD'}</small></button>`).join('');
+  const kpi=(label,row,key,suffix='')=>`<article><small>${label}</small><strong>${row?one(Math.abs(row[key]))+suffix:'—'}</strong><span>${row?esc(row.matchup):'No verified market'}</span></article>`;
+  $('board-kpis').innerHTML=kpi('Largest spread gap',highlights.spread,'spreadGap')+kpi('Largest total gap',highlights.total,'totalGap')+kpi('Largest win-probability gap',highlights.win,'winGap','%')+`<article><small>Games with a large gap</small><strong>${highlights.large}</strong><span>7+ points or probability points</span></article>`;
+  $('model-board-body').innerHTML=rows.length?rows.map(boardTableRow).join(''):'<tr><td colspan="15">No games match these filters.</td></tr>';
+  $('week-ai-status').textContent=slateAi?.overview?'Generated by OpenAI · grounded in current model + market data':aiState==='error'?'Real AI is temporarily unavailable':'Analyzing the highest-signal matchups…';
+  $('week-ai-copy').textContent=slateAi?.overview||`This board compares all ${board.games.length} matchups. OpenAI analysis appears here after account verification; sortable model and sportsbook numbers remain available below.`;
+  $('week-ai-takeaways').innerHTML=slateAi?.takeaways?.map(item=>`<button type="button" data-jump-game="${esc(item.gameId)}"><strong>${esc(item.label)}</strong><span>${esc(item.detail)}</span></button>`).join('')||'';
 }
 function card(game) {
   const m = game.state==='pre'&&(!upcoming(game)||(game.market?.source==='RapidAPI'&&!Object.values(game.market.quoteDetails||{}).flatMap(Object.values).some(q=>quoteFresh(q.quotedAt))))?null:game.market, p = game.projection;
@@ -120,11 +157,11 @@ function renderSummary() {
   $('health').textContent=fresh()?`ESPN scores · RapidAPI odds · Checked ${dateLabel(liveAsOf)} ET${modelReady?"":" · Projections unavailable"}`:`Live updates unavailable. Leans paused. Last update: ${liveAsOf?dateLabel(liveAsOf)+' ET':'not yet available'}.`;
   const rankedReadCount=modelReady&&fresh()?['moneyline','spread','total'].reduce((sum,kind)=>sum+rankedMarketReads(kind).length,0):0;
   $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[board.games.filter(g=>g.market).length,'Games with odds'],[rankedReadCount,'Ranked AI reads']].map(([n,label])=>`<div class="metric"><strong>${n}</strong><span>${label}</span></div>`).join('');
-  $('lean-list').innerHTML=modelReady&&fresh()?[aiMarketColumn('moneyline','Best Moneylines'),aiMarketColumn('spread','Best Spreads'),aiMarketColumn('total','Best Over / Unders')].join(''):`<p class="empty">${fresh()?'Model projections are unavailable for this slate.':'AI rankings will return when live updates resume.'}</p>`;
   const archive=(board.archive||[]).filter(p=>p.model===board.model),settled=archive.filter(p=>p.model===board.model&&['win','loss','push'].includes(p.result));
   const count=result=>settled.filter(p=>p.result===result).length;
   $('record').textContent=settled.length?`${count('win')}–${count('loss')}–${count('push')} · ${signed(Number(settled.reduce((s,p)=>s+(p.units||0),0).toFixed(2)))}u`:'Awaiting results';
   $('ledger').innerHTML=archive.length?[...archive].sort((a,b)=>Date.parse(b.recordedAt)-Date.parse(a.recordedAt)).map(p=>`<tr><td>${esc(p.matchup)}</td><td>${esc(leanLabel(p))}</td><td>${signed(p.price)}<br><small>${esc(p.book || p.provider)}</small></td><td>${esc(dateLabel(p.recordedAt))}</td><td>${esc(p.result)}</td><td>${p.units===null?'—':signed(Number(p.units.toFixed(2)))}</td></tr>`).join(''):'<tr><td colspan="6">No recorded pregame calls yet.</td></tr>';
+  renderIntelligenceBoard();
 }
 async function refreshLive() {
   if(refreshing)return;refreshing=true;$('refresh-now').disabled=true;$('refresh-now').textContent='Updating…';
@@ -150,14 +187,15 @@ async function load() {
     snapshot = data; board = data; liveError = true;
     $('edition-date').textContent = `${board.weekStart} — ${board.weekEnd}`;
     const addOptions = (id, rows) => { const element = $(id), value = element.value; element.length = 1; rows.forEach(([key,label])=>element.add(new Option(label,key))); element.value = [...element.options].some(o=>o.value===value) ? value : 'all'; };
-    addOptions('conference',[...new Set(board.games.flatMap(g=>[g.home.conference,g.away.conference]))].filter(id=>conferences[id]).map(id=>[id,conferenceName(id)]).concat([['other','Other / FCS conferences']]).sort((a,b)=>a[1].localeCompare(b[1])));
+    const conferenceOptions=[...new Set(board.games.flatMap(g=>[g.home.conference,g.away.conference]))].filter(id=>conferences[id]).map(id=>[id,conferenceName(id)]).sort((a,b)=>a[1].localeCompare(b[1]));
+    addOptions('conference',conferenceOptions.concat([['other','Other / FCS conferences']]));
+    addOptions('board-conference',conferenceOptions);
     addOptions('day',[...new Set(board.games.map(g=>dayKey(g.date)))].sort().map(day=>[day,new Date(`${day}T12:00:00Z`).toLocaleDateString('en-US',{timeZone:'America/New_York',weekday:'short',month:'short',day:'numeric'})]));
     renderGames(); renderSummary();
   } catch (error) {
     $('health').classList.add('warning');
     $('health').textContent = 'The college football snapshot could not be loaded. Please reload to try again.';
     $('games').innerHTML = '<p class="empty">The weekly board is temporarily unavailable.</p>';
-    $('lean-list').innerHTML = '<p class="empty">Current leans are unavailable.</p>';
     $('ledger').innerHTML = '<tr><td colspan="6">Results could not be loaded.</td></tr>';
     console.error('College football board:',error);
   }
@@ -171,7 +209,15 @@ document.querySelectorAll('[data-market]').forEach(button=>button.addEventListen
   document.querySelectorAll('[data-market]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
   renderGames();
 }));
-$('lean-list').addEventListener('click',event=>{if(event.target.closest('[data-show-game]')) { $('filters').reset(); renderGames(); }});
+$('board-filters').addEventListener('submit',event=>event.preventDefault());
+$('board-filters').addEventListener('input',renderIntelligenceBoard);
+$('board-filters').addEventListener('change',renderIntelligenceBoard);
+$('board-filters').addEventListener('reset',()=>setTimeout(renderIntelligenceBoard,0));
+$('leans').addEventListener('click',event=>{
+  const sort=event.target.closest('[data-board-sort]');if(sort){const key=sort.dataset.boardSort;boardSort=boardSort.key===key?{key,direction:boardSort.direction==='asc'?'desc':'asc'}:{key,direction:key==='kickoff'||key==='matchup'?'asc':'desc'};renderIntelligenceBoard();return}
+  const target=event.target.closest('[data-jump-game],[data-open-game]');if(!target)return;const id=target.dataset.jumpGame||target.dataset.openGame,row=document.getElementById(`board-game-${id}`);if(row){row.scrollIntoView({behavior:'smooth',block:'center'});row.classList.remove('pulse');requestAnimationFrame(()=>row.classList.add('pulse'))}
+  if(target.matches('[data-open-game]')){const detail=document.getElementById(`game-${id}`);if(detail){detail.scrollIntoView({behavior:'smooth',block:'start'});detail.querySelector('details:last-of-type')?.setAttribute('open','')}}
+});
 $('refresh-now').addEventListener('click',()=>refreshLive());
 await load();
 await loadGenuineAi();

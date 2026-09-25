@@ -15,9 +15,15 @@ export function estimate(projection,market,calibration,kind) {
 }
 export function moneylineProjection(projection,calibration) {
   if(!projection)return null;
-  const c=calibration?.spread;
-  if(!c||!Number.isFinite(c.intercept)||!Number.isFinite(c.slope))return null;
-  const homeProbability=logistic(c.intercept+c.slope*signal(projection.margin));
+  if(!Number.isFinite(projection.margin))return null;
+  // Cover calibration answers whether a team beats a posted spread; it cannot
+  // be reused as a straight-up win model (its fitted slope may legitimately be
+  // negative). Convert projected scoring margin to a conservative win chance
+  // and shrink toward 50% when team-history coverage is limited.
+  const raw=logistic(projection.margin/10.5);
+  const coverage=Number.isFinite(projection.coverage)?Math.max(0,Math.min(1,projection.coverage)):1;
+  const reliability=.55+.45*coverage;
+  const homeProbability=.5+(raw-.5)*reliability;
   return {homeProbability,awayProbability:1-homeProbability,homeFairPrice:americanFromProbability(homeProbability),awayFairPrice:americanFromProbability(1-homeProbability)};
 }
 export function valuePicks(game,projection,calibration,now=Date.now(),minimumReturn=0.05) {
