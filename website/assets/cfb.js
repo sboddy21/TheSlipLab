@@ -13,9 +13,6 @@ const conferenceName = id => conferences[id] || (id ? `Conference ${id}` : 'Othe
 let board, snapshot, liveAsOf=null, liveError=true, refreshing=false, market = 'spread', aiByGame=new Map(), aiState='loading', slateAi=null, boardSort={key:'kickoff',direction:'asc'};
 const fresh = () => !liveError && isFresh(liveAsOf);
 const upcoming = game => game.state === 'pre' && game.timeValid && Date.parse(game.date) > Date.now();
-function leanLabel(pick,game) {
-  return pick.market === 'spread' ? `${game?.[pick.side]?.short || pick.team} ${signed(pick.line)}` : `${pick.side === 'over' ? 'Over' : 'Under'} ${pick.line}`;
-}
 const pct=value=>Number.isFinite(value)?`${(value*100).toFixed(1)}%`:'—';
 const qualityLabel=p=>p.dataQuality==='full'?'Full team-history model':p.dataQuality==='limited'?'Limited-history model':'National-prior baseline';
 function gameAiRead(game,p,m) {
@@ -161,10 +158,6 @@ function renderSummary() {
   $('health').textContent=fresh()?`ESPN scores · RapidAPI odds · Checked ${dateLabel(liveAsOf)} ET${modelReady?"":" · Projections unavailable"}`:`Live updates unavailable. Leans paused. Last update: ${liveAsOf?dateLabel(liveAsOf)+' ET':'not yet available'}.`;
   const rankedReadCount=modelReady&&fresh()?['moneyline','spread','total'].reduce((sum,kind)=>sum+rankedMarketReads(kind).length,0):0;
   $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[board.games.filter(g=>g.market).length,'Games with odds'],[rankedReadCount,'Ranked AI reads']].map(([n,label])=>`<div class="metric"><strong>${n}</strong><span>${label}</span></div>`).join('');
-  const archive=(board.archive||[]).filter(p=>p.model===board.model),settled=archive.filter(p=>p.model===board.model&&['win','loss','push'].includes(p.result));
-  const count=result=>settled.filter(p=>p.result===result).length;
-  $('record').textContent=settled.length?`${count('win')}–${count('loss')}–${count('push')} · ${signed(Number(settled.reduce((s,p)=>s+(p.units||0),0).toFixed(2)))}u`:'Awaiting results';
-  $('ledger').innerHTML=archive.length?[...archive].sort((a,b)=>Date.parse(b.recordedAt)-Date.parse(a.recordedAt)).map(p=>`<tr><td>${esc(p.matchup)}</td><td>${esc(leanLabel(p))}</td><td>${signed(p.price)}<br><small>${esc(p.book || p.provider)}</small></td><td>${esc(dateLabel(p.recordedAt))}</td><td>${esc(p.result)}</td><td>${p.units===null?'—':signed(Number(p.units.toFixed(2)))}</td></tr>`).join(''):'<tr><td colspan="6">No recorded pregame calls yet.</td></tr>';
   renderIntelligenceBoard();
 }
 async function refreshLive() {
@@ -201,7 +194,6 @@ async function load() {
     $('health').classList.add('warning');
     $('health').textContent = 'The college football snapshot could not be loaded. Please reload to try again.';
     $('games').innerHTML = '<p class="empty">The weekly board is temporarily unavailable.</p>';
-    $('ledger').innerHTML = '<tr><td colspan="6">Results could not be loaded.</td></tr>';
     console.error('College football board:',error);
   }
 }

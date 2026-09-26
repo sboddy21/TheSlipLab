@@ -85,11 +85,10 @@
     ["NCAAF Home","./cfb.html",["/cfb.html"]],
     ["AI Says","./cfb.html#leans",[]],
     ["Game Lab","./cfb.html#slate",[]],
-    ["Results","./cfb.html#results",[]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab", "Results"];
+  const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab"];
   const nbaItems = [
     ["NBA Home","./nba.html",["/nba.html"]],
     ["Points","./nba-points.html",["/nba-points.html"]],
