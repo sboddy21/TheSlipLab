@@ -1,14 +1,14 @@
 (() => {
   const storageKey = "tsl:grip-wipes-sponsor:last-shown:v1";
   const rootId = "tsl-grip-wipes-sponsor";
-  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+  const oneDay = 24 * 60 * 60 * 1000;
 
   if (document.getElementById(rootId) || window.__tslGripWipesShown) return;
   if (window.location.pathname.endsWith("/sponsor.html")) return;
 
   try {
     const lastShown = Number(localStorage.getItem(storageKey) || 0);
-    if (lastShown && Date.now() - lastShown < sevenDays) return;
+    if (lastShown && Date.now() - lastShown < oneDay) return;
   } catch (_) {}
 
   const show = () => {
