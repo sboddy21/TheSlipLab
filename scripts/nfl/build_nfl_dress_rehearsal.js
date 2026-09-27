@@ -2,6 +2,7 @@ import fs from "fs";
 import { isActiveRoster, hasCurrentOfficialReport } from "./launch_safety.js";
 import path from "path";
 import { selectWeekGames } from "./week_schedule.js";
+import { NFL_OUTDOOR_VENUES, missingOutdoorVenues } from "./weather_venues.js";
 
 const DATA = path.resolve("website/data");
 const read = file => JSON.parse(fs.readFileSync(path.join(DATA, file), "utf8"));
@@ -10,15 +11,6 @@ const generatedAt = new Date().toISOString();
 const now = Date.now();
 const normalize = value => String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const forecastMaxAgeHours = Number(process.env.NFL_WEATHER_MAX_AGE_HOURS || 6);
-
-const VENUES = {
-  "Lumen Field": [47.5952, -122.3316], "Melbourne Cricket Ground": [-37.8199, 144.9834], "Paycor Stadium": [39.0955, -84.5161],
-  "Ford Field": [42.3400, -83.0456], "Nissan Stadium": [36.1665, -86.7713], "Lucas Oil Stadium": [39.7601, -86.1639],
-  "Acrisure Stadium": [40.4468, -80.0158], "Bank of America Stadium": [35.2258, -80.8528], "EverBank Stadium": [30.3239, -81.6373],
-  "Reliant Stadium": [29.6847, -95.4107], "Allegiant Stadium": [36.0908, -115.1830], "U.S. Bank Stadium": [44.9736, -93.2575],
-  "Lincoln Financial Field": [39.9008, -75.1675], "SoFi Stadium": [33.9535, -118.3392], "MetLife Stadium": [40.8135, -74.0745],
-  "Arrowhead Stadium": [39.0489, -94.4839]
-};
 
 function nextWeek(schedule) {
   return [...new Set(schedule.games.map(game => game.week))].sort((a, b) => a - b)
@@ -61,13 +53,15 @@ function practiceContract(pool, injuries, roles, week) {
 }
 
 async function weatherContract(games, week) {
+  const missing = missingOutdoorVenues(games);
+  if (missing.length) throw new Error(`Outdoor venue coordinates missing: ${missing.join(", ")}`);
   const rows = [];
   for (const game of games) {
     if (game.indoor) {
       rows.push({ gameId: game.gameId, venue: game.venue, kickoffUTC: game.kickoffUTC, status: "indoor_verified", weatherGate: true, forecast: null, fetchedAt: generatedAt });
       continue;
     }
-    const coordinates = VENUES[game.venue];
+    const coordinates = NFL_OUTDOOR_VENUES[game.venue];
     const daysAway = (Date.parse(game.kickoffUTC) - now) / 864e5;
     if (!coordinates || daysAway > 16) {
       rows.push({ gameId: game.gameId, venue: game.venue, kickoffUTC: game.kickoffUTC, status: coordinates ? "outside_forecast_horizon" : "venue_coordinates_missing", weatherGate: false, forecast: null, fetchedAt: null });

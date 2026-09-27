@@ -30,7 +30,6 @@ const receivingRequiredGates = row => row.gates?.activeRoster && row.gates?.veri
 const blockers = [
   ...(identityCritical ? [`${identityCritical} critical identity/ownership issues`] : []),
   ...(practice.weeklyAvailabilityActive ? [] : [`Current Week ${matchup.week} availability feed is not active`]),
-  ...(weather.counts.pending ? [`${weather.counts.pending} games lack kickoff-hour weather`] : []),
   ...(td.rows.some(tdRequiredGates) ? [] : ["No TD rows pass every required launch gate"]),
   ...(receiving.rows.some(receivingRequiredGates) ? [] : ["Receiving yards lacks a verified current role and historical route-opportunity proxy"])
 ];
@@ -67,7 +66,8 @@ const payload = {
     tdLaunchEligible: td.rows.filter(tdRequiredGates).length,
     receivingLaunchEligible: receiving.rows.filter(receivingRequiredGates).length
   },
-  blockers
+  blockers,
+  advisories: weather.counts.pending ? [`${weather.counts.pending} games have weather context pending`] : []
 };
 
 write("nfl_launch_audit.json", payload);
