@@ -1,17 +1,838 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-09-29T22:41:53.064Z",
+  "generatedAt": "2026-09-30T03:23:32.646Z",
   "date": "2026-09-29",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-09-29T22:39:31.298Z",
-    "mlb_player_pool.json": "2026-09-29T22:39:32.302Z",
-    "game_pitcher_matchups.json": "2026-09-29T22:40:06.858Z",
-    "player_card_data.json": "2026-09-29T22:41:52.991Z",
-    "hr_probability_tracking.json": "2026-09-29T22:40:06.595Z",
-    "pitcher_vulnerability.json": "2026-09-29T22:40:06.862Z"
+    "mlb_games_today.json": "2026-09-30T03:21:55.237Z",
+    "mlb_player_pool.json": "2026-09-30T03:21:55.847Z",
+    "game_pitcher_matchups.json": "2026-09-30T03:22:10.038Z",
+    "player_card_data.json": "2026-09-30T03:23:32.567Z",
+    "hr_probability_tracking.json": "2026-09-30T03:22:09.763Z",
+    "pitcher_vulnerability.json": "2026-09-30T03:22:10.041Z"
   },
   "alerts": [
+    {
+      "id": "b1cf502e872e6076d037",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Randal Grichuk's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "aa0cd8575f7677ff5412",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Randal Grichuk removed from the confirmed lineup",
+      "message": "Randal Grichuk's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "47da70628d2aad66f220",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Randal Grichuk's model score fell",
+      "message": "The live model score fell from 52.7 to 0.",
+      "previous": {
+        "modelScore": 52.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5c0709f227581374d3d3",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Randal Grichuk's verified signals changed",
+      "message": "Removed: hotLook.",
+      "previous": {
+        "signals": [
+          "hotLately",
+          "hotLook"
+        ]
+      },
+      "current": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "590af902cd4f014d9bc2",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "641857",
+      "entityName": "Ryan McMahon",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Ryan McMahon confirmed in the lineup",
+      "message": "Ryan McMahon is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "4874dca560087dd2f481",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "641857",
+      "entityName": "Ryan McMahon",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Ryan McMahon's model score rose",
+      "message": "The live model score rose from 0 to 30.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 30.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "5d735a9c99951f85a0bc",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "642708",
+      "entityName": "Amed Rosario",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Amed Rosario removed from the confirmed lineup",
+      "message": "Amed Rosario's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "6b16f711888885d69df1",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642708",
+      "entityName": "Amed Rosario",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Amed Rosario's HR probability fell",
+      "message": "Tracked HR probability fell from 6.1% to 0%.",
+      "previous": {
+        "probability": 6.1
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "83cb06637af7461fcde1",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642708",
+      "entityName": "Amed Rosario",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Amed Rosario's model score fell",
+      "message": "The live model score fell from 30.9 to 0.",
+      "previous": {
+        "modelScore": 30.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "064e63e6df4800a9d955",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "655316",
+      "entityName": "Andruw Monasterio",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Andruw Monasterio confirmed in the lineup",
+      "message": "Andruw Monasterio is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "831dc391cd2248256801",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "655316",
+      "entityName": "Andruw Monasterio",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Andruw Monasterio's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 5.1%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 5.1
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "6d009d447319fc2f5d7a",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "655316",
+      "entityName": "Andruw Monasterio",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Andruw Monasterio's model score rose",
+      "message": "The live model score rose from 0 to 38.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 38.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a1dd6df0679549dba120",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663757",
+      "entityName": "Trent Grisham",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Trent Grisham confirmed in the lineup",
+      "message": "Trent Grisham is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "df5600a903ffe12a6358",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663757",
+      "entityName": "Trent Grisham",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Trent Grisham's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 10.2%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 10.2
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f87fde39ccd1a869c324",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663757",
+      "entityName": "Trent Grisham",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Trent Grisham's model score rose",
+      "message": "The live model score rose from 0 to 37.4.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 37.4
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d23986e142f8508447cc",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666211",
+      "entityName": "Taylor Trammell",
+      "team": "Houston Astros",
+      "gamePk": 849849,
+      "title": "Taylor Trammell removed from the confirmed lineup",
+      "message": "Taylor Trammell's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "753effaff145ba1098d3",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666211",
+      "entityName": "Taylor Trammell",
+      "team": "Houston Astros",
+      "gamePk": 849849,
+      "title": "Taylor Trammell's model score fell",
+      "message": "The live model score fell from 26.9 to 0.",
+      "previous": {
+        "modelScore": 26.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "dae01d36059c8527e0bd",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671218",
+      "entityName": "Heliot Ramos",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Heliot Ramos removed from the confirmed lineup",
+      "message": "Heliot Ramos's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "f794df56c40042013083",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671218",
+      "entityName": "Heliot Ramos",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Heliot Ramos's HR probability fell",
+      "message": "Tracked HR probability fell from 9.4% to 0%.",
+      "previous": {
+        "probability": 9.4
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f5c36da0f2a17e9ea6b9",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "671218",
+      "entityName": "Heliot Ramos",
+      "team": "New York Yankees",
+      "gamePk": 849851,
+      "title": "Heliot Ramos's model score fell",
+      "message": "The live model score fell from 37.7 to 0.",
+      "previous": {
+        "modelScore": 37.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "3b759de38ae11a76d0e4",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "676369",
+      "entityName": "Nelson Velázquez",
+      "team": "Houston Astros",
+      "gamePk": 849849,
+      "title": "Nelson Velázquez confirmed in the lineup",
+      "message": "Nelson Velázquez is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "4a149e17024e006980dc",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "676369",
+      "entityName": "Nelson Velázquez",
+      "team": "Houston Astros",
+      "gamePk": 849849,
+      "title": "Nelson Velázquez's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 9.1%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 9.1
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "593324165d3f3ff28cc9",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "676369",
+      "entityName": "Nelson Velázquez",
+      "team": "Houston Astros",
+      "gamePk": 849849,
+      "title": "Nelson Velázquez's model score rose",
+      "message": "The live model score rose from 0 to 31.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 31
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ad82358090a940a12478",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "682668",
+      "entityName": "Luisangel Acuña",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Luisangel Acuña confirmed in the lineup",
+      "message": "Luisangel Acuña is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "bdfff40109f894ec12b1",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682668",
+      "entityName": "Luisangel Acuña",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Luisangel Acuña's model score rose",
+      "message": "The live model score rose from 0 to 27.2.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 27.2
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "2bda8c6645779234decd",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "686668",
+      "entityName": "Brenton Doyle",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Brenton Doyle confirmed in the lineup",
+      "message": "Brenton Doyle is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "14e506a2047a8314ec80",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "686668",
+      "entityName": "Brenton Doyle",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Brenton Doyle's model score rose",
+      "message": "The live model score rose from 0 to 30.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 30.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "28070c3cc1c0cd63b7e2",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "701350",
+      "entityName": "Roman Anthony",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Roman Anthony removed from the confirmed lineup",
+      "message": "Roman Anthony's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b455d04a59ee874c62ec",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701350",
+      "entityName": "Roman Anthony",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Roman Anthony's HR probability fell",
+      "message": "Tracked HR probability fell from 6.6% to 0%.",
+      "previous": {
+        "probability": 6.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "fb3601669695fd324023",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "701350",
+      "entityName": "Roman Anthony",
+      "team": "Boston Red Sox",
+      "gamePk": 849851,
+      "title": "Roman Anthony's model score fell",
+      "message": "The live model score fell from 38.3 to 0.",
+      "previous": {
+        "modelScore": 38.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8d19299637599de2242b",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "803011",
+      "entityName": "Sam Antonacci",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Sam Antonacci removed from the confirmed lineup",
+      "message": "Sam Antonacci's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8569064c06d73b5e643a",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "803011",
+      "entityName": "Sam Antonacci",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Sam Antonacci's HR probability fell",
+      "message": "Tracked HR probability fell from 5.4% to 0%.",
+      "previous": {
+        "probability": 5.4
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f6d3d434894366794544",
+      "createdAt": "2026-09-30T03:23:32.646Z",
+      "date": "2026-09-29",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "803011",
+      "entityName": "Sam Antonacci",
+      "team": "Chicago White Sox",
+      "gamePk": 849849,
+      "title": "Sam Antonacci's model score fell",
+      "message": "The live model score fell from 38.1 to 0.",
+      "previous": {
+        "modelScore": 38.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "069a230c9afb233505e2",
       "createdAt": "2026-09-29T22:41:53.064Z",
@@ -2525,30 +3346,6 @@
       ]
     },
     {
-      "id": "b1cf502e872e6076d037",
-      "createdAt": "2026-09-29T18:32:02.760Z",
-      "date": "2026-09-29",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "545341",
-      "entityName": "Randal Grichuk",
-      "team": "Chicago White Sox",
-      "gamePk": 849849,
-      "title": "Randal Grichuk's HR probability fell",
-      "message": "Tracked HR probability fell from 22.8% to 0%.",
-      "previous": {
-        "probability": 22.8
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
       "id": "df35d080d8fec41ccf81",
       "createdAt": "2026-09-29T18:32:02.760Z",
       "date": "2026-09-29",
@@ -3955,8 +4752,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 22.8,
-        "modelScore": 43.6,
+        "probability": 24,
+        "modelScore": 42.9,
         "signals": []
       },
       "514888": {
@@ -3971,7 +4768,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 9.1,
-        "modelScore": 36,
+        "modelScore": 35.3,
         "signals": []
       },
       "519317": {
@@ -4012,16 +4809,15 @@
         "team": "Chicago White Sox",
         "opponent": "Houston Astros",
         "gamePk": 849849,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 5,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
-        "probability": 22.8,
-        "modelScore": 52.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
-          "hotLately",
-          "hotLook"
+          "hotLately"
         ]
       },
       "547180": {
@@ -4036,7 +4832,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 24,
-        "modelScore": 48.1,
+        "modelScore": 47.4,
         "signals": []
       },
       "572233": {
@@ -4051,7 +4847,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 23.3,
-        "modelScore": 45.5,
+        "modelScore": 44.8,
         "signals": [
           "hotLately"
         ]
@@ -4068,7 +4864,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 6.4,
-        "modelScore": 32.1,
+        "modelScore": 31.4,
         "signals": []
       },
       "575929": {
@@ -4082,8 +4878,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 22.8,
-        "modelScore": 51.7,
+        "probability": 24,
+        "modelScore": 51,
         "signals": []
       },
       "592518": {
@@ -4097,8 +4893,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 21.5,
-        "modelScore": 45.6,
+        "probability": 23.8,
+        "modelScore": 44.8,
         "signals": [
           "hotLately"
         ]
@@ -4115,7 +4911,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 3.5,
-        "modelScore": 25.8,
+        "modelScore": 25,
         "signals": []
       },
       "593428": {
@@ -4130,7 +4926,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 3.4,
-        "modelScore": 33.2,
+        "modelScore": 32.5,
         "signals": []
       },
       "596115": {
@@ -4144,8 +4940,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 1.9,
-        "modelScore": 23.6,
+        "probability": 1.7,
+        "modelScore": 22.9,
         "signals": []
       },
       "596117": {
@@ -4175,7 +4971,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 8.4,
-        "modelScore": 35.4,
+        "modelScore": 34.7,
         "signals": []
       },
       "608324": {
@@ -4189,8 +4985,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 22.8,
-        "modelScore": 49,
+        "probability": 24,
+        "modelScore": 48.2,
         "signals": [
           "hotLately"
         ]
@@ -4206,8 +5002,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 4,
-        "modelScore": 27.9,
+        "probability": 3.7,
+        "modelScore": 27.2,
         "signals": []
       },
       "609280": {
@@ -4236,8 +5032,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 11.9,
-        "modelScore": 33.3,
+        "probability": 10.9,
+        "modelScore": 32.6,
         "signals": []
       },
       "621438": {
@@ -4269,7 +5065,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 24,
-        "modelScore": 51.4,
+        "modelScore": 50.6,
         "signals": []
       },
       "624424": {
@@ -4315,8 +5111,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 1.4,
-        "modelScore": 26.4,
+        "probability": 1.3,
+        "modelScore": 25.7,
         "signals": [
           "hotLately"
         ]
@@ -4332,8 +5128,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 17.9,
-        "modelScore": 41.7,
+        "probability": 19.5,
+        "modelScore": 41,
         "signals": []
       },
       "641857": {
@@ -4342,13 +5138,13 @@
         "team": "New York Yankees",
         "opponent": "Boston Red Sox",
         "gamePk": 849851,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.9,
+        "modelScore": 30.8,
         "signals": []
       },
       "642086": {
@@ -4387,13 +5183,13 @@
         "team": "New York Yankees",
         "opponent": "Boston Red Sox",
         "gamePk": 849851,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 6,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 6.1,
-        "modelScore": 30.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "643217": {
@@ -4423,7 +5219,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 4.8,
-        "modelScore": 33.6,
+        "modelScore": 32.9,
         "signals": []
       },
       "643396": {
@@ -4453,7 +5249,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 10.7,
-        "modelScore": 38.1,
+        "modelScore": 37.4,
         "signals": []
       },
       "645305": {
@@ -4483,7 +5279,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 5,
-        "modelScore": 33.3,
+        "modelScore": 32.6,
         "signals": []
       },
       "655316": {
@@ -4492,13 +5288,13 @@
         "team": "Boston Red Sox",
         "opponent": "New York Yankees",
         "gamePk": 849851,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 5.1,
+        "modelScore": 38.8,
         "signals": []
       },
       "656537": {
@@ -4528,7 +5324,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 24,
-        "modelScore": 49.6,
+        "modelScore": 48.8,
         "signals": [
           "due"
         ]
@@ -4575,7 +5371,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 24,
-        "modelScore": 48.9,
+        "modelScore": 48.1,
         "signals": [
           "hotLately"
         ]
@@ -4607,7 +5403,7 @@
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
         "probability": 1.8,
-        "modelScore": 25.2,
+        "modelScore": 24.4,
         "signals": []
       },
       "663586": {
@@ -4622,7 +5418,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 8.9,
-        "modelScore": 36.4,
+        "modelScore": 35.7,
         "signals": [
           "hotLately"
         ]
@@ -4633,13 +5429,13 @@
         "team": "New York Yankees",
         "opponent": "Boston Red Sox",
         "gamePk": 849851,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 10.2,
+        "modelScore": 37.4,
         "signals": []
       },
       "663897": {
@@ -4668,8 +5464,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 22.8,
-        "modelScore": 42.4,
+        "probability": 24,
+        "modelScore": 41.7,
         "signals": []
       },
       "664034": {
@@ -4683,8 +5479,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 22.8,
-        "modelScore": 46.4,
+        "probability": 24,
+        "modelScore": 45.8,
         "signals": [
           "due"
         ]
@@ -4701,7 +5497,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 9.6,
-        "modelScore": 40.3,
+        "modelScore": 39.6,
         "signals": []
       },
       "665161": {
@@ -4716,7 +5512,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 24,
-        "modelScore": 44.9,
+        "modelScore": 44.1,
         "signals": [
           "hotLately"
         ]
@@ -4732,8 +5528,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 22.8,
-        "modelScore": 46.1,
+        "probability": 24,
+        "modelScore": 45.4,
         "signals": [
           "hotLately"
         ]
@@ -4804,13 +5600,13 @@
         "team": "Houston Astros",
         "opponent": "Chicago White Sox",
         "gamePk": 849849,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 4.5,
-        "modelScore": 26.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "668670": {
@@ -4839,8 +5635,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 14.6,
-        "modelScore": 40.6,
+        "probability": 16.6,
+        "modelScore": 39.9,
         "signals": []
       },
       "669016": {
@@ -4854,8 +5650,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 8.6,
-        "modelScore": 33,
+        "probability": 9.1,
+        "modelScore": 32.2,
         "signals": []
       },
       "669134": {
@@ -4869,8 +5665,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 11.1,
-        "modelScore": 42.5,
+        "probability": 10.2,
+        "modelScore": 41.8,
         "signals": []
       },
       "669221": {
@@ -4899,8 +5695,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 7.8,
-        "modelScore": 36.6,
+        "probability": 7.2,
+        "modelScore": 35.8,
         "signals": [
           "hotLately"
         ]
@@ -4931,8 +5727,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 1.4,
-        "modelScore": 29.6,
+        "probability": 1.6,
+        "modelScore": 28.8,
         "signals": []
       },
       "669397": {
@@ -4962,7 +5758,7 @@
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
         "probability": 3.5,
-        "modelScore": 35.5,
+        "modelScore": 34.7,
         "signals": []
       },
       "670541": {
@@ -4977,7 +5773,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 24,
-        "modelScore": 54.4,
+        "modelScore": 53.7,
         "signals": [
           "hotLately",
           "hotLook"
@@ -4995,7 +5791,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 24,
-        "modelScore": 42.9,
+        "modelScore": 42.2,
         "signals": [
           "hotLately"
         ]
@@ -5006,13 +5802,13 @@
         "team": "New York Yankees",
         "opponent": "Boston Red Sox",
         "gamePk": 849851,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 3,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 9.4,
-        "modelScore": 37.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "671277": {
@@ -5044,7 +5840,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 24,
-        "modelScore": 47.3,
+        "modelScore": 46.6,
         "signals": [
           "due"
         ]
@@ -5061,7 +5857,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 15.2,
-        "modelScore": 39.6,
+        "modelScore": 38.3,
         "signals": []
       },
       "672356": {
@@ -5091,7 +5887,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 14.9,
-        "modelScore": 42.1,
+        "modelScore": 41.4,
         "signals": [
           "hotLately"
         ]
@@ -5122,8 +5918,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 22.8,
-        "modelScore": 47.2,
+        "probability": 24,
+        "modelScore": 46.5,
         "signals": [
           "hotLately"
         ]
@@ -5134,13 +5930,13 @@
         "team": "Houston Astros",
         "opponent": "Chicago White Sox",
         "gamePk": 849849,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 9.1,
+        "modelScore": 31,
         "signals": []
       },
       "676551": {
@@ -5184,8 +5980,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 22.8,
-        "modelScore": 41.5,
+        "probability": 24,
+        "modelScore": 40.8,
         "signals": []
       },
       "678246": {
@@ -5200,7 +5996,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 24,
-        "modelScore": 48.5,
+        "modelScore": 47.8,
         "signals": []
       },
       "678882": {
@@ -5214,8 +6010,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 16.9,
-        "modelScore": 44.6,
+        "probability": 17.9,
+        "modelScore": 44,
         "signals": [
           "sleeper"
         ]
@@ -5246,8 +6042,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 7.1,
-        "modelScore": 29.8,
+        "probability": 6.9,
+        "modelScore": 29.1,
         "signals": []
       },
       "681082": {
@@ -5262,7 +6058,7 @@
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 6,
-        "modelScore": 31.3,
+        "modelScore": 30.6,
         "signals": []
       },
       "681987": {
@@ -5286,13 +6082,13 @@
         "team": "Chicago White Sox",
         "opponent": "Houston Astros",
         "gamePk": 849849,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 27.2,
         "signals": []
       },
       "682987": {
@@ -5306,8 +6102,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 10.8,
-        "modelScore": 35.5,
+        "probability": 10.1,
+        "modelScore": 34.8,
         "signals": []
       },
       "683011": {
@@ -5322,7 +6118,7 @@
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
         "probability": 1.4,
-        "modelScore": 18.6,
+        "modelScore": 17.9,
         "signals": []
       },
       "683737": {
@@ -5336,8 +6132,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 11,
-        "modelScore": 39.1,
+        "probability": 12.2,
+        "modelScore": 38.3,
         "signals": []
       },
       "686668": {
@@ -5346,13 +6142,13 @@
         "team": "Chicago White Sox",
         "opponent": "Houston Astros",
         "gamePk": 849849,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 2.9,
+        "modelScore": 30.8,
         "signals": [
           "hotLately"
         ]
@@ -5368,8 +6164,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 4.2,
-        "modelScore": 30.2,
+        "probability": 4.3,
+        "modelScore": 29.5,
         "signals": []
       },
       "686948": {
@@ -5384,7 +6180,7 @@
         "opposingPitcherId": "666200",
         "opposingPitcher": "Jesús Luzardo",
         "probability": 24,
-        "modelScore": 47.1,
+        "modelScore": 46.4,
         "signals": []
       },
       "687749": {
@@ -5429,7 +6225,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 6.2,
-        "modelScore": 35.8,
+        "modelScore": 35.1,
         "signals": []
       },
       "691718": {
@@ -5443,8 +6239,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 22.8,
-        "modelScore": 54.2,
+        "probability": 24,
+        "modelScore": 53.4,
         "signals": [
           "hotLook"
         ]
@@ -5476,7 +6272,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 21,
-        "modelScore": 43.3,
+        "modelScore": 42.6,
         "signals": [
           "sleeper"
         ]
@@ -5493,7 +6289,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 2.7,
-        "modelScore": 30,
+        "modelScore": 29.3,
         "signals": []
       },
       "699393": {
@@ -5507,8 +6303,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "650633",
         "opposingPitcher": "Michael King",
-        "probability": 6.5,
-        "modelScore": 32.1,
+        "probability": 6.3,
+        "modelScore": 31.4,
         "signals": []
       },
       "700250": {
@@ -5522,8 +6318,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 22.8,
-        "modelScore": 55.3,
+        "probability": 24,
+        "modelScore": 54.6,
         "signals": [
           "hotLately",
           "hotLook"
@@ -5535,13 +6331,13 @@
         "team": "Boston Red Sox",
         "opponent": "New York Yankees",
         "gamePk": 849851,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 6.6,
-        "modelScore": 38.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "701358": {
@@ -5556,7 +6352,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 10.6,
-        "modelScore": 32.2,
+        "modelScore": 31.5,
         "signals": []
       },
       "701538": {
@@ -5570,8 +6366,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "571510",
         "opposingPitcher": "Matthew Boyd",
-        "probability": 19.7,
-        "modelScore": 43.2,
+        "probability": 20.7,
+        "modelScore": 42.5,
         "signals": []
       },
       "702222": {
@@ -5585,8 +6381,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 1.4,
-        "modelScore": 19.2,
+        "probability": 1.3,
+        "modelScore": 18.4,
         "signals": []
       },
       "702332": {
@@ -5600,8 +6396,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "693645",
         "opposingPitcher": "Cam Schlittler",
-        "probability": 5.4,
-        "modelScore": 26.1,
+        "probability": 5,
+        "modelScore": 25.4,
         "signals": []
       },
       "803011": {
@@ -5610,13 +6406,13 @@
         "team": "Chicago White Sox",
         "opponent": "Houston Astros",
         "gamePk": 849849,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 1,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
-        "probability": 5.4,
-        "modelScore": 38.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "805249": {
@@ -5646,7 +6442,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 9.8,
-        "modelScore": 37.8,
+        "modelScore": 37.1,
         "signals": [
           "hotLately"
         ]
@@ -5662,8 +6458,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "801139",
         "opposingPitcher": "Payton Tolle",
-        "probability": 7.7,
-        "modelScore": 39.5,
+        "probability": 8.1,
+        "modelScore": 38.8,
         "signals": [
           "hotLately"
         ]
@@ -5710,7 +6506,7 @@
         "opposingPitcherId": "805123",
         "opposingPitcher": "AJ Blubaugh",
         "probability": 24,
-        "modelScore": 55.7,
+        "modelScore": 55,
         "signals": [
           "hotLately",
           "hotLook"
@@ -5728,7 +6524,7 @@
         "opposingPitcherId": "696146",
         "opposingPitcher": "Hagen Smith",
         "probability": 16.9,
-        "modelScore": 42.7,
+        "modelScore": 42,
         "signals": [
           "hotLately"
         ]
