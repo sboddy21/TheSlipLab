@@ -37,6 +37,37 @@ export function projectionFor(player) {
   };
 }
 
+export function projectGameTotal(players, game, market = null) {
+  const gamePlayers = players.filter(player => String(player.gameId) === String(game.gameId));
+  const scoringBaseline = gamePlayers.reduce((sum, player) => {
+    const probability = clamp(Number(player.goalProbability || 0) / 100, 0, 0.95);
+    return sum - Math.log(1 - probability);
+  }, 0);
+  const shotTotal = Number(game.awayProjectedShots || 0) + Number(game.homeProjectedShots || 0);
+  const shotBaseline = shotTotal * 0.098;
+  const projection = clamp(scoringBaseline * 0.72 + shotBaseline * 0.28 + (game.neutralSite ? 0 : 0.08), 4.5, 8.5);
+  const line = market?.line === null || market?.line === undefined ? null : Number(market.line);
+  const edge = Number.isFinite(line) ? projection - line : null;
+  const absEdge = Math.abs(edge || 0);
+  const lean = edge === null || absEdge < 0.25 ? 'PASS' : edge > 0 ? 'OVER' : 'UNDER';
+  const strength = lean === 'PASS' ? 'No edge' : absEdge >= 0.75 ? 'Strong' : absEdge >= 0.45 ? 'Playable' : 'Lean';
+  const coverage = Math.min(1, gamePlayers.length / 32);
+  const confidence = clamp(50 + coverage * 22 + Math.min(absEdge, 1.25) * 8, 50, 84);
+  const pace = shotTotal >= 62 ? 'High shot environment' : shotTotal <= 56 ? 'Low shot environment' : 'Neutral shot environment';
+  return {
+    marketTotal: Number.isFinite(line) ? line : null,
+    overPrice: market?.overPrice || null,
+    underPrice: market?.underPrice || null,
+    marketProvider: market?.provider || null,
+    projectedTotal: +projection.toFixed(2),
+    totalEdge: edge === null ? null : +edge.toFixed(2),
+    totalLean: lean,
+    totalStrength: strength,
+    totalConfidence: +confidence.toFixed(0),
+    totalReasons: [pace, `${shotTotal.toFixed(1)} projected combined shots`, `${scoringBaseline.toFixed(2)} baseline expected goals`]
+  };
+}
+
 export function normalizeGame(game) {
   const team = side => ({
     id: game[`${side}Team`]?.id,

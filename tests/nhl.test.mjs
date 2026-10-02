@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeGame, projectionFor } from '../scripts/nhl/core.mjs';
+import { normalizeGame, projectionFor, projectGameTotal } from '../scripts/nhl/core.mjs';
 
 test('NHL projections stay finite and bounded', () => {
   const row = projectionFor({ gamesPlayed: 82, shots: 246, goals: 41, assists: 50, timeOnIcePerGame: 1200 });
@@ -14,4 +14,17 @@ test('NHL schedule normalization keeps canonical identity', () => {
   assert.equal(game.gameId, 12);
   assert.equal(game.away.name, 'New Jersey Devils');
   assert.equal(game.home.abbreviation, 'NYR');
+});
+
+test('NHL totals model ranks over, under and pass edges without inventing a line', () => {
+  const game = { gameId: 12, neutralSite: false, awayProjectedShots: 33, homeProjectedShots: 32 };
+  const players = Array.from({ length: 32 }, (_, index) => ({ gameId: 12, goalProbability: index < 16 ? 22 : 20 }));
+  const over = projectGameTotal(players, game, { line: 5.5, overPrice: '-110', underPrice: '-110', provider: 'Test' });
+  const under = projectGameTotal(players, game, { line: 8.5 });
+  const unpriced = projectGameTotal(players, game);
+  assert.equal(over.totalLean, 'OVER');
+  assert.equal(under.totalLean, 'UNDER');
+  assert.equal(unpriced.totalLean, 'PASS');
+  assert.equal(unpriced.marketTotal, null);
+  assert.ok(over.totalConfidence >= 50 && over.totalConfidence <= 84);
 });
