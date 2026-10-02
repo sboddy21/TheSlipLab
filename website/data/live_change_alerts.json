@@ -1,17 +1,265 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-02T02:07:01.247Z",
+  "generatedAt": "2026-10-02T03:30:12.140Z",
   "date": "2026-10-01",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-02T02:05:45.051Z",
-    "mlb_player_pool.json": "2026-10-02T02:05:45.298Z",
-    "game_pitcher_matchups.json": "2026-10-02T02:05:50.412Z",
-    "player_card_data.json": "2026-10-02T02:07:01.177Z",
-    "hr_probability_tracking.json": "2026-10-02T02:05:50.205Z",
-    "pitcher_vulnerability.json": "2026-10-02T02:05:50.514Z"
+    "mlb_games_today.json": "2026-10-02T03:28:28.891Z",
+    "mlb_player_pool.json": "2026-10-02T03:28:29.477Z",
+    "game_pitcher_matchups.json": "2026-10-02T03:28:41.096Z",
+    "player_card_data.json": "2026-10-02T03:30:12.062Z",
+    "hr_probability_tracking.json": "2026-10-02T03:28:40.922Z",
+    "pitcher_vulnerability.json": "2026-10-02T03:28:41.098Z"
   },
   "alerts": [
+    {
+      "id": "4d6bde0c50b65cd02e4b",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669016",
+      "entityName": "Brandon Marsh",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Brandon Marsh's HR probability fell",
+      "message": "Tracked HR probability fell from 8.6% to 0%.",
+      "previous": {
+        "probability": 8.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "bbc0515708842c932743",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656537",
+      "entityName": "Derek Hill",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Derek Hill confirmed in the lineup",
+      "message": "Derek Hill is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "1d4e0f21ad18825586ca",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656537",
+      "entityName": "Derek Hill",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Derek Hill's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 14.9%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 14.9
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "9aca086d8011567b7b52",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656537",
+      "entityName": "Derek Hill",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Derek Hill's model score rose",
+      "message": "The live model score rose from 0 to 43.4.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 43.4
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "4722aa6830a28cdabc2b",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669016",
+      "entityName": "Brandon Marsh",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Brandon Marsh removed from the confirmed lineup",
+      "message": "Brandon Marsh's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "10e05e9953c55453856d",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669016",
+      "entityName": "Brandon Marsh",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Brandon Marsh's model score fell",
+      "message": "The live model score fell from 31.1 to 0.",
+      "previous": {
+        "modelScore": 31.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "4b44ca4c163a506b2d6a",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "702222",
+      "entityName": "Justin Crawford",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Justin Crawford removed from the confirmed lineup",
+      "message": "Justin Crawford's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5d58bd47d68d6c930305",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "702222",
+      "entityName": "Justin Crawford",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Justin Crawford's model score fell",
+      "message": "The live model score fell from 16.5 to 0.",
+      "previous": {
+        "modelScore": 16.5
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "49dddf1ed7eb06262e2d",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "805249",
+      "entityName": "Otto Kemp",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Otto Kemp confirmed in the lineup",
+      "message": "Otto Kemp is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "551920ea3e7df37de336",
+      "createdAt": "2026-10-02T03:30:12.140Z",
+      "date": "2026-10-01",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "805249",
+      "entityName": "Otto Kemp",
+      "team": "Philadelphia Phillies",
+      "gamePk": 849844,
+      "title": "Otto Kemp's model score rose",
+      "message": "The live model score rose from 0 to 23.1.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 23.1
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "d4bc142ee1fca998162a",
       "createdAt": "2026-10-02T02:07:01.247Z",
@@ -745,30 +993,6 @@
       ]
     },
     {
-      "id": "4d6bde0c50b65cd02e4b",
-      "createdAt": "2026-10-01T22:57:03.545Z",
-      "date": "2026-10-01",
-      "sport": "MLB",
-      "kind": "probability_move",
-      "severity": "medium",
-      "entityType": "player",
-      "entityId": "669016",
-      "entityName": "Brandon Marsh",
-      "team": "Philadelphia Phillies",
-      "gamePk": 849844,
-      "title": "Brandon Marsh's HR probability fell",
-      "message": "Tracked HR probability fell from 8.6% to 0%.",
-      "previous": {
-        "probability": 8.6
-      },
-      "current": {
-        "probability": 0
-      },
-      "sourceFiles": [
-        "hr_probability_tracking.json"
-      ]
-    },
-    {
       "id": "ae76d4f6e9e1d9a1b4b0",
       "createdAt": "2026-10-01T22:57:03.545Z",
       "date": "2026-10-01",
@@ -1031,7 +1255,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 24,
-        "modelScore": 47.9,
+        "modelScore": 47.7,
         "signals": []
       },
       "573262": {
@@ -1046,7 +1270,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 6.9,
-        "modelScore": 34.6,
+        "modelScore": 34.5,
         "signals": []
       },
       "592663": {
@@ -1061,7 +1285,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 3.4,
-        "modelScore": 26.9,
+        "modelScore": 26.7,
         "signals": []
       },
       "596117": {
@@ -1091,7 +1315,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 8.5,
-        "modelScore": 35.1,
+        "modelScore": 34.9,
         "signals": []
       },
       "621566": {
@@ -1106,7 +1330,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 24,
-        "modelScore": 51.8,
+        "modelScore": 51.6,
         "signals": []
       },
       "624641": {
@@ -1138,7 +1362,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 3.9,
-        "modelScore": 30.4,
+        "modelScore": 30.2,
         "signals": []
       },
       "642133": {
@@ -1168,7 +1392,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 4.8,
-        "modelScore": 34,
+        "modelScore": 33.9,
         "signals": []
       },
       "645277": {
@@ -1183,7 +1407,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 10.1,
-        "modelScore": 37.4,
+        "modelScore": 37.3,
         "signals": []
       },
       "650559": {
@@ -1198,7 +1422,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 5,
-        "modelScore": 34.1,
+        "modelScore": 34,
         "signals": []
       },
       "656537": {
@@ -1207,13 +1431,13 @@
         "team": "Philadelphia Phillies",
         "opponent": "Atlanta Braves",
         "gamePk": 849844,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 14.9,
+        "modelScore": 43.4,
         "signals": []
       },
       "656941": {
@@ -1228,7 +1452,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 24,
-        "modelScore": 50,
+        "modelScore": 49.9,
         "signals": [
           "due"
         ]
@@ -1245,7 +1469,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 24,
-        "modelScore": 48.1,
+        "modelScore": 48,
         "signals": [
           "hotLately"
         ]
@@ -1262,7 +1486,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 8.9,
-        "modelScore": 38.7,
+        "modelScore": 38.6,
         "signals": [
           "hotLately"
         ]
@@ -1294,7 +1518,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 9.1,
-        "modelScore": 40.5,
+        "modelScore": 40.4,
         "signals": []
       },
       "665561": {
@@ -1318,13 +1542,13 @@
         "team": "Philadelphia Phillies",
         "opponent": "Atlanta Braves",
         "gamePk": 849844,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
-        "probability": 8.6,
-        "modelScore": 31.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "669221": {
@@ -1354,7 +1578,7 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 24,
-        "modelScore": 48.8,
+        "modelScore": 48.6,
         "signals": [
           "due"
         ]
@@ -1416,7 +1640,7 @@
         "opposingPitcherId": "678061",
         "opposingPitcher": "Ray Kerr",
         "probability": 6.5,
-        "modelScore": 33.4,
+        "modelScore": 33.3,
         "signals": []
       },
       "686948": {
@@ -1431,27 +1655,12 @@
         "opposingPitcherId": "605400",
         "opposingPitcher": "Aaron Nola",
         "probability": 24,
-        "modelScore": 46,
+        "modelScore": 45.9,
         "signals": []
       },
       "702222": {
         "id": "702222",
         "name": "Justin Crawford",
-        "team": "Philadelphia Phillies",
-        "opponent": "Atlanta Braves",
-        "gamePk": 849844,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
-        "opposingPitcherId": "678061",
-        "opposingPitcher": "Ray Kerr",
-        "probability": 1.3,
-        "modelScore": 16.5,
-        "signals": []
-      },
-      "805249": {
-        "id": "805249",
-        "name": "Otto Kemp",
         "team": "Philadelphia Phillies",
         "opponent": "Atlanta Braves",
         "gamePk": 849844,
@@ -1462,6 +1671,21 @@
         "opposingPitcher": "Ray Kerr",
         "probability": 0,
         "modelScore": 0,
+        "signals": []
+      },
+      "805249": {
+        "id": "805249",
+        "name": "Otto Kemp",
+        "team": "Philadelphia Phillies",
+        "opponent": "Atlanta Braves",
+        "gamePk": 849844,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
+        "opposingPitcherId": "678061",
+        "opposingPitcher": "Ray Kerr",
+        "probability": 1.4,
+        "modelScore": 23.1,
         "signals": []
       }
     },
