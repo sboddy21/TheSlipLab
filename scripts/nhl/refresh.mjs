@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { NHL_API, NHL_STATS, easternDate, normalizeGame, projectionFor, isLive, isFinal } from './core.mjs';
+import { NHL_API, NHL_STATS, easternDate, normalizeGame, projectionFor, projectGameTotal, isLive, isFinal } from './core.mjs';
 
 const OUT = new URL('../../website/data/nhl_board.json', import.meta.url);
 const dateArg = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg));
@@ -16,6 +16,31 @@ async function schedule() {
   const data = await json(`${NHL_API}/schedule/${date}`);
   const day = (data.gameWeek || []).find(item => item.date === date);
   return (day?.games || []).map(normalizeGame);
+}
+
+async function marketTotals() {
+  try {
+    const compactDate = date.replaceAll('-', '');
+    const data = await json(`https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=${compactDate}&limit=100`);
+    const totals = new Map();
+    for (const event of data.events || []) {
+      const competition = event.competitions?.[0];
+      const away = competition?.competitors?.find(team => team.homeAway === 'away')?.team?.abbreviation;
+      const home = competition?.competitors?.find(team => team.homeAway === 'home')?.team?.abbreviation;
+      const odds = competition?.odds?.[0];
+      const line = Number(odds?.overUnder);
+      if (!away || !home || !Number.isFinite(line)) continue;
+      totals.set(`${away}@${home}`, {
+        line,
+        overPrice: odds?.total?.over?.close?.odds || null,
+        underPrice: odds?.total?.under?.close?.odds || null,
+        provider: odds?.provider?.name || odds?.provider?.displayName || 'Market feed'
+      });
+    }
+    return totals;
+  } catch {
+    return new Map();
+  }
 }
 
 async function priorSkaters() {
@@ -73,8 +98,8 @@ export async function buildBoard() {
   const generatedAt = new Date().toISOString();
   const games = await schedule();
   const teams = [...new Set(games.flatMap(game => [game.away.abbreviation, game.home.abbreviation]).filter(Boolean))];
-  const [history, rosters, live] = await Promise.all([
-    priorSkaters(), Promise.all(teams.map(roster)), liveDetails(games)
+  const [history, rosters, live, totals] = await Promise.all([
+    priorSkaters(), Promise.all(teams.map(roster)), liveDetails(games), marketTotals()
   ]);
   const current = new Map(rosters.flat().map(player => [String(player.playerId), player]));
   const players = history.rows.filter(player => Number(player.gamesPlayed) >= 10 && current.has(String(player.playerId))).map(player => {
@@ -85,12 +110,13 @@ export async function buildBoard() {
   }).sort((a, b) => b.shotsProjection - a.shotsProjection);
   const matchups = games.map(game => {
     const aggregate = abbreviation => players.filter(player => player.team === abbreviation).reduce((sum, player) => sum + player.shotsProjection, 0);
-    return { ...game, awayProjectedShots: +aggregate(game.away.abbreviation).toFixed(1), homeProjectedShots: +aggregate(game.home.abbreviation).toFixed(1) };
+    const matchup = { ...game, awayProjectedShots: +aggregate(game.away.abbreviation).toFixed(1), homeProjectedShots: +aggregate(game.home.abbreviation).toFixed(1) };
+    return { ...matchup, ...projectGameTotal(players, matchup, totals.get(`${game.away.abbreviation}@${game.home.abbreviation}`)) };
   });
   const names = new Map(players.map(player => [String(player.playerId), player.playerName]));
   live.goals = live.goals.map(goal => ({ ...goal, playerName: names.get(String(goal.playerId)) || goal.playerName }));
   return {
-    schemaVersion: 1, sport: 'NHL', date, generatedAt, source: 'NHL public schedule, roster, gamecenter and stats feeds',
+    schemaVersion: 2, sport: 'NHL', date, generatedAt, source: 'NHL public schedule, roster, gamecenter and stats feeds; ESPN market totals',
     status: games.length ? 'available' : 'no_games', historySeason: history.seasonId,
     freshness: { maxAgeHours: 26, schedule: generatedAt, projections: generatedAt, live: generatedAt },
     counts: { games: games.length, players: players.length, liveGames: games.filter(game => isLive(game.state)).length },
