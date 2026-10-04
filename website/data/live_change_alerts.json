@@ -1,17 +1,389 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-04T02:29:21.501Z",
+  "generatedAt": "2026-10-04T03:42:37.235Z",
   "date": "2026-10-03",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-04T02:27:49.273Z",
-    "mlb_player_pool.json": "2026-10-04T02:27:49.859Z",
-    "game_pitcher_matchups.json": "2026-10-04T02:28:04.483Z",
-    "player_card_data.json": "2026-10-04T02:29:21.437Z",
-    "hr_probability_tracking.json": "2026-10-04T02:28:04.248Z",
-    "pitcher_vulnerability.json": "2026-10-04T02:28:04.486Z"
+    "mlb_games_today.json": "2026-10-04T03:41:27.904Z",
+    "mlb_player_pool.json": "2026-10-04T03:41:28.235Z",
+    "game_pitcher_matchups.json": "2026-10-04T03:41:34.205Z",
+    "player_card_data.json": "2026-10-04T03:42:37.161Z",
+    "hr_probability_tracking.json": "2026-10-04T03:41:33.863Z",
+    "pitcher_vulnerability.json": "2026-10-04T03:41:34.250Z"
   },
   "alerts": [
+    {
+      "id": "83d813710d7204baca88",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Christian Yelich removed from the confirmed lineup",
+      "message": "Christian Yelich's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "807031c5b628068fefc2",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Christian Yelich's HR probability fell",
+      "message": "Tracked HR probability fell from 8.4% to 0%.",
+      "previous": {
+        "probability": 8.4
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "1a6cbf75d1684b3b5575",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Christian Yelich's model score fell",
+      "message": "The live model score fell from 35.8 to 0.",
+      "previous": {
+        "modelScore": 35.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "fc3d265cfe98f2baf981",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "630105",
+      "entityName": "Jake Cronenworth",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Jake Cronenworth removed from the confirmed lineup",
+      "message": "Jake Cronenworth's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "880fe03e92a67cc6f01b",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "630105",
+      "entityName": "Jake Cronenworth",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Jake Cronenworth's model score fell",
+      "message": "The live model score fell from 21.4 to 0.",
+      "previous": {
+        "modelScore": 21.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8ba1b71cd30084d0d430",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669392",
+      "entityName": "Samad Taylor",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Samad Taylor confirmed in the lineup",
+      "message": "Samad Taylor is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a0438465574952cad9e7",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669392",
+      "entityName": "Samad Taylor",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Samad Taylor's model score rose",
+      "message": "The live model score rose from 0 to 23.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 23
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "3ca77b148e92300fdf60",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669720",
+      "entityName": "Austin Hays",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Austin Hays confirmed in the lineup",
+      "message": "Austin Hays is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d9d0757fd1dc7cb72b93",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669720",
+      "entityName": "Austin Hays",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Austin Hays's model score rose",
+      "message": "The live model score rose from 0 to 28.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 28
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ad905ac2090f3643dba5",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Andrew Vaughn confirmed in the lineup",
+      "message": "Andrew Vaughn is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "c2742988082c55720959",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Andrew Vaughn's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 11.3%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 11.3
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "2997055ff6133a1618d7",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849830,
+      "title": "Andrew Vaughn's model score rose",
+      "message": "The live model score rose from 0 to 39.3.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 39.3
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "206393e2a48a9f9142f2",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "806956",
+      "entityName": "Ethan Salas",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Ethan Salas removed from the confirmed lineup",
+      "message": "Ethan Salas's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5b588eaecbe90d9558d6",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "806956",
+      "entityName": "Ethan Salas",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Ethan Salas's HR probability fell",
+      "message": "Tracked HR probability fell from 7.7% to 0%.",
+      "previous": {
+        "probability": 7.7
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "b74dd2ab5608a0142a4b",
+      "createdAt": "2026-10-04T03:42:37.235Z",
+      "date": "2026-10-03",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "806956",
+      "entityName": "Ethan Salas",
+      "team": "San Diego Padres",
+      "gamePk": 849830,
+      "title": "Ethan Salas's model score fell",
+      "message": "The live model score fell from 33 to 0.",
+      "previous": {
+        "modelScore": 33
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "edc00a84b7d5e9e99b5d",
       "createdAt": "2026-10-04T02:29:21.501Z",
@@ -4439,8 +4811,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "656876",
         "opposingPitcher": "Drew Rasmussen",
-        "probability": 7.1,
-        "modelScore": 38.5,
+        "probability": 6.5,
+        "modelScore": 38.6,
         "signals": [
           "hotLately"
         ]
@@ -4532,13 +4904,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "San Diego Padres",
         "gamePk": 849830,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 5,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "592662",
         "opposingPitcher": "Robbie Ray",
-        "probability": 8.4,
-        "modelScore": 35.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "593428": {
@@ -4682,13 +5054,13 @@
         "team": "San Diego Padres",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849830,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 1.3,
-        "modelScore": 21.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -5264,13 +5636,13 @@
         "team": "San Diego Padres",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849830,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 23,
         "signals": []
       },
       "669720": {
@@ -5279,13 +5651,13 @@
         "team": "San Diego Padres",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849830,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 3.4,
+        "modelScore": 28,
         "signals": []
       },
       "670764": {
@@ -5637,13 +6009,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "San Diego Padres",
         "gamePk": 849830,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "592662",
         "opposingPitcher": "Robbie Ray",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 11.3,
+        "modelScore": 39.3,
         "signals": [
           "due"
         ]
@@ -6057,13 +6429,13 @@
         "team": "San Diego Padres",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849830,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 7.7,
-        "modelScore": 33,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "808959": {
@@ -6110,7 +6482,7 @@
         "lineupSpot": 3,
         "opposingPitcherId": "543037",
         "opposingPitcher": "Gerrit Cole",
-        "probability": 1.4,
+        "probability": 1.6,
         "modelScore": 24.1,
         "signals": []
       }
