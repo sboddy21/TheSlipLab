@@ -1,17 +1,875 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-06T11:17:01.075Z",
+  "generatedAt": "2026-10-06T18:52:17.045Z",
   "date": "2026-10-06",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-06T11:15:35.927Z",
-    "mlb_player_pool.json": "2026-10-06T11:15:36.320Z",
-    "game_pitcher_matchups.json": "2026-10-06T11:15:46.994Z",
-    "player_card_data.json": "2026-10-06T11:17:00.993Z",
-    "hr_probability_tracking.json": "2026-10-06T11:15:46.753Z",
-    "pitcher_vulnerability.json": "2026-10-06T11:15:46.999Z"
+    "mlb_games_today.json": "2026-10-06T18:50:28.448Z",
+    "mlb_player_pool.json": "2026-10-06T18:50:28.807Z",
+    "game_pitcher_matchups.json": "2026-10-06T18:50:47.455Z",
+    "player_card_data.json": "2026-10-06T18:52:16.972Z",
+    "hr_probability_tracking.json": "2026-10-06T18:50:46.240Z",
+    "pitcher_vulnerability.json": "2026-10-06T18:50:47.458Z"
   },
-  "alerts": [],
+  "alerts": [
+    {
+      "id": "2a14078989e70de4a347",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "500743",
+      "entityName": "Miguel Rojas",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Miguel Rojas confirmed in the lineup",
+      "message": "Miguel Rojas is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "64b9a2f78b4c24c4aab7",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "518692",
+      "entityName": "Freddie Freeman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Freddie Freeman confirmed in the lineup",
+      "message": "Freddie Freeman is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "60ca934791357f7f74e9",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "571771",
+      "entityName": "Enrique Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Enrique Hernández confirmed in the lineup",
+      "message": "Enrique Hernández is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "8212008b25d4ffef43de",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Max Muncy's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "a12cc8e7a6b669a913ba",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Max Muncy's model score fell",
+      "message": "The live model score fell from 45.5 to 0.",
+      "previous": {
+        "modelScore": 45.5
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d5d283f4965cdfee6936",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Max Muncy's verified signals changed",
+      "message": "Removed: sleeper.",
+      "previous": {
+        "signals": [
+          "due",
+          "sleeper"
+        ]
+      },
+      "current": {
+        "signals": [
+          "due"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "45ea5e2f626db8d82168",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "573262",
+      "entityName": "Mike Yastrzemski",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Mike Yastrzemski's HR probability fell",
+      "message": "Tracked HR probability fell from 7.9% to 0%.",
+      "previous": {
+        "probability": 7.9
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "e638b2a39903aeeffb99",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "573262",
+      "entityName": "Mike Yastrzemski",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Mike Yastrzemski's model score fell",
+      "message": "The live model score fell from 29.4 to 0.",
+      "previous": {
+        "modelScore": 29.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "857345738c881f4d3f1d",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "605141",
+      "entityName": "Mookie Betts",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Mookie Betts confirmed in the lineup",
+      "message": "Mookie Betts is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "12f5c7eb26ffbfca47d2",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "606192",
+      "entityName": "Teoscar Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Teoscar Hernández confirmed in the lineup",
+      "message": "Teoscar Hernández is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "3507e31c11a1f14912ad",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "621566",
+      "entityName": "Matt Olson",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Matt Olson confirmed in the lineup",
+      "message": "Matt Olson is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "db31cd3c44fc2db5ef6c",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642133",
+      "entityName": "Rowdy Tellez",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Rowdy Tellez's HR probability fell",
+      "message": "Tracked HR probability fell from 18% to 0%.",
+      "previous": {
+        "probability": 18
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "62c2811efb6da8ffb845",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "642133",
+      "entityName": "Rowdy Tellez",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Rowdy Tellez's model score fell",
+      "message": "The live model score fell from 44.1 to 0.",
+      "previous": {
+        "modelScore": 44.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ed86358903f380dbf975",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "643289",
+      "entityName": "Mauricio Dubón",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Mauricio Dubón confirmed in the lineup",
+      "message": "Mauricio Dubón is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "449d707cb920a57f6fef",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "645277",
+      "entityName": "Ozzie Albies",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Ozzie Albies confirmed in the lineup",
+      "message": "Ozzie Albies is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "250866fde3ea156fa4e4",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "657041",
+      "entityName": "Lane Thomas",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Lane Thomas's HR probability fell",
+      "message": "Tracked HR probability fell from 7.5% to 0%.",
+      "previous": {
+        "probability": 7.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "35a6c5862e097f095dbd",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "657041",
+      "entityName": "Lane Thomas",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Lane Thomas's model score fell",
+      "message": "The live model score fell from 33.8 to 0.",
+      "previous": {
+        "modelScore": 33.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ed5657b931b3a679c8e9",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "660271",
+      "entityName": "Shohei Ohtani",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Shohei Ohtani confirmed in the lineup",
+      "message": "Shohei Ohtani is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "fe2956b9a5acd9052035",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "660670",
+      "entityName": "Ronald Acuña Jr.",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Ronald Acuña Jr. confirmed in the lineup",
+      "message": "Ronald Acuña Jr. is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0ec25e9240ad4a0a5816",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663586",
+      "entityName": "Austin Riley",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Austin Riley confirmed in the lineup",
+      "message": "Austin Riley is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cfa11b6c8da03e4a375b",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663656",
+      "entityName": "Kyle Tucker",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Kyle Tucker confirmed in the lineup",
+      "message": "Kyle Tucker is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2a42fe2acfdc722b896c",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669221",
+      "entityName": "Sean Murphy",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Sean Murphy confirmed in the lineup",
+      "message": "Sean Murphy is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "c0757b32ca7351a40ea8",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669242",
+      "entityName": "Tommy Edman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Tommy Edman's HR probability fell",
+      "message": "Tracked HR probability fell from 5.6% to 0%.",
+      "previous": {
+        "probability": 5.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "e68321dae1e446a93c58",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669242",
+      "entityName": "Tommy Edman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Tommy Edman's model score fell",
+      "message": "The live model score fell from 30.1 to 0.",
+      "previous": {
+        "modelScore": 30.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "fa18f340276927eff6b4",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669257",
+      "entityName": "Will Smith",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Will Smith confirmed in the lineup",
+      "message": "Will Smith is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0037960c39aa539cb9e2",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671739",
+      "entityName": "Michael Harris II",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Michael Harris II confirmed in the lineup",
+      "message": "Michael Harris II is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "fe225694c3b4bb4a9cf8",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "673490",
+      "entityName": "Ha-Seong Kim",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Ha-Seong Kim confirmed in the lineup",
+      "message": "Ha-Seong Kim is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b4033b17ed206a38f31b",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "676439",
+      "entityName": "Hunter Feduccia",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Hunter Feduccia's model score fell",
+      "message": "The live model score fell from 16.9 to 0.",
+      "previous": {
+        "modelScore": 16.9
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "66fc6a2b603a25f05b98",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "676551",
+      "entityName": "Brewer Hicklen",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Brewer Hicklen's model score fell",
+      "message": "The live model score fell from 28.8 to 0.",
+      "previous": {
+        "modelScore": 28.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "8189366aa9a76aaa6e88",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "681624",
+      "entityName": "Andy Pages",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Andy Pages confirmed in the lineup",
+      "message": "Andy Pages is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "69e0884a90a0f3cf7b6a",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "686948",
+      "entityName": "Drake Baldwin",
+      "team": "Atlanta Braves",
+      "gamePk": 849819,
+      "title": "Drake Baldwin confirmed in the lineup",
+      "message": "Drake Baldwin is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "734582277610e3d14d7d",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "800543",
+      "entityName": "Josue De Paula",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Josue De Paula's HR probability fell",
+      "message": "Tracked HR probability fell from 16.5% to 0%.",
+      "previous": {
+        "probability": 16.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "65d58fbf3959cb398644",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "800543",
+      "entityName": "Josue De Paula",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Josue De Paula's model score fell",
+      "message": "The live model score fell from 35.6 to 0.",
+      "previous": {
+        "modelScore": 35.6
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "943c21c6bffefeadac56",
+      "createdAt": "2026-10-06T18:52:17.045Z",
+      "date": "2026-10-06",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "808975",
+      "entityName": "Hyeseong Kim",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849819,
+      "title": "Hyeseong Kim's model score fell",
+      "message": "The live model score fell from 17.4 to 0.",
+      "previous": {
+        "modelScore": 17.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    }
+  ],
   "snapshot": {
     "players": {
       "500743": {
@@ -20,13 +878,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 3.8,
-        "modelScore": 26.8,
+        "modelScore": 30.9,
         "signals": []
       },
       "518692": {
@@ -35,13 +893,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 14.8,
-        "modelScore": 37.1,
+        "modelScore": 43.3,
         "signals": []
       },
       "571771": {
@@ -50,13 +908,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 5.8,
-        "modelScore": 33.5,
+        "modelScore": 35.4,
         "signals": []
       },
       "571970": {
@@ -65,16 +923,15 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 22.8,
-        "modelScore": 45.5,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
-          "due",
-          "sleeper"
+          "due"
         ]
       },
       "573262": {
@@ -83,13 +940,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
-        "probability": 7.9,
-        "modelScore": 29.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "592518": {
@@ -104,7 +961,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 21.4,
-        "modelScore": 41.3,
+        "modelScore": 42.5,
         "signals": [
           "hotLately"
         ]
@@ -121,7 +978,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 7.9,
-        "modelScore": 34.4,
+        "modelScore": 35.6,
         "signals": []
       },
       "593428": {
@@ -136,7 +993,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 3.4,
-        "modelScore": 28,
+        "modelScore": 29.1,
         "signals": []
       },
       "596142": {
@@ -151,7 +1008,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 16.7,
-        "modelScore": 35.3,
+        "modelScore": 36.5,
         "signals": []
       },
       "605141": {
@@ -160,13 +1017,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 21.9,
-        "modelScore": 37.2,
+        "modelScore": 43.2,
         "signals": []
       },
       "606192": {
@@ -175,13 +1032,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 12.3,
-        "modelScore": 33.1,
+        "modelScore": 39.1,
         "signals": []
       },
       "609280": {
@@ -196,7 +1053,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 6.6,
-        "modelScore": 29.7,
+        "modelScore": 30.8,
         "signals": []
       },
       "621566": {
@@ -205,13 +1062,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 22.8,
-        "modelScore": 44.8,
+        "modelScore": 51.1,
         "signals": []
       },
       "630105": {
@@ -226,7 +1083,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 19.3,
+        "modelScore": 20.4,
         "signals": [
           "hotLately"
         ]
@@ -243,7 +1100,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 22.8,
-        "modelScore": 40.1,
+        "modelScore": 41.2,
         "signals": [
           "due"
         ]
@@ -254,13 +1111,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
-        "probability": 18,
-        "modelScore": 44.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "643289": {
@@ -269,13 +1126,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 4.5,
-        "modelScore": 26.5,
+        "modelScore": 30.7,
         "signals": []
       },
       "645277": {
@@ -284,13 +1141,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 11.3,
-        "modelScore": 38.6,
+        "modelScore": 45.1,
         "signals": []
       },
       "657041": {
@@ -299,13 +1156,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
-        "probability": 7.5,
-        "modelScore": 33.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "657757": {
@@ -320,7 +1177,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 14.8,
-        "modelScore": 40,
+        "modelScore": 41.1,
         "signals": []
       },
       "660271": {
@@ -329,13 +1186,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 22.8,
-        "modelScore": 45.8,
+        "modelScore": 51.7,
         "signals": [
           "due"
         ]
@@ -346,13 +1203,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 22.8,
-        "modelScore": 41.4,
+        "modelScore": 47.7,
         "signals": [
           "hotLately"
         ]
@@ -369,7 +1226,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 16.7,
-        "modelScore": 37.8,
+        "modelScore": 39,
         "signals": []
       },
       "663586": {
@@ -378,13 +1235,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 9.1,
-        "modelScore": 34.4,
+        "modelScore": 35.5,
         "signals": [
           "hotLately"
         ]
@@ -395,13 +1252,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 9.9,
-        "modelScore": 30.9,
+        "modelScore": 33.2,
         "signals": []
       },
       "664034": {
@@ -416,7 +1273,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 22.8,
-        "modelScore": 38.2,
+        "modelScore": 39.4,
         "signals": [
           "due"
         ]
@@ -433,7 +1290,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 22.8,
-        "modelScore": 38.3,
+        "modelScore": 39.5,
         "signals": [
           "hotLately"
         ]
@@ -450,7 +1307,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 20.2,
+        "modelScore": 21.3,
         "signals": []
       },
       "666152": {
@@ -465,7 +1322,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 1.4,
-        "modelScore": 19.7,
+        "modelScore": 20.8,
         "signals": []
       },
       "668930": {
@@ -480,7 +1337,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 21.9,
-        "modelScore": 36.7,
+        "modelScore": 37.8,
         "signals": [
           "hotLately"
         ]
@@ -497,7 +1354,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 9.3,
-        "modelScore": 31.1,
+        "modelScore": 32.2,
         "signals": []
       },
       "669134": {
@@ -512,7 +1369,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 11,
-        "modelScore": 39.5,
+        "modelScore": 40.7,
         "signals": []
       },
       "669221": {
@@ -521,13 +1378,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 2.6,
-        "modelScore": 28.1,
+        "modelScore": 30.9,
         "signals": []
       },
       "669242": {
@@ -536,13 +1393,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 5.6,
-        "modelScore": 30.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -553,13 +1410,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 10.8,
-        "modelScore": 34.4,
+        "modelScore": 40.6,
         "signals": [
           "hotLately"
         ]
@@ -576,7 +1433,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 18.5,
+        "modelScore": 19.7,
         "signals": []
       },
       "669720": {
@@ -591,7 +1448,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 3.4,
-        "modelScore": 27.8,
+        "modelScore": 29,
         "signals": []
       },
       "671739": {
@@ -600,13 +1457,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 22.8,
-        "modelScore": 41.7,
+        "modelScore": 47.4,
         "signals": [
           "due"
         ]
@@ -617,13 +1474,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 1.4,
-        "modelScore": 14.2,
+        "modelScore": 15.6,
         "signals": []
       },
       "676439": {
@@ -632,13 +1489,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 1.4,
-        "modelScore": 16.9,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "676551": {
@@ -647,13 +1504,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
-        "probability": 4.2,
-        "modelScore": 28.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "681624": {
@@ -662,13 +1519,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
         "probability": 22.8,
-        "modelScore": 37.7,
+        "modelScore": 40.8,
         "signals": [
           "hotLately"
         ]
@@ -685,7 +1542,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 11.2,
-        "modelScore": 34.3,
+        "modelScore": 35.5,
         "signals": [
           "due"
         ]
@@ -702,7 +1559,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 1.4,
-        "modelScore": 16.4,
+        "modelScore": 17.5,
         "signals": []
       },
       "686948": {
@@ -711,13 +1568,13 @@
         "team": "Atlanta Braves",
         "opponent": "Los Angeles Dodgers",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "808967",
         "opposingPitcher": "Yoshinobu Yamamoto",
         "probability": 22.8,
-        "modelScore": 39.3,
+        "modelScore": 45.3,
         "signals": []
       },
       "687401": {
@@ -732,7 +1589,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 4.4,
-        "modelScore": 27.1,
+        "modelScore": 28.2,
         "signals": []
       },
       "687749": {
@@ -747,7 +1604,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.7,
-        "modelScore": 24.6,
+        "modelScore": 25.8,
         "signals": []
       },
       "687957": {
@@ -762,7 +1619,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 20.5,
+        "modelScore": 21.7,
         "signals": []
       },
       "694192": {
@@ -777,7 +1634,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 22.8,
-        "modelScore": 43.3,
+        "modelScore": 44.4,
         "signals": []
       },
       "701538": {
@@ -792,7 +1649,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 19.3,
-        "modelScore": 36.3,
+        "modelScore": 37.5,
         "signals": []
       },
       "800325": {
@@ -807,7 +1664,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 1.4,
-        "modelScore": 17.6,
+        "modelScore": 18.8,
         "signals": []
       },
       "800543": {
@@ -816,13 +1673,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 16.5,
-        "modelScore": 35.6,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "due"
         ]
@@ -839,7 +1696,7 @@
         "opposingPitcherId": "601713",
         "opposingPitcher": "Nick Pivetta",
         "probability": 1.6,
-        "modelScore": 19.7,
+        "modelScore": 20.9,
         "signals": []
       },
       "806956": {
@@ -854,7 +1711,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 7.9,
-        "modelScore": 31.9,
+        "modelScore": 33,
         "signals": []
       },
       "808975": {
@@ -863,13 +1720,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Atlanta Braves",
         "gamePk": 849819,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "519242",
         "opposingPitcher": "Chris Sale",
-        "probability": 1.4,
-        "modelScore": 17.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       }
     },
