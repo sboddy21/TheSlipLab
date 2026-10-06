@@ -23,6 +23,7 @@ const steps = [
   ["NBA Matchup Engine", "scripts/nba/build_matchup_engine.js"],
   ["NBA Player Cards", "scripts/nba/build_nba_player_cards.js"],
   ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"],
+  ["NBA Results and Calibration", "scripts/nba/build_nba_results_calibration.mjs"],
   ["NBA Verified Markets", "scripts/nba/build_nba_verified_markets.mjs"]
 ];
 
@@ -45,6 +46,9 @@ const expectedOutputs = [
   ["NBA Matchup Engine", "website/data/nba_matchup_engine.json", true],
   ["NBA Player Cards", "website/data/nba_player_cards.json", true],
   ["NBA Decision Center", "website/data/nba_decision_center.json", true],
+  ["NBA Projection History", "website/data/nba_projection_history.json", true],
+  ["NBA Calibration", "website/data/nba_calibration.json", true],
+  ["NBA Results", "website/data/nba_results.json", true],
   ["NBA Verified Markets", "website/data/nba_verified_markets.json", true]
 ];
 
@@ -180,7 +184,9 @@ fs.writeFileSync(
       "nba_assists",
       "nba_threes",
       "nba_matchups",
-      "nba_decision_center"
+      "nba_decision_center",
+      "nba_results",
+      "nba_calibration"
     ]
   }, null, 2)
 );

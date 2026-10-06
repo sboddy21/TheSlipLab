@@ -7,7 +7,7 @@ const DATA = path.resolve(__dirname, "../../website/data");
 const read = name => JSON.parse(fs.readFileSync(path.join(DATA, `${name}.json`), "utf8"));
 const round = value => Math.round(Number(value) * 10) / 10;
 
-export function evaluateNbaMarkets({ points, rebounds, assists, threes, lines }, now = Date.now()) {
+export function evaluateNbaMarkets({ points, rebounds, assists, threes, lines, calibration = {} }, now = Date.now()) {
   const boards = { points, rebounds, assists, threes };
   const comparisons = [];
   const rejectedLines = [];
@@ -62,6 +62,12 @@ export function evaluateNbaMarkets({ points, rebounds, assists, threes, lines },
     status: "locked",
     locked: true,
     blockers: ["Priced out-of-sample NBA betting strategy has not been validated."],
+    calibrationSummary: {
+      gradedPlayers: calibration.gradedPlayers || 0,
+      minimumSamples: calibration.minimumSamples || 150,
+      releaseStatus: calibration.releaseStatus || "collecting",
+      markets: calibration.markets || {}
+    },
     lineSummary: { source: lines.source, received: lines.lines?.length || 0, acceptedComparisons: comparisons.length, rejected: rejectedLines.length },
     comparisons,
     recommendations: [],
@@ -72,7 +78,7 @@ export function evaluateNbaMarkets({ points, rebounds, assists, threes, lines },
 
 function main() {
   const output = evaluateNbaMarkets({
-    points: read("nba_points"), rebounds: read("nba_rebounds"), assists: read("nba_assists"), threes: read("nba_threes"), lines: read("nba_market_lines")
+    points: read("nba_points"), rebounds: read("nba_rebounds"), assists: read("nba_assists"), threes: read("nba_threes"), lines: read("nba_market_lines"), calibration: read("nba_calibration")
   });
   fs.writeFileSync(path.join(DATA, "nba_verified_markets.json"), `${JSON.stringify(output, null, 2)}\n`);
   console.log(`NBA VERIFIED MARKETS: ${output.status}; ${output.comparisons.length} comparison(s); 0 recommendations`);
