@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>The Slip Lab | NBA Results & Calibration</title>
+  <meta name="description" content="Transparent NBA projection results, calibration metrics, and settled player stat lines." />
+  <style>
+    :root{--bg:#050814;--panel:#0b1220;--panel2:#111a2d;--text:#f5f7fb;--muted:#99a6bd;--line:rgba(255,255,255,.1);--good:#41f0a6;--warn:#ffd166;--hot:#ff5c7a;--blue:#5cc8ff}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,rgba(92,200,255,.14),transparent 30%),radial-gradient(circle at top right,rgba(255,92,122,.12),transparent 28%),var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:inherit;text-decoration:none}
+    .wrap{max-width:1400px;margin:0 auto;padding:22px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:20px}.brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}.logo{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,var(--blue),var(--hot));box-shadow:0 0 30px rgba(92,200,255,.25)}.nav{display:flex;gap:10px;flex-wrap:wrap}.nav a{padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.04);color:var(--muted);font-weight:800;font-size:13px}.nav a.active{color:var(--text);border-color:rgba(92,200,255,.45);background:rgba(92,200,255,.1)}
+    .hero,.panel{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(17,26,45,.92),rgba(11,18,32,.92));padding:20px}.hero{border-color:rgba(92,200,255,.22);margin-bottom:14px}.eyebrow{color:var(--blue);font-size:11px;font-weight:950;letter-spacing:.14em;text-transform:uppercase}.hero h1{font-size:clamp(30px,4vw,52px);letter-spacing:-.045em;line-height:1;margin:8px 0}.hero p,.note{color:var(--muted);font-weight:700;line-height:1.5}.status{display:flex;align-items:center;gap:10px;margin-top:16px}.status-pill{border:1px solid var(--warn);color:var(--warn);background:rgba(255,209,102,.08);border-radius:999px;padding:8px 12px;font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.status-pill.ready{border-color:var(--good);color:var(--good);background:rgba(65,240,166,.08)}
+    .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.metric,.market{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.035);padding:14px}.metric span,.market-label{display:block;color:var(--muted);font-size:10px;font-weight:950;text-transform:uppercase;letter-spacing:.09em}.metric strong{display:block;font-size:27px;margin-top:5px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:14px;margin:24px 0 11px}.section-head h2{margin:0;font-size:24px}.section-head p{margin:0;color:var(--muted);font-size:13px;font-weight:750}.markets{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.market h3{margin:7px 0 14px;font-size:20px;text-transform:capitalize}.market-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.market-stat{border-top:1px solid var(--line);padding-top:8px}.market-stat span{display:block;color:var(--muted);font-size:10px;font-weight:850;text-transform:uppercase}.market-stat strong{font-size:17px}.progress{height:7px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;margin-top:13px}.progress div{height:100%;background:linear-gradient(90deg,var(--blue),var(--good));border-radius:999px}.gate{margin-top:8px;color:var(--muted);font-size:11px;font-weight:800}
+    .slate{margin-top:12px}.slate h3{margin:0 0 10px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:18px}table{width:100%;border-collapse:collapse;min-width:900px;background:rgba(0,0,0,.12)}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);font-size:12px}th{color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-size:10px}.positive{color:var(--hot)}.negative{color:var(--blue)}.empty{border:1px dashed var(--line);border-radius:20px;padding:24px;color:var(--muted);font-weight:750;line-height:1.5}.error{color:var(--hot)}
+    @media(max-width:1000px){.markets,.summary{grid-template-columns:repeat(2,1fr)}}@media(max-width:680px){.wrap{padding:14px}.top{align-items:flex-start;flex-direction:column}.markets,.summary{grid-template-columns:1fr}.section-head{align-items:flex-start;flex-direction:column}}
+  </style>
+  <link rel="stylesheet" href="./assets/site-header.css?v=20260830-premium4" />
+  <script src="./assets/member-data.js"></script>
+  <script defer src="./assets/site-header.js?v=20260906-members1"></script>
+</head>
+<body>
+  <main class="wrap">
+    <div class="top">
+      <a class="brand" href="./index.html"><span class="logo"></span><span>The Slip Lab</span></a>
+      <nav class="nav" aria-label="NBA tools">
+        <a href="./nba.html">Decision Center</a><a href="./nba-points.html">Points</a><a href="./nba-matchups.html">Matchups</a><a href="./nba-rebounds.html">Rebounds</a><a href="./nba-assists.html">Assists</a><a href="./nba-threes.html">Threes</a><a class="active" href="./nba-results.html" aria-current="page">Results</a>
+      </nav>
+    </div>
+    <section class="hero">
+      <div class="eyebrow">NBA model accountability</div>
+      <h1>Results & Calibration</h1>
+      <p>Frozen pregame projections measured against official final box scores. DNPs are excluded, and projection accuracy never unlocks a priced betting strategy by itself.</p>
+      <div class="status"><span id="releaseStatus" class="status-pill">Loading</span><span id="updated" class="note">Checking results…</span></div>
+    </section>
+    <section id="app" aria-live="polite"><div class="empty">Loading NBA performance data…</div></section>
+  </main>
+  <script>
+    const MARKETS=["points","rebounds","assists","threes"];
+    const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[char]));
+    const metric=value=>value===null||value===undefined?"—":Number(value).toFixed(1);
+    const statusLabel=value=>String(value||"collecting").replaceAll("_"," ");
+    const timeLabel=value=>{const date=new Date(value);return Number.isNaN(date.getTime())?"Update unavailable":`Updated ${date.toLocaleString([], {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"})}`};
+    async function json(path){const response=await fetch(`${path}?v=${Date.now()}`);if(!response.ok)throw new Error(`${path} failed`);return response.json()}
+    function marketCard(name,row={}){const samples=Number(row.samples||0),minimum=Number(row.minimumSamples||150),progress=Math.min(100,Math.round(samples/minimum*100));return `<article class="market"><span class="market-label">Projection market</span><h3>${esc(name)}</h3><div class="market-grid"><div class="market-stat"><span>Samples</span><strong>${samples}</strong></div><div class="market-stat"><span>MAE</span><strong>${metric(row.mae)}</strong></div><div class="market-stat"><span>Bias</span><strong>${metric(row.bias)}</strong></div><div class="market-stat"><span>RMSE</span><strong>${metric(row.rmse)}</strong></div></div><div class="progress" title="${progress}% of sample gate"><div style="width:${progress}%"></div></div><div class="gate">${samples} / ${minimum} samples • Target MAE ≤ ${metric(row.targetMae)} • ${row.projectionPassing?"projection gate passed":"collecting"}</div></article>`}
+    function signed(value){const number=Number(value);return `<span class="${number>0?"positive":number<0?"negative":""}">${number>0?"+":""}${metric(number)}</span>`}
+    function playerRow(row){return `<tr><td><strong>${esc(row.player)}</strong><br><span class="note">${esc(row.team)} vs ${esc(row.opponent)}</span></td><td>${esc(row.actual?.minutes||"—")}</td>${MARKETS.map(name=>`<td>${metric(row.projections?.[name])} / ${metric(row.actual?.[name])}<br>${signed(row.signedErrors?.[name])}</td>`).join("")}</tr>`}
+    function slatesView(slates){if(!slates.length)return `<div class="empty"><strong>No graded NBA projections yet.</strong><br>The tracker only records eligible projections before tipoff. Settled rows will appear automatically after those games become final.</div>`;return slates.map(slate=>`<section class="slate"><h3>${esc(slate.date)} • ${Number(slate.playerCount||0)} graded players</h3><div class="table-wrap"><table><thead><tr><th>Player</th><th>Minutes</th>${MARKETS.map(name=>`<th>${esc(name)}<br>Proj / Actual / Bias</th>`).join("")}</tr></thead><tbody>${(slate.players||[]).map(playerRow).join("")}</tbody></table></div></section>`).join("")}
+    async function load(){try{const [results,calibration]=await Promise.all([json("./data/nba_results.json"),json("./data/nba_calibration.json")]);const status=document.getElementById("releaseStatus");status.textContent=statusLabel(calibration.releaseStatus);status.classList.toggle("ready",calibration.releaseStatus==="projection_review_eligible");document.getElementById("updated").textContent=timeLabel(calibration.generatedAt);document.getElementById("app").innerHTML=`<section class="summary"><div class="metric"><span>Graded players</span><strong>${Number(calibration.gradedPlayers||0)}</strong></div><div class="metric"><span>Pending</span><strong>${Number(calibration.pendingPlayers||0)}</strong></div><div class="metric"><span>DNP excluded</span><strong>${Number(calibration.dnpPlayers||0)}</strong></div><div class="metric"><span>Priced strategy</span><strong>${calibration.pricedStrategyStatus==="locked_unvalidated"?"Locked":"Review"}</strong></div></section><div class="section-head"><h2>Projection calibration</h2><p>Lower error is better. Bias is projected minus actual.</p></div><section class="markets">${MARKETS.map(name=>marketCard(name,calibration.markets?.[name])).join("")}</section><div class="section-head"><h2>Settled projections</h2><p>${Number(results.gradedSlates||0)} completed slate${Number(results.gradedSlates||0)===1?"":"s"}</p></div>${slatesView(results.slates||[])}<p class="note">${esc(results.disclaimer)}</p>`}catch(error){document.getElementById("releaseStatus").textContent="Unavailable";document.getElementById("app").innerHTML=`<div class="empty error">NBA results could not be loaded. Please try again after the next refresh.</div>`}}
+    load();
+  </script>
+</body>
+</html>
