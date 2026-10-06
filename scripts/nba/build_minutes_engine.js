@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const PLAYER_POOL_FILE = path.join(ROOT, "website/data/nba_player_pool.json");
 const HISTORY_FILE = path.join(ROOT, "website/data/nba_history.json");
+const AVAILABILITY_FILE = path.join(ROOT, "website/data/nba_availability.json");
 const OUT = path.join(ROOT, "website/data/nba_minutes_engine.json");
 
 function readJSON(file, fallback) {
@@ -39,8 +40,8 @@ function byId(rows) {
   return map;
 }
 
-function roleFromMinutes(player, minutes) {
-  if (String(player.status || "").toUpperCase() !== "ACTIVE") return "Inactive";
+function roleFromMinutes(player, availability, minutes) {
+  if (availability?.unavailable) return "Unavailable";
   if (minutes >= 34) return "Core Starter";
   if (minutes >= 30) return "Starter";
   if (minutes >= 22) return "Rotation";
@@ -48,12 +49,12 @@ function roleFromMinutes(player, minutes) {
   return "Deep Bench";
 }
 
-function buildExpectedMinutes(player, history) {
+function buildExpectedMinutes(player, history, availability) {
   const season = num(history?.seasonSummary?.minutes);
   const last5 = num(history?.last5?.minutes);
   const last10 = num(history?.last10?.minutes);
 
-  if (String(player.status || "").toUpperCase() !== "ACTIVE") return 0;
+  if (availability?.unavailable) return 0;
 
   const historyLean = round1(
     season * 0.35 +
@@ -63,21 +64,23 @@ function buildExpectedMinutes(player, history) {
 
   let expected = historyLean;
 
-  if (player.starter) expected = Math.max(expected, 28);
-  if (!player.starter && expected > 28) expected = 28;
+  if (player.starterKnown && player.starter) expected = Math.max(expected, 28);
+  if (player.starterKnown && !player.starter && expected > 28) expected = 28;
 
   return round1(clamp(expected, 0, 40));
 }
 
-function buildConfidence(player, history, expectedMinutes) {
+function buildConfidence(player, history, availability, expectedMinutes) {
   let score = 0;
 
   const season = num(history?.seasonSummary?.minutes);
   const last5 = num(history?.last5?.minutes);
   const last10 = num(history?.last10?.minutes);
 
-  if (String(player.status || "").toUpperCase() === "ACTIVE") score += 20;
-  if (player.starter) score += 25;
+  if (availability?.availabilityStatus === "CONFIRMED_ACTIVE") score += 20;
+  else if (["PROBABLE", "DAY_TO_DAY"].includes(availability?.availabilityStatus)) score += 5;
+  if (player.starterKnown && player.starter) score += 25;
+  else if (player.starterKnown) score += 10;
   if (player.oncourt) score += 10;
 
   if (expectedMinutes >= 34) score += 25;
@@ -95,18 +98,18 @@ function buildConfidence(player, history, expectedMinutes) {
   return round1(clamp(score));
 }
 
-function buildRow(player, history) {
+function buildRow(player, history, availability) {
   const seasonMinutes = num(history?.seasonSummary?.minutes);
   const last5Minutes = num(history?.last5?.minutes);
   const last10Minutes = num(history?.last10?.minutes);
 
-  const expectedMinutes = buildExpectedMinutes(player, history);
-  const minutesConfidence = buildConfidence(player, history, expectedMinutes);
+  const expectedMinutes = buildExpectedMinutes(player, history, availability);
+  const minutesConfidence = buildConfidence(player, history, availability, expectedMinutes);
   const minutesTrend = round1(last5Minutes - seasonMinutes);
-  const role = roleFromMinutes(player, expectedMinutes);
+  const role = roleFromMinutes(player, availability, expectedMinutes);
 
   const tags = [
-    player.starter ? "Starter" : "Bench",
+    player.starterKnown ? (player.starter ? "Confirmed Starter" : "Confirmed Bench") : "Starter Unknown",
     role,
     minutesTrend >= 3 ? "Minutes Trending Up" : "",
     minutesTrend <= -3 ? "Minutes Trending Down" : "",
@@ -122,7 +125,15 @@ function buildRow(player, history) {
     opponent: player.opponentAbbr,
     position: player.position,
     status: player.status,
+    statusSource: player.statusSource || "",
     starter: Boolean(player.starter),
+    starterKnown: Boolean(player.starterKnown),
+    starterSource: player.starterSource || "",
+    availabilityStatus: availability?.availabilityStatus || "UNKNOWN",
+    availabilityKnown: Boolean(availability?.availabilityKnown),
+    injury: availability?.injury || null,
+    publicationEligible: Boolean(availability?.publicationEligible),
+    publicationStatus: availability?.publicationStatus || "context_only_unconfirmed_role",
     oncourt: Boolean(player.oncourt),
     homeAway: player.homeAway,
     gameId: player.gameId,
@@ -142,11 +153,13 @@ function buildRow(player, history) {
 async function main() {
   const pool = readJSON(PLAYER_POOL_FILE, { players: [] });
   const historyData = readJSON(HISTORY_FILE, { players: [] });
+  const availabilityData = readJSON(AVAILABILITY_FILE, { players: [] });
   const players = Array.isArray(pool.players) ? pool.players : [];
   const historyMap = byId(historyData.players);
+  const availabilityMap = byId(availabilityData.players);
 
   const rows = players
-    .map(player => buildRow(player, historyMap.get(String(player.playerId)) || {}))
+    .map(player => buildRow(player, historyMap.get(String(player.playerId)) || {}, availabilityMap.get(String(player.playerId)) || {}))
     .sort((a, b) =>
       b.minutesConfidence - a.minutesConfidence ||
       b.expectedMinutes - a.expectedMinutes ||
@@ -156,13 +169,15 @@ async function main() {
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: "nba_player_pool plus nba_history",
+    source: "nba_player_pool plus nba_history plus nba_availability",
     fetchedAt: new Date().toISOString(),
     date: pool.date || historyData.date || "",
     season: historyData.season || "",
     playerCount: rows.length,
     modelNotes: [
       "Minutes Engine 1.1 uses player-pool status plus season, last 5, and last 10 minutes from NBA history.",
+      "Unknown starters retain their historical minutes baseline and are not treated as confirmed bench players.",
+      "Missing injury information does not mean a player is cleared; publication eligibility requires confirmed game status and role.",
       "Roles are Core Starter, Starter, Rotation, Bench, Deep Bench, and Inactive.",
       "No odds or betting lines are used."
     ],

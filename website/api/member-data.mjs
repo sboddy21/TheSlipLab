@@ -4,6 +4,7 @@ import path from "node:path";
 const ACTIVE_STATUSES = new Set(["active", "trialing"]);
 const PUBLIC_FILES = new Set([
   "health_status.json",
+  "nba_availability.json",
   "hr_calibration_report.json",
   "hr_results_history.json",
   "mlb_ball_carry_index.json",

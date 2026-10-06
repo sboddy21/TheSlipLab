@@ -309,11 +309,12 @@ function overallScore(row, matchupMap = new Map()) {
 }
 
 function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [], threesRows = []) {
-  const active = players.filter(p => String(p.status || "").toUpperCase() === "ACTIVE");
+  const active = players.filter(p => num(p.expectedMinutes) > 0 && !["OUT", "DOUBTFUL"].includes(String(p.availabilityStatus || "")));
+  const eligible = active.filter(p => p.publicationEligible);
   const maps = marketMaps(active, reboundsRows, assistsRows, threesRows);
 
   const topOverallPlays = top(
-    active.slice().sort((a, b) =>
+    eligible.slice().sort((a, b) =>
       overallScore(b, matchupMap) - overallScore(a, matchupMap) ||
       num(b.pointsScore) - num(a.pointsScore) ||
       String(a.player).localeCompare(String(b.player))
@@ -338,35 +339,35 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
       reason: "Best single-player shortlist based on projection, overall score, minutes, usage, form, and matchup context."
     }));
 
-  const bestPointsPlays = top(sortByScore(active), 10)
+  const bestPointsPlays = top(sortByScore(eligible), 10)
     .map(p => compact(p, "Best blend of points score, scoring lean, minutes, usage, recent form, and matchup context.", matchupMap, maps));
 
-  const usageRisers = top(sortByScore(active.filter(p =>
+  const usageRisers = top(sortByScore(eligible.filter(p =>
     p.usageTrend === "Usage Spike" ||
     p.usageTrend === "Usage Up" ||
     num(p.volumeTrend) >= 4 ||
     hasTag(p, "Volume Acceleration")
   )), 10).map(p => compact(p, "Usage and shot volume are moving in the right direction.", matchupMap, maps));
 
-  const minutesMonsters = top(sortByScore(active.filter(p =>
+  const minutesMonsters = top(sortByScore(eligible.filter(p =>
     num(p.expectedMinutes) >= 32 &&
     num(p.minutesConfidence) >= 85
   )), 10).map(p => compact(p, "High projected minutes with strong minute confidence.", matchupMap, maps));
 
-  const scoringForm = top(sortByScore(active.filter(p =>
+  const scoringForm = top(sortByScore(eligible.filter(p =>
     num(p.trendDiff) >= 3 ||
     num(p.last5Points) >= num(p.seasonPoints) + 3 ||
     num(p.last10Points) >= num(p.seasonPoints) + 2
   )), 10).map(p => compact(p, "Recent scoring form is ahead of season baseline.", matchupMap, maps));
 
-  const safeFloor = top(sortByScore(active.filter(p =>
+  const safeFloor = top(sortByScore(eligible.filter(p =>
     num(p.expectedMinutes) >= 30 &&
     num(p.minutesConfidence) >= 85 &&
     num(p.usageScore) >= 50 &&
     num(p.pointsLean) >= 15
   )), 10).map(p => compact(p, "Stable minutes, usable offensive role, reliable scoring lean, and matchup context.", matchupMap, maps));
 
-  const boomCandidates = top(sortByScore(active.filter(p =>
+  const boomCandidates = top(sortByScore(eligible.filter(p =>
     num(p.trendDiff) >= 4 ||
     p.usageTrend === "Usage Spike" ||
     num(p.volumeTrend) >= 5 ||
@@ -374,18 +375,18 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     num(p.ftaTrend) >= 2
   )), 10).map(p => compact(p, "Ceiling profile boosted by form, usage spike, volume acceleration, or matchup context.", matchupMap, maps));
 
-  const watchList = top(sortByScore(active.filter(p =>
+  const watchList = top(sortByScore(eligible.filter(p =>
     num(p.pointsScore) >= 55 &&
     num(p.pointsScore) < 70
   )), 10).map(p => compact(p, "Not top tier yet, but close enough to monitor.", matchupMap, maps));
 
-  const trueDefenseTargets = sortByScore(active.filter(p => {
+  const trueDefenseTargets = sortByScore(eligible.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
     const rank = num(m.defense?.rankPointsAllowed);
     return rank >= 21 || (Array.isArray(m.tags) && m.tags.includes("Defense Target"));
   }));
 
-  const availableDefenseTargets = sortByScore(active.filter(p => {
+  const availableDefenseTargets = sortByScore(eligible.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
     const rank = num(m.defense?.rankPointsAllowed);
     return rank > 10;
@@ -395,7 +396,7 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     ? trueDefenseTargets
     : availableDefenseTargets.length
       ? availableDefenseTargets
-      : sortByScore(active);
+      : sortByScore(eligible);
 
   const defenseTargets = top(defenseTargetPool, 10).map(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
@@ -409,22 +410,22 @@ function buildSections(players, matchupMap, reboundsRows = [], assistsRows = [],
     return compact(p, reason, matchupMap, maps);
   });
 
-  const toughDefenseWarnings = top(sortByScore(active.filter(p => {
+  const toughDefenseWarnings = top(sortByScore(eligible.filter(p => {
     const m = matchupMap.get(String(p.playerId)) || {};
     const rank = num(m.defense?.rankPointsAllowed);
     return rank > 0 && rank <= 10;
   })), 10).map(p => compact(p, "Opponent is a tougher points defense based on allowed points rank.", matchupMap, maps));
 
-  const topRebounds = top(reboundsRows, 10)
+  const topRebounds = top(reboundsRows.filter(row => row.publicationEligible), 10)
     .map(p => compactMarket(p, "Rebounds", "reboundsScore", "reboundsLean", "Best rebound profile from rebounds score, rebound lean, minutes, role, and recent trend.", maps));
 
-  const topAssists = top(assistsRows, 10)
+  const topAssists = top(assistsRows.filter(row => row.publicationEligible), 10)
     .map(p => compactMarket(p, "Assists", "assistsScore", "assistsLean", "Best assist profile from assists score, assist lean, minutes, usage, and recent trend.", maps));
 
-  const topThrees = top(threesRows, 10)
+  const topThrees = top(threesRows.filter(row => row.publicationEligible), 10)
     .map(p => compactMarket(p, "Threes", "threesScore", "threesLean", "Best three point profile from threes score, threes lean, attempts, minutes, and trend.", maps));
 
-  const matchupRows = active
+  const matchupRows = eligible
     .map(p => ({ player: p, matchup: matchupMap.get(String(p.playerId)) || {} }))
     .filter(x => num(x.matchup.matchupScore) > 0);
 
@@ -588,11 +589,13 @@ async function main() {
     season: points.season || "",
     market: "Points",
     playerCount: players.length,
+    publicationEligibleCount: players.filter(player => player.publicationEligible).length,
     sectionCount: Object.keys(sections).length,
     availability: Number(points.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "NBA Decision Center 2.0 is built from the NBA Points Board, NBA Matchup Engine, Rebounds Board, Assists Board, and Threes Board.",
       "Sections include top overall plays, I Can Only Pick One, position rankings, consensus plays, best points plays, usage risers, minutes monsters, scoring form, safe floor, boom candidates, defense targets, tough defense warnings, top rebounds, top assists, top threes, best matchups by position, and watch list.",
+      "Recommendation sections require confirmed game availability and confirmed starter or bench role. Unconfirmed players remain context only on market boards.",
       "No odds or betting lines are used."
     ],
     sections

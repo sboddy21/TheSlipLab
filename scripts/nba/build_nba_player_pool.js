@@ -9,6 +9,18 @@ const ROOT = path.resolve(__dirname, "../..");
 const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const OUT = path.join(ROOT, "website/data/nba_player_pool.json");
 
+function seasonYear(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "numeric"
+  }).formatToParts(date);
+  const year = Number(parts.find(part => part.type === "year")?.value);
+  const month = Number(parts.find(part => part.type === "month")?.value);
+  const start = month >= 7 ? year : year - 1;
+  return `${start}-${String(start + 1).slice(-2)}`;
+}
+
 function readJSON(file, fallback) {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
@@ -18,19 +30,29 @@ function readJSON(file, fallback) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json,text/plain,*/*",
-      "Referer": "https://www.nba.com/"
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json,text/plain,*/*",
+        "Origin": "https://www.nba.com",
+        "Referer": "https://www.nba.com/",
+        "x-nba-stats-origin": "stats",
+        "x-nba-stats-token": "true"
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Fetch failed ${res.status} ${url}`);
     }
-  });
 
-  if (!res.ok) {
-    throw new Error(`Fetch failed ${res.status} ${url}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
   }
-
-  return await res.json();
 }
 
 function num(v) {
@@ -54,7 +76,10 @@ function normalizePlayer(player, team, opponent, game, homeAway) {
     jersey: player.jerseyNum || "",
     position: player.position || "",
     status: player.status || "",
+    statusSource: "NBA live box score",
     starter: String(player.starter || "") === "1",
+    starterKnown: true,
+    starterSource: "NBA live box score",
     oncourt: String(player.oncourt || "") === "1",
     played: String(player.played || "") === "1",
 
@@ -94,6 +119,77 @@ function normalizePlayer(player, team, opponent, game, homeAway) {
   };
 }
 
+function parseResultSet(data, name) {
+  const sets = Array.isArray(data?.resultSets) ? data.resultSets : [];
+  const set = sets.find(item => item?.name === name) || sets[0] || {};
+  const headers = Array.isArray(set.headers) ? set.headers : [];
+  const rows = Array.isArray(set.rowSet) ? set.rowSet : [];
+  return rows.map(row => Object.fromEntries(headers.map((header, index) => [header, row[index]])));
+}
+
+function normalizeRosterPlayer(row, team, opponent, game, homeAway) {
+  const fullName = String(row.PLAYER || "").trim();
+  const parts = fullName.split(/\s+/).filter(Boolean);
+  return {
+    playerId: String(row.PLAYER_ID || ""),
+    player: fullName,
+    firstName: parts[0] || "",
+    lastName: parts.slice(1).join(" "),
+    nameShort: parts.length > 1 ? `${parts[0]?.[0] || ""}. ${parts.at(-1)}` : fullName,
+    jersey: String(row.NUM || ""),
+    position: row.POSITION || "",
+    status: "UNKNOWN",
+    statusSource: "Official team roster; game availability not confirmed",
+    starter: false,
+    starterKnown: false,
+    starterSource: "Unavailable before official game lineup",
+    oncourt: false,
+    played: false,
+    teamId: String(team.teamId || ""),
+    team: team.team || "",
+    teamCity: team.city || "",
+    teamAbbr: teamKey(team),
+    opponentTeamId: String(opponent.teamId || ""),
+    opponent: opponent.team || "",
+    opponentCity: opponent.city || "",
+    opponentAbbr: teamKey(opponent),
+    homeAway,
+    gameId: String(game.gameId || ""),
+    gameTimeUTC: game.gameTimeUTC || "",
+    gameStatus: num(game.gameStatus),
+    gameStatusText: game.gameStatusText || "",
+    boxScore: {
+      minutes: "",
+      minutesCalculated: "",
+      points: 0,
+      rebounds: 0,
+      assists: 0,
+      threesMade: 0,
+      threesAttempted: 0,
+      fieldGoalsMade: 0,
+      fieldGoalsAttempted: 0,
+      freeThrowsMade: 0,
+      freeThrowsAttempted: 0,
+      steals: 0,
+      blocks: 0,
+      turnovers: 0,
+      plusMinus: 0
+    }
+  };
+}
+
+async function fetchTeamRoster(team, opponent, game, homeAway, season) {
+  const params = new URLSearchParams({
+    LeagueID: "00",
+    Season: season,
+    TeamID: String(team.teamId || "")
+  });
+  const data = await fetchJson(`https://stats.nba.com/stats/commonteamroster?${params}`);
+  return parseResultSet(data, "CommonTeamRoster")
+    .filter(row => row.PLAYER_ID && row.PLAYER)
+    .map(row => normalizeRosterPlayer(row, team, opponent, game, homeAway));
+}
+
 function normalizeTeamFromScoreboard(gameTeam, opponentTeam, game, homeAway) {
   return {
     teamId: String(gameTeam.teamId || ""),
@@ -115,6 +211,8 @@ async function main() {
   const teams = [];
   const players = [];
   const errors = [];
+  const rosterFallbacks = [];
+  const season = seasonYear();
 
   for (const game of games) {
     if (game.homeTeam?.abbreviation) {
@@ -138,6 +236,10 @@ async function main() {
       const homePlayers = Array.isArray(home.players) ? home.players : [];
       const awayPlayers = Array.isArray(away.players) ? away.players : [];
 
+      if (homePlayers.length === 0 || awayPlayers.length === 0) {
+        throw new Error("Pregame box score does not include player rosters");
+      }
+
       for (const p of homePlayers) {
         players.push(normalizePlayer(p, home, away, fullGame, "HOME"));
       }
@@ -146,10 +248,23 @@ async function main() {
         players.push(normalizePlayer(p, away, home, fullGame, "AWAY"));
       }
     } catch (err) {
-      errors.push({
-        gameId: game.gameId,
-        error: err.message
-      });
+      try {
+        const [homePlayers, awayPlayers] = await Promise.all([
+          fetchTeamRoster(game.homeTeam, game.awayTeam, game, "HOME", season),
+          fetchTeamRoster(game.awayTeam, game.homeTeam, game, "AWAY", season)
+        ]);
+        if (!homePlayers.length || !awayPlayers.length) {
+          throw new Error("Official team roster endpoint returned an empty roster");
+        }
+        players.push(...homePlayers, ...awayPlayers);
+        rosterFallbacks.push({ gameId: game.gameId, reason: err.message });
+      } catch (rosterError) {
+        errors.push({
+          gameId: game.gameId,
+          boxScoreError: err.message,
+          rosterError: rosterError.message
+        });
+      }
     }
   }
 
@@ -163,14 +278,17 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    source: "NBA live box score player pool",
+    source: "NBA live box scores and official team rosters",
     fetchedAt: new Date().toISOString(),
     date: gamesData.date || "",
     gameCount: games.length,
     teamCount: teams.length,
     playerCount: players.length,
+    season,
+    rosterFallbackCount: rosterFallbacks.length,
     availability: games.length ? "games_scheduled" : "no_games_scheduled",
     errors,
+    rosterFallbacks,
     teams,
     players
   };
@@ -181,6 +299,7 @@ async function main() {
   console.log("Games:", games.length);
   console.log("Teams:", teams.length);
   console.log("Players:", players.length);
+  console.log("Roster fallbacks:", rosterFallbacks.length);
   console.log("Errors:", errors.length);
   console.log("Saved:", OUT);
 }

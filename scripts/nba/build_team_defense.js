@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
 const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
+const HISTORY_FILE = path.join(ROOT, "website/data/nba_history.json");
 const OUT = path.join(ROOT, "website/data/nba_team_defense.json");
 
 const FETCH_TIMEOUT_MS = 8000;
@@ -175,7 +176,8 @@ function parseTeamDefense(data) {
 }
 
 async function main() {
-  const season = seasonYear();
+  const historyData = readJSON(HISTORY_FILE, {});
+  const season = historyData.season || seasonYear();
   const gamesData = readJSON(GAMES_FILE, { games: [] });
   const games = Array.isArray(gamesData.games) ? gamesData.games : [];
 

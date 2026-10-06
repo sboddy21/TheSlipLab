@@ -183,7 +183,7 @@ function buildTags(player, minutes, history, usage, scores) {
   if (player.starter) tags.push("Starter");
   if (minutes?.role) tags.push(minutes.role);
 
-  const season = history?.season || {};
+  const season = history?.seasonSummary || {};
   const last5 = history?.last5 || {};
 
   if (num(last5.points) >= num(season.points) + 4) tags.push("Points Trending Up");
@@ -216,7 +216,10 @@ function buildCorePlayer(player, minutesMap, historyMap, usageMap) {
     jersey: player.jersey,
     position: player.position,
     status: player.status,
+    statusSource: player.statusSource || "",
     starter: Boolean(player.starter),
+    starterKnown: Boolean(player.starterKnown),
+    starterSource: player.starterSource || "",
     oncourt: Boolean(player.oncourt),
     played: Boolean(player.played),
 
@@ -239,7 +242,12 @@ function buildCorePlayer(player, minutesMap, historyMap, usageMap) {
     minutes: {
       expected: num(minutes.expectedMinutes),
       confidence: num(minutes.minutesConfidence),
-      role: minutes.role || ""
+      role: minutes.role || "",
+      availabilityStatus: minutes.availabilityStatus || "UNKNOWN",
+      availabilityKnown: Boolean(minutes.availabilityKnown),
+      injury: minutes.injury || null,
+      publicationEligible: Boolean(minutes.publicationEligible),
+      publicationStatus: minutes.publicationStatus || "context_only_unconfirmed_role"
     },
 
     usage: {

@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
 const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
+const HISTORY_FILE = path.join(ROOT, "website/data/nba_history.json");
 const OUT = path.join(ROOT, "website/data/nba_defender_engine.json");
 
 function readJSON(file, fallback) {
@@ -101,7 +102,8 @@ function parseRows(data) {
 }
 
 async function main() {
-  const season = seasonYear();
+  const historyData = readJSON(HISTORY_FILE, {});
+  const season = historyData.season || seasonYear();
   const gamesData = readJSON(GAMES_FILE, { games: [] });
   const games = Array.isArray(gamesData.games) ? gamesData.games : [];
 
