@@ -115,7 +115,12 @@ function buildRow(p, minuteRow) {
     position: p.position,
     homeAway: p.homeAway,
     starter: Boolean(p.starter),
+    starterKnown: Boolean(minuteRow?.starterKnown),
     status: p.status,
+    availabilityStatus: minuteRow?.availabilityStatus || "UNKNOWN",
+    injury: minuteRow?.injury || null,
+    publicationEligible: Boolean(minuteRow?.publicationEligible),
+    publicationStatus: minuteRow?.publicationStatus || "context_only_unconfirmed_role",
     gameId: p.gameId,
     gameTimeUTC: p.gameTimeUTC,
     gameStatusText: p.gameStatusText,
@@ -131,8 +136,8 @@ function buildRow(p, minuteRow) {
     minutesRole,
 
     reboundsScore,
-    confidence: confidenceTier(reboundsScore),
-    playGrade: playGrade(reboundsScore),
+    confidence: minuteRow?.publicationEligible ? confidenceTier(reboundsScore) : "Unconfirmed",
+    playGrade: minuteRow?.publicationEligible ? playGrade(reboundsScore) : "CONTEXT ONLY",
     reboundRole: reboundRole(reboundsLean),
     tags: [...new Set(tags)].slice(0, 8)
   };
@@ -147,7 +152,7 @@ async function main() {
 
   const rows = players
     .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}))
-    .filter(r => String(r.status || "").toUpperCase() === "ACTIVE")
+    .filter(r => r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.reboundsScore - a.reboundsScore ||
       b.reboundsLean - a.reboundsLean ||

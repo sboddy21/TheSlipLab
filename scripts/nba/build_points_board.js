@@ -146,7 +146,12 @@ function buildRow(p, minutesMap, usageMap) {
     position: p.position,
     homeAway: p.homeAway,
     starter: Boolean(p.starter),
+    starterKnown: Boolean(minuteRow.starterKnown),
     status: p.status,
+    availabilityStatus: minuteRow.availabilityStatus || "UNKNOWN",
+    injury: minuteRow.injury || null,
+    publicationEligible: Boolean(minuteRow.publicationEligible),
+    publicationStatus: minuteRow.publicationStatus || "context_only_unconfirmed_role",
     gameId: p.gameId,
     gameTimeUTC: p.gameTimeUTC,
     gameStatus: p.gameStatus,
@@ -181,8 +186,8 @@ function buildRow(p, minutesMap, usageMap) {
     rawCorePointsScore: num(p.scores?.pointsScore),
     nbaScore: num(p.scores?.nbaScore),
     pointsScore,
-    confidence: confidenceTier(pointsScore),
-    playGrade: playGrade(pointsScore),
+    confidence: minuteRow.publicationEligible ? confidenceTier(pointsScore) : "Unconfirmed",
+    playGrade: minuteRow.publicationEligible ? playGrade(pointsScore) : "CONTEXT ONLY",
     scoringRole: scoringRole(pointsLean),
     tags
   };
@@ -211,7 +216,7 @@ async function main() {
 
   const rows = players
     .map(p => buildRow(p, minutesMap, usageMap))
-    .filter(r => String(r.status || "").toUpperCase() === "ACTIVE")
+    .filter(r => r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||
       b.pointsLean - a.pointsLean ||

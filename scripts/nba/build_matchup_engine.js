@@ -198,6 +198,9 @@ function buildRow(row, games, defenseMap, paceMap, defenderMap) {
     gameId: row.gameId,
     gameTimeUTC: row.gameTimeUTC,
     gameStatusText: row.gameStatusText,
+    availabilityStatus: row.availabilityStatus || "UNKNOWN",
+    publicationEligible: Boolean(row.publicationEligible),
+    publicationStatus: row.publicationStatus || "context_only_unconfirmed_role",
 
     matchup: `${row.team} vs ${row.opponent}`,
     arena: game?.arena || "",
@@ -273,7 +276,7 @@ async function main() {
   }
 
   const rows = players
-    .filter(p => String(p.status || "").toUpperCase() === "ACTIVE")
+    .filter(p => num(p.expectedMinutes) > 0 && !["OUT", "DOUBTFUL"].includes(String(p.availabilityStatus || "")))
     .map(p => buildRow(p, games, defenseMap, paceMap, defenderMap))
     .sort((a, b) =>
       b.matchupScore - a.matchupScore ||
@@ -294,6 +297,7 @@ async function main() {
     date: points.date || gamesPayload.date || "",
     season: points.season || "",
     playerCount: rows.length,
+    publicationEligibleCount: rows.filter(row => row.publicationEligible).length,
     availability: Array.isArray(gamesPayload.games) && gamesPayload.games.length > 0
       ? "games_scheduled"
       : "no_games_scheduled",

@@ -121,7 +121,12 @@ function buildRow(p, minuteRow, usageRow) {
     position: p.position,
     homeAway: p.homeAway,
     starter: Boolean(p.starter),
+    starterKnown: Boolean(minuteRow?.starterKnown),
     status: p.status,
+    availabilityStatus: minuteRow?.availabilityStatus || "UNKNOWN",
+    injury: minuteRow?.injury || null,
+    publicationEligible: Boolean(minuteRow?.publicationEligible),
+    publicationStatus: minuteRow?.publicationStatus || "context_only_unconfirmed_role",
     gameId: p.gameId,
     gameTimeUTC: p.gameTimeUTC,
     gameStatusText: p.gameStatusText,
@@ -141,8 +146,8 @@ function buildRow(p, minuteRow, usageRow) {
     assistTrend: round1(assistTrend),
 
     assistsScore,
-    confidence: confidenceTier(assistsScore),
-    playGrade: playGrade(assistsScore),
+    confidence: minuteRow?.publicationEligible ? confidenceTier(assistsScore) : "Unconfirmed",
+    playGrade: minuteRow?.publicationEligible ? playGrade(assistsScore) : "CONTEXT ONLY",
     assistRole: assistRole(assistsLean),
     tags: [...new Set(tags)].slice(0, 8)
   };
@@ -159,7 +164,7 @@ async function main() {
 
   const rows = players
     .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, usageMap.get(String(p.playerId)) || {}))
-    .filter(r => String(r.status || "").toUpperCase() === "ACTIVE")
+    .filter(r => r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.assistsScore - a.assistsScore ||
       b.assistsLean - a.assistsLean ||

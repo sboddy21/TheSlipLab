@@ -10,7 +10,6 @@ const CORE_FILE = path.join(ROOT, "website/data/nba_player_pool.json");
 const OUT = path.join(ROOT, "website/data/nba_history.json");
 
 const FETCH_TIMEOUT_MS = 7000;
-const BETWEEN_PLAYERS_MS = 150;
 const RETRY_WAIT_MS = 500;
 
 function readJSON(file, fallback) {
@@ -57,6 +56,15 @@ function seasonYear() {
   const end = String(start + 1).slice(-2);
 
   return `${start}-${end}`;
+}
+
+function previousSeason(season) {
+  const start = Number(String(season).slice(0, 4)) - 1;
+  return `${start}-${String(start + 1).slice(-2)}`;
+}
+
+function isPreseasonSlate(players) {
+  return players.length > 0 && players.every(player => String(player.gameId || "").startsWith("001"));
 }
 
 function summarize(games) {
@@ -112,6 +120,7 @@ function parsePlayerGameLog(data) {
   const idx = Object.fromEntries(headers.map((h, i) => [h, i]));
 
   return rows.map(row => ({
+    playerId: String(row[idx.PLAYER_ID] || row[idx.Player_ID] || ""),
     gameId: String(row[idx.Game_ID] || row[idx.GAME_ID] || ""),
     gameDate: row[idx.GAME_DATE] || "",
     matchup: row[idx.MATCHUP] || "",
@@ -127,6 +136,27 @@ function parsePlayerGameLog(data) {
     blocks: num(row[idx.BLK]),
     turnovers: num(row[idx.TOV])
   }));
+}
+
+async function fetchLeagueHistory(season) {
+  const params = new URLSearchParams({
+    Counter: "0",
+    DateFrom: "",
+    DateTo: "",
+    Direction: "DESC",
+    LeagueID: "00",
+    PlayerOrTeam: "P",
+    Season: season,
+    SeasonType: "Regular Season",
+    Sorter: "DATE"
+  });
+  const url = `https://stats.nba.com/stats/leaguegamelog?${params.toString()}`;
+  try {
+    return parsePlayerGameLog(await fetchJson(url, 45000));
+  } catch (error) {
+    await sleep(RETRY_WAIT_MS);
+    return parsePlayerGameLog(await fetchJson(url, 45000));
+  }
 }
 
 async function fetchPlayerHistory(playerId, season) {
@@ -185,46 +215,35 @@ function splitHistory(games) {
 async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const players = Array.isArray(core.players) ? core.players : [];
-  const season = seasonYear();
+  const currentSeason = seasonYear();
+  const season = process.env.NBA_HISTORY_SEASON || (
+    isPreseasonSlate(players) ? previousSeason(currentSeason) : currentSeason
+  );
 
-  const rows = [];
+  const leagueGames = players.length ? await fetchLeagueHistory(season) : [];
+  const gamesByPlayer = new Map();
+  for (const game of leagueGames) {
+    const key = String(game.playerId || "");
+    if (!key) continue;
+    if (!gamesByPlayer.has(key)) gamesByPlayer.set(key, []);
+    gamesByPlayer.get(key).push(game);
+  }
+
+  const rows = players.map(player => {
+    const history = splitHistory(gamesByPlayer.get(String(player.playerId)) || []);
+    return {
+      playerId: player.playerId,
+      player: safeName(player.player),
+      team: player.teamAbbr,
+      opponent: player.opponentAbbr,
+      position: player.position,
+      starter: Boolean(player.starter),
+      status: player.status,
+      season,
+      ...history
+    };
+  });
   const errors = [];
-
-  for (const player of players) {
-    try {
-      const games = await fetchPlayerHistory(player.playerId, season);
-      const history = splitHistory(games);
-
-      rows.push({
-        playerId: player.playerId,
-        player: safeName(player.player),
-        team: player.teamAbbr,
-        opponent: player.opponentAbbr,
-        position: player.position,
-        starter: Boolean(player.starter),
-        status: player.status,
-        season,
-        ...history
-      });
-
-      console.log("OK", player.player, history.gamesPlayed);
-    } catch (err) {
-      errors.push({
-        playerId: player.playerId,
-        player: player.player,
-        team: player.teamAbbr,
-        error: err.message
-      });
-
-      console.log("ERR", player.player, err.message);
-    }
-
-    await sleep(BETWEEN_PLAYERS_MS);
-  }
-
-  if (errors.length) {
-    throw new Error(`NBA history failed for ${errors.length} player(s); stale history was not reused`);
-  }
 
   const out = {
     sport: "NBA",
@@ -233,9 +252,12 @@ async function main() {
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
     season,
+    currentSeason,
+    baselineMode: season === currentSeason ? "current_season" : "previous_season_preseason",
     playerCount: rows.length,
     availability: players.length ? "players_available" : "no_games_scheduled",
     errorCount: errors.length,
+    leagueGameLogCount: leagueGames.length,
     errors,
     players: rows
   };
