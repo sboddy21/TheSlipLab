@@ -7,6 +7,8 @@ const PUBLIC_FILES = new Set([
   "nba_availability.json",
   "nba_market_lines.json",
   "nba_verified_markets.json",
+  "nba_results.json",
+  "nba_calibration.json",
   "hr_calibration_report.json",
   "hr_results_history.json",
   "mlb_ball_carry_index.json",
