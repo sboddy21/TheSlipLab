@@ -9,6 +9,7 @@ const steps = [
   ["NBA Player Pool", "scripts/nba/build_nba_player_pool.js"],
   ["NBA History", "scripts/nba/build_nba_history.js"],
   ["NBA Availability", "scripts/nba/build_nba_availability.js"],
+  ["NBA Market Lines", "scripts/nba/build_nba_market_lines.mjs"],
   ["NBA Minutes Engine", "scripts/nba/build_minutes_engine.js"],
   ["NBA Usage Engine", "scripts/nba/build_usage_engine.js"],
   ["NBA Core", "scripts/nba/build_nba_core.js"],
@@ -21,7 +22,8 @@ const steps = [
   ["NBA Threes Board", "scripts/nba/build_threes_board.js"],
   ["NBA Matchup Engine", "scripts/nba/build_matchup_engine.js"],
   ["NBA Player Cards", "scripts/nba/build_nba_player_cards.js"],
-  ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"]
+  ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"],
+  ["NBA Verified Markets", "scripts/nba/build_nba_verified_markets.mjs"]
 ];
 
 const expectedOutputs = [
@@ -29,6 +31,7 @@ const expectedOutputs = [
   ["NBA Player Pool", "website/data/nba_player_pool.json", true],
   ["NBA History", "website/data/nba_history.json", true],
   ["NBA Availability", "website/data/nba_availability.json", true],
+  ["NBA Market Lines", "website/data/nba_market_lines.json", true],
   ["NBA Minutes Engine", "website/data/nba_minutes_engine.json", true],
   ["NBA Usage Engine", "website/data/nba_usage_engine.json", true],
   ["NBA Core", "website/data/nba_core.json", true],
@@ -41,7 +44,8 @@ const expectedOutputs = [
   ["NBA Threes Board", "website/data/nba_threes.json", true],
   ["NBA Matchup Engine", "website/data/nba_matchup_engine.json", true],
   ["NBA Player Cards", "website/data/nba_player_cards.json", true],
-  ["NBA Decision Center", "website/data/nba_decision_center.json", true]
+  ["NBA Decision Center", "website/data/nba_decision_center.json", true],
+  ["NBA Verified Markets", "website/data/nba_verified_markets.json", true]
 ];
 
 function todayET() {
