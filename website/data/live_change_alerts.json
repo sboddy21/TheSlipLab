@@ -1,17 +1,826 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-10T17:47:19.078Z",
+  "generatedAt": "2026-10-10T20:44:23.010Z",
   "date": "2026-10-10",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-10T17:46:15.374Z",
-    "mlb_player_pool.json": "2026-10-10T17:46:15.564Z",
-    "game_pitcher_matchups.json": "2026-10-10T17:46:19.755Z",
-    "player_card_data.json": "2026-10-10T17:47:19.009Z",
-    "hr_probability_tracking.json": "2026-10-10T17:46:19.100Z",
-    "pitcher_vulnerability.json": "2026-10-10T17:46:19.756Z"
+    "mlb_games_today.json": "2026-10-10T20:43:20.140Z",
+    "mlb_player_pool.json": "2026-10-10T20:43:20.323Z",
+    "game_pitcher_matchups.json": "2026-10-10T20:43:23.419Z",
+    "player_card_data.json": "2026-10-10T20:44:22.936Z",
+    "hr_probability_tracking.json": "2026-10-10T20:43:22.741Z",
+    "pitcher_vulnerability.json": "2026-10-10T20:43:23.420Z"
   },
   "alerts": [
+    {
+      "id": "52eb0b60417da0de329b",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "502054",
+      "entityName": "Tommy Pham",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Tommy Pham's model score fell",
+      "message": "The live model score fell from 26.7 to 0.",
+      "previous": {
+        "modelScore": 26.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "1cd1a94b75b205818ce6",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Randal Grichuk's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f5b03efbadb7d2e5953e",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "545341",
+      "entityName": "Randal Grichuk",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Randal Grichuk's model score fell",
+      "message": "The live model score fell from 45.3 to 0.",
+      "previous": {
+        "modelScore": 45.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "1fdda1a4435d032952d4",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "595978",
+      "entityName": "Austin Hedges",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Austin Hedges's HR probability fell",
+      "message": "Tracked HR probability fell from 5.2% to 0%.",
+      "previous": {
+        "probability": 5.2
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "a687e9155fefa0f19bc2",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "595978",
+      "entityName": "Austin Hedges",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Austin Hedges's model score fell",
+      "message": "The live model score fell from 39.1 to 0.",
+      "previous": {
+        "modelScore": 39.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0a86019be29932e08f16",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "608070",
+      "entityName": "José Ramírez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "José Ramírez confirmed in the lineup",
+      "message": "José Ramírez is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "523e4e86204843948dfa",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "643217",
+      "entityName": "Andrew Benintendi",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Andrew Benintendi confirmed in the lineup",
+      "message": "Andrew Benintendi is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0291fd5793e775b43822",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663993",
+      "entityName": "Nathaniel Lowe",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Nathaniel Lowe confirmed in the lineup",
+      "message": "Nathaniel Lowe is confirmed batting 5.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 5
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "526fe14b0655207d9f09",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666176",
+      "entityName": "Jo Adell",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Jo Adell confirmed in the lineup",
+      "message": "Jo Adell is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "df44bb1eec8638f32d40",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668670",
+      "entityName": "Jake Rogers",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Jake Rogers's model score fell",
+      "message": "The live model score fell from 24.1 to 0.",
+      "previous": {
+        "modelScore": 24.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ffb6b9ea51f5b7ac1f7b",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "671976",
+      "entityName": "Tristan Peters",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Tristan Peters confirmed in the lineup",
+      "message": "Tristan Peters is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "17fa67ca5b06e59656de",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "672275",
+      "entityName": "Patrick Bailey",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Patrick Bailey confirmed in the lineup",
+      "message": "Patrick Bailey is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cf45f9b6f9c14bd9b4da",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "677587",
+      "entityName": "Brayan Rocchio",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Brayan Rocchio confirmed in the lineup",
+      "message": "Brayan Rocchio is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d4fa0bd89e442c4ea294",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "678246",
+      "entityName": "Miguel Vargas",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Miguel Vargas confirmed in the lineup",
+      "message": "Miguel Vargas is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "48ee0b289ae256446e7b",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "680757",
+      "entityName": "Steven Kwan",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Steven Kwan confirmed in the lineup",
+      "message": "Steven Kwan is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a7aea4b1dc0b389d280b",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "681807",
+      "entityName": "David Fry",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "David Fry's model score fell",
+      "message": "The live model score fell from 30.7 to 0.",
+      "previous": {
+        "modelScore": 30.7
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a1d8b02abb31c71a258a",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682177",
+      "entityName": "Daniel Schneemann",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Daniel Schneemann's model score fell",
+      "message": "The live model score fell from 25 to 0.",
+      "previous": {
+        "modelScore": 25
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "cf12374c32691489fe30",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682657",
+      "entityName": "Angel Martínez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Angel Martínez's HR probability fell",
+      "message": "Tracked HR probability fell from 22.8% to 0%.",
+      "previous": {
+        "probability": 22.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "bcfc28c5c54fe65668ab",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682657",
+      "entityName": "Angel Martínez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Angel Martínez's model score fell",
+      "message": "The live model score fell from 40.3 to 0.",
+      "previous": {
+        "modelScore": 40.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "b3269f167e8522277e70",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682668",
+      "entityName": "Luisangel Acuña",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Luisangel Acuña's model score fell",
+      "message": "The live model score fell from 24.1 to 0.",
+      "previous": {
+        "modelScore": 24.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "61e19bbea0dfcd896727",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683953",
+      "entityName": "Travis Bazzana",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Travis Bazzana confirmed in the lineup",
+      "message": "Travis Bazzana is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "17c73273912c892266a5",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "686668",
+      "entityName": "Brenton Doyle",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Brenton Doyle confirmed in the lineup",
+      "message": "Brenton Doyle is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "110fb0fece99c20eb50f",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "690984",
+      "entityName": "Petey Halpin",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Petey Halpin confirmed in the lineup",
+      "message": "Petey Halpin is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "501897a829525848fd99",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "691019",
+      "entityName": "Kyle Teel",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Kyle Teel confirmed in the lineup",
+      "message": "Kyle Teel is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "aec2a136a5e992ac340f",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "694197",
+      "entityName": "Angel Genao",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Angel Genao's model score fell",
+      "message": "The live model score fell from 18.4 to 0.",
+      "previous": {
+        "modelScore": 18.4
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "17bdc2356da873fc84ec",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "695657",
+      "entityName": "Colson Montgomery",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Colson Montgomery confirmed in the lineup",
+      "message": "Colson Montgomery is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "95affadc3ff4eb291bb1",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "695731",
+      "entityName": "Braden Montgomery",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Braden Montgomery's model score fell",
+      "message": "The live model score fell from 26.1 to 0.",
+      "previous": {
+        "modelScore": 26.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0300352d126ecb134c6c",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "800050",
+      "entityName": "Chase DeLauter",
+      "team": "Cleveland Guardians",
+      "gamePk": 849831,
+      "title": "Chase DeLauter confirmed in the lineup",
+      "message": "Chase DeLauter is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a7216070a70269f6c7af",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "803011",
+      "entityName": "Sam Antonacci",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Sam Antonacci confirmed in the lineup",
+      "message": "Sam Antonacci is confirmed batting 1.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 1
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "e4ee41b1a9c18ae52250",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "805367",
+      "entityName": "Chase Meidroth",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Chase Meidroth confirmed in the lineup",
+      "message": "Chase Meidroth is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "f4af9e9d359af7baefbd",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "808959",
+      "entityName": "Munetaka Murakami",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Munetaka Murakami confirmed in the lineup",
+      "message": "Munetaka Murakami is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "PROJECTED",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "603dfda978ce97b292e4",
+      "createdAt": "2026-10-10T20:44:23.010Z",
+      "date": "2026-10-10",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "808959",
+      "entityName": "Munetaka Murakami",
+      "team": "Chicago White Sox",
+      "gamePk": 849831,
+      "title": "Munetaka Murakami's verified signals changed",
+      "message": "Added: hotLook.",
+      "previous": {
+        "signals": [
+          "hotLately"
+        ]
+      },
+      "current": {
+        "signals": [
+          "hotLately",
+          "hotLook"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "ad286a839b414c446713",
       "createdAt": "2026-10-10T17:47:19.078Z",
@@ -47,13 +856,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
-        "probability": 1.4,
-        "modelScore": 26.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "545341": {
@@ -62,13 +871,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
-        "probability": 22.8,
-        "modelScore": 45.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": [
           "hotLately"
         ]
@@ -79,13 +888,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
-        "probability": 5.2,
-        "modelScore": 39.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "608070": {
@@ -94,13 +903,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 6.1,
-        "modelScore": 34.5,
+        "modelScore": 39.1,
         "signals": []
       },
       "643217": {
@@ -109,13 +918,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 9.8,
-        "modelScore": 35.1,
+        "modelScore": 39.2,
         "signals": []
       },
       "663993": {
@@ -124,13 +933,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 5,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 21.1,
-        "modelScore": 44.1,
+        "modelScore": 48.4,
         "signals": [
           "sleeper"
         ]
@@ -141,13 +950,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 15.5,
-        "modelScore": 40.9,
+        "modelScore": 45.9,
         "signals": []
       },
       "668670": {
@@ -156,13 +965,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
-        "probability": 2,
-        "modelScore": 24.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "671976": {
@@ -171,13 +980,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 14.3,
-        "modelScore": 35.5,
+        "modelScore": 38.3,
         "signals": []
       },
       "672275": {
@@ -186,13 +995,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 3.1,
-        "modelScore": 28.9,
+        "modelScore": 30.3,
         "signals": [
           "hotLately"
         ]
@@ -203,13 +1012,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 8.1,
-        "modelScore": 32.3,
+        "modelScore": 31.6,
         "signals": [
           "hotLately"
         ]
@@ -220,13 +1029,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 22.8,
-        "modelScore": 44.1,
+        "modelScore": 48.9,
         "signals": []
       },
       "680757": {
@@ -235,13 +1044,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 1.4,
-        "modelScore": 19.6,
+        "modelScore": 23.1,
         "signals": []
       },
       "681807": {
@@ -250,13 +1059,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
-        "probability": 4.6,
-        "modelScore": 30.7,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "682177": {
@@ -265,13 +1074,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
-        "probability": 2.3,
-        "modelScore": 25,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "682657": {
@@ -280,13 +1089,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
-        "probability": 22.8,
-        "modelScore": 40.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "682668": {
@@ -295,13 +1104,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
-        "probability": 1.4,
-        "modelScore": 24.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "683953": {
@@ -310,13 +1119,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 10.6,
-        "modelScore": 36.3,
+        "modelScore": 39.1,
         "signals": []
       },
       "686668": {
@@ -325,13 +1134,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 2.9,
-        "modelScore": 25.1,
+        "modelScore": 25.6,
         "signals": [
           "hotLately"
         ]
@@ -342,13 +1151,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 1.4,
-        "modelScore": 21.8,
+        "modelScore": 22.4,
         "signals": []
       },
       "691019": {
@@ -357,13 +1166,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 2,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 4.7,
-        "modelScore": 29.4,
+        "modelScore": 34,
         "signals": []
       },
       "694197": {
@@ -372,13 +1181,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
-        "probability": 1.4,
-        "modelScore": 18.4,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "695657": {
@@ -387,13 +1196,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 22.8,
-        "modelScore": 42.6,
+        "modelScore": 43.7,
         "signals": [
           "sleeper"
         ]
@@ -404,13 +1213,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
+        "lineupStatus": "NOT IN LINEUP",
         "confirmedLineup": false,
         "lineupSpot": null,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
-        "probability": 2.8,
-        "modelScore": 26.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "800050": {
@@ -419,13 +1228,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Chicago White Sox",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "680732",
         "opposingPitcher": "Sean Burke",
         "probability": 20.6,
-        "modelScore": 40.5,
+        "modelScore": 45.3,
         "signals": [
           "hotLately"
         ]
@@ -436,13 +1245,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 1,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 4.5,
-        "modelScore": 32.3,
+        "modelScore": 35.9,
         "signals": []
       },
       "805367": {
@@ -451,13 +1260,13 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 9.5,
-        "modelScore": 33.6,
+        "modelScore": 35.1,
         "signals": [
           "hotLately"
         ]
@@ -468,15 +1277,16 @@
         "team": "Chicago White Sox",
         "opponent": "Cleveland Guardians",
         "gamePk": 849831,
-        "lineupStatus": "PROJECTED",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 22.8,
-        "modelScore": 51.6,
+        "modelScore": 56.8,
         "signals": [
-          "hotLately"
+          "hotLately",
+          "hotLook"
         ]
       }
     },
