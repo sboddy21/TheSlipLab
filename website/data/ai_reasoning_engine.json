@@ -2,15 +2,15 @@
   "sport": "MLB",
   "market": "Home Runs",
   "version": "1.3",
-  "updatedAt": "2026-10-11T10:14:17.081Z",
-  "playerCount": 27,
+  "updatedAt": "2026-10-11T17:57:49.707Z",
+  "playerCount": 26,
   "sourceDebug": {
-    "ai_trust_engine.json": 54,
-    "hr_power_profiles.json": 27,
-    "hr_probability_tracking.json": 27,
-    "mlb_hits.json": 27,
-    "mlb_total_bases.json": 27,
-    "mlb_rbis.json": 27
+    "ai_trust_engine.json": 52,
+    "hr_power_profiles.json": 26,
+    "hr_probability_tracking.json": 26,
+    "mlb_hits.json": 26,
+    "mlb_total_bases.json": 26,
+    "mlb_rbis.json": 26
   },
   "notes": [
     "AI Reasoning Engine 1.3 reads only the active MLB player sources listed in sourceDebug.",
@@ -468,6 +468,100 @@
       }
     },
     {
+      "player": "Andy Pages",
+      "team": "Los Angeles Dodgers",
+      "opponent": "Milwaukee Brewers",
+      "game": "Los Angeles Dodgers at Milwaukee Brewers",
+      "sections": [],
+      "aiVerdict": "Strong AI Play",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 84,
+      "stars": 4,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "53.1 launch-power score supports home-run damage.",
+        "100 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "40.7 HR Power Index (LONGSHOT POWER).",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "53.1 launch-power score supports home-run damage.",
+          "value": 53.1,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Hot recent-form streak",
+          "detail": "100 recent-form trend score is helping the player-card read.",
+          "value": 100,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "40.7 HR Power Index (LONGSHOT POWER).",
+          "value": 40.7,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 84,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 65,
+        "pitchMix": 78,
+        "consensus": 85,
+        "recentForm": 100,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 40.7,
+        "truePowerScore": 45.1,
+        "contactDamageScore": 45.7,
+        "launchPowerScore": 53.1,
+        "strikeoutRate": 19.7,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 100
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Brice Turang",
       "team": "Milwaukee Brewers",
       "opponent": "Los Angeles Dodgers",
@@ -543,100 +637,6 @@
         "strikeoutRate": 25.2,
         "powerTier": "LONGSHOT_POWER",
         "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Andy Pages",
-      "team": "Los Angeles Dodgers",
-      "opponent": "Milwaukee Brewers",
-      "game": "Los Angeles Dodgers at Milwaukee Brewers",
-      "sections": [],
-      "aiVerdict": "Strong AI Play",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 81,
-      "stars": 4,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "53.1 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "40.7 HR Power Index (LONGSHOT POWER).",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "53.1 launch-power score supports home-run damage.",
-          "value": 53.1,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "40.7 HR Power Index (LONGSHOT POWER).",
-          "value": 40.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 81,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 65,
-        "pitchMix": 78,
-        "consensus": 85,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 40.7,
-        "truePowerScore": 45.1,
-        "contactDamageScore": 45.7,
-        "launchPowerScore": 53.1,
-        "strikeoutRate": 19.7,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 72
       },
       "expected": {
         "pitch": null,
@@ -2407,7 +2407,7 @@
       }
     },
     {
-      "player": "Hyeseong Kim",
+      "player": "Hunter Feduccia",
       "team": "Los Angeles Dodgers",
       "opponent": "Milwaukee Brewers",
       "game": "Los Angeles Dodgers at Milwaukee Brewers",
@@ -2422,9 +2422,9 @@
       ],
       "riskFactors": [
         "1.4% tracked HR probability (LOW).",
-        "2.3 HR Power Index (LOW POWER).",
-        "8.4 contact-damage score limits the supporting power case.",
-        "2.9 launch-power score is below the stronger home-run profiles.",
+        "5.8 HR Power Index (LOW POWER).",
+        "9.1 contact-damage score limits the supporting power case.",
+        "9.3 launch-power score is below the stronger home-run profiles.",
         "Home runs remain high-variance outcomes even when several independent signals agree."
       ],
       "supportingSignals": [
@@ -2449,24 +2449,24 @@
         {
           "key": "limited_power",
           "label": "Limited raw-power support",
-          "detail": "2.3 HR Power Index (LOW POWER).",
-          "value": 2.3,
+          "detail": "5.8 HR Power Index (LOW POWER).",
+          "value": 5.8,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_contact_damage",
           "label": "Contact quality concern",
-          "detail": "8.4 contact-damage score limits the supporting power case.",
-          "value": 8.4,
+          "detail": "9.1 contact-damage score limits the supporting power case.",
+          "value": 9.1,
           "source": "hr_power_profiles.json",
           "severity": "high"
         },
         {
           "key": "limited_launch_power",
           "label": "Launch profile concern",
-          "detail": "2.9 launch-power score is below the stronger home-run profiles.",
-          "value": 2.9,
+          "detail": "9.3 launch-power score is below the stronger home-run profiles.",
+          "value": 9.3,
           "source": "hr_power_profiles.json",
           "severity": "high"
         }
@@ -2484,11 +2484,11 @@
         "history": null
       },
       "homeRunDNA": {
-        "hrPowerIndex": 2.3,
-        "truePowerScore": 4.1,
-        "contactDamageScore": 8.4,
-        "launchPowerScore": 2.9,
-        "strikeoutRate": 23.7,
+        "hrPowerIndex": 5.8,
+        "truePowerScore": 7.6,
+        "contactDamageScore": 9.1,
+        "launchPowerScore": 9.3,
+        "strikeoutRate": 23.9,
         "powerTier": "LOW_POWER",
         "recentForm": 100
       },
@@ -2961,6 +2961,100 @@
       }
     },
     {
+      "player": "Andy Pages",
+      "team": "Los Angeles Dodgers",
+      "opponent": "Milwaukee Brewers",
+      "game": "Los Angeles Dodgers at Milwaukee Brewers",
+      "sections": [],
+      "aiVerdict": "Strong AI Play",
+      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
+      "probability": 22.8,
+      "confidence": 84,
+      "stars": 4,
+      "whyToday": [
+        "22.8% tracked HR probability (NUCLEAR).",
+        "53.1 launch-power score supports home-run damage.",
+        "100 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "40.7 HR Power Index (LONGSHOT POWER).",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "hr_probability",
+          "label": "Top-tier HR probability",
+          "detail": "22.8% tracked HR probability (NUCLEAR).",
+          "value": 22.8,
+          "source": "hr_probability_tracking.json",
+          "severity": "support"
+        },
+        {
+          "key": "launch_power",
+          "label": "Launch-angle power",
+          "detail": "53.1 launch-power score supports home-run damage.",
+          "value": 53.1,
+          "source": "hr_power_profiles.json",
+          "severity": "support"
+        },
+        {
+          "key": "recent_form_streak",
+          "label": "Hot recent-form streak",
+          "detail": "100 recent-form trend score is helping the player-card read.",
+          "value": 100,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "40.7 HR Power Index (LONGSHOT POWER).",
+          "value": 40.7,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 84,
+        "pitchMatch": 70,
+        "powerProfile": 82,
+        "environment": 65,
+        "pitchMix": 78,
+        "consensus": 85,
+        "recentForm": 100,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 40.7,
+        "truePowerScore": 45.1,
+        "contactDamageScore": 45.7,
+        "launchPowerScore": 53.1,
+        "strikeoutRate": 19.7,
+        "powerTier": "LONGSHOT_POWER",
+        "recentForm": 100
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Brice Turang",
       "team": "Milwaukee Brewers",
       "opponent": "Los Angeles Dodgers",
@@ -3036,100 +3130,6 @@
         "strikeoutRate": 25.2,
         "powerTier": "LONGSHOT_POWER",
         "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Andy Pages",
-      "team": "Los Angeles Dodgers",
-      "opponent": "Milwaukee Brewers",
-      "game": "Los Angeles Dodgers at Milwaukee Brewers",
-      "sections": [],
-      "aiVerdict": "Strong AI Play",
-      "oneLine": "22.8% tracked HR probability (NUCLEAR).",
-      "probability": 22.8,
-      "confidence": 81,
-      "stars": 4,
-      "whyToday": [
-        "22.8% tracked HR probability (NUCLEAR).",
-        "53.1 launch-power score supports home-run damage.",
-        "72 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "40.7 HR Power Index (LONGSHOT POWER).",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "hr_probability",
-          "label": "Top-tier HR probability",
-          "detail": "22.8% tracked HR probability (NUCLEAR).",
-          "value": 22.8,
-          "source": "hr_probability_tracking.json",
-          "severity": "support"
-        },
-        {
-          "key": "launch_power",
-          "label": "Launch-angle power",
-          "detail": "53.1 launch-power score supports home-run damage.",
-          "value": 53.1,
-          "source": "hr_power_profiles.json",
-          "severity": "support"
-        },
-        {
-          "key": "recent_form_streak",
-          "label": "Recent-form support",
-          "detail": "72 recent-form trend score is helping the player-card read.",
-          "value": 72,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "40.7 HR Power Index (LONGSHOT POWER).",
-          "value": 40.7,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 81,
-        "pitchMatch": 70,
-        "powerProfile": 82,
-        "environment": 65,
-        "pitchMix": 78,
-        "consensus": 85,
-        "recentForm": 72,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 40.7,
-        "truePowerScore": 45.1,
-        "contactDamageScore": 45.7,
-        "launchPowerScore": 53.1,
-        "strikeoutRate": 19.7,
-        "powerTier": "LONGSHOT_POWER",
-        "recentForm": 72
       },
       "expected": {
         "pitch": null,
@@ -4879,109 +4879,6 @@
         "contactDamageScore": 30,
         "launchPowerScore": 16.1,
         "strikeoutRate": 10.7,
-        "powerTier": "LOW_POWER",
-        "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Hyeseong Kim",
-      "team": "Los Angeles Dodgers",
-      "opponent": "Milwaukee Brewers",
-      "game": "Los Angeles Dodgers at Milwaukee Brewers",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "100 recent-form trend score is helping the player-card read.",
-      "probability": 1.4,
-      "confidence": 64,
-      "stars": 2,
-      "whyToday": [
-        "100 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "1.4% tracked HR probability (LOW).",
-        "2.3 HR Power Index (LOW POWER).",
-        "8.4 contact-damage score limits the supporting power case.",
-        "2.9 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Hot recent-form streak",
-          "detail": "100 recent-form trend score is helping the player-card read.",
-          "value": 100,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "1.4% tracked HR probability (LOW).",
-          "value": 1.4,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "2.3 HR Power Index (LOW POWER).",
-          "value": 2.3,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "8.4 contact-damage score limits the supporting power case.",
-          "value": 8.4,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "2.9 launch-power score is below the stronger home-run profiles.",
-          "value": 2.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 64,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 65,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 100,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 2.3,
-        "truePowerScore": 4.1,
-        "contactDamageScore": 8.4,
-        "launchPowerScore": 2.9,
-        "strikeoutRate": 23.7,
         "powerTier": "LOW_POWER",
         "recentForm": 100
       },
