@@ -1,17 +1,165 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-12T00:46:56.868Z",
+  "generatedAt": "2026-10-12T03:40:23.051Z",
   "date": "2026-10-11",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-12T00:45:22.534Z",
-    "mlb_player_pool.json": "2026-10-12T00:45:22.906Z",
-    "game_pitcher_matchups.json": "2026-10-12T00:45:32.154Z",
-    "player_card_data.json": "2026-10-12T00:46:56.802Z",
-    "hr_probability_tracking.json": "2026-10-12T00:45:31.899Z",
-    "pitcher_vulnerability.json": "2026-10-12T00:45:32.155Z"
+    "mlb_games_today.json": "2026-10-12T03:38:53.877Z",
+    "mlb_player_pool.json": "2026-10-12T03:38:54.246Z",
+    "game_pitcher_matchups.json": "2026-10-12T03:39:03.945Z",
+    "player_card_data.json": "2026-10-12T03:40:22.991Z",
+    "hr_probability_tracking.json": "2026-10-12T03:39:03.573Z",
+    "pitcher_vulnerability.json": "2026-10-12T03:39:03.945Z"
   },
   "alerts": [
+    {
+      "id": "1844895d881f57ba3652",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "571771",
+      "entityName": "Enrique Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Enrique Hernández removed from the confirmed lineup",
+      "message": "Enrique Hernández's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "cf8d73607b3a7d86a008",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571771",
+      "entityName": "Enrique Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Enrique Hernández's HR probability fell",
+      "message": "Tracked HR probability fell from 5.5% to 0%.",
+      "previous": {
+        "probability": 5.5
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "f1ea21b8d907fa47a117",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571771",
+      "entityName": "Enrique Hernández",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Enrique Hernández's model score fell",
+      "message": "The live model score fell from 32.1 to 0.",
+      "previous": {
+        "modelScore": 32.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "59135b08c0680cf82c6f",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669242",
+      "entityName": "Tommy Edman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Tommy Edman confirmed in the lineup",
+      "message": "Tommy Edman is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "d9ef483414e81a6e197b",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669242",
+      "entityName": "Tommy Edman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Tommy Edman's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 5.6%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 5.6
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "bdb83f775b08274b417b",
+      "createdAt": "2026-10-12T03:40:23.051Z",
+      "date": "2026-10-11",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669242",
+      "entityName": "Tommy Edman",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849809,
+      "title": "Tommy Edman's model score rose",
+      "message": "The live model score rose from 0 to 28.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 28.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "ac30fa873df717bcfcb1",
       "createdAt": "2026-10-11T21:45:55.875Z",
@@ -807,13 +955,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849809,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 5.5,
-        "modelScore": 32.1,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "571970": {
@@ -1011,13 +1159,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849809,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "694819",
         "opposingPitcher": "Jacob Misiorowski",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 5.6,
+        "modelScore": 28.8,
         "signals": [
           "hotLately"
         ]
