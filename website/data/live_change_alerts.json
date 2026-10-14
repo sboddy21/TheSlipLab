@@ -1,17 +1,141 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-14T02:12:08.771Z",
+  "generatedAt": "2026-10-14T03:01:06.724Z",
   "date": "2026-10-13",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-14T02:10:36.022Z",
-    "mlb_player_pool.json": "2026-10-14T02:10:36.364Z",
-    "game_pitcher_matchups.json": "2026-10-14T02:10:46.319Z",
-    "player_card_data.json": "2026-10-14T02:12:08.697Z",
-    "hr_probability_tracking.json": "2026-10-14T02:10:46.055Z",
-    "pitcher_vulnerability.json": "2026-10-14T02:10:46.321Z"
+    "mlb_games_today.json": "2026-10-14T02:59:26.589Z",
+    "mlb_player_pool.json": "2026-10-14T02:59:26.909Z",
+    "game_pitcher_matchups.json": "2026-10-14T02:59:37.625Z",
+    "player_card_data.json": "2026-10-14T03:01:06.652Z",
+    "hr_probability_tracking.json": "2026-10-14T02:59:37.308Z",
+    "pitcher_vulnerability.json": "2026-10-14T02:59:37.626Z"
   },
   "alerts": [
+    {
+      "id": "56579977027f5e8be0a5",
+      "createdAt": "2026-10-14T03:01:06.724Z",
+      "date": "2026-10-13",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "682657",
+      "entityName": "Angel Martínez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849813,
+      "title": "Angel Martínez confirmed in the lineup",
+      "message": "Angel Martínez is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "aedd2e71b79a203dc97b",
+      "createdAt": "2026-10-14T03:01:06.724Z",
+      "date": "2026-10-13",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682657",
+      "entityName": "Angel Martínez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849813,
+      "title": "Angel Martínez's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 22.8%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 22.8
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "a3c513f4ceccd62dc803",
+      "createdAt": "2026-10-14T03:01:06.724Z",
+      "date": "2026-10-13",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "682657",
+      "entityName": "Angel Martínez",
+      "team": "Cleveland Guardians",
+      "gamePk": 849813,
+      "title": "Angel Martínez's model score rose",
+      "message": "The live model score rose from 0 to 41.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 41.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "287b7304440a249d4b8e",
+      "createdAt": "2026-10-14T03:01:06.724Z",
+      "date": "2026-10-13",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "690984",
+      "entityName": "Petey Halpin",
+      "team": "Cleveland Guardians",
+      "gamePk": 849813,
+      "title": "Petey Halpin removed from the confirmed lineup",
+      "message": "Petey Halpin's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "c0b13e40f0d05e4d9a30",
+      "createdAt": "2026-10-14T03:01:06.724Z",
+      "date": "2026-10-13",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "690984",
+      "entityName": "Petey Halpin",
+      "team": "Cleveland Guardians",
+      "gamePk": 849813,
+      "title": "Petey Halpin's model score fell",
+      "message": "The live model score fell from 25 to 0.",
+      "previous": {
+        "modelScore": 25
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "77c49d7a580f20e5e871",
       "createdAt": "2026-10-14T02:12:08.771Z",
@@ -1070,7 +1194,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 7.2,
-        "modelScore": 39.1,
+        "modelScore": 39,
         "signals": []
       },
       "622761": {
@@ -1221,7 +1345,7 @@
         "lineupSpot": 8,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 3.1,
+        "probability": 2.9,
         "modelScore": 29.5,
         "signals": [
           "hotLately"
@@ -1272,7 +1396,7 @@
         "lineupSpot": 7,
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
-        "probability": 5.3,
+        "probability": 5.1,
         "modelScore": 29.6,
         "signals": []
       },
@@ -1312,13 +1436,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849813,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 22.8,
+        "modelScore": 41.9,
         "signals": []
       },
       "683748": {
@@ -1348,7 +1472,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 11.2,
-        "modelScore": 39.2,
+        "modelScore": 39.1,
         "signals": []
       },
       "689414": {
@@ -1372,13 +1496,13 @@
         "team": "Cleveland Guardians",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849813,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 1.5,
-        "modelScore": 25,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "691406": {
@@ -1393,7 +1517,7 @@
         "opposingPitcherId": "800048",
         "opposingPitcher": "Parker Messick",
         "probability": 24,
-        "modelScore": 49.8,
+        "modelScore": 49.7,
         "signals": []
       },
       "694197": {
