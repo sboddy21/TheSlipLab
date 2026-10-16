@@ -1,17 +1,170 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-15T23:20:18.397Z",
+  "generatedAt": "2026-10-16T01:36:22.643Z",
   "date": "2026-10-15",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-15T23:19:12.931Z",
-    "mlb_player_pool.json": "2026-10-15T23:19:13.202Z",
-    "game_pitcher_matchups.json": "2026-10-15T23:19:18.640Z",
-    "player_card_data.json": "2026-10-15T23:20:18.319Z",
-    "hr_probability_tracking.json": "2026-10-15T23:19:17.939Z",
-    "pitcher_vulnerability.json": "2026-10-15T23:19:18.642Z"
+    "mlb_games_today.json": "2026-10-16T01:35:17.819Z",
+    "mlb_player_pool.json": "2026-10-16T01:35:18.066Z",
+    "game_pitcher_matchups.json": "2026-10-16T01:35:24.166Z",
+    "player_card_data.json": "2026-10-16T01:36:22.570Z",
+    "hr_probability_tracking.json": "2026-10-16T01:35:23.968Z",
+    "pitcher_vulnerability.json": "2026-10-16T01:35:24.169Z"
   },
   "alerts": [
+    {
+      "id": "e131e214e5cfc923335d",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "500743",
+      "entityName": "Miguel Rojas",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Miguel Rojas removed from the confirmed lineup",
+      "message": "Miguel Rojas's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0883ef644cbdc68fc1a8",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "500743",
+      "entityName": "Miguel Rojas",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Miguel Rojas's model score fell",
+      "message": "The live model score fell from 30 to 0.",
+      "previous": {
+        "modelScore": 30
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "126c412b4e68273c2725",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Max Muncy confirmed in the lineup",
+      "message": "Max Muncy is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "0fc46f03eb63911dd44b",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Max Muncy's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 22.8%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 22.8
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "84b53c162257a7ddcee2",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Max Muncy's model score rose",
+      "message": "The live model score rose from 0 to 50.3.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 50.3
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "bf0c7faeaba404702a53",
+      "createdAt": "2026-10-16T01:36:22.643Z",
+      "date": "2026-10-15",
+      "sport": "MLB",
+      "kind": "signal_change",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "571970",
+      "entityName": "Max Muncy",
+      "team": "Los Angeles Dodgers",
+      "gamePk": 849810,
+      "title": "Max Muncy's verified signals changed",
+      "message": "Added: sleeper.",
+      "previous": {
+        "signals": [
+          "due"
+        ]
+      },
+      "current": {
+        "signals": [
+          "due",
+          "sleeper"
+        ]
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "c19844b8e2ffa010d06a",
       "createdAt": "2026-10-15T23:20:18.397Z",
@@ -2002,13 +2155,13 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849810,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
-        "probability": 3.7,
-        "modelScore": 30,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "518692": {
@@ -2023,7 +2176,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 16.5,
-        "modelScore": 44.4,
+        "modelScore": 43.7,
         "signals": []
       },
       "571771": {
@@ -2038,7 +2191,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 5.5,
-        "modelScore": 36.5,
+        "modelScore": 35.8,
         "signals": []
       },
       "571970": {
@@ -2047,15 +2200,16 @@
         "team": "Los Angeles Dodgers",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849810,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 22.8,
+        "modelScore": 50.3,
         "signals": [
-          "due"
+          "due",
+          "sleeper"
         ]
       },
       "592885": {
@@ -2069,8 +2223,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 8.2,
-        "modelScore": 40.9,
+        "probability": 8.7,
+        "modelScore": 40.2,
         "signals": []
       },
       "595978": {
@@ -2115,7 +2269,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 23.6,
-        "modelScore": 43.3,
+        "modelScore": 42.6,
         "signals": []
       },
       "606192": {
@@ -2130,7 +2284,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 12.5,
-        "modelScore": 38.5,
+        "modelScore": 37.8,
         "signals": []
       },
       "608070": {
@@ -2145,7 +2299,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 7.1,
-        "modelScore": 37.4,
+        "modelScore": 37,
         "signals": []
       },
       "622761": {
@@ -2160,7 +2314,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 1.6,
-        "modelScore": 22.5,
+        "modelScore": 22.3,
         "signals": []
       },
       "641343": {
@@ -2174,8 +2328,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 22.8,
-        "modelScore": 47.1,
+        "probability": 24,
+        "modelScore": 46.4,
         "signals": [
           "due"
         ]
@@ -2192,7 +2346,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 24,
-        "modelScore": 45.9,
+        "modelScore": 45.5,
         "signals": [
           "due"
         ]
@@ -2224,7 +2378,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 24,
-        "modelScore": 48.9,
+        "modelScore": 48.1,
         "signals": [
           "due"
         ]
@@ -2240,8 +2394,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 17.4,
-        "modelScore": 45.5,
+        "probability": 19.4,
+        "modelScore": 44.8,
         "signals": []
       },
       "663656": {
@@ -2256,7 +2410,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 10.4,
-        "modelScore": 38.4,
+        "modelScore": 37.7,
         "signals": []
       },
       "663743": {
@@ -2286,7 +2440,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 22.8,
-        "modelScore": 48.2,
+        "modelScore": 47.8,
         "signals": [
           "sleeper"
         ]
@@ -2303,7 +2457,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 19,
-        "modelScore": 45.5,
+        "modelScore": 45.2,
         "signals": []
       },
       "666152": {
@@ -2317,8 +2471,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 1.4,
-        "modelScore": 18.4,
+        "probability": 1.3,
+        "modelScore": 17.9,
         "signals": []
       },
       "666176": {
@@ -2333,7 +2487,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 17.7,
-        "modelScore": 43.1,
+        "modelScore": 42.8,
         "signals": []
       },
       "668723": {
@@ -2362,8 +2516,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 22.7,
-        "modelScore": 42.6,
+        "probability": 24,
+        "modelScore": 41.9,
         "signals": [
           "hotLately"
         ]
@@ -2379,8 +2533,8 @@
         "lineupSpot": 6,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 9.7,
-        "modelScore": 35.7,
+        "probability": 10,
+        "modelScore": 35.1,
         "signals": []
       },
       "669242": {
@@ -2412,7 +2566,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 11.9,
-        "modelScore": 37.3,
+        "modelScore": 36.6,
         "signals": [
           "hotLately"
         ]
@@ -2429,7 +2583,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 1.3,
-        "modelScore": 15.1,
+        "modelScore": 14.8,
         "signals": []
       },
       "672275": {
@@ -2444,7 +2598,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 3,
-        "modelScore": 29.8,
+        "modelScore": 29.5,
         "signals": [
           "hotLately"
         ]
@@ -2461,7 +2615,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 8.2,
-        "modelScore": 33.9,
+        "modelScore": 33.6,
         "signals": [
           "hotLately"
         ]
@@ -2493,7 +2647,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 7.8,
-        "modelScore": 30.4,
+        "modelScore": 30.1,
         "signals": [
           "hotLately"
         ]
@@ -2525,7 +2679,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 1.7,
-        "modelScore": 24.1,
+        "modelScore": 23.8,
         "signals": []
       },
       "681624": {
@@ -2540,7 +2694,7 @@
         "opposingPitcherId": "675660",
         "opposingPitcher": "Shane Drohan",
         "probability": 21.5,
-        "modelScore": 38.5,
+        "modelScore": 37.9,
         "signals": [
           "hotLately"
         ]
@@ -2604,7 +2758,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 24,
-        "modelScore": 42.9,
+        "modelScore": 42.5,
         "signals": []
       },
       "683953": {
@@ -2633,8 +2787,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 1.4,
-        "modelScore": 17.9,
+        "probability": 1.3,
+        "modelScore": 17.4,
         "signals": []
       },
       "687401": {
@@ -2664,7 +2818,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 13.2,
-        "modelScore": 39.9,
+        "modelScore": 39.5,
         "signals": []
       },
       "690984": {
@@ -2679,7 +2833,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 1.4,
-        "modelScore": 23.7,
+        "modelScore": 23.4,
         "signals": []
       },
       "691406": {
@@ -2694,7 +2848,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 24,
-        "modelScore": 49.8,
+        "modelScore": 49.4,
         "signals": []
       },
       "694192": {
@@ -2708,8 +2862,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 22.8,
-        "modelScore": 51.2,
+        "probability": 24,
+        "modelScore": 50.4,
         "signals": []
       },
       "694197": {
@@ -2724,7 +2878,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 1.4,
-        "modelScore": 21.5,
+        "modelScore": 21.2,
         "signals": []
       },
       "800050": {
@@ -2739,7 +2893,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 24,
-        "modelScore": 47.6,
+        "modelScore": 47.2,
         "signals": [
           "hotLately"
         ]
@@ -2788,7 +2942,7 @@
         "opposingPitcherId": "668909",
         "opposingPitcher": "Gavin Williams",
         "probability": 1.5,
-        "modelScore": 24.9,
+        "modelScore": 24.6,
         "signals": []
       },
       "806198": {
@@ -2802,8 +2956,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "607192",
         "opposingPitcher": "Tyler Glasnow",
-        "probability": 1.8,
-        "modelScore": 23.3,
+        "probability": 1.7,
+        "modelScore": 22.8,
         "signals": []
       },
       "810938": {
