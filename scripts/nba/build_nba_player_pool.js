@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const GAMES_FILE = path.join(ROOT, "website/data/nba_games_today.json");
 const OUT = path.join(ROOT, "website/data/nba_player_pool.json");
+const ESPN_TEAM_SLUGS = { NOP: "no", UTA: "utah" };
 
 function seasonYear(date = new Date()) {
   const parts = new Intl.DateTimeFormat("en-US", {
@@ -228,7 +229,8 @@ function normalizeEspnRosterPlayer(player, team, opponent, game, homeAway) {
 }
 
 async function fetchEspnTeamRoster(team, opponent, game, homeAway) {
-  const abbreviation = teamKey(team).toLowerCase();
+  const teamAbbreviation = teamKey(team);
+  const abbreviation = ESPN_TEAM_SLUGS[teamAbbreviation] || teamAbbreviation.toLowerCase();
   if (!abbreviation) throw new Error("Team abbreviation unavailable for ESPN roster lookup");
   const data = await fetchJson(`https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/${abbreviation}/roster`);
   return (Array.isArray(data?.athletes) ? data.athletes : [])
