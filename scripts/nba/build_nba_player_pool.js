@@ -188,7 +188,7 @@ function normalizeEspnRosterPlayer(player, team, opponent, game, homeAway) {
     nameShort: player.shortName || player.displayName || "",
     jersey: String(player.jersey || ""),
     position: player.position?.abbreviation || player.position?.displayName || "",
-    status: "UNKNOWN",
+    status: String(player.status?.type || "").toLowerCase() === "active" ? "ACTIVE" : "UNKNOWN",
     statusSource: "ESPN team roster; game availability not confirmed",
     starter: false,
     starterKnown: false,

@@ -64,10 +64,11 @@ async function main() {
     const injury = injuryByName.get(normalizeName(player.player)) || null;
     const liveStatus = String(player.statusSource || "").includes("live box score");
     const liveActive = liveStatus && String(player.status).toUpperCase() === "ACTIVE";
-    const availabilityStatus = liveActive ? "CONFIRMED_ACTIVE" : injury?.status || "UNKNOWN";
+    const rosterActive = String(player.statusSource || "").includes("ESPN team roster") && String(player.status).toUpperCase() === "ACTIVE";
+    const availabilityStatus = liveActive ? "CONFIRMED_ACTIVE" : injury?.status || (rosterActive ? "ROSTER_ACTIVE" : "UNKNOWN");
     const unavailable = ["OUT", "DOUBTFUL"].includes(availabilityStatus);
     const starterKnown = Boolean(player.starterKnown);
-    const publicationEligible = feedCurrent && availabilityStatus === "CONFIRMED_ACTIVE" && starterKnown;
+    const publicationEligible = feedCurrent && !unavailable && (liveActive || rosterActive);
     return {
       playerId: player.playerId,
       player: player.player,
@@ -81,7 +82,9 @@ async function main() {
       starterKnown,
       starterSource: player.starterSource || "Unknown",
       publicationEligible,
-      publicationStatus: publicationEligible ? "eligible" : unavailable ? "withheld_unavailable" : "context_only_unconfirmed_role"
+      publicationStatus: publicationEligible
+        ? starterKnown ? "eligible" : "eligible_unconfirmed_role"
+        : unavailable ? "withheld_unavailable" : "context_only_unconfirmed_role"
     };
   });
 

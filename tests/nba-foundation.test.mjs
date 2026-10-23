@@ -19,10 +19,10 @@ test("NBA availability never treats a missing injury report as clearance", () =>
   assert.ok(unknownPlayers.every(player => !player.publicationEligible));
 });
 
-test("unknown starters keep historical minutes without becoming recommendations", () => {
+test("unknown starters keep historical minutes with an unconfirmed-role label", () => {
   const minutes = readJson("website/data/nba_minutes_engine.json");
   const unknownHighMinutes = minutes.players.filter(player => !player.starterKnown && player.expectedMinutes > 28);
-  assert.ok(unknownHighMinutes.every(player => !player.publicationEligible));
+  assert.ok(unknownHighMinutes.every(player => player.publicationStatus !== "eligible"));
 });
 
 test("NBA history uses one league-wide game-log request", () => {

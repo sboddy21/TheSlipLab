@@ -121,6 +121,7 @@ function parsePlayerGameLog(data) {
 
   return rows.map(row => ({
     playerId: String(row[idx.PLAYER_ID] || row[idx.Player_ID] || ""),
+    player: safeName(row[idx.PLAYER_NAME] || row[idx.PLAYER_NAME_LAST_FIRST]),
     gameId: String(row[idx.Game_ID] || row[idx.GAME_ID] || ""),
     gameDate: row[idx.GAME_DATE] || "",
     matchup: row[idx.MATCHUP] || "",
@@ -230,15 +231,23 @@ async function main() {
     }
   }
   const gamesByPlayer = new Map();
+  const gamesByName = new Map();
   for (const game of leagueGames) {
     const key = String(game.playerId || "");
     if (!key) continue;
     if (!gamesByPlayer.has(key)) gamesByPlayer.set(key, []);
     gamesByPlayer.get(key).push(game);
+    const nameKey = safeName(game.player).toLowerCase();
+    if (nameKey) {
+      if (!gamesByName.has(nameKey)) gamesByName.set(nameKey, []);
+      gamesByName.get(nameKey).push(game);
+    }
   }
 
   const rows = players.map(player => {
-    const history = splitHistory(gamesByPlayer.get(String(player.playerId)) || []);
+    const history = splitHistory(
+      gamesByPlayer.get(String(player.playerId)) || gamesByName.get(safeName(player.player).toLowerCase()) || []
+    );
     return {
       playerId: player.playerId,
       player: safeName(player.player),
