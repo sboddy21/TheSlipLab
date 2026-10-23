@@ -351,7 +351,7 @@ async function main() {
 
   const out = {
     sport: "NBA",
-    source: "NBA live box scores with ESPN and official NBA team roster fallbacks",
+    source: "NBA live box scores and current team rosters from ESPN or NBA",
     fetchedAt: new Date().toISOString(),
     date: gamesData.date || "",
     gameCount: games.length,

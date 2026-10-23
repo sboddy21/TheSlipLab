@@ -240,12 +240,16 @@ async function main() {
 
   const url = `https://stats.nba.com/stats/leaguedashteamstats?${params.toString()}`;
 
-  const data = await fetchJsonWithRetry(url);
-  const teams = parseTeamDefense(data);
+  let teams = [];
+  let error = "";
+  try {
+    teams = parseTeamDefense(await fetchJsonWithRetry(url));
+    if (!teams.length) throw new Error("NBA team defense API returned 0 teams for a non-empty slate");
+  } catch (fetchError) {
+    error = fetchError.message;
+  }
 
-  if (!teams.length) {
-    throw new Error("NBA team defense API returned 0 teams for a non-empty slate");
-  } else {
+  if (teams.length) {
     rankRows(teams, "pointsAllowed", "rankPointsAllowed", true);
     rankRows(teams, "reboundsAllowed", "rankReboundsAllowed", true);
     rankRows(teams, "assistsAllowed", "rankAssistsAllowed", true);
@@ -279,8 +283,8 @@ async function main() {
     date: gamesData.date || "",
     season,
     teamCount: teams.length,
-    availability: "games_scheduled",
-    error: "",
+    availability: error ? "source_unavailable" : "games_scheduled",
+    error,
     modelNotes: [
       "Team Defense 1.1 uses NBA stats opponent per game team data when available.",
       "Lower allowed values rank as stronger defense.",
@@ -295,7 +299,7 @@ async function main() {
   console.log("NBA TEAM DEFENSE COMPLETE");
   console.log("Season:", season);
   console.log("Teams:", teams.length);
-  console.log("Error: none");
+  console.log("Error:", error || "none");
   console.log("Saved:", OUT);
 }
 

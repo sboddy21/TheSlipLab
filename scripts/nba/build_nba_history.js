@@ -152,10 +152,10 @@ async function fetchLeagueHistory(season) {
   });
   const url = `https://stats.nba.com/stats/leaguegamelog?${params.toString()}`;
   try {
-    return parsePlayerGameLog(await fetchJson(url, 45000));
+    return parsePlayerGameLog(await fetchJson(url, 10000));
   } catch (error) {
     await sleep(RETRY_WAIT_MS);
-    return parsePlayerGameLog(await fetchJson(url, 45000));
+    return parsePlayerGameLog(await fetchJson(url, 10000));
   }
 }
 
@@ -220,7 +220,15 @@ async function main() {
     isPreseasonSlate(players) ? previousSeason(currentSeason) : currentSeason
   );
 
-  const leagueGames = players.length ? await fetchLeagueHistory(season) : [];
+  const errors = [];
+  let leagueGames = [];
+  if (players.length) {
+    try {
+      leagueGames = await fetchLeagueHistory(season);
+    } catch (error) {
+      errors.push({ source: "NBA league game log", message: error.message });
+    }
+  }
   const gamesByPlayer = new Map();
   for (const game of leagueGames) {
     const key = String(game.playerId || "");
@@ -243,8 +251,6 @@ async function main() {
       ...history
     };
   });
-  const errors = [];
-
   const out = {
     sport: "NBA",
     version: "1.1",
@@ -255,7 +261,7 @@ async function main() {
     currentSeason,
     baselineMode: season === currentSeason ? "current_season" : "previous_season_preseason",
     playerCount: rows.length,
-    availability: players.length ? "players_available" : "no_games_scheduled",
+    availability: !players.length ? "no_games_scheduled" : errors.length ? "history_unavailable" : "players_available",
     errorCount: errors.length,
     leagueGameLogCount: leagueGames.length,
     errors,
