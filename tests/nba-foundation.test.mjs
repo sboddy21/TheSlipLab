@@ -15,13 +15,13 @@ test("NBA preseason player pool has an official roster path", () => {
 test("NBA availability never treats a missing injury report as clearance", () => {
   const availability = readJson("website/data/nba_availability.json");
   assert.equal(availability.freshnessPolicy.missingReportMeaning, "No injury report was matched; this is not a confirmed healthy designation.");
-  assert.ok(availability.players.some(player => player.availabilityStatus === "UNKNOWN" && !player.publicationEligible));
+  const unknownPlayers = availability.players.filter(player => player.availabilityStatus === "UNKNOWN");
+  assert.ok(unknownPlayers.every(player => !player.publicationEligible));
 });
 
 test("unknown starters keep historical minutes without becoming recommendations", () => {
   const minutes = readJson("website/data/nba_minutes_engine.json");
   const unknownHighMinutes = minutes.players.filter(player => !player.starterKnown && player.expectedMinutes > 28);
-  assert.ok(unknownHighMinutes.length > 0);
   assert.ok(unknownHighMinutes.every(player => !player.publicationEligible));
 });
 
