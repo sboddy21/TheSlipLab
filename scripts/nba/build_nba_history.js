@@ -11,6 +11,7 @@ const OUT = path.join(ROOT, "website/data/nba_history.json");
 
 const FETCH_TIMEOUT_MS = 7000;
 const RETRY_WAIT_MS = 500;
+const ESPN_CONCURRENCY = 24;
 
 function readJSON(file, fallback) {
   try {
@@ -61,6 +62,10 @@ function seasonYear() {
 function previousSeason(season) {
   const start = Number(String(season).slice(0, 4)) - 1;
   return `${start}-${String(start + 1).slice(-2)}`;
+}
+
+function seasonEndYear(season) {
+  return Number(String(season).slice(0, 4)) + 1;
 }
 
 function isPreseasonSlate(players) {
@@ -199,6 +204,52 @@ async function fetchPlayerHistory(playerId, season) {
   }
 }
 
+function parseMadeAttempted(value) {
+  const [made, attempted] = String(value || "").split("-").map(num);
+  return { made, attempted };
+}
+
+async function fetchEspnSeasonSummary(playerId, year) {
+  const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${playerId}/stats?region=us&lang=en&season=${year}`;
+  const data = await fetchJson(url, 10000);
+  const category = (data?.categories || []).find(item => item?.name === "averages");
+  const names = Array.isArray(category?.names) ? category.names : [];
+  const index = Object.fromEntries(names.map((name, position) => [name, position]));
+  const row = (category?.statistics || []).find(item => Number(item?.season?.year) === year);
+  if (!row) return null;
+  const stats = row.stats || [];
+  const threes = parseMadeAttempted(stats[index["avgThreePointFieldGoalsMade-avgThreePointFieldGoalsAttempted"]]);
+  const fieldGoals = parseMadeAttempted(stats[index["avgFieldGoalsMade-avgFieldGoalsAttempted"]]);
+  const freeThrows = parseMadeAttempted(stats[index["avgFreeThrowsMade-avgFreeThrowsAttempted"]]);
+  return {
+    games: num(stats[index.gamesPlayed]),
+    minutes: num(stats[index.avgMinutes]),
+    points: num(stats[index.avgPoints]),
+    rebounds: num(stats[index.avgRebounds]),
+    assists: num(stats[index.avgAssists]),
+    threesMade: threes.made,
+    threesAttempted: threes.attempted,
+    fieldGoalAttempts: fieldGoals.attempted,
+    freeThrowAttempts: freeThrows.attempted,
+    steals: num(stats[index.avgSteals]),
+    blocks: num(stats[index.avgBlocks]),
+    turnovers: num(stats[index.avgTurnovers])
+  };
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let nextIndex = 0;
+  async function worker() {
+    while (nextIndex < items.length) {
+      const index = nextIndex++;
+      results[index] = await mapper(items[index], index);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results;
+}
+
 function splitHistory(games) {
   const sorted = [...games].sort((a, b) => String(b.gameDate).localeCompare(String(a.gameDate)));
   const last5 = sorted.slice(0, 5);
@@ -217,18 +268,33 @@ async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const players = Array.isArray(core.players) ? core.players : [];
   const currentSeason = seasonYear();
+  const forceEspn = process.env.NBA_HISTORY_FORCE_ESPN === "true";
   const season = process.env.NBA_HISTORY_SEASON || (
     isPreseasonSlate(players) ? previousSeason(currentSeason) : currentSeason
   );
 
   const errors = [];
   let leagueGames = [];
-  if (players.length) {
+  if (players.length && !forceEspn) {
     try {
       leagueGames = await fetchLeagueHistory(season);
     } catch (error) {
       errors.push({ source: "NBA league game log", message: error.message });
     }
+  }
+  const espnSummaryByPlayer = new Map();
+  if (players.length && leagueGames.length === 0) {
+    const year = seasonEndYear(previousSeason(currentSeason));
+    const summaries = await mapWithConcurrency(players, ESPN_CONCURRENCY, async player => {
+      try {
+        return await fetchEspnSeasonSummary(player.playerId, year);
+      } catch {
+        return null;
+      }
+    });
+    players.forEach((player, index) => {
+      if (summaries[index]?.minutes > 0) espnSummaryByPlayer.set(String(player.playerId), summaries[index]);
+    });
   }
   const gamesByPlayer = new Map();
   const gamesByName = new Map();
@@ -245,9 +311,19 @@ async function main() {
   }
 
   const rows = players.map(player => {
-    const history = splitHistory(
+    let history = splitHistory(
       gamesByPlayer.get(String(player.playerId)) || gamesByName.get(safeName(player.player).toLowerCase()) || []
     );
+    const espnSummary = espnSummaryByPlayer.get(String(player.playerId));
+    if (history.gamesPlayed === 0 && espnSummary) {
+      history = {
+        gamesPlayed: espnSummary.games,
+        seasonSummary: espnSummary,
+        last5: espnSummary,
+        last10: espnSummary,
+        recentGames: []
+      };
+    }
     return {
       playerId: player.playerId,
       player: safeName(player.player),
@@ -263,7 +339,7 @@ async function main() {
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: "NBA stats player game logs",
+    source: "NBA stats player game logs with ESPN season summaries when game logs are unavailable",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
     season,
@@ -273,6 +349,7 @@ async function main() {
     availability: !players.length ? "no_games_scheduled" : errors.length ? "history_unavailable" : "players_available",
     errorCount: errors.length,
     leagueGameLogCount: leagueGames.length,
+    espnSummaryCount: espnSummaryByPlayer.size,
     errors,
     players: rows
   };
