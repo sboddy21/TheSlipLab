@@ -78,6 +78,7 @@ function render() {
 
 function changeView(view) {
   state.view = descriptions[view] ? view : "dashboard";
+  window.scrollTo({ top: 0, behavior: "smooth" });
   render();
 }
 
