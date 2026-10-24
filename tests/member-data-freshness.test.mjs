@@ -14,6 +14,11 @@ test("public API withholds stale data, including HEAD, and serves current data w
   }
   try {
     process.chdir(directory);
+    for (const file of ["nba_workspace.json", "nba_player_4396971.json"]) {
+      const denied = response();
+      await handler({ method: "GET", query: { file }, headers: {} }, denied);
+      assert.equal(denied.code, 401, "Live NBA datasets keep membership authorization");
+    }
     const file = path.join(directory, "website/data/nba_availability.json");
     await fs.writeFile(file, JSON.stringify({ fetchedAt: "2020-01-01T00:00:00Z", players: [] }));
     for (const method of ["GET", "HEAD"]) {

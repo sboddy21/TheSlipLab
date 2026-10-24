@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { verifyCurrentDataset } from "../lib/data-freshness.mjs";
+import { loadNbaLiveFile } from "../lib/nba-live.mjs";
 
 const ACTIVE_STATUSES = new Set(["active", "trialing"]);
 const PUBLIC_FILES = new Set([
@@ -134,6 +135,10 @@ export default async function handler(request, response) {
           active: false
         });
       }
+    }
+
+    if (file === "nba_workspace.json" || /^nba_player_\d{1,12}\.json$/.test(file)) {
+      return json(response, 200, await loadNbaLiveFile(file));
     }
 
     const dataRoots = [

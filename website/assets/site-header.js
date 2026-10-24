@@ -90,16 +90,15 @@
   ];
   const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab"];
   const nbaItems = [
-    ["NBA Home","./nba.html",["/nba.html"]],
-    ["Points","./nba-points.html",["/nba-points.html"]],
-    ["Rebounds","./nba-rebounds.html",["/nba-rebounds.html"]],
-    ["Assists","./nba-assists.html",["/nba-assists.html"]],
-    ["Threes","./nba-threes.html",["/nba-threes.html"]],
-    ["Matchups","./nba-matchups.html",["/nba-matchups.html"]],
+    ["NBA Home","./nba.html#dashboard",["/nba.html"]],
+    ["Game Lab","./nba.html#games",[]],
+    ["Player Board","./nba.html#players",[]],
+    ["Availability","./nba.html#availability",[]],
+    ["Results","./nba-results.html",["/nba-results.html"]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nbaPrimaryOrder = ["NBA Home", "Points", "Rebounds", "Assists", "Threes", "Matchups"];
+  const nbaPrimaryOrder = ["NBA Home", "Game Lab", "Player Board", "Availability", "Results"];
   const nhlItems = [
     ["NHL Home","./nhl.html#dashboard",["/nhl.html"]],
     ["Matchups","./nhl.html#games",[]],
@@ -363,7 +362,7 @@
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
-          ? [["NBA Home","./nba.html"],["Points","./nba-points.html"],["Rebounds","./nba-rebounds.html"],["Matchups","./nba-matchups.html"]]
+          ? [["NBA Home","./nba.html#dashboard"],["Game Lab","./nba.html#games"],["Player Board","./nba.html#players"],["Results","./nba-results.html"]]
           : section === "nhl"
             ? [["NHL Home","./nhl.html#dashboard"],["Matchups","./nhl.html#games"],["Goal Scorers","./nhl.html#goals"],["Shots","./nhl.html#shots"],["Live Ice","./nhl.html#live"]]
           : section === "mlb"
