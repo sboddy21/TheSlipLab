@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { verifyCurrentDataset } from "../lib/data-freshness.mjs";
 
 const ACTIVE_STATUSES = new Set(["active", "trialing"]);
 const PUBLIC_FILES = new Set([
@@ -151,7 +152,33 @@ export default async function handler(request, response) {
       }
     }
     if (body === null) return json(response, 404, { error: "Data file not found" });
-    JSON.parse(body);
+    const payload = JSON.parse(body);
+    let health = null;
+    if (Array.isArray(payload)) {
+      for (const dataRoot of dataRoots) {
+        try { health = JSON.parse(await fs.readFile(path.join(dataRoot, "health_status.json"), "utf8")); break; }
+        catch { /* A missing receipt cannot certify current data. */ }
+      }
+    }
+    const freshness = await verifyCurrentDataset(file, payload, {
+      health,
+      load: async dependency => {
+        for (const dataRoot of dataRoots) {
+          try { return JSON.parse(await fs.readFile(path.join(dataRoot, dependency), "utf8")); }
+          catch (error) { if (error.code !== "ENOENT") throw error; }
+        }
+        throw new Error("Source dependency missing");
+      }
+    });
+    if (!freshness.available) {
+      response.setHeader("Retry-After", "60");
+      return json(response, 503, {
+        error: "current_data_unavailable",
+        message: "Current data could not be verified. Please try again shortly.",
+        file,
+        freshness
+      });
+    }
     response.setHeader(
       "Cache-Control",
       PUBLIC_FILES.has(file) ? "public, max-age=0, must-revalidate" : "private, no-store, max-age=0"

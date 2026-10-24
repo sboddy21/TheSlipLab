@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -250,7 +250,7 @@ async function mapWithConcurrency(items, limit, mapper) {
   return results;
 }
 
-function splitHistory(games) {
+export function splitHistory(games) {
   const sorted = [...games].sort((a, b) => String(b.gameDate).localeCompare(String(a.gameDate)));
   const last5 = sorted.slice(0, 5);
   const last10 = sorted.slice(0, 10);
@@ -261,6 +261,18 @@ function splitHistory(games) {
     last5: summarize(last5),
     last10: summarize(last10),
     recentGames: sorted.slice(0, 10)
+  };
+}
+
+export function historyFromSeasonSummary(summary) {
+  return {
+    gamesPlayed: summary.games,
+    seasonSummary: summary,
+    last5: null,
+    last10: null,
+    recentGames: [],
+    recentFormAvailable: false,
+    sourceKind: "season_summary_only"
   };
 }
 
@@ -284,7 +296,7 @@ async function main() {
   }
   const espnSummaryByPlayer = new Map();
   if (players.length && leagueGames.length === 0) {
-    const year = seasonEndYear(previousSeason(currentSeason));
+    const year = seasonEndYear(season);
     const summaries = await mapWithConcurrency(players, ESPN_CONCURRENCY, async player => {
       try {
         return await fetchEspnSeasonSummary(player.playerId, year);
@@ -316,13 +328,7 @@ async function main() {
     );
     const espnSummary = espnSummaryByPlayer.get(String(player.playerId));
     if (history.gamesPlayed === 0 && espnSummary) {
-      history = {
-        gamesPlayed: espnSummary.games,
-        seasonSummary: espnSummary,
-        last5: espnSummary,
-        last10: espnSummary,
-        recentGames: []
-      };
+      history = historyFromSeasonSummary(espnSummary);
     }
     return {
       playerId: player.playerId,
@@ -333,6 +339,8 @@ async function main() {
       starter: Boolean(player.starter),
       status: player.status,
       season,
+      recentFormAvailable: history.recentGames.length > 0,
+      sourceKind: "game_logs",
       ...history
     };
   });
@@ -362,7 +370,7 @@ async function main() {
   console.log("Saved:", OUT);
 }
 
-main().catch(err => {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(err => {
   console.error("NBA HISTORY FAILED");
   console.error(err);
   process.exit(1);

@@ -1,4 +1,5 @@
 import fs from "fs";
+import { validStabilizedPitcherRisk } from "./lib/pitcher-risk-validation.mjs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { RESULT_EVENT_CATEGORIES } from "./result_event_categories.mjs";
@@ -490,7 +491,7 @@ function validatePitcherVulnerability(expectedDate) {
     if (!Number.isFinite(weight) || weight <= 0 || weight > 1) fail(`Invalid sample weight for ${row.pitcher || id}`);
     if (!Number.isFinite(innings) || innings <= 0) fail(`Invalid true innings for ${row.pitcher || id}`);
     if (Math.abs(weight - Math.min(1, innings / 60)) > 0.001) fail(`Sample weight does not match live innings for ${row.pitcher || id}`);
-    if (Math.abs(score - baseline) > Math.abs(raw - baseline) + 1) fail(`Short-sample stabilization moved ${row.pitcher || id} away from the live baseline`);
+    if (!validStabilizedPitcherRisk(score, raw, baseline, weight)) fail(`Short-sample stabilization does not match the live baseline for ${row.pitcher || id}`);
     byId.set(id, score);
   }
 
