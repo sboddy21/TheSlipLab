@@ -1,17 +1,909 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-27T02:07:17.205Z",
+  "generatedAt": "2026-10-27T03:12:19.882Z",
   "date": "2026-10-26",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-27T02:06:14.789Z",
-    "mlb_player_pool.json": "2026-10-27T02:06:14.984Z",
-    "game_pitcher_matchups.json": "2026-10-27T02:06:17.441Z",
-    "player_card_data.json": "2026-10-27T02:07:17.134Z",
-    "hr_probability_tracking.json": "2026-10-27T02:06:17.266Z",
-    "pitcher_vulnerability.json": "2026-10-27T02:06:17.443Z"
+    "mlb_games_today.json": "2026-10-27T03:11:05.910Z",
+    "mlb_player_pool.json": "2026-10-27T03:11:06.152Z",
+    "game_pitcher_matchups.json": "2026-10-27T03:11:11.971Z",
+    "player_card_data.json": "2026-10-27T03:12:19.813Z",
+    "hr_probability_tracking.json": "2026-10-27T03:11:11.796Z",
+    "pitcher_vulnerability.json": "2026-10-27T03:11:11.972Z"
   },
   "alerts": [
+    {
+      "id": "213cd8c088ecd5d48be4",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Christian Yelich removed from the confirmed lineup",
+      "message": "Christian Yelich's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "1c7df529b3bb71a7d0ab",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Christian Yelich's HR probability fell",
+      "message": "Tracked HR probability fell from 8.9% to 0%.",
+      "previous": {
+        "probability": 8.9
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "18a2b1ff38921cb47b41",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "592885",
+      "entityName": "Christian Yelich",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Christian Yelich's model score fell",
+      "message": "The live model score fell from 39.2 to 0.",
+      "previous": {
+        "modelScore": 39.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "238d3a8364437d38f095",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "596142",
+      "entityName": "Gary Sánchez",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Gary Sánchez confirmed in the lineup",
+      "message": "Gary Sánchez is confirmed batting 4.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "21c353d26adea37c5190",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "596142",
+      "entityName": "Gary Sánchez",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Gary Sánchez's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 17.3%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 17.3
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "548f37bcb2888f839a1d",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "596142",
+      "entityName": "Gary Sánchez",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Gary Sánchez's model score rose",
+      "message": "The live model score rose from 0 to 42.6.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 42.6
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "d5687a25f27538e3e2b2",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "622761",
+      "entityName": "Jorge Mateo",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Jorge Mateo confirmed in the lineup",
+      "message": "Jorge Mateo is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "13543c1e2823a1d75549",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "622761",
+      "entityName": "Jorge Mateo",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Jorge Mateo's model score rose",
+      "message": "The live model score rose from 0 to 22.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 22
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "c6ceef19b345d6a355b1",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "656775",
+      "entityName": "Cedric Mullins",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Cedric Mullins confirmed in the lineup",
+      "message": "Cedric Mullins is confirmed batting 8.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "11798f801bf2b1a6d46d",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656775",
+      "entityName": "Cedric Mullins",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Cedric Mullins's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 6.5%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 6.5
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "9dbd05b69c30b7b4eb75",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "656775",
+      "entityName": "Cedric Mullins",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Cedric Mullins's model score rose",
+      "message": "The live model score rose from 0 to 31.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 31.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "ed79d81d1fa061274067",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "661388",
+      "entityName": "William Contreras",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "William Contreras removed from the confirmed lineup",
+      "message": "William Contreras's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 4
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "43009ffa2a8242a05912",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "661388",
+      "entityName": "William Contreras",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "William Contreras's HR probability fell",
+      "message": "Tracked HR probability fell from 18.8% to 0%.",
+      "previous": {
+        "probability": 18.8
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "27be8163bf474aed0c99",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "661388",
+      "entityName": "William Contreras",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "William Contreras's model score fell",
+      "message": "The live model score fell from 46.3 to 0.",
+      "previous": {
+        "modelScore": 46.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "73e43debbd5774e9bb11",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "663743",
+      "entityName": "Nick Fortes",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Nick Fortes removed from the confirmed lineup",
+      "message": "Nick Fortes's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 8
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5cf22152133444e35f75",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "663743",
+      "entityName": "Nick Fortes",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Nick Fortes's model score fell",
+      "message": "The live model score fell from 24.3 to 0.",
+      "previous": {
+        "modelScore": 24.3
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "6a78cd1ca77d737b8f6f",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666018",
+      "entityName": "Jonathan Aranda",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Jonathan Aranda confirmed in the lineup",
+      "message": "Jonathan Aranda is confirmed batting 2.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "2a4d37c59364d0d5d492",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666018",
+      "entityName": "Jonathan Aranda",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Jonathan Aranda's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 16%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 16
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "6ed9eb885b0296668975",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666018",
+      "entityName": "Jonathan Aranda",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Jonathan Aranda's model score rose",
+      "message": "The live model score rose from 0 to 40.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 40
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "722e6c99f99e3b31458a",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "666152",
+      "entityName": "David Hamilton",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "David Hamilton removed from the confirmed lineup",
+      "message": "David Hamilton's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "5b0f7fbf55dd28b42b9c",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "666152",
+      "entityName": "David Hamilton",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "David Hamilton's model score fell",
+      "message": "The live model score fell from 20.1 to 0.",
+      "previous": {
+        "modelScore": 20.1
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0beed0f2050924f943ba",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Ryan Vilade removed from the confirmed lineup",
+      "message": "Ryan Vilade's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 2
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "012586b096776ac1bd86",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Ryan Vilade's HR probability fell",
+      "message": "Tracked HR probability fell from 14% to 0%.",
+      "previous": {
+        "probability": 14
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "05e7e7fb2e012a36b55f",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Ryan Vilade's model score fell",
+      "message": "The live model score fell from 39.2 to 0.",
+      "previous": {
+        "modelScore": 39.2
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "05301984506329418da1",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "669003",
+      "entityName": "Garrett Mitchell",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Garrett Mitchell removed from the confirmed lineup",
+      "message": "Garrett Mitchell's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "915f46736473d360b1ef",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669003",
+      "entityName": "Garrett Mitchell",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Garrett Mitchell's HR probability fell",
+      "message": "Tracked HR probability fell from 9.6% to 0%.",
+      "previous": {
+        "probability": 9.6
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "76562943f4a79255c98d",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "669003",
+      "entityName": "Garrett Mitchell",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Garrett Mitchell's model score fell",
+      "message": "The live model score fell from 41 to 0.",
+      "previous": {
+        "modelScore": 41
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "46c189b281c0be06d46f",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "670764",
+      "entityName": "Taylor Walls",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Taylor Walls removed from the confirmed lineup",
+      "message": "Taylor Walls's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "a131766cade2d82d975f",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "670764",
+      "entityName": "Taylor Walls",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849804,
+      "title": "Taylor Walls's model score fell",
+      "message": "The live model score fell from 13.5 to 0.",
+      "previous": {
+        "modelScore": 13.5
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "13e367a07aeabc4d3a3c",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Andrew Vaughn confirmed in the lineup",
+      "message": "Andrew Vaughn is confirmed batting 3.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 3
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "b4527513a19b34a6cb43",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Andrew Vaughn's HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 11.3%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 11.3
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "1aaec09ef1f1779e96ec",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683734",
+      "entityName": "Andrew Vaughn",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Andrew Vaughn's model score rose",
+      "message": "The live model score rose from 0 to 41.8.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 41.8
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "0947e6f4e35364bdb607",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "687401",
+      "entityName": "Joey Ortiz",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Joey Ortiz confirmed in the lineup",
+      "message": "Joey Ortiz is confirmed batting 9.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 9
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "311f71bb588180405bd0",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "687401",
+      "entityName": "Joey Ortiz",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Joey Ortiz's model score rose",
+      "message": "The live model score rose from 0 to 26.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 26.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "a15b5e49bf9b8c649ba2",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "800325",
+      "entityName": "Luis Lara",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Luis Lara confirmed in the lineup",
+      "message": "Luis Lara is confirmed batting 6.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 6
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "41d9c9947403f962c32f",
+      "createdAt": "2026-10-27T03:12:19.882Z",
+      "date": "2026-10-26",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "800325",
+      "entityName": "Luis Lara",
+      "team": "Milwaukee Brewers",
+      "gamePk": 849804,
+      "title": "Luis Lara's model score rose",
+      "message": "The live model score rose from 0 to 20.5.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 20.5
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "e2ed4aa95d87ac5bad15",
       "createdAt": "2026-10-26T23:10:19.370Z",
@@ -825,13 +1717,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 3,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 8.9,
-        "modelScore": 39.2,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "596142": {
@@ -840,13 +1732,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 4,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 17.3,
+        "modelScore": 42.6,
         "signals": []
       },
       "622761": {
@@ -855,13 +1747,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.6,
+        "modelScore": 22,
         "signals": []
       },
       "641343": {
@@ -876,7 +1768,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 24,
-        "modelScore": 48.5,
+        "modelScore": 48.4,
         "signals": [
           "due"
         ]
@@ -904,13 +1796,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 8,
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 6.5,
+        "modelScore": 31.8,
         "signals": []
       },
       "661388": {
@@ -919,33 +1811,18 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 4,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 18.8,
-        "modelScore": 46.3,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "663743": {
         "id": "663743",
         "name": "Nick Fortes",
-        "team": "Tampa Bay Rays",
-        "opponent": "Milwaukee Brewers",
-        "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 8,
-        "opposingPitcherId": "688107",
-        "opposingPitcher": "Robert Gasser",
-        "probability": 2.2,
-        "modelScore": 24.3,
-        "signals": []
-      },
-      "666018": {
-        "id": "666018",
-        "name": "Jonathan Aranda",
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849804,
@@ -958,24 +1835,9 @@
         "modelScore": 0,
         "signals": []
       },
-      "666152": {
-        "id": "666152",
-        "name": "David Hamilton",
-        "team": "Milwaukee Brewers",
-        "opponent": "Tampa Bay Rays",
-        "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
-        "opposingPitcherId": "642547",
-        "opposingPitcher": "Freddy Peralta",
-        "probability": 1.3,
-        "modelScore": 20.1,
-        "signals": []
-      },
-      "668723": {
-        "id": "668723",
-        "name": "Ryan Vilade",
+      "666018": {
+        "id": "666018",
+        "name": "Jonathan Aranda",
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849804,
@@ -984,8 +1846,38 @@
         "lineupSpot": 2,
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
-        "probability": 14,
-        "modelScore": 39.2,
+        "probability": 16,
+        "modelScore": 40,
+        "signals": []
+      },
+      "666152": {
+        "id": "666152",
+        "name": "David Hamilton",
+        "team": "Milwaukee Brewers",
+        "opponent": "Tampa Bay Rays",
+        "gamePk": 849804,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
+        "opposingPitcherId": "642547",
+        "opposingPitcher": "Freddy Peralta",
+        "probability": 0,
+        "modelScore": 0,
+        "signals": []
+      },
+      "668723": {
+        "id": "668723",
+        "name": "Ryan Vilade",
+        "team": "Tampa Bay Rays",
+        "opponent": "Milwaukee Brewers",
+        "gamePk": 849804,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
+        "opposingPitcherId": "688107",
+        "opposingPitcher": "Robert Gasser",
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "668930": {
@@ -1011,13 +1903,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 6,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 9.6,
-        "modelScore": 41,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "670764": {
@@ -1026,13 +1918,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849804,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 9,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
-        "probability": 1.3,
-        "modelScore": 13.5,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "676356": {
@@ -1047,7 +1939,7 @@
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
         "probability": 8.3,
-        "modelScore": 33.7,
+        "modelScore": 33.6,
         "signals": [
           "hotLately"
         ]
@@ -1073,13 +1965,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 3,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 11.3,
+        "modelScore": 41.8,
         "signals": [
           "due"
         ]
@@ -1096,7 +1988,7 @@
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
         "probability": 21.7,
-        "modelScore": 38.3,
+        "modelScore": 38.2,
         "signals": []
       },
       "686217": {
@@ -1111,7 +2003,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 1.3,
-        "modelScore": 28.6,
+        "modelScore": 29.8,
         "signals": []
       },
       "687401": {
@@ -1120,13 +2012,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 9,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 4.2,
+        "modelScore": 26.9,
         "signals": []
       },
       "689414": {
@@ -1156,7 +2048,7 @@
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
         "probability": 24,
-        "modelScore": 48.5,
+        "modelScore": 48.4,
         "signals": []
       },
       "694192": {
@@ -1171,7 +2063,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 24,
-        "modelScore": 49.1,
+        "modelScore": 49,
         "signals": []
       },
       "800325": {
@@ -1180,13 +2072,13 @@
         "team": "Milwaukee Brewers",
         "opponent": "Tampa Bay Rays",
         "gamePk": 849804,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 6,
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 1.4,
+        "modelScore": 20.5,
         "signals": []
       },
       "802415": {
@@ -1201,7 +2093,7 @@
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
         "probability": 1.6,
-        "modelScore": 23.8,
+        "modelScore": 23.7,
         "signals": []
       },
       "806198": {
@@ -1216,7 +2108,7 @@
         "opposingPitcherId": "642547",
         "opposingPitcher": "Freddy Peralta",
         "probability": 1.7,
-        "modelScore": 24.4,
+        "modelScore": 22.9,
         "signals": []
       },
       "810938": {
@@ -1231,7 +2123,7 @@
         "opposingPitcherId": "688107",
         "opposingPitcher": "Robert Gasser",
         "probability": 1.5,
-        "modelScore": 23.8,
+        "modelScore": 23.7,
         "signals": []
       }
     },
