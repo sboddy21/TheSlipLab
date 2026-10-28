@@ -2,7 +2,7 @@
   "sport": "MLB",
   "market": "Home Runs",
   "version": "1.3",
-  "updatedAt": "2026-10-28T01:46:22.735Z",
+  "updatedAt": "2026-10-28T03:25:52.288Z",
   "playerCount": 27,
   "sourceDebug": {
     "ai_trust_engine.json": 54,
@@ -802,12 +802,12 @@
       "game": "Milwaukee Brewers at Tampa Bay Rays",
       "sections": [],
       "aiVerdict": "Strong AI Play",
-      "oneLine": "22.2% tracked HR probability (NUCLEAR).",
-      "probability": 22.2,
+      "oneLine": "21.7% tracked HR probability (NUCLEAR).",
+      "probability": 21.7,
       "confidence": 81,
       "stars": 4,
       "whyToday": [
-        "22.2% tracked HR probability (NUCLEAR).",
+        "21.7% tracked HR probability (NUCLEAR).",
         "100 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
@@ -817,8 +817,8 @@
         {
           "key": "hr_probability",
           "label": "Top-tier HR probability",
-          "detail": "22.2% tracked HR probability (NUCLEAR).",
-          "value": 22.2,
+          "detail": "21.7% tracked HR probability (NUCLEAR).",
+          "value": 21.7,
           "source": "hr_probability_tracking.json",
           "severity": "support"
         },
@@ -1359,6 +1359,109 @@
       }
     },
     {
+      "player": "Joey Ortiz",
+      "team": "Milwaukee Brewers",
+      "opponent": "Tampa Bay Rays",
+      "game": "Milwaukee Brewers at Tampa Bay Rays",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "100 recent-form trend score is helping the player-card read.",
+      "probability": 4.2,
+      "confidence": 67,
+      "stars": 2,
+      "whyToday": [
+        "100 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "4.2% tracked HR probability (LOW).",
+        "20.9 HR Power Index (LOW POWER).",
+        "28.1 contact-damage score limits the supporting power case.",
+        "23.3 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Hot recent-form streak",
+          "detail": "100 recent-form trend score is helping the player-card read.",
+          "value": 100,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "4.2% tracked HR probability (LOW).",
+          "value": 4.2,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "20.9 HR Power Index (LOW POWER).",
+          "value": 20.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "28.1 contact-damage score limits the supporting power case.",
+          "value": 28.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "23.3 launch-power score is below the stronger home-run profiles.",
+          "value": 23.3,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 67,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 100,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 20.9,
+        "truePowerScore": 23.5,
+        "contactDamageScore": 28.1,
+        "launchPowerScore": 23.3,
+        "strikeoutRate": 19.8,
+        "powerTier": "LOW_POWER",
+        "recentForm": 100
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Cooper Pratt",
       "team": "Milwaukee Brewers",
       "opponent": "Tampa Bay Rays",
@@ -1572,14 +1675,14 @@
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "100 recent-form trend score is helping the player-card read.",
-      "probability": 1.3,
+      "probability": 0,
       "confidence": 67,
       "stars": 2,
       "whyToday": [
         "100 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "1.3% tracked HR probability (LOW).",
+        "0% tracked HR probability (OUT).",
         "6.1 HR Power Index (LOW POWER).",
         "11.8 contact-damage score limits the supporting power case.",
         "9.8 launch-power score is below the stronger home-run profiles.",
@@ -1599,8 +1702,8 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "1.3% tracked HR probability (LOW).",
-          "value": 1.3,
+          "detail": "0% tracked HR probability (OUT).",
+          "value": 0,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
@@ -1647,109 +1750,6 @@
         "contactDamageScore": 11.8,
         "launchPowerScore": 9.8,
         "strikeoutRate": 22.2,
-        "powerTier": "LOW_POWER",
-        "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Joey Ortiz",
-      "team": "Milwaukee Brewers",
-      "opponent": "Tampa Bay Rays",
-      "game": "Milwaukee Brewers at Tampa Bay Rays",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "100 recent-form trend score is helping the player-card read.",
-      "probability": 0,
-      "confidence": 67,
-      "stars": 2,
-      "whyToday": [
-        "100 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "0% tracked HR probability (OUT).",
-        "20.9 HR Power Index (LOW POWER).",
-        "28.1 contact-damage score limits the supporting power case.",
-        "23.3 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Hot recent-form streak",
-          "detail": "100 recent-form trend score is helping the player-card read.",
-          "value": 100,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "0% tracked HR probability (OUT).",
-          "value": 0,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "20.9 HR Power Index (LOW POWER).",
-          "value": 20.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "28.1 contact-damage score limits the supporting power case.",
-          "value": 28.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "23.3 launch-power score is below the stronger home-run profiles.",
-          "value": 23.3,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 67,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 100,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 20.9,
-        "truePowerScore": 23.5,
-        "contactDamageScore": 28.1,
-        "launchPowerScore": 23.3,
-        "strikeoutRate": 19.8,
         "powerTier": "LOW_POWER",
         "recentForm": 100
       },
@@ -3268,12 +3268,12 @@
       "game": "Milwaukee Brewers at Tampa Bay Rays",
       "sections": [],
       "aiVerdict": "Strong AI Play",
-      "oneLine": "22.2% tracked HR probability (NUCLEAR).",
-      "probability": 22.2,
+      "oneLine": "21.7% tracked HR probability (NUCLEAR).",
+      "probability": 21.7,
       "confidence": 81,
       "stars": 4,
       "whyToday": [
-        "22.2% tracked HR probability (NUCLEAR).",
+        "21.7% tracked HR probability (NUCLEAR).",
         "100 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
@@ -3283,8 +3283,8 @@
         {
           "key": "hr_probability",
           "label": "Top-tier HR probability",
-          "detail": "22.2% tracked HR probability (NUCLEAR).",
-          "value": 22.2,
+          "detail": "21.7% tracked HR probability (NUCLEAR).",
+          "value": 21.7,
           "source": "hr_probability_tracking.json",
           "severity": "support"
         },
@@ -3825,6 +3825,109 @@
       }
     },
     {
+      "player": "Joey Ortiz",
+      "team": "Milwaukee Brewers",
+      "opponent": "Tampa Bay Rays",
+      "game": "Milwaukee Brewers at Tampa Bay Rays",
+      "sections": [],
+      "aiVerdict": "High-Variance Longshot",
+      "oneLine": "100 recent-form trend score is helping the player-card read.",
+      "probability": 4.2,
+      "confidence": 67,
+      "stars": 2,
+      "whyToday": [
+        "100 recent-form trend score is helping the player-card read."
+      ],
+      "riskFactors": [
+        "4.2% tracked HR probability (LOW).",
+        "20.9 HR Power Index (LOW POWER).",
+        "28.1 contact-damage score limits the supporting power case.",
+        "23.3 launch-power score is below the stronger home-run profiles.",
+        "Home runs remain high-variance outcomes even when several independent signals agree."
+      ],
+      "supportingSignals": [
+        {
+          "key": "recent_form_streak",
+          "label": "Hot recent-form streak",
+          "detail": "100 recent-form trend score is helping the player-card read.",
+          "value": 100,
+          "source": "ai_trust_engine.json",
+          "severity": "support"
+        }
+      ],
+      "counterSignals": [
+        {
+          "key": "low_hr_probability",
+          "label": "Longshot base rate",
+          "detail": "4.2% tracked HR probability (LOW).",
+          "value": 4.2,
+          "source": "hr_probability_tracking.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_power",
+          "label": "Limited raw-power support",
+          "detail": "20.9 HR Power Index (LOW POWER).",
+          "value": 20.9,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_contact_damage",
+          "label": "Contact quality concern",
+          "detail": "28.1 contact-damage score limits the supporting power case.",
+          "value": 28.1,
+          "source": "hr_power_profiles.json",
+          "severity": "high"
+        },
+        {
+          "key": "limited_launch_power",
+          "label": "Launch profile concern",
+          "detail": "23.3 launch-power score is below the stronger home-run profiles.",
+          "value": 23.3,
+          "source": "hr_power_profiles.json",
+          "severity": "moderate"
+        }
+      ],
+      "trustBreakdown": {
+        "modelAgreement": 67,
+        "pitchMatch": 70,
+        "powerProfile": 75,
+        "environment": 88,
+        "pitchMix": 70,
+        "consensus": 0,
+        "recentForm": 100,
+        "bullpen": null,
+        "market": null,
+        "history": null
+      },
+      "homeRunDNA": {
+        "hrPowerIndex": 20.9,
+        "truePowerScore": 23.5,
+        "contactDamageScore": 28.1,
+        "launchPowerScore": 23.3,
+        "strikeoutRate": 19.8,
+        "powerTier": "LOW_POWER",
+        "recentForm": 100
+      },
+      "expected": {
+        "pitch": null,
+        "zone": null,
+        "distance": null,
+        "count": null
+      },
+      "source": {
+        "files": [
+          "ai_trust_engine.json",
+          "hr_power_profiles.json",
+          "hr_probability_tracking.json",
+          "mlb_hits.json",
+          "mlb_total_bases.json",
+          "mlb_rbis.json"
+        ]
+      }
+    },
+    {
       "player": "Cooper Pratt",
       "team": "Milwaukee Brewers",
       "opponent": "Tampa Bay Rays",
@@ -4038,14 +4141,14 @@
       "sections": [],
       "aiVerdict": "High-Variance Longshot",
       "oneLine": "100 recent-form trend score is helping the player-card read.",
-      "probability": 1.3,
+      "probability": 0,
       "confidence": 67,
       "stars": 2,
       "whyToday": [
         "100 recent-form trend score is helping the player-card read."
       ],
       "riskFactors": [
-        "1.3% tracked HR probability (LOW).",
+        "0% tracked HR probability (OUT).",
         "6.1 HR Power Index (LOW POWER).",
         "11.8 contact-damage score limits the supporting power case.",
         "9.8 launch-power score is below the stronger home-run profiles.",
@@ -4065,8 +4168,8 @@
         {
           "key": "low_hr_probability",
           "label": "Longshot base rate",
-          "detail": "1.3% tracked HR probability (LOW).",
-          "value": 1.3,
+          "detail": "0% tracked HR probability (OUT).",
+          "value": 0,
           "source": "hr_probability_tracking.json",
           "severity": "high"
         },
@@ -4113,109 +4216,6 @@
         "contactDamageScore": 11.8,
         "launchPowerScore": 9.8,
         "strikeoutRate": 22.2,
-        "powerTier": "LOW_POWER",
-        "recentForm": 100
-      },
-      "expected": {
-        "pitch": null,
-        "zone": null,
-        "distance": null,
-        "count": null
-      },
-      "source": {
-        "files": [
-          "ai_trust_engine.json",
-          "hr_power_profiles.json",
-          "hr_probability_tracking.json",
-          "mlb_hits.json",
-          "mlb_total_bases.json",
-          "mlb_rbis.json"
-        ]
-      }
-    },
-    {
-      "player": "Joey Ortiz",
-      "team": "Milwaukee Brewers",
-      "opponent": "Tampa Bay Rays",
-      "game": "Milwaukee Brewers at Tampa Bay Rays",
-      "sections": [],
-      "aiVerdict": "High-Variance Longshot",
-      "oneLine": "100 recent-form trend score is helping the player-card read.",
-      "probability": 0,
-      "confidence": 67,
-      "stars": 2,
-      "whyToday": [
-        "100 recent-form trend score is helping the player-card read."
-      ],
-      "riskFactors": [
-        "0% tracked HR probability (OUT).",
-        "20.9 HR Power Index (LOW POWER).",
-        "28.1 contact-damage score limits the supporting power case.",
-        "23.3 launch-power score is below the stronger home-run profiles.",
-        "Home runs remain high-variance outcomes even when several independent signals agree."
-      ],
-      "supportingSignals": [
-        {
-          "key": "recent_form_streak",
-          "label": "Hot recent-form streak",
-          "detail": "100 recent-form trend score is helping the player-card read.",
-          "value": 100,
-          "source": "ai_trust_engine.json",
-          "severity": "support"
-        }
-      ],
-      "counterSignals": [
-        {
-          "key": "low_hr_probability",
-          "label": "Longshot base rate",
-          "detail": "0% tracked HR probability (OUT).",
-          "value": 0,
-          "source": "hr_probability_tracking.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_power",
-          "label": "Limited raw-power support",
-          "detail": "20.9 HR Power Index (LOW POWER).",
-          "value": 20.9,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_contact_damage",
-          "label": "Contact quality concern",
-          "detail": "28.1 contact-damage score limits the supporting power case.",
-          "value": 28.1,
-          "source": "hr_power_profiles.json",
-          "severity": "high"
-        },
-        {
-          "key": "limited_launch_power",
-          "label": "Launch profile concern",
-          "detail": "23.3 launch-power score is below the stronger home-run profiles.",
-          "value": 23.3,
-          "source": "hr_power_profiles.json",
-          "severity": "moderate"
-        }
-      ],
-      "trustBreakdown": {
-        "modelAgreement": 67,
-        "pitchMatch": 70,
-        "powerProfile": 75,
-        "environment": 88,
-        "pitchMix": 70,
-        "consensus": 0,
-        "recentForm": 100,
-        "bullpen": null,
-        "market": null,
-        "history": null
-      },
-      "homeRunDNA": {
-        "hrPowerIndex": 20.9,
-        "truePowerScore": 23.5,
-        "contactDamageScore": 28.1,
-        "launchPowerScore": 23.3,
-        "strikeoutRate": 19.8,
         "powerTier": "LOW_POWER",
         "recentForm": 100
       },
