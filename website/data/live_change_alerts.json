@@ -1,17 +1,165 @@
 {
   "schemaVersion": "1.0",
-  "generatedAt": "2026-10-27T22:39:47.798Z",
+  "generatedAt": "2026-10-28T01:46:21.101Z",
   "date": "2026-10-27",
   "status": "ready",
   "sources": {
-    "mlb_games_today.json": "2026-10-27T22:38:06.736Z",
-    "mlb_player_pool.json": "2026-10-27T22:38:07.100Z",
-    "game_pitcher_matchups.json": "2026-10-27T22:38:16.875Z",
-    "player_card_data.json": "2026-10-27T22:39:47.724Z",
-    "hr_probability_tracking.json": "2026-10-27T22:38:16.180Z",
-    "pitcher_vulnerability.json": "2026-10-27T22:38:16.876Z"
+    "mlb_games_today.json": "2026-10-28T01:45:05.549Z",
+    "mlb_player_pool.json": "2026-10-28T01:45:05.811Z",
+    "game_pitcher_matchups.json": "2026-10-28T01:45:11.668Z",
+    "player_card_data.json": "2026-10-28T01:46:21.037Z",
+    "hr_probability_tracking.json": "2026-10-28T01:45:11.484Z",
+    "pitcher_vulnerability.json": "2026-10-28T01:45:11.669Z"
   },
   "alerts": [
+    {
+      "id": "e496fd0a6004e24ac081",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "lineup_removed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Ryan Vilade removed from the confirmed lineup",
+      "message": "Ryan Vilade's verified lineup status changed to NOT IN LINEUP.",
+      "previous": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "current": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "f7046f888eaa13ea1927",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Ryan Vilade's HR probability fell",
+      "message": "Tracked HR probability fell from 12.3% to 0%.",
+      "previous": {
+        "probability": 12.3
+      },
+      "current": {
+        "probability": 0
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "3d11a3cc61d231de7b8a",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "668723",
+      "entityName": "Ryan Vilade",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Ryan Vilade's model score fell",
+      "message": "The live model score fell from 35.8 to 0.",
+      "previous": {
+        "modelScore": 35.8
+      },
+      "current": {
+        "modelScore": 0
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
+    {
+      "id": "c6d28ca6280379274a2b",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "lineup_confirmed",
+      "severity": "high",
+      "entityType": "player",
+      "entityId": "683748",
+      "entityName": "Victor Mesa Jr.",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Victor Mesa Jr. confirmed in the lineup",
+      "message": "Victor Mesa Jr. is confirmed batting 7.",
+      "previous": {
+        "lineupStatus": "NOT IN LINEUP",
+        "lineupSpot": null
+      },
+      "current": {
+        "lineupStatus": "CONFIRMED",
+        "lineupSpot": 7
+      },
+      "sourceFiles": [
+        "mlb_player_pool.json"
+      ]
+    },
+    {
+      "id": "17784d146c17e73580cf",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "probability_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683748",
+      "entityName": "Victor Mesa Jr.",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Victor Mesa Jr.'s HR probability rose",
+      "message": "Tracked HR probability rose from 0% to 22.2%.",
+      "previous": {
+        "probability": 0
+      },
+      "current": {
+        "probability": 22.2
+      },
+      "sourceFiles": [
+        "hr_probability_tracking.json"
+      ]
+    },
+    {
+      "id": "956d75f40c6c08e7bdff",
+      "createdAt": "2026-10-28T01:46:21.101Z",
+      "date": "2026-10-27",
+      "sport": "MLB",
+      "kind": "model_score_move",
+      "severity": "medium",
+      "entityType": "player",
+      "entityId": "683748",
+      "entityName": "Victor Mesa Jr.",
+      "team": "Tampa Bay Rays",
+      "gamePk": 849803,
+      "title": "Victor Mesa Jr.'s model score rose",
+      "message": "The live model score rose from 0 to 38.9.",
+      "previous": {
+        "modelScore": 0
+      },
+      "current": {
+        "modelScore": 38.9
+      },
+      "sourceFiles": [
+        "player_card_data.json"
+      ]
+    },
     {
       "id": "4b5ec8cc4977125bc732",
       "createdAt": "2026-10-27T22:39:47.798Z",
@@ -902,8 +1050,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 7.9,
-        "modelScore": 41.6,
+        "probability": 8.8,
+        "modelScore": 41.4,
         "signals": []
       },
       "596142": {
@@ -947,8 +1095,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 22.8,
-        "modelScore": 49.3,
+        "probability": 24,
+        "modelScore": 49.1,
         "signals": [
           "due"
         ]
@@ -964,8 +1112,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 22.3,
-        "modelScore": 45.4,
+        "probability": 24,
+        "modelScore": 45.2,
         "signals": [
           "due"
         ]
@@ -996,8 +1144,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 17.2,
-        "modelScore": 43.3,
+        "probability": 18.8,
+        "modelScore": 43.1,
         "signals": []
       },
       "663743": {
@@ -1026,8 +1174,8 @@
         "lineupSpot": 2,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 16,
-        "modelScore": 39.3,
+        "probability": 18.2,
+        "modelScore": 39.1,
         "signals": []
       },
       "666152": {
@@ -1041,8 +1189,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 1.4,
-        "modelScore": 20.8,
+        "probability": 1.3,
+        "modelScore": 20.7,
         "signals": []
       },
       "668723": {
@@ -1051,13 +1199,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849803,
-        "lineupStatus": "CONFIRMED",
-        "confirmedLineup": true,
-        "lineupSpot": 7,
+        "lineupStatus": "NOT IN LINEUP",
+        "confirmedLineup": false,
+        "lineupSpot": null,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 12.3,
-        "modelScore": 35.8,
+        "probability": 0,
+        "modelScore": 0,
         "signals": []
       },
       "668930": {
@@ -1071,8 +1219,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 22.6,
-        "modelScore": 46.6,
+        "probability": 23.8,
+        "modelScore": 46.4,
         "signals": [
           "hotLately"
         ]
@@ -1088,8 +1236,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 9.4,
-        "modelScore": 38.2,
+        "probability": 8.8,
+        "modelScore": 38,
         "signals": []
       },
       "670764": {
@@ -1103,8 +1251,8 @@
         "lineupSpot": 9,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 1.4,
-        "modelScore": 14.4,
+        "probability": 1.3,
+        "modelScore": 14.3,
         "signals": []
       },
       "676356": {
@@ -1118,8 +1266,8 @@
         "lineupSpot": 5,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 8.1,
-        "modelScore": 34.7,
+        "probability": 8.6,
+        "modelScore": 34.5,
         "signals": [
           "hotLately"
         ]
@@ -1135,8 +1283,8 @@
         "lineupSpot": 8,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 4.8,
-        "modelScore": 27.8,
+        "probability": 4.6,
+        "modelScore": 27.6,
         "signals": []
       },
       "683734": {
@@ -1162,13 +1310,13 @@
         "team": "Tampa Bay Rays",
         "opponent": "Milwaukee Brewers",
         "gamePk": 849803,
-        "lineupStatus": "NOT IN LINEUP",
-        "confirmedLineup": false,
-        "lineupSpot": null,
+        "lineupStatus": "CONFIRMED",
+        "confirmedLineup": true,
+        "lineupSpot": 7,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 0,
-        "modelScore": 0,
+        "probability": 22.2,
+        "modelScore": 38.9,
         "signals": []
       },
       "686217": {
@@ -1183,7 +1331,7 @@
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
         "probability": 1.4,
-        "modelScore": 24.1,
+        "modelScore": 23.9,
         "signals": []
       },
       "687401": {
@@ -1212,8 +1360,8 @@
         "lineupSpot": 4,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 12.6,
-        "modelScore": 40.2,
+        "probability": 13.8,
+        "modelScore": 40.1,
         "signals": []
       },
       "691406": {
@@ -1227,8 +1375,8 @@
         "lineupSpot": 3,
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
-        "probability": 22.8,
-        "modelScore": 49.4,
+        "probability": 24,
+        "modelScore": 49.2,
         "signals": []
       },
       "694192": {
@@ -1242,8 +1390,8 @@
         "lineupSpot": 1,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 22.8,
-        "modelScore": 50.7,
+        "probability": 24,
+        "modelScore": 50.5,
         "signals": []
       },
       "800325": {
@@ -1273,7 +1421,7 @@
         "opposingPitcherId": "669160",
         "opposingPitcher": "Dustin May",
         "probability": 1.4,
-        "modelScore": 22.1,
+        "modelScore": 21.9,
         "signals": []
       },
       "806198": {
@@ -1287,8 +1435,8 @@
         "lineupSpot": 7,
         "opposingPitcherId": "643377",
         "opposingPitcher": "Griffin Jax",
-        "probability": 1.7,
-        "modelScore": 23.7,
+        "probability": 1.6,
+        "modelScore": 23.6,
         "signals": []
       },
       "810938": {
