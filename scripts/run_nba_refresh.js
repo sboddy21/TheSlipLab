@@ -52,6 +52,13 @@ const expectedOutputs = [
   ["NBA Verified Markets", "website/data/nba_verified_markets.json", true]
 ];
 
+const degradableOutputs = new Set([
+  "NBA History",
+  "NBA Team Defense",
+  "NBA Pace Engine",
+  "NBA Defender Engine"
+]);
+
 function todayET() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "America/New_York",
@@ -80,6 +87,7 @@ function outputTimestamp(data) {
 function validateRefresh() {
   const today = todayET();
   const failures = [];
+  const warnings = [];
 
   for (const [label, file, requiresDate] of expectedOutputs) {
     let data;
@@ -99,7 +107,12 @@ function validateRefresh() {
       failures.push(`${label} reused a preserved output instead of current data`);
     }
     if (data.stale || /unavailable|failed|error/.test(String(data.availability || "")) || data.error || Number(data.errorCount) > 0) {
-      failures.push(`${label} could not verify its current upstream source`);
+      const message = `${label} could not verify its current upstream source`;
+      if (degradableOutputs.has(label)) {
+        warnings.push(message);
+      } else {
+        failures.push(message);
+      }
     }
 
     const timestamp = outputTimestamp(data);
@@ -121,6 +134,12 @@ function validateRefresh() {
     console.error("NBA REFRESH VALIDATION FAILED");
     failures.forEach(failure => console.error(`- ${failure}`));
     process.exit(1);
+  }
+
+  if (warnings.length) {
+    console.warn("");
+    console.warn("NBA REFRESH DEGRADED ENRICHMENTS");
+    warnings.forEach(warning => console.warn(`- ${warning}`));
   }
 
   console.log("");
