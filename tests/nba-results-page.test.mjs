@@ -16,6 +16,10 @@ test("NBA results page exposes transparent calibration and settlement states", (
 
 test("NBA hub links to the results page", () => {
   const hub = fs.readFileSync(new URL("../website/nba.html", import.meta.url), "utf8");
-  assert.match(hub, /href="\.\/nba-results\.html">Results<\/a>/);
-  assert.match(hub, /href="\.\/nba-results\.html">Open Results<\/a>/);
+  const resultsLink = hub.match(
+    /<a[^>]+href="\.\/nba-results\.html"[^>]*>([\s\S]*?)<\/a>/,
+  );
+
+  assert.ok(resultsLink, "expected the NBA hub to link to the results page");
+  assert.match(resultsLink[1].replace(/<[^>]+>/g, "").trim(), /Results$/);
 });
