@@ -43,6 +43,12 @@ test("odds expire after 20 minutes even on the current slate", () => {
   assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: "2026-10-24T15:40:00Z" }, { now }).available, false);
 });
 
+test("daily NHL boards remain available for their declared 26-hour window", () => {
+  const board = { date: "2026-10-24", generatedAt: "2026-10-24T07:00:00Z" };
+  assert.equal(checkDataFreshness("nhl_board.json", board, { now }).available, true);
+  assert.equal(checkDataFreshness("nhl_board.json", board, { now: now + 16 * 60 * 60 * 1000 }).available, false);
+});
+
 test("archives and park geometry remain readable as historical reference", () => {
   for (const file of ["nba_results.json", "nba_calibration.json", "nba_projection_history.json", "cfb_backtest.json", "hr_results_history.json", "mlb_park_shapes.json"]) {
     assert.equal(checkDataFreshness(file, {}, { now }).status, "reference_or_history");
