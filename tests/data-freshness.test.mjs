@@ -62,8 +62,8 @@ test("legacy arrays require a current successful health receipt", () => {
   assert.equal(checkDataFreshness("mlb_home_runs.json", [], { now: now + 600000, health }).available, false);
 });
 
-test("season averages cannot impersonate last-five and last-ten game logs", () => {
-  const result = historyFromSeasonSummary({ games: 60, points: 25 });
+test("season averages remain labeled and can provide a conservative baseline", () => {
+  const result = historyFromSeasonSummary({ games: 60, minutes: 32, points: 25 });
   assert.equal(result.seasonSummary.points, 25);
   assert.equal(result.last5, null);
   assert.equal(result.last10, null);
@@ -71,8 +71,9 @@ test("season averages cannot impersonate last-five and last-ten game logs", () =
   const player = { playerId: "1", starter: true, starterKnown: true };
   const availability = { publicationEligible: true, publicationStatus: "eligible" };
   const row = buildMinutesRow(player, result, availability);
-  assert.equal(row.publicationEligible, false);
-  assert.equal(row.publicationStatus, "context_only_missing_game_logs");
+  assert.equal(row.publicationEligible, true);
+  assert.equal(row.publicationStatus, "eligible_season_baseline_unconfirmed_role");
+  assert.equal(row.expectedMinutes, result.seasonSummary.minutes || 0);
   assert.equal(buildMinutesRow(player, { ...result, recentGames: [{ points: 25 }] }, availability).publicationEligible, true);
 });
 

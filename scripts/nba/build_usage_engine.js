@@ -72,8 +72,8 @@ function buildUsageScore({ seasonFGA, last5FGA, seasonFTA, last5FTA, seasonAssis
 
 function buildRow(history, minutes) {
   const season = history?.seasonSummary || {};
-  const last5 = history?.last5 || {};
-  const last10 = history?.last10 || {};
+  const last5 = history?.last5 || season;
+  const last10 = history?.last10 || season;
 
   const seasonFGA = num(season.fieldGoalAttempts);
   const last5FGA = num(last5.fieldGoalAttempts);

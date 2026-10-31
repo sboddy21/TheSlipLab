@@ -91,8 +91,8 @@ function volumeSignal(history) {
 
 function scoringProfile(history) {
   const season = history?.seasonSummary || {};
-  const last5 = history?.last5 || {};
-  const last10 = history?.last10 || {};
+  const last5 = history?.last5 || season;
+  const last10 = history?.last10 || season;
 
   return {
     seasonPoints: round1(season.points),
@@ -264,6 +264,8 @@ function buildCorePlayer(player, minutesMap, historyMap, usageMap) {
 
     history: {
       gamesPlayed: num(history.gamesPlayed),
+      recentFormAvailable: Boolean(history.recentGames?.length),
+      sourceKind: history.sourceKind || "",
       season: history.seasonSummary || {},
       last5: history.last5 || {},
       last10: history.last10 || {},

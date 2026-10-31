@@ -56,11 +56,10 @@ function buildExpectedMinutes(player, history, availability) {
 
   if (availability?.unavailable) return 0;
 
-  const historyLean = round1(
-    season * 0.35 +
-    last5 * 0.40 +
-    last10 * 0.25
-  );
+  const recentFormAvailable = Boolean(history?.recentGames?.length);
+  const historyLean = recentFormAvailable
+    ? round1(season * 0.35 + last5 * 0.40 + last10 * 0.25)
+    : round1(season);
 
   let expected = historyLean;
 
@@ -107,6 +106,11 @@ export function buildRow(player, history, availability) {
   const minutesConfidence = buildConfidence(player, history, availability, expectedMinutes);
   const minutesTrend = round1(last5Minutes - seasonMinutes);
   const role = roleFromMinutes(player, availability, expectedMinutes);
+  const recentFormAvailable = Boolean(history?.recentGames?.length);
+  const seasonBaselineAvailable = num(history?.seasonSummary?.games) > 0 && seasonMinutes > 0;
+  const publicationEligible = Boolean(
+    availability?.publicationEligible && (recentFormAvailable || seasonBaselineAvailable)
+  );
 
   const tags = [
     player.starterKnown ? (player.starter ? "Confirmed Starter" : "Confirmed Bench") : "Starter Unknown",
@@ -132,8 +136,12 @@ export function buildRow(player, history, availability) {
     availabilityStatus: availability?.availabilityStatus || "UNKNOWN",
     availabilityKnown: Boolean(availability?.availabilityKnown),
     injury: availability?.injury || null,
-    publicationEligible: Boolean(availability?.publicationEligible && history?.recentGames?.length > 0),
-    publicationStatus: !history?.recentGames?.length ? "context_only_missing_game_logs" : availability?.publicationStatus || "context_only_unconfirmed_role",
+    publicationEligible,
+    publicationStatus: publicationEligible && !recentFormAvailable
+      ? "eligible_season_baseline_unconfirmed_role"
+      : !recentFormAvailable
+        ? "context_only_missing_history"
+        : availability?.publicationStatus || "context_only_unconfirmed_role",
     oncourt: Boolean(player.oncourt),
     homeAway: player.homeAway,
     gameId: player.gameId,
