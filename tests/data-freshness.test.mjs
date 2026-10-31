@@ -125,13 +125,17 @@ test("landing page uses league statuses instead of a global data failure banner"
 test("landing page reports explicit league states and disables closed seasons", () => {
   const source = fs.readFileSync("website/index.html", "utf8");
   assert.doesNotMatch(source, />Updating</);
-  assert.match(source, /"Not current"/);
+  assert.doesNotMatch(source, /"Not current"/);
+  assert.match(source, /"Available"/);
   assert.match(source, /"Out of season"/);
   assert.match(source, /data\.label === "CLOSED"/);
   assert.match(source, /data\.availability === "no_games_scheduled"/);
   assert.match(source, /link\.removeAttribute\("href"\)/);
   assert.match(source, /aria-disabled/);
   assert.doesNotMatch(source, /NHL_MAX_AGE/);
+  assert.doesNotMatch(source, /load\("odds_nfl\.json"\)/);
+  assert.doesNotMatch(source, /load\("nba_decision_center\.json"\)/);
+  assert.match(source, /\["nfl", "cfb", "wnba", "nba", "nhl"\]\.forEach/);
 });
 
 test("NHL refresh runs at least hourly in season and every 15 minutes overnight", () => {
