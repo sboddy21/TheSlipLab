@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { buildNbaWorkspace, normalizeNbaSchedule, parseNbaPlayerLog } from "../website/lib/nba-live.mjs";
+import { buildNbaToday } from "../scripts/nba/fetch_nba_today.js";
 const now = Date.parse("2026-10-24T16:00:00Z");
 const team = (id, abbreviation, homeAway) => ({ homeAway, team: { id, abbreviation, displayName: abbreviation, name: abbreviation }, score: "0", leaders: [] });
 const scoreboard = () => ({ leagues: [{ slug: "nba", season: { year: 2027, displayName: "2026-27" } }], events: [{ id: "100", date: "2026-10-24T23:00Z", status: { type: { state: "pre", shortDetail: "Scheduled" } }, competitions: [{ competitors: [team("1", "ATL", "home"), team("2", "BOS", "away")] }] }] });
@@ -42,6 +43,21 @@ test("wrong-date or malformed schedules cannot become a no-games slate", () => {
   data.events[0].date = "2026-10-23T23:00Z";
   assert.throws(() => normalizeNbaSchedule(data, "2026-10-24"), /different slate/);
   assert.throws(() => normalizeNbaSchedule({}, "2026-10-24"), /incomplete/);
+});
+
+test("NBA daily refresh falls back to a verified date-specific ESPN slate", async () => {
+  const fetcher = async url => ({
+    ok: true,
+    json: async () => url.includes("cdn.nba.com")
+      ? { scoreboard: { gameDate: "2026-10-30", games: [] } }
+      : scoreboard()
+  });
+  const data = await buildNbaToday({ now, fetcher });
+  assert.equal(data.date, "2026-10-24");
+  assert.equal(data.games.length, 1);
+  assert.equal(data.games[0].homeTeam.abbreviation, "ATL");
+  assert.equal(data.source, "ESPN date-specific NBA scoreboard");
+  assert.equal(data.stale, false);
 });
 
 test("current-season logs use completed games and expose actual early-season sample size", () => {

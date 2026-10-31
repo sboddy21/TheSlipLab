@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
+import { easternDate, normalizeNbaSchedule } from "../../website/lib/nba-live.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -8,28 +9,12 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "../..");
 const OUT = path.join(ROOT, "website/data/nba_games_today.json");
 
-function todayET() {
-  const now = new Date();
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/New_York",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit"
-  }).formatToParts(now);
-
-  const y = parts.find(p => p.type === "year")?.value || "";
-  const m = parts.find(p => p.type === "month")?.value || "";
-  const d = parts.find(p => p.type === "day")?.value || "";
-
-  return `${y}-${m}-${d}`;
-}
-
 function compactDate(dateStr) {
   return String(dateStr || "").replaceAll("-", "");
 }
 
-async function fetchJson(url) {
-  const res = await fetch(url, {
+async function fetchJson(url, fetcher = fetch) {
+  const res = await fetcher(url, {
     headers: {
       "User-Agent": "Mozilla/5.0",
       "Accept": "application/json,text/plain,*/*",
@@ -76,43 +61,93 @@ function normalizeGame(g) {
   };
 }
 
-async function main() {
-  const date = todayET();
+function normalizeEspnGame(game) {
+  const status = game.state === "post" ? 3 : game.state === "in" ? 2 : 1;
+  const normalizeTeam = team => ({
+    teamId: String(team.id || ""),
+    team: team.shortName || team.name || "",
+    city: "",
+    abbreviation: team.abbreviation || "",
+    score: Number(team.score || 0)
+  });
+
+  return {
+    gameId: String(game.id || ""),
+    gameCode: "",
+    gameStatus: status,
+    gameStatusText: game.status || "",
+    gameTimeUTC: game.date || "",
+    period: Number(game.period || 0),
+    clock: game.clock || "",
+    arena: game.venue || "",
+    city: "",
+    state: "",
+    homeTeam: normalizeTeam(game.home),
+    awayTeam: normalizeTeam(game.away)
+  };
+}
+
+export async function buildNbaToday({ now = Date.now(), fetcher = fetch } = {}) {
+  const date = easternDate(now);
   const nbaDate = compactDate(date);
-  const url = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
+  const nbaUrl = "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json";
+  const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates=${nbaDate}&limit=100`;
+  let games = [];
+  let source = "NBA live scoreboard CDN";
+  let sourceUrl = nbaUrl;
+  let sourceDate = null;
+  let fallbackReason = "";
 
-  const raw = await fetchJson(url);
+  try {
+    const raw = await fetchJson(nbaUrl, fetcher);
+    sourceDate = raw?.scoreboard?.gameDate || null;
+    if (sourceDate !== date || !Array.isArray(raw?.scoreboard?.games)) {
+      throw new Error(`NBA CDN slate date ${sourceDate || "missing"} did not match ${date}`);
+    }
+    games = raw.scoreboard.games.map(normalizeGame);
+  } catch (error) {
+    fallbackReason = error.message;
+    const raw = await fetchJson(espnUrl, fetcher);
+    games = normalizeNbaSchedule(raw, date).map(normalizeEspnGame);
+    source = "ESPN date-specific NBA scoreboard";
+    sourceUrl = espnUrl;
+    sourceDate = date;
+  }
 
-  const sourceCurrent = raw?.scoreboard?.gameDate === date;
-  const games = sourceCurrent && Array.isArray(raw?.scoreboard?.games)
-    ? raw.scoreboard.games.map(normalizeGame)
-    : [];
-
-  const out = {
+  return {
     sport: "NBA",
-    source: "NBA live scoreboard CDN",
+    source,
+    sourceUrl,
     date,
     nbaDate,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: new Date(now).toISOString(),
     count: games.length,
-    availability: !sourceCurrent ? "schedule_unavailable" : games.length ? "games_scheduled" : "no_games_scheduled",
-    sourceDate: raw?.scoreboard?.gameDate || null,
-    stale: !sourceCurrent,
+    availability: games.length ? "games_scheduled" : "no_games_scheduled",
+    sourceDate,
+    stale: false,
     error: "",
+    fallbackReason,
     games
   };
+}
+
+async function main() {
+  const out = await buildNbaToday();
 
   fs.writeFileSync(OUT, JSON.stringify(out, null, 2));
 
   console.log("NBA TODAY FETCH COMPLETE");
-  console.log("Date:", date);
-  console.log("Games:", games.length);
+  console.log("Date:", out.date);
+  console.log("Games:", out.games.length);
   console.log("Availability:", out.availability);
+  console.log("Source:", out.source);
   console.log("Saved:", OUT);
 }
 
-main().catch(err => {
-  console.error("NBA TODAY FETCH FAILED");
-  console.error(err);
-  process.exit(1);
-});
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
+  main().catch(err => {
+    console.error("NBA TODAY FETCH FAILED");
+    console.error(err);
+    process.exit(1);
+  });
+}
