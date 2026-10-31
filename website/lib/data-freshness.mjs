@@ -49,7 +49,12 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   const usableNbaHistoryFallback = file === "nba_history.json"
     && Array.isArray(payload?.players)
     && payload.players.length > 0
-    && Number(payload?.espnSummaryCount) > 0;
+    && (
+      Number(payload?.espnSummaryCount) > 0
+      || Number(payload?.espnGameLogCount) > 0
+      || Number(payload?.retainedHistoryCount) > 0
+    )
+    && payload.players.some(player => Number(player?.gamesPlayed || player?.seasonSummary?.games) > 0);
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
   const slate = payload?.date || payload?.slateDate || payload?.pitcherDate;
   if (slate && /^\d{4}-\d{2}-\d{2}$/.test(slate) && slate !== today) reasons.push("wrong_slate_date");

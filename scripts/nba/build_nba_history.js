@@ -7,6 +7,7 @@ const __dirname = path.dirname(__filename);
 
 const ROOT = path.resolve(__dirname, "../..");
 const CORE_FILE = path.join(ROOT, "website/data/nba_player_pool.json");
+const CACHED_CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const OUT = path.join(ROOT, "website/data/nba_history.json");
 
 const FETCH_TIMEOUT_MS = 7000;
@@ -315,6 +316,38 @@ export function historyFromSeasonSummary(summary) {
   };
 }
 
+function cachedHistoryByPlayer() {
+  const cached = new Map();
+  const previous = readJSON(OUT, { players: [] });
+  for (const player of previous.players || []) {
+    if (num(player?.gamesPlayed) <= 0) continue;
+    cached.set(String(player.playerId), {
+      gamesPlayed: num(player.gamesPlayed),
+      seasonSummary: player.seasonSummary,
+      last5: player.last5,
+      last10: player.last10,
+      recentGames: player.recentGames || [],
+      recentFormAvailable: Boolean(player.recentFormAvailable),
+      sourceKind: "verified_history_cache"
+    });
+  }
+  const core = readJSON(CACHED_CORE_FILE, { players: [] });
+  for (const player of core.players || []) {
+    const history = player?.history;
+    if (cached.has(String(player.playerId)) || num(history?.gamesPlayed) <= 0) continue;
+    cached.set(String(player.playerId), {
+      gamesPlayed: num(history.gamesPlayed),
+      seasonSummary: history.season,
+      last5: history.last5,
+      last10: history.last10,
+      recentGames: history.recentGames || [],
+      recentFormAvailable: Boolean(history.recentFormAvailable),
+      sourceKind: "verified_core_history_cache"
+    });
+  }
+  return cached;
+}
+
 async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const players = Array.isArray(core.players) ? core.players : [];
@@ -325,6 +358,7 @@ async function main() {
   );
 
   const errors = [];
+  const cachedHistory = cachedHistoryByPlayer();
   let leagueGames = [];
   if (players.length && !forceEspn) {
     try {
@@ -385,6 +419,9 @@ async function main() {
     if (history.gamesPlayed === 0 && espnSummary) {
       history = historyFromSeasonSummary(espnSummary);
     }
+    if (history.gamesPlayed === 0 && cachedHistory.has(String(player.playerId))) {
+      history = cachedHistory.get(String(player.playerId));
+    }
     return {
       playerId: player.playerId,
       player: safeName(player.player),
@@ -395,10 +432,11 @@ async function main() {
       status: player.status,
       season,
       recentFormAvailable: history.recentGames.length > 0,
-      sourceKind: "game_logs",
+      sourceKind: history.sourceKind || "game_logs",
       ...history
     };
   });
+  const retainedHistoryCount = rows.filter(player => /history_cache/.test(String(player.sourceKind))).length;
   const out = {
     sport: "NBA",
     version: "1.1",
@@ -414,6 +452,7 @@ async function main() {
     leagueGameLogCount: nbaLeagueGameLogCount,
     espnGameLogCount,
     espnSummaryCount: espnSummaryByPlayer.size,
+    retainedHistoryCount,
     errors,
     players: rows
   };

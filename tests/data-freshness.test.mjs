@@ -95,8 +95,10 @@ test("usable NBA history fallback does not block every generated board", async (
     availability: "history_unavailable",
     errorCount: 1,
     errors: [{ source: "NBA league game log", message: "This operation was aborted" }],
-    espnSummaryCount: 200,
-    players: [{ playerId: "1", seasonSummary: { points: 20 } }]
+    espnSummaryCount: 0,
+    espnGameLogCount: 0,
+    retainedHistoryCount: 1,
+    players: [{ playerId: "1", gamesPlayed: 5, seasonSummary: { games: 5, points: 20 } }]
   };
   const result = await verifyCurrentDataset("nba_points.json", current, {
     now,
@@ -105,6 +107,7 @@ test("usable NBA history fallback does not block every generated board", async (
   assert.equal(result.available, true);
   assert.equal(result.dependencies.find(row => row.file === "nba_history.json").status, "current_degraded");
   assert.equal(checkDataFreshness("nba_history.json", { ...history, players: [] }, { now }).available, false);
+  assert.equal(checkDataFreshness("nba_history.json", { ...history, retainedHistoryCount: 0, players: [{ gamesPlayed: 0 }] }, { now }).available, false);
   assert.equal(checkDataFreshness("nba_history.json", { ...history, date: "2026-10-23" }, { now }).available, false);
 });
 

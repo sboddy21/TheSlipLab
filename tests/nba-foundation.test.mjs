@@ -31,6 +31,8 @@ test("NBA history uses one league-wide game-log request", () => {
   assert.match(source, /stats\/leaguegamelog/);
   assert.match(source, /parseEspnGameLog/);
   assert.match(source, /previous_season_preseason/);
+  assert.match(source, /verified_core_history_cache/);
+  assert.match(source, /retainedHistoryCount/);
 });
 
 test("NBA core compares trends with the season summary", () => {
