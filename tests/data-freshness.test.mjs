@@ -120,3 +120,15 @@ test("landing page uses league statuses instead of a global data failure banner"
   assert.match(source, /window\.location\.pathname === "\/index\.html"/);
   assert.match(source, /current_data_unavailable" && !landingPage/);
 });
+
+test("landing page reports explicit league states and disables closed seasons", () => {
+  const source = fs.readFileSync("website/index.html", "utf8");
+  assert.doesNotMatch(source, />Updating</);
+  assert.match(source, /"Not current"/);
+  assert.match(source, /"Out of season"/);
+  assert.match(source, /data\.label === "CLOSED"/);
+  assert.match(source, /data\.availability === "no_games_scheduled"/);
+  assert.match(source, /link\.removeAttribute\("href"\)/);
+  assert.match(source, /aria-disabled/);
+  assert.match(source, /NHL_MAX_AGE = 26 \* 60 \* 60 \* 1000/);
+});
