@@ -118,7 +118,14 @@ export async function buildBoard() {
   return {
     schemaVersion: 2, sport: 'NHL', date, generatedAt, source: 'NHL public schedule, roster, gamecenter and stats feeds; ESPN market totals',
     status: games.length ? 'available' : 'no_games', historySeason: history.seasonId,
-    freshness: { maxAgeHours: 26, schedule: generatedAt, projections: generatedAt, live: generatedAt },
+    freshness: {
+      maxAgeHours: 1.5,
+      refreshCadenceMinutes: 60,
+      liveRefreshCadenceMinutes: 15,
+      schedule: generatedAt,
+      projections: generatedAt,
+      live: generatedAt
+    },
     counts: { games: games.length, players: players.length, liveGames: games.filter(game => isLive(game.state)).length },
     games: matchups, players, live, errors: []
   };

@@ -44,10 +44,11 @@ test("odds expire after 20 minutes even on the current slate", () => {
   assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: "2026-10-24T15:40:00Z" }, { now }).available, false);
 });
 
-test("daily NHL boards remain available for their declared 26-hour window", () => {
-  const board = { date: "2026-10-24", generatedAt: "2026-10-24T07:00:00Z" };
+test("NHL boards expire when the hourly refresh misses its 90-minute guardrail", () => {
+  const board = { date: "2026-10-24", generatedAt: "2026-10-24T15:00:01Z" };
   assert.equal(checkDataFreshness("nhl_board.json", board, { now }).available, true);
-  assert.equal(checkDataFreshness("nhl_board.json", board, { now: now + 16 * 60 * 60 * 1000 }).available, false);
+  assert.equal(checkDataFreshness("nhl_board.json", board, { now: now + 31 * 60 * 1000 }).available, false);
+  assert.equal(checkDataFreshness("nhl_board.json", board, { now }).maxAgeSeconds, 5400);
 });
 
 test("archives and park geometry remain readable as historical reference", () => {
@@ -130,5 +131,15 @@ test("landing page reports explicit league states and disables closed seasons", 
   assert.match(source, /data\.availability === "no_games_scheduled"/);
   assert.match(source, /link\.removeAttribute\("href"\)/);
   assert.match(source, /aria-disabled/);
-  assert.match(source, /NHL_MAX_AGE = 26 \* 60 \* 60 \* 1000/);
+  assert.doesNotMatch(source, /NHL_MAX_AGE/);
+});
+
+test("NHL refresh runs at least hourly in season and every 15 minutes overnight", () => {
+  const workflow = fs.readFileSync(".github/workflows/nhl-refresh.yml", "utf8");
+  const refresh = fs.readFileSync("scripts/nhl/refresh.mjs", "utf8");
+  assert.match(workflow, /17 7-21 \* 9-12,1-6 \*/);
+  assert.match(workflow, /2,17,32,47 22-23,0-6 \* 9-12,1-6 \*/);
+  assert.match(refresh, /maxAgeHours: 1\.5/);
+  assert.match(refresh, /refreshCadenceMinutes: 60/);
+  assert.match(refresh, /liveRefreshCadenceMinutes: 15/);
 });

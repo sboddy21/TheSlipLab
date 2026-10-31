@@ -36,7 +36,6 @@
   <script>
     (() => {
       const MAX_AGE = 90 * 60 * 1000;
-      const NHL_MAX_AGE = 26 * 60 * 60 * 1000;
       const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
       const fresh = (value, maxAge = MAX_AGE) => Number.isFinite(Date.parse(value)) && Date.now() - Date.parse(value) <= maxAge && Date.parse(value) <= Date.now() + 5 * 60 * 1000;
       const load = file => fetch(`./data/${file}?v=${Date.now()}`, { cache: "no-store", signal: AbortSignal.timeout(10000) }).then(response => {
@@ -72,7 +71,7 @@
         Promise.all([load("cfb_board.json"), load("odds_ncaaf.json")]).then(([board, odds]) => setStatus("cfb", fresh(board.generatedAt) && odds.status === "available" && fresh(odds.retrievedAt) ? "current" : "not-current")),
         Promise.all([load("wnba_games_today.json"), load("wnba_verified_markets.json")]).then(([games, markets]) => setStatus("wnba", games.date === today && fresh(games.fetchedAt) && markets.date === today && fresh(markets.generatedAt) ? "current" : "not-current")),
         Promise.all([load("nba_games_today.json"), load("nba_decision_center.json")]).then(([games, board]) => setStatus("nba", games.date === today && fresh(games.fetchedAt) && board.date === today && fresh(board.fetchedAt) ? "current" : "not-current")),
-        load("nhl_board.json").then(data => setStatus("nhl", data.sport === "NHL" && data.date === today && fresh(data.generatedAt, NHL_MAX_AGE) ? "current" : "not-current")),
+        load("nhl_board.json").then(data => setStatus("nhl", data.sport === "NHL" && data.date === today && fresh(data.generatedAt) ? "current" : "not-current")),
       ]).then(results => results.forEach((result, index) => {
         if (result.status === "rejected") setStatus(["mlb", "nfl", "cfb", "wnba", "nba", "nhl"][index], "not-current");
       }));
