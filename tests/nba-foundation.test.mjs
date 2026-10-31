@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { validateGeneratedNbaPublication, validateNbaPublication } from "../scripts/nba/validate_nba_publication.mjs";
 
 const readJson = file => JSON.parse(fs.readFileSync(file, "utf8"));
 
@@ -68,4 +69,29 @@ test("generated NBA artifacts remain internally consistent", () => {
   const decisionRows = Object.values(decision.sections || {}).flat().filter(row => row?.playerId);
   const eligibleIds = new Set(points.players.filter(player => player.publicationEligible).map(player => String(player.playerId)));
   assert.ok(decisionRows.every(row => eligibleIds.has(String(row.playerId))));
+});
+
+test("NBA publication gate accepts the generated verified boards", () => {
+  const receipt = validateGeneratedNbaPublication();
+  assert.equal(receipt.status, "passed");
+  assert.ok(receipt.publicationEligibleCount > 0);
+  assert.ok(Object.values(receipt.boardCounts).every(count => count === receipt.publicationEligibleCount));
+});
+
+test("NBA publication gate rejects a mismatched opponent", () => {
+  const slate = readJson("website/data/nba_games_today.json");
+  const pool = readJson("website/data/nba_player_pool.json");
+  const availability = readJson("website/data/nba_availability.json");
+  const minutes = readJson("website/data/nba_minutes_engine.json");
+  const points = readJson("website/data/nba_points.json");
+  const altered = structuredClone(points);
+  altered.players[0].opponent = "INVALID";
+
+  assert.throws(() => validateNbaPublication({
+    slate,
+    pool,
+    availability,
+    minutes,
+    boards: { "nba_points.json": altered }
+  }), /conflicting opponent/);
 });

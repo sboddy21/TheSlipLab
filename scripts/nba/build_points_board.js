@@ -216,7 +216,7 @@ async function main() {
 
   const rows = players
     .map(p => buildRow(p, minutesMap, usageMap))
-    .filter(r => r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
+    .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||
       b.pointsLean - a.pointsLean ||

@@ -276,7 +276,7 @@ async function main() {
   }
 
   const rows = players
-    .filter(p => num(p.expectedMinutes) > 0 && !["OUT", "DOUBTFUL"].includes(String(p.availabilityStatus || "")))
+    .filter(p => p.publicationEligible && num(p.expectedMinutes) > 0 && !["OUT", "DOUBTFUL"].includes(String(p.availabilityStatus || "")))
     .map(p => buildRow(p, games, defenseMap, paceMap, defenderMap))
     .sort((a, b) =>
       b.matchupScore - a.matchupScore ||

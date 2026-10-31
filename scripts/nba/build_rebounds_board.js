@@ -152,7 +152,7 @@ async function main() {
 
   const rows = players
     .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}))
-    .filter(r => r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
+    .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.reboundsScore - a.reboundsScore ||
       b.reboundsLean - a.reboundsLean ||

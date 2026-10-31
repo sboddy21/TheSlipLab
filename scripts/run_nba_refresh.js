@@ -1,6 +1,7 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
 import path from "path";
+import { validateGeneratedNbaPublication } from "./nba/validate_nba_publication.mjs";
 
 const refreshStartedAt = Date.now();
 
@@ -191,6 +192,25 @@ console.log("NBA slate mode:", hasGames ? "games scheduled" : "no games schedule
 remainingSteps.forEach(runBuilder);
 
 validateRefresh();
+
+let qualityReceipt;
+try {
+  qualityReceipt = validateGeneratedNbaPublication();
+} catch (error) {
+  console.error("");
+  console.error("NBA PUBLICATION GATE FAILED");
+  console.error(`- ${error.message}`);
+  process.exit(1);
+}
+
+fs.writeFileSync(
+  path.join("website", "data", "nba_quality_receipt.json"),
+  JSON.stringify(qualityReceipt, null, 2)
+);
+
+console.log("");
+console.log("NBA PUBLICATION GATE PASSED");
+console.log("Verified players:", qualityReceipt.publicationEligibleCount);
 
 fs.mkdirSync("website/data", { recursive: true });
 
