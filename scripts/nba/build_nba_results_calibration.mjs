@@ -88,8 +88,13 @@ export function updateTracking({ games, pool, points, rebounds, assists, threes,
   return output;
 }
 
-export function buildCalibration(history, date, now = Date.now()) {
-  const graded = (history.snapshots || []).filter(row => row.status === "graded" && row.actual);
+function validProjectionSnapshot(row) {
+  return row?.status === "graded" && row.actual && Number(row.expectedMinutes) > 0 && Number(row.projections?.points) > 0;
+}
+
+export function buildCalibration(history, date, now = Date.now(), backtest = { markets: {} }) {
+  const graded = (history.snapshots || []).filter(validProjectionSnapshot);
+  const invalidProjectionPlayers = (history.snapshots || []).filter(row => row.status === "graded" && !validProjectionSnapshot(row)).length;
   const markets = {};
   for (const market of MARKETS) {
     const rows = graded.filter(row => finite(row.errors?.[market]) && finite(row.signedErrors?.[market]));
@@ -97,6 +102,8 @@ export function buildCalibration(history, date, now = Date.now()) {
     const signed = rows.map(row => Number(row.signedErrors[market]));
     const squared = signed.map(value => value * value);
     const mae = absolute.length ? absolute.reduce((sum, value) => sum + value, 0) / absolute.length : null;
+    const walkForward = backtest?.markets?.[market] || {};
+    const walkForwardPassing = Number(walkForward.testSamples) >= 40 && Number(walkForward.calibratedTestMae) <= TARGET_MAE[market];
     markets[market] = {
       samples: rows.length,
       mae: mae == null ? null : round(mae),
@@ -104,7 +111,17 @@ export function buildCalibration(history, date, now = Date.now()) {
       rmse: squared.length ? round(Math.sqrt(squared.reduce((sum, value) => sum + value, 0) / squared.length)) : null,
       targetMae: TARGET_MAE[market],
       minimumSamples: MINIMUM_SAMPLES,
-      projectionPassing: rows.length >= MINIMUM_SAMPLES && mae <= TARGET_MAE[market],
+      projectionPassing: rows.length >= MINIMUM_SAMPLES && mae <= TARGET_MAE[market] && walkForwardPassing,
+      walkForward: {
+        samples: Number(walkForward.samples) || 0,
+        trainingSamples: Number(walkForward.trainingSamples) || 0,
+        testSamples: Number(walkForward.testSamples) || 0,
+        rawTestMae: walkForward.rawTestMae ?? null,
+        calibratedTestMae: walkForward.calibratedTestMae ?? null,
+        correction: Number(walkForward.correction) || 0,
+        correctionApplied: Boolean(walkForward.correctionApplied),
+        passing: walkForwardPassing
+      },
       pricedStrategyValidated: false
     };
   }
@@ -118,6 +135,7 @@ export function buildCalibration(history, date, now = Date.now()) {
     gradedPlayers: graded.length,
     pendingPlayers: (history.snapshots || []).filter(row => row.status === "pending").length,
     dnpPlayers: (history.snapshots || []).filter(row => row.status === "dnp").length,
+    invalidProjectionPlayers,
     markets,
     verified: false,
     releaseStatus: Object.values(markets).every(row => row.projectionPassing) ? "projection_review_eligible" : "collecting",
@@ -125,6 +143,8 @@ export function buildCalibration(history, date, now = Date.now()) {
     notes: [
       "Metrics use frozen pregame projections only.",
       "DNP records are excluded from projection-error metrics.",
+      "All-zero or otherwise invalid frozen projection snapshots are excluded from accuracy claims.",
+      "Walk-forward metrics use a chronological 70/30 train/test split with no future-game leakage.",
       "Projection accuracy does not validate a priced betting strategy."
     ]
   };
@@ -169,7 +189,7 @@ function main() {
     lines: read("nba_market_lines"),
     history: readOr("nba_projection_history", { sport: "NBA", version: "1.0", snapshots: [] })
   });
-  const calibration = buildCalibration(history, games.date);
+  const calibration = buildCalibration(history, games.date, Date.now(), readOr("nba_model_backtest", { markets: {} }));
   const results = buildResults(history, calibration, games.date);
   write("nba_projection_history", history);
   write("nba_calibration", calibration);

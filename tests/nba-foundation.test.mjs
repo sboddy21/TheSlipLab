@@ -29,6 +29,7 @@ test("unknown starters keep historical minutes with an unconfirmed-role label", 
 test("NBA history uses one league-wide game-log request", () => {
   const source = fs.readFileSync("scripts/nba/build_nba_history.js", "utf8");
   assert.match(source, /stats\/leaguegamelog/);
+  assert.match(source, /parseEspnGameLog/);
   assert.match(source, /previous_season_preseason/);
 });
 

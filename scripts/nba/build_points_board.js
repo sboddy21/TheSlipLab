@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,7 @@ const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const OUT = path.join(ROOT, "website/data/nba_points.json");
 const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const USAGE_FILE = path.join(ROOT, "website/data/nba_usage_engine.json");
+const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
 
 function readJSON(file, fallback) {
   try {
@@ -81,7 +83,7 @@ function buildPointsScore({ pointsLean, season, last5, last10, minutes, minutesC
   return round1(clamp(basePoints + seasonFloor + form + minuteScore + usage + trend + volumeTrend + starterBoost + confidenceBoost));
 }
 
-function buildRow(p, minutesMap, usageMap) {
+function buildRow(p, minutesMap, usageMap, backtest) {
   const minuteRow = minutesMap.get(String(p.playerId)) || minutesMap.get(String(p.player)) || {};
   const usageRow = usageMap.get(String(p.playerId)) || usageMap.get(String(p.player)) || {};
   const season = num(p.profile?.seasonPoints ?? p.history?.season?.points);
@@ -97,11 +99,13 @@ function buildRow(p, minutesMap, usageMap) {
   const seasonFTA = num(usageRow.seasonFTA ?? p.usage?.seasonFTA ?? p.profile?.seasonFTA ?? p.history?.season?.freeThrowAttempts);
   const last5FTA = num(usageRow.last5FTA ?? p.usage?.last5FTA ?? p.profile?.last5FTA ?? p.history?.last5?.freeThrowAttempts);
 
-  const pointsLean = round1(
+  const rawPointsLean = round1(
     season * 0.40 +
     last5 * 0.38 +
     last10 * 0.22
   );
+  const calibrated = applyNbaCalibration(rawPointsLean, "points", backtest);
+  const pointsLean = calibrated.value;
 
   const trendDiff = round1(last5 - season);
   const fgaTrend = round1(last5FGA - seasonFGA);
@@ -160,7 +164,10 @@ function buildRow(p, minutesMap, usageMap) {
     seasonPoints: round1(season),
     last5Points: round1(last5),
     last10Points: round1(last10),
+    rawPointsLean,
     pointsLean,
+    calibrationCorrection: calibrated.correction,
+    calibrationApplied: calibrated.applied,
     trendDiff,
 
     seasonFGA: round1(seasonFGA),
@@ -197,6 +204,7 @@ async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const minutesPayload = readJSON(MINUTES_FILE, { players: [] });
   const usagePayload = readJSON(USAGE_FILE, { players: [] });
+  const backtest = readJSON(BACKTEST_FILE, { markets: {} });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minuteRows = Array.isArray(minutesPayload.players) ? minutesPayload.players : [];
@@ -215,7 +223,7 @@ async function main() {
   }
 
   const rows = players
-    .map(p => buildRow(p, minutesMap, usageMap))
+    .map(p => buildRow(p, minutesMap, usageMap, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||

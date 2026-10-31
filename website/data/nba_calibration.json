@@ -2,51 +2,92 @@
   "sport": "NBA",
   "version": "1.0",
   "date": "2026-10-31",
-  "generatedAt": "2026-10-31T12:49:49.732Z",
+  "generatedAt": "2026-10-31T13:35:05.712Z",
   "mode": "shadow",
   "minimumSamples": 150,
-  "gradedPlayers": 10,
+  "gradedPlayers": 0,
   "pendingPlayers": 522,
   "dnpPlayers": 27,
+  "invalidProjectionPlayers": 10,
   "markets": {
     "points": {
-      "samples": 10,
-      "mae": 16.3,
-      "bias": -16.3,
-      "rmse": 18.2,
+      "samples": 0,
+      "mae": null,
+      "bias": null,
+      "rmse": null,
       "targetMae": 5.5,
       "minimumSamples": 150,
       "projectionPassing": false,
+      "walkForward": {
+        "samples": 264,
+        "trainingSamples": 184,
+        "testSamples": 80,
+        "rawTestMae": 5.6,
+        "calibratedTestMae": 5.6,
+        "correction": 0,
+        "correctionApplied": false,
+        "passing": false
+      },
       "pricedStrategyValidated": false
     },
     "rebounds": {
-      "samples": 10,
-      "mae": 6.7,
-      "bias": -6.7,
-      "rmse": 7.4,
+      "samples": 0,
+      "mae": null,
+      "bias": null,
+      "rmse": null,
       "targetMae": 2.5,
       "minimumSamples": 150,
       "projectionPassing": false,
+      "walkForward": {
+        "samples": 264,
+        "trainingSamples": 184,
+        "testSamples": 80,
+        "rawTestMae": 2.1,
+        "calibratedTestMae": 2.1,
+        "correction": 0,
+        "correctionApplied": false,
+        "passing": true
+      },
       "pricedStrategyValidated": false
     },
     "assists": {
-      "samples": 10,
-      "mae": 3.5,
-      "bias": -3.5,
-      "rmse": 4.3,
+      "samples": 0,
+      "mae": null,
+      "bias": null,
+      "rmse": null,
       "targetMae": 2,
       "minimumSamples": 150,
       "projectionPassing": false,
+      "walkForward": {
+        "samples": 264,
+        "trainingSamples": 184,
+        "testSamples": 80,
+        "rawTestMae": 1.7,
+        "calibratedTestMae": 1.7,
+        "correction": 0,
+        "correctionApplied": false,
+        "passing": true
+      },
       "pricedStrategyValidated": false
     },
     "threes": {
-      "samples": 10,
-      "mae": 1.9,
-      "bias": -1.9,
-      "rmse": 2.3,
+      "samples": 0,
+      "mae": null,
+      "bias": null,
+      "rmse": null,
       "targetMae": 1.1,
       "minimumSamples": 150,
       "projectionPassing": false,
+      "walkForward": {
+        "samples": 264,
+        "trainingSamples": 184,
+        "testSamples": 80,
+        "rawTestMae": 1,
+        "calibratedTestMae": 1,
+        "correction": 0,
+        "correctionApplied": false,
+        "passing": true
+      },
       "pricedStrategyValidated": false
     }
   },
@@ -56,6 +97,8 @@
   "notes": [
     "Metrics use frozen pregame projections only.",
     "DNP records are excluded from projection-error metrics.",
+    "All-zero or otherwise invalid frozen projection snapshots are excluded from accuracy claims.",
+    "Walk-forward metrics use a chronological 70/30 train/test split with no future-game leakage.",
     "Projection accuracy does not validate a priced betting strategy."
   ]
 }

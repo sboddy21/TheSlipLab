@@ -1,0 +1,61 @@
+{
+  "sport": "NBA",
+  "version": "1.0",
+  "date": "2026-10-31",
+  "generatedAt": "2026-10-31T13:35:01.756Z",
+  "method": "chronological_walk_forward_70_30_holdout",
+  "minimumPriorGames": 3,
+  "minimumTrainingSamples": 100,
+  "minimumTestSamples": 40,
+  "markets": {
+    "points": {
+      "samples": 264,
+      "trainingSamples": 184,
+      "testSamples": 80,
+      "rawTestMae": 5.6,
+      "calibratedTestMae": 5.6,
+      "trainingBias": -0.1,
+      "correction": 0,
+      "correctionApplied": false,
+      "status": "no_improvement"
+    },
+    "rebounds": {
+      "samples": 264,
+      "trainingSamples": 184,
+      "testSamples": 80,
+      "rawTestMae": 2.1,
+      "calibratedTestMae": 2.1,
+      "trainingBias": -0.2,
+      "correction": 0,
+      "correctionApplied": false,
+      "status": "no_improvement"
+    },
+    "assists": {
+      "samples": 264,
+      "trainingSamples": 184,
+      "testSamples": 80,
+      "rawTestMae": 1.7,
+      "calibratedTestMae": 1.7,
+      "trainingBias": 0,
+      "correction": 0,
+      "correctionApplied": false,
+      "status": "no_improvement"
+    },
+    "threes": {
+      "samples": 264,
+      "trainingSamples": 184,
+      "testSamples": 80,
+      "rawTestMae": 1,
+      "calibratedTestMae": 1,
+      "trainingBias": 0,
+      "correction": 0,
+      "correctionApplied": false,
+      "status": "no_improvement"
+    }
+  },
+  "notes": [
+    "Each prediction uses only games completed before the target game.",
+    "Corrections are learned on the chronological training split and must improve held-out MAE by at least 2%.",
+    "Correction magnitude is capped by market to reduce overfitting."
+  ]
+}

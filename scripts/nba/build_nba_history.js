@@ -237,6 +237,45 @@ async function fetchEspnSeasonSummary(playerId, year) {
   };
 }
 
+export function parseEspnGameLog(data) {
+  const names = Array.isArray(data?.names) ? data.names : [];
+  const index = Object.fromEntries(names.map((name, position) => [name, position]));
+  const seasonType = (data?.seasonTypes || []).find(item => /regular season/i.test(String(item?.displayName || "")));
+  const eventMap = data?.events && !Array.isArray(data.events) ? data.events : {};
+  const rows = [];
+  for (const category of seasonType?.categories || []) {
+    for (const event of category?.events || []) {
+      const details = eventMap[String(event.eventId)] || {};
+      const stats = event.stats || [];
+      const fieldGoals = parseMadeAttempted(stats[index["fieldGoalsMade-fieldGoalsAttempted"]]);
+      const threes = parseMadeAttempted(stats[index["threePointFieldGoalsMade-threePointFieldGoalsAttempted"]]);
+      const freeThrows = parseMadeAttempted(stats[index["freeThrowsMade-freeThrowsAttempted"]]);
+      rows.push({
+        gameId: String(event.eventId || ""),
+        gameDate: details.gameDate || "",
+        matchup: `${details.atVs || "vs"} ${details.opponent?.abbreviation || ""}`.trim(),
+        minutes: num(stats[index.minutes]),
+        points: num(stats[index.points]),
+        rebounds: num(stats[index.totalRebounds]),
+        assists: num(stats[index.assists]),
+        threesMade: threes.made,
+        threesAttempted: threes.attempted,
+        fieldGoalAttempts: fieldGoals.attempted,
+        freeThrowAttempts: freeThrows.attempted,
+        steals: num(stats[index.steals]),
+        blocks: num(stats[index.blocks]),
+        turnovers: num(stats[index.turnovers])
+      });
+    }
+  }
+  return rows.filter(row => row.gameId && row.gameDate && row.minutes > 0);
+}
+
+async function fetchEspnGameLog(playerId, year) {
+  const url = `https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/${playerId}/gamelog?region=us&lang=en&season=${year}`;
+  return parseEspnGameLog(await fetchJson(url, 10000));
+}
+
 async function mapWithConcurrency(items, limit, mapper) {
   const results = new Array(items.length);
   let nextIndex = 0;
@@ -294,17 +333,33 @@ async function main() {
       errors.push({ source: "NBA league game log", message: error.message });
     }
   }
+  const nbaLeagueGameLogCount = leagueGames.length;
+  let espnGameLogCount = 0;
   const espnSummaryByPlayer = new Map();
   if (players.length && leagueGames.length === 0) {
     const year = seasonEndYear(season);
-    const summaries = await mapWithConcurrency(players, ESPN_CONCURRENCY, async player => {
+    const gameLogs = await mapWithConcurrency(players, ESPN_CONCURRENCY, async player => {
       try {
-        return await fetchEspnSeasonSummary(player.playerId, year);
+        return await fetchEspnGameLog(player.playerId, year);
       } catch {
-        return null;
+        return [];
       }
     });
     players.forEach((player, index) => {
+      if (gameLogs[index]?.length) {
+        gameLogs[index].forEach(game => {
+          game.playerId = String(player.playerId);
+          game.player = safeName(player.player);
+        });
+        leagueGames.push(...gameLogs[index]);
+        espnGameLogCount += gameLogs[index].length;
+      }
+    });
+    const missing = players.filter(player => !gameLogs[players.indexOf(player)]?.length);
+    const summaries = await mapWithConcurrency(missing, ESPN_CONCURRENCY, async player => {
+      try { return await fetchEspnSeasonSummary(player.playerId, year); } catch { return null; }
+    });
+    missing.forEach((player, index) => {
       if (summaries[index]?.minutes > 0) espnSummaryByPlayer.set(String(player.playerId), summaries[index]);
     });
   }
@@ -347,7 +402,7 @@ async function main() {
   const out = {
     sport: "NBA",
     version: "1.1",
-    source: "NBA stats player game logs with ESPN season summaries when game logs are unavailable",
+    source: "NBA stats league game logs with ESPN dated player game logs and season summaries as verified alternatives",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
     season,
@@ -356,7 +411,8 @@ async function main() {
     playerCount: rows.length,
     availability: !players.length ? "no_games_scheduled" : errors.length ? "history_unavailable" : "players_available",
     errorCount: errors.length,
-    leagueGameLogCount: leagueGames.length,
+    leagueGameLogCount: nbaLeagueGameLogCount,
+    espnGameLogCount,
     espnSummaryCount: espnSummaryByPlayer.size,
     errors,
     players: rows

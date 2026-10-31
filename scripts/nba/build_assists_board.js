@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -10,6 +11,7 @@ const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const USAGE_FILE = path.join(ROOT, "website/data/nba_usage_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_assists.json");
+const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
 
 function readJSON(file, fallback) {
   try {
@@ -75,7 +77,7 @@ function positionBoost(position) {
   return 0;
 }
 
-function buildRow(p, minuteRow, usageRow) {
+function buildRow(p, minuteRow, usageRow, backtest) {
   const season = num(p.profile?.seasonAssists ?? p.history?.season?.assists);
   const last5 = num(p.profile?.last5Assists ?? p.history?.last5?.assists);
   const last10 = num(p.profile?.last10Assists ?? p.history?.last10?.assists);
@@ -88,7 +90,9 @@ function buildRow(p, minuteRow, usageRow) {
   const usageTrend = usageRow?.usageTrend || p.usage?.trend || "";
   const assistTrend = num(usageRow?.assistTrend ?? (last5 - season));
 
-  const assistsLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
+  const rawAssistsLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
+  const calibrated = applyNbaCalibration(rawAssistsLean, "assists", backtest);
+  const assistsLean = calibrated.value;
   const trendDiff = round1(last5 - season);
 
   const base = clamp((assistsLean / 10) * 46, 0, 46);
@@ -134,7 +138,10 @@ function buildRow(p, minuteRow, usageRow) {
     seasonAssists: round1(season),
     last5Assists: round1(last5),
     last10Assists: round1(last10),
+    rawAssistsLean,
     assistsLean,
+    calibrationCorrection: calibrated.correction,
+    calibrationApplied: calibrated.applied,
     trendDiff,
 
     expectedMinutes: round1(expectedMinutes),
@@ -157,13 +164,14 @@ async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const minutes = readJSON(MINUTES_FILE, { players: [] });
   const usage = readJSON(USAGE_FILE, { players: [] });
+  const backtest = readJSON(BACKTEST_FILE, { markets: {} });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minutesMap = byId(minutes.players);
   const usageMap = byId(usage.players);
 
   const rows = players
-    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, usageMap.get(String(p.playerId)) || {}))
+    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, usageMap.get(String(p.playerId)) || {}, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.assistsScore - a.assistsScore ||

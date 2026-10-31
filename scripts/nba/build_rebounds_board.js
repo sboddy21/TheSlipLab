@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,6 +10,7 @@ const ROOT = path.resolve(__dirname, "../..");
 const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_rebounds.json");
+const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
 
 function readJSON(file, fallback) {
   try {
@@ -75,7 +77,7 @@ function positionBoost(position) {
   return 0;
 }
 
-function buildRow(p, minuteRow) {
+function buildRow(p, minuteRow, backtest) {
   const season = num(p.profile?.seasonRebounds ?? p.history?.season?.rebounds);
   const last5 = num(p.profile?.last5Rebounds ?? p.history?.last5?.rebounds);
   const last10 = num(p.profile?.last10Rebounds ?? p.history?.last10?.rebounds);
@@ -84,7 +86,9 @@ function buildRow(p, minuteRow) {
   const minutesConfidence = num(minuteRow?.minutesConfidence ?? p.minutes?.confidence);
   const minutesRole = minuteRow?.role || p.minutes?.role || "";
 
-  const reboundsLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
+  const rawReboundsLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
+  const calibrated = applyNbaCalibration(rawReboundsLean, "rebounds", backtest);
+  const reboundsLean = calibrated.value;
   const trendDiff = round1(last5 - season);
 
   const base = clamp((reboundsLean / 13) * 48, 0, 48);
@@ -128,7 +132,10 @@ function buildRow(p, minuteRow) {
     seasonRebounds: round1(season),
     last5Rebounds: round1(last5),
     last10Rebounds: round1(last10),
+    rawReboundsLean,
     reboundsLean,
+    calibrationCorrection: calibrated.correction,
+    calibrationApplied: calibrated.applied,
     trendDiff,
 
     expectedMinutes: round1(expectedMinutes),
@@ -146,12 +153,13 @@ function buildRow(p, minuteRow) {
 async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const minutes = readJSON(MINUTES_FILE, { players: [] });
+  const backtest = readJSON(BACKTEST_FILE, { markets: {} });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minutesMap = byId(minutes.players);
 
   const rows = players
-    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}))
+    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.reboundsScore - a.reboundsScore ||
