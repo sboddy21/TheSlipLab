@@ -1,5 +1,5 @@
 import {fresh as quoteFresh} from './odds-core.mjs';
-import { isFresh,mergeLiveGame,MAX_MODEL_AGE_MS } from './cfb-market.mjs';
+import { isFresh,mergeLiveGame,MAX_MODEL_AGE_MS,completeSlate } from './cfb-market.mjs?v=20261031-complete';
 import { valuePicks, moneylineProjection, implied, payout, estimate } from './cfb-edge.mjs';
 import { boardRows, boardHighlights, sortBoard } from './cfb-board.mjs';
 const $ = id => document.getElementById(id);
@@ -168,9 +168,9 @@ async function refreshLive() {
     const live=await response.json();
     if(live.schemaVersion!==1||!Array.isArray(live.games)||!isFresh(live.retrievedAt))throw new Error('Stale or invalid live feed');
     liveAsOf=live.retrievedAt;liveError=false;
-    if(snapshot){const liveById=new Map(live.games.map(game=>[String(game.id),game]));board={...snapshot,weekStart:live.weekStart,weekEnd:live.weekEnd,games:snapshot.games.map(saved=>{
+    if(snapshot){const liveById=new Map(live.games.map(game=>[String(game.id),game]));board={...snapshot,weekStart:live.weekStart,weekEnd:live.weekEnd,games:completeSlate(snapshot.weekStart===live.weekStart?snapshot.games:[],live.games).map(saved=>{
       const current=liveById.get(String(saved.id));if(!current)return saved;
-      const merged=mergeLiveGame(current,saved,liveAsOf);
+      const merged=mergeLiveGame(current,snapshot.games.find(game=>String(game.id)===String(current.id)),liveAsOf);
       merged.leans=merged.projection?valuePicks(merged,merged.projection,snapshot.calibration):[];return merged;
     })};$('edition-date').textContent=`${board.weekStart} — ${board.weekEnd}`;}
   } catch {liveError=true;}

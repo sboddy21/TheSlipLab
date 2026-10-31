@@ -3,8 +3,9 @@ const compact=date=>date.toISOString().slice(0,10).replaceAll('-','');
 const easternDay=value=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(value));
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
+// ESPN silently falls back to 25 events for oversized limits such as 1000.
 export function scoreboardUrl(date){
-  return `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${compact(date)}&groups=80&limit=1000`;
+  return `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${compact(date)}&groups=80&limit=200`;
 }
 
 export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeoutMs=30000,sleepImpl=sleep}={}){
@@ -20,7 +21,7 @@ export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeout
         lastError=error;
       }else{
         const data=await response.json();
-        if(!Array.isArray(data.events)||data.events.length>=1000)throw new Error(`Missing or truncated ESPN events for ${compact(date)}`);
+        if(!Array.isArray(data.events)||data.events.length>=200)throw new Error(`Missing or truncated ESPN events for ${compact(date)}`);
         return data.events;
       }
     }catch(error){
@@ -32,7 +33,7 @@ export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeout
   throw lastError||new Error(`ESPN request failed for ${compact(date)}`);
 }
 
-export async function fetchScoreboardRange(start,finish,{fallback=[],concurrency=4,onWarning=console.warn,...options}={}){
+export async function fetchScoreboardRange(start,finish,{fallback=[],concurrency=4,onWarning=console.warn,strict=false,...options}={}){
   const days=[];
   for(let cursor=new Date(start);cursor<=finish;cursor=new Date(cursor.getTime()+DAY_MS))days.push(cursor);
   const results=[];
@@ -43,6 +44,7 @@ export async function fetchScoreboardRange(start,finish,{fallback=[],concurrency
       const day=batch[offset],key=day.toISOString().slice(0,10);
       if(result.status==='fulfilled')results.push(...result.value);
       else{
+        if(strict)throw new Error(`Incomplete scoreboard for ${key}: ${result.reason?.message||result.reason}`);
         const cached=fallback.filter(game=>easternDay(game.date)===key);
         results.push(...cached);
         onWarning(`[cfb-refresh] ESPN ${key} failed: ${result.reason?.message||result.reason}. Reused ${cached.length} cached games.`);

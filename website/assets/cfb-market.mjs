@@ -32,3 +32,7 @@ export function mergeLiveGame(live,snapshot,asOf,now=Date.now()) {
   const freshMarket=Boolean(live.market)&&isFresh(live.oddsRetrievedAt||asOf,now);
   return {...merged,leans:projection&&freshMarket?candidates(merged,projection,now):[]};
 }
+
+export function completeSlate(savedGames,liveGames){
+  return [...new Map([...savedGames,...liveGames].map(game=>[String(game.id),game])).values()];
+}
