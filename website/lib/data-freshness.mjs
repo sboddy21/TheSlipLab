@@ -46,12 +46,16 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   const policy = freshnessPolicy(file);
   if (!policy) return { available: true, status: "reference_or_history" };
   const reasons = [];
+  const usableNbaHistoryFallback = file === "nba_history.json"
+    && Array.isArray(payload?.players)
+    && payload.players.length > 0
+    && Number(payload?.espnSummaryCount) > 0;
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
   const slate = payload?.date || payload?.slateDate || payload?.pitcherDate;
   if (slate && /^\d{4}-\d{2}-\d{2}$/.test(slate) && slate !== today) reasons.push("wrong_slate_date");
   if (payload?.stale || payload?.preservedAt || payload?.preserveReason) reasons.push("preserved_or_stale_source");
-  if (/unavailable|failed|error/.test(String(payload?.availability || payload?.status || ""))) reasons.push("source_unavailable");
-  if (payload?.error || Number(payload?.errorCount) > 0 || payload?.errors?.length) reasons.push("source_errors");
+  if (!usableNbaHistoryFallback && /unavailable|failed|error/.test(String(payload?.availability || payload?.status || ""))) reasons.push("source_unavailable");
+  if (!usableNbaHistoryFallback && (payload?.error || Number(payload?.errorCount) > 0 || payload?.errors?.length)) reasons.push("source_errors");
   const timestamps = ["dataAsOf", "sourceFetchedAt", "retrievedAt", "fetchedAt", "updatedAt", "updated_at", "generatedAt", "feedTimestamp"]
     .filter(key => payload?.[key] !== undefined && payload[key] !== null)
     .map(key => ({ field: key, value: payload[key] }));
@@ -73,7 +77,7 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   }
   return {
     available: !reasons.length,
-    status: reasons.length ? "unavailable" : "current",
+    status: reasons.length ? "unavailable" : usableNbaHistoryFallback ? "current_degraded" : "current",
     reasons: [...new Set(reasons)],
     timestamps,
     maxAgeSeconds: policy.maxAgeSeconds

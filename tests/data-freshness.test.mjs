@@ -87,6 +87,25 @@ test("fresh board timestamps cannot conceal stale or missing upstream feeds", as
   assert.equal(fresh.available, true);
 });
 
+test("usable NBA history fallback does not block every generated board", async () => {
+  const history = {
+    ...current,
+    availability: "history_unavailable",
+    errorCount: 1,
+    errors: [{ source: "NBA league game log", message: "This operation was aborted" }],
+    espnSummaryCount: 200,
+    players: [{ playerId: "1", seasonSummary: { points: 20 } }]
+  };
+  const result = await verifyCurrentDataset("nba_points.json", current, {
+    now,
+    load: async file => file === "nba_history.json" ? history : current
+  });
+  assert.equal(result.available, true);
+  assert.equal(result.dependencies.find(row => row.file === "nba_history.json").status, "current_degraded");
+  assert.equal(checkDataFreshness("nba_history.json", { ...history, players: [] }, { now }).available, false);
+  assert.equal(checkDataFreshness("nba_history.json", { ...history, date: "2026-10-23" }, { now }).available, false);
+});
+
 test("sports refresh commits deploy immediately through the ignore command", () => {
   for (const subject of ["Refresh NBA data", "Refresh MLB data", "Refresh NFL data", "Refresh WNBA data", "Refresh college football board", "Refresh sportsbook prices across sports", "Update HR results"]) {
     assert.equal(spawnSync(process.execPath, ["scripts/vercel-ignore-build.mjs"], { env: { ...process.env, VERCEL_GIT_COMMIT_MESSAGE: subject } }).status, 1, subject);
