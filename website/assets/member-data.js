@@ -50,7 +50,8 @@
     const response = await nativeFetch(input, { ...init, cache: "no-store" });
     if (response.status === 503) {
       const detail = await response.clone().json().catch(() => null);
-      if (detail?.error === "current_data_unavailable") {
+      const landingPage = window.location.pathname === "/" || window.location.pathname === "/index.html";
+      if (detail?.error === "current_data_unavailable" && !landingPage) {
         const show = () => {
           let notice = document.getElementById("tslDataUnavailable");
           if (!notice) {

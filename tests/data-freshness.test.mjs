@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import { checkDataFreshness, verifyCurrentDataset } from "../website/lib/data-freshness.mjs";
 import { historyFromSeasonSummary } from "../scripts/nba/build_nba_history.js";
 import { buildRow as buildMinutesRow } from "../scripts/nba/build_minutes_engine.js";
@@ -111,4 +112,11 @@ test("sports refresh commits deploy immediately through the ignore command", () 
     assert.equal(spawnSync(process.execPath, ["scripts/vercel-ignore-build.mjs"], { env: { ...process.env, VERCEL_GIT_COMMIT_MESSAGE: subject } }).status, 1, subject);
   }
   assert.equal(spawnSync(process.execPath, ["scripts/vercel-ignore-build.mjs"], { env: { ...process.env, VERCEL_GIT_COMMIT_MESSAGE: "Automated X posting update" } }).status, 0);
+});
+
+test("landing page uses league statuses instead of a global data failure banner", () => {
+  const source = fs.readFileSync("website/assets/member-data.js", "utf8");
+  assert.match(source, /window\.location\.pathname === "\/"/);
+  assert.match(source, /window\.location\.pathname === "\/index\.html"/);
+  assert.match(source, /current_data_unavailable" && !landingPage/);
 });
