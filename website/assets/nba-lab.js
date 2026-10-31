@@ -17,6 +17,7 @@ const descriptions = {
   rebounds: ["Rebounds Model", "Rebound projections ranked by role, minutes, recent baseline, matchup, and model strength."],
   assists: ["Assists Model", "Assist projections ranked by playmaking role, usage, minutes, matchup, and model strength."],
   threes: ["3-Pointers Model", "Made-three projections ranked by shooting role, volume profile, minutes, and model strength."],
+  "first-basket": ["First Basket Model", "Estimated opening-score probability from projected scoring share, minutes, role, and matchup context."],
   matchups: ["Best Matchups", "The slate’s strongest player environments, ranked by matchup score and contextual model signals."],
   availability: ["Availability", "Reported injury information for today’s teams. Unlisted never means confirmed active."]
 };
@@ -94,6 +95,32 @@ function modelTable(market) {
   return `${slateChips()}${filters(market)}<div class="board-meta"><div><strong>${rows.length}</strong> players</div><div class="market-gate"><i></i>${state.data.markets.lines.length ? `${state.data.markets.lines.length} verified lines` : "Projection mode · no verified lines"}</div></div><div class="model-table-wrap"><table class="model-table"><thead><tr><th></th><th data-sort="player">Player</th><th>Matchup</th><th data-sort="projection">Projection</th><th>Trend</th><th data-sort="minutes">Minutes</th><th>Role</th><th data-sort="score">Model Score</th><th>Grade</th><th>Market Line</th></tr></thead><tbody>${rows.map(row => modelRow(row, config)).join("") || '<tr><td colspan="10" class="empty">No players match these filters.</td></tr>'}</tbody></table></div>`;
 }
 
+function firstBasketRows() {
+  const rows = state.data.models.points.filter(row => row.publicationEligible && (n(row.expectedMinutes) || 0) >= 12);
+  const gameTotals = new Map();
+  for (const row of rows) {
+    const roleBoost = /Core Starter|Starter/.test(row.minutesRole || "") ? 1.18 : 1;
+    const scoringRate = Math.max(1, n(row.pointsLean) || 0) / Math.max(12, n(row.expectedMinutes) || 0);
+    const matchupBoost = .8 + (n(state.data.matchupMap.get(String(row.playerId))?.matchupScore) || 50) / 250;
+    row.firstBasketWeight = Math.max(.01, (n(row.expectedMinutes) || 0) * scoringRate * roleBoost * matchupBoost);
+    gameTotals.set(String(row.gameId), (gameTotals.get(String(row.gameId)) || 0) + row.firstBasketWeight);
+  }
+  return rows.map(row => {
+    const probability = 100 * row.firstBasketWeight / (gameTotals.get(String(row.gameId)) || 1);
+    return { ...row, firstBasketProbability: probability, firstBasketScore: Math.min(99, probability * 5 + (n(row.pointsScore) || 0) * .35) };
+  }).filter(row =>
+    (!state.query || `${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query.toLowerCase())) &&
+    (!state.team || row.team === state.team) && (state.game === "all" || String(row.gameId) === state.game) &&
+    (state.status === "all" || row.availabilityStatus === state.status) && (!state.starred || state.stars.has(String(row.playerId))) &&
+    (state.grade === "all" || grade(row.firstBasketScore)[0].startsWith(state.grade))
+  ).sort((a, b) => b.firstBasketProbability - a.firstBasketProbability);
+}
+
+function firstBasketView() {
+  const rows = firstBasketRows();
+  return `${slateChips()}${filters("points")}<div class="first-basket-note"><strong>Model estimate, not a sportsbook price.</strong> Each game is normalized to 100% across rotation players using projected scoring share, expected minutes, role, and matchup context.</div><div class="board-meta"><div><strong>${rows.length}</strong> eligible players</div><div class="market-gate"><i></i>No verified first-basket odds</div></div><div class="model-table-wrap"><table class="model-table first-basket-table"><thead><tr><th></th><th>Player</th><th>Matchup</th><th>Estimated Probability</th><th>Projected Points</th><th>Minutes</th><th>Role</th><th>Model Score</th><th>Grade</th></tr></thead><tbody>${rows.map(row => { const [letter, tone] = grade(row.firstBasketScore); return `<tr><td><button class="star ${state.stars.has(String(row.playerId)) ? "active" : ""}" data-star="${esc(row.playerId)}" aria-label="Star ${esc(row.player)}">★</button></td><td><button class="player-cell" data-player="${esc(row.playerId)}"><img src="${image(row.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player)}</strong><small>${esc(row.team)} · ${esc(row.position || "—")}</small></span></button></td><td><b>${row.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.opponent)}</b><small>${esc(row.gameStatusText || "")}</small></td><td class="first-basket-probability">${row.firstBasketProbability.toFixed(1)}%<small>game share</small></td><td>${fmt(row.pointsLean)}<small>points</small></td><td>${fmt(row.expectedMinutes)}<small>${esc(row.minutesRole || "Role pending")}</small></td><td>${esc(row.scoringRole || row.usageTier || "Profile")}</td><td><strong>${fmt(row.firstBasketScore)}</strong><div class="scorebar"><i style="width:${Math.min(100, row.firstBasketScore)}%"></i></div></td><td><span class="grade ${tone}">${letter}</span><small>Estimated</small></td></tr>`; }).join("") || '<tr><td colspan="9" class="empty">No players match these filters.</td></tr>'}</tbody></table></div>`;
+}
+
 function gameGrid() {
   return `<div class="game-grid">${state.data.games.map(game => {
     const rows = state.data.models.points.filter(row => String(row.gameId) === String(game.gameId));
@@ -143,7 +170,7 @@ function render() {
   const [title, description] = descriptions[state.view] || descriptions.dashboard;
   $("#viewTitle").textContent = title; $("#viewDescription").textContent = description; $("#mobileView").value = state.view;
   document.querySelectorAll("[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === state.view));
-  $("#viewRoot").innerHTML = state.view === "dashboard" ? dashboard() : state.view === "games" ? gamesView() : configs[state.view] ? modelTable(state.view) : state.view === "matchups" ? matchupView() : availabilityView();
+  $("#viewRoot").innerHTML = state.view === "dashboard" ? dashboard() : state.view === "games" ? gamesView() : configs[state.view] ? modelTable(state.view) : state.view === "first-basket" ? firstBasketView() : state.view === "matchups" ? matchupView() : availabilityView();
   bindControls();
 }
 function changeView(view) { state.view = descriptions[view] ? view : "dashboard"; state.game = "all"; window.scrollTo({ top: 0, behavior: "smooth" }); render(); }

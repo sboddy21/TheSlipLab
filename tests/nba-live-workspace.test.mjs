@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
 import { buildNbaWorkspace, normalizeNbaSchedule, parseNbaPlayerLog } from "../website/lib/nba-live.mjs";
 import { buildNbaToday } from "../scripts/nba/fetch_nba_today.js";
 const now = Date.parse("2026-10-24T16:00:00Z");
@@ -68,4 +69,15 @@ test("current-season logs use completed games and expose actual early-season sam
   assert.equal(data.season.points, 22);
   assert.equal(data.recentGames[0].threes, 3);
   assert.throws(() => parseNbaPlayerLog(payload, 2026, now), /current season/);
+});
+
+test("NBA workspace exposes First Basket and dark table contrast", () => {
+  const html = fs.readFileSync("website/nba.html", "utf8");
+  const script = fs.readFileSync("website/assets/nba-lab.js", "utf8");
+  const styles = fs.readFileSync("website/assets/nba-lab.css", "utf8");
+  assert.match(html, /data-view="first-basket"/);
+  assert.match(html, /value="first-basket"/);
+  assert.match(script, /function firstBasketView\(\)/);
+  assert.match(script, /gameTotals/);
+  assert.match(styles, /data-theme="dark"[^}]+\.model-table tbody td/);
 });
