@@ -23,3 +23,10 @@ test("NBA hub links to the results page", () => {
   assert.ok(resultsLink, "expected the NBA hub to link to the results page");
   assert.match(resultsLink[1].replace(/<[^>]+>/g, "").trim(), /Results$/);
 });
+
+test("NBA workspace does not make optional market lines a critical dependency", () => {
+  const source = fs.readFileSync("website/assets/nba-lab.js", "utf8");
+  const requiredFiles = source.match(/const files = \[(.*?)\];/s)?.[1] || "";
+  assert.doesNotMatch(requiredFiles, /nba_market_lines\.json/);
+  assert.match(source, /const markets = \{ lines: \[\], status: "not_loaded" \}/);
+});

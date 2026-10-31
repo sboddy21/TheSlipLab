@@ -31,8 +31,9 @@ async function getJSON(file) {
 
 async function load() {
   try {
-    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_matchup_engine.json", "nba_decision_center.json", "nba_availability.json", "nba_market_lines.json"];
-    const [games, cards, points, rebounds, assists, threes, matchups, decisions, availability, markets] = await Promise.all(files.map(getJSON));
+    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_matchup_engine.json", "nba_decision_center.json", "nba_availability.json"];
+    const [games, cards, points, rebounds, assists, threes, matchups, decisions, availability] = await Promise.all(files.map(getJSON));
+    const markets = { lines: [], status: "not_loaded" };
     state.data = {
       games: games.games, date: games.date, fetchedAt: points.fetchedAt, season: points.season, decisions, availability, markets,
       cardMap: new Map(cards.players.map(row => [String(row.playerId), row])),
