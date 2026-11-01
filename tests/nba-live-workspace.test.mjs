@@ -78,6 +78,8 @@ test("NBA workspace exposes First Basket and dark table contrast", () => {
   assert.match(html, /data-view="first-basket"/);
   assert.match(html, /value="first-basket"/);
   assert.match(script, /function firstBasketView\(\)/);
-  assert.match(script, /gameTotals/);
+  assert.match(script, /nba_first_basket\.json/);
+  assert.doesNotMatch(script, /firstBasketWeight|gameTotals/);
+  assert.match(script, /CONTEXT ONLY/);
   assert.match(styles, /data-theme="dark"[^}]+\.model-table tbody td/);
 });

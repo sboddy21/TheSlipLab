@@ -17,7 +17,7 @@ const descriptions = {
   rebounds: ["Rebounds Model", "Rebound projections ranked by role, minutes, recent baseline, matchup, and model strength."],
   assists: ["Assists Model", "Assist projections ranked by playmaking role, usage, minutes, matchup, and model strength."],
   threes: ["3-Pointers Model", "Made-three projections ranked by shooting role, volume profile, minutes, and model strength."],
-  "first-basket": ["First Basket Model", "Estimated opening-score probability from projected scoring share, minutes, role, and matchup context."],
+  "first-basket": ["First Basket Model", "First made field goal probabilities from verified play-by-play, opening possessions, starter history, and lineup status."],
   matchups: ["Best Matchups", "The slate’s strongest player environments, ranked by matchup score and contextual model signals."],
   availability: ["Availability", "Reported injury information for today’s teams. Unlisted never means confirmed active."]
 };
@@ -32,11 +32,11 @@ async function getJSON(file) {
 
 async function load() {
   try {
-    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_matchup_engine.json", "nba_decision_center.json", "nba_availability.json"];
-    const [games, cards, points, rebounds, assists, threes, matchups, decisions, availability] = await Promise.all(files.map(getJSON));
+    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_matchup_engine.json", "nba_decision_center.json", "nba_availability.json", "nba_first_basket.json"];
+    const [games, cards, points, rebounds, assists, threes, matchups, decisions, availability, firstBasket] = await Promise.all(files.map(getJSON));
     const markets = { lines: [], status: "not_loaded" };
     state.data = {
-      games: games.games, date: games.date, fetchedAt: points.fetchedAt, season: points.season, decisions, availability, markets,
+      games: games.games, date: games.date, fetchedAt: points.fetchedAt, season: points.season, decisions, availability, firstBasket, markets,
       cardMap: new Map(cards.players.map(row => [String(row.playerId), row])),
       matchupMap: new Map(matchups.players.map(row => [String(row.playerId), row])),
       models: { points: points.players, rebounds: rebounds.players, assists: assists.players, threes: threes.players }
@@ -99,29 +99,16 @@ function modelTable(market) {
 }
 
 function firstBasketRows() {
-  const rows = state.data.models.points.filter(row => row.publicationEligible && (n(row.expectedMinutes) || 0) >= 12);
-  const gameTotals = new Map();
-  for (const row of rows) {
-    const roleBoost = /Core Starter|Starter/.test(row.minutesRole || "") ? 1.18 : 1;
-    const scoringRate = Math.max(1, n(row.pointsLean) || 0) / Math.max(12, n(row.expectedMinutes) || 0);
-    const matchupBoost = .8 + (n(state.data.matchupMap.get(String(row.playerId))?.matchupScore) || 50) / 250;
-    row.firstBasketWeight = Math.max(.01, (n(row.expectedMinutes) || 0) * scoringRate * roleBoost * matchupBoost);
-    gameTotals.set(String(row.gameId), (gameTotals.get(String(row.gameId)) || 0) + row.firstBasketWeight);
-  }
-  return rows.map(row => {
-    const probability = 100 * row.firstBasketWeight / (gameTotals.get(String(row.gameId)) || 1);
-    return { ...row, firstBasketProbability: probability, firstBasketScore: Math.min(99, probability * 5 + (n(row.pointsScore) || 0) * .35) };
-  }).filter(row =>
+  return (state.data.firstBasket.games || []).flatMap(game => game.players.map(player => ({ ...player, gameId: game.gameId, matchup: game.matchup, gameTimeUTC: game.gameTimeUTC, gamePublicationStatus: game.publicationStatus }))).filter(row =>
     (!state.query || `${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query.toLowerCase())) &&
     (!state.team || row.team === state.team) && (state.game === "all" || String(row.gameId) === state.game) &&
-    (state.status === "all" || row.availabilityStatus === state.status) && (!state.starred || state.stars.has(String(row.playerId))) &&
-    (state.grade === "all" || grade(row.firstBasketScore)[0].startsWith(state.grade))
-  ).sort((a, b) => b.firstBasketProbability - a.firstBasketProbability);
+    (!state.starred || state.stars.has(String(row.playerId)))
+  ).sort((a, b) => b.probability - a.probability);
 }
 
 function firstBasketView() {
   const rows = firstBasketRows();
-  return `${slateChips()}${filters("points")}<div class="first-basket-note"><strong>Model estimate, not a sportsbook price.</strong> Each game is normalized to 100% across rotation players using projected scoring share, expected minutes, role, and matchup context.</div><div class="board-meta"><div><strong>${rows.length}</strong> eligible players</div><div class="market-gate"><i></i>No verified first-basket odds</div></div><div class="model-table-wrap"><table class="model-table first-basket-table"><thead><tr><th></th><th>Player</th><th>Matchup</th><th>Estimated Probability</th><th>Projected Points</th><th>Minutes</th><th>Role</th><th>Model Score</th><th>Grade</th></tr></thead><tbody>${rows.map(row => { const [letter, tone] = grade(row.firstBasketScore); return `<tr><td><button class="star ${state.stars.has(String(row.playerId)) ? "active" : ""}" data-star="${esc(row.playerId)}" aria-label="Star ${esc(row.player)}">★</button></td><td><button class="player-cell" data-player="${esc(row.playerId)}"><img src="${image(row.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player)}</strong><small>${esc(row.team)} · ${esc(row.position || "—")}</small></span></button></td><td><b>${row.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.opponent)}</b><small>${esc(row.gameStatusText || "")}</small></td><td class="first-basket-probability">${row.firstBasketProbability.toFixed(1)}%<small>game share</small></td><td>${fmt(row.pointsLean)}<small>points</small></td><td>${fmt(row.expectedMinutes)}<small>${esc(row.minutesRole || "Role pending")}</small></td><td>${esc(row.scoringRole || row.usageTier || "Profile")}</td><td><strong>${fmt(row.firstBasketScore)}</strong><div class="scorebar"><i style="width:${Math.min(100, row.firstBasketScore)}%"></i></div></td><td><span class="grade ${tone}">${letter}</span><small>Estimated</small></td></tr>`; }).join("") || '<tr><td colspan="9" class="empty">No players match these filters.</td></tr>'}</tbody></table></div>`;
+  return `${slateChips()}<div class="first-basket-note"><strong>Verified evidence model.</strong> ${esc(state.data.firstBasket.methodology)} Market definition: first made field goal; free throws do not count. Projected lineups are context only.</div><div class="board-meta"><div><strong>${state.data.firstBasket.trainingGames}</strong> verified training games</div><div class="market-gate"><i></i>${state.data.firstBasket.publicationEligibleGames} games cleared after confirmed lineups</div></div><div class="model-table-wrap"><table class="model-table first-basket-table"><thead><tr><th></th><th>Player</th><th>Matchup</th><th>Probability</th><th>80% Range</th><th>Fair Odds</th><th>Historical Evidence</th><th>Lineup</th><th>Status</th></tr></thead><tbody>${rows.map(row => `<tr><td><button class="star ${state.stars.has(String(row.playerId)) ? "active" : ""}" data-star="${esc(row.playerId)}" aria-label="Star ${esc(row.player)}">★</button></td><td><span class="player-cell"><img src="${image(row.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player)}</strong><small>${esc(row.team)} · ${esc(row.position || "—")}</small></span></span></td><td><b>${esc(row.matchup)}</b><small>${et(row.gameTimeUTC)} ET</small></td><td class="first-basket-probability">${fmt(row.probabilityPct)}%<small>normalized across 10 starters</small></td><td>${fmt(row.rangeLowPct)}%–${fmt(row.rangeHighPct)}%</td><td>${row.fairAmericanOdds > 0 ? "+" : ""}${row.fairAmericanOdds}<small>model fair price</small></td><td>${row.evidence.firstBaskets}/${row.evidence.starterGames}<small>first baskets / starts · ${row.evidence.firstTeamShots} first team shots</small></td><td>${esc(row.lineupStatus)}</td><td><span class="${row.publicationEligible ? "grade good" : "no-line"}">${esc(row.publicationEligible ? row.confidence : "CONTEXT ONLY")}</span></td></tr>`).join("") || '<tr><td colspan="9" class="empty">No valid ten-player lineup is available. The model will not invent one.</td></tr>'}</tbody></table></div>`;
 }
 
 function gameGrid() {

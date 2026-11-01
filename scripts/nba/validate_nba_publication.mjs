@@ -120,11 +120,28 @@ export function validateNbaPublication(payloads) {
 }
 
 export function validateGeneratedNbaPublication() {
-  return validateNbaPublication({
+  const result = validateNbaPublication({
     slate: readJson("nba_games_today.json"),
     pool: readJson("nba_player_pool.json"),
     availability: readJson("nba_availability.json"),
     minutes: readJson("nba_minutes_engine.json"),
     boards: Object.fromEntries(BOARD_FILES.map(file => [file, readJson(file)]))
   });
+  const firstBasket = readJson("nba_first_basket.json");
+  assert(Number(firstBasket.trainingGames) >= 500, "first basket training set is too small");
+  assert(firstBasket.validation?.beatsUniformBaseline === true, "first basket model did not beat its uniform holdout baseline");
+  for (const game of firstBasket.games || []) {
+    assert(game.players.length === 10, `first basket ${game.gameId} does not contain ten starters`);
+    const probabilityTotal = game.players.reduce((sum, player) => sum + Number(player.probability || 0), 0);
+    assert(Math.abs(probabilityTotal - 1) < 0.002, `first basket ${game.gameId} probabilities do not normalize to 100%`);
+    for (const player of game.players) {
+      assertFiniteRange(player.probabilityPct, 0, 100, `first basket probability for ${player.playerId}`);
+      if (player.publicationEligible) {
+        assert(player.lineupStatus === "CONFIRMED", `first basket published unconfirmed starter ${player.playerId}`);
+        assert(Number(player.evidence?.starterGames) >= 12, `first basket published insufficient evidence for ${player.playerId}`);
+      }
+    }
+  }
+  result.checks.push("first basket holdout validation", "first basket probability normalization", "first basket confirmed-lineup gate");
+  return result;
 }
