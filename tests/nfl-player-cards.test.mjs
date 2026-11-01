@@ -60,7 +60,8 @@ test('NFL market boards use a contained scrolling workspace and multi-game filte
 test('NFL page cache-busts the card release assets', () => {
   assert.match(html, /nfl-lab\.css\?v=20260925-ai-board1/);
   assert.match(html, /nfl-ai-board\.css\?v=20260925-ai-board1/);
-  assert.match(html, /nfl-lab\.js\?v=20261101-core-ready1/);
+  assert.match(html, /nfl-lab\.js\?v=20261101-core-ready2/);
   assert.match(js, /coreDataReady\(status,td,rec,roles\)/);
   assert.match(js, /getElementById\('tslDataUnavailable'\)\?\.remove\(\)/);
+  assert.match(js, /state\.data\.odds=odds;clearOutageWhenCoreReady\(\)/);
 });
