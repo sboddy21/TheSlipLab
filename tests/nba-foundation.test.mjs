@@ -40,6 +40,18 @@ test("NBA core compares trends with the season summary", () => {
   assert.match(source, /const season = history\?\.seasonSummary \|\| \{\};/);
 });
 
+test("NBA points projections include capped transparent matchup context", async () => {
+  const { pointsMatchupAdjustment } = await import("../scripts/nba/build_points_board.js");
+  assert.equal(pointsMatchupAdjustment({ rankPointsAllowed: 30 }, { rankPace: 1 }), 0.06);
+  assert.equal(pointsMatchupAdjustment({ rankPointsAllowed: 1 }, { rankPace: 30 }), -0.06);
+  assert.equal(pointsMatchupAdjustment({ rankPointsAllowed: 15 }, { rankPace: 15 }), 0);
+  assert.equal(pointsMatchupAdjustment(null, null), 0);
+  const source = fs.readFileSync("website/assets/nba-lab.js", "utf8");
+  assert.match(source, /Projection breakdown/);
+  assert.match(source, /Opponent matchup/);
+  assert.match(source, /Recent scoring evidence/);
+});
+
 test("landing page opens the live NBA Decision Center", () => {
   const landing = fs.readFileSync("website/index.html", "utf8");
   assert.match(landing, /<a class="league(?: live)?" href="\.\/nba\.html"[^>]*><strong>NBA<\/strong>/);

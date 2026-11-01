@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +12,8 @@ const OUT = path.join(ROOT, "website/data/nba_points.json");
 const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const USAGE_FILE = path.join(ROOT, "website/data/nba_usage_engine.json");
 const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
+const DEFENSE_FILE = path.join(ROOT, "website/data/nba_team_defense.json");
+const PACE_FILE = path.join(ROOT, "website/data/nba_pace_engine.json");
 
 function readJSON(file, fallback) {
   try {
@@ -61,6 +63,14 @@ function scoringRole(pointsLean) {
   return "Thin Points Role";
 }
 
+export function pointsMatchupAdjustment(defense, pace) {
+  const defenseRank = num(defense?.rankPointsAllowed);
+  const paceRank = num(pace?.rankPace);
+  const defensePct = defenseRank >= 26 ? 0.04 : defenseRank >= 21 ? 0.025 : defenseRank > 0 && defenseRank <= 5 ? -0.04 : defenseRank > 0 && defenseRank <= 10 ? -0.025 : 0;
+  const pacePct = paceRank > 0 && paceRank <= 5 ? 0.025 : paceRank > 0 && paceRank <= 10 ? 0.015 : paceRank >= 26 ? -0.025 : paceRank >= 21 ? -0.015 : 0;
+  return Math.max(-0.06, Math.min(0.06, defensePct + pacePct));
+}
+
 function uniqueTags(tags) {
   return tags
     .filter(Boolean)
@@ -83,7 +93,7 @@ function buildPointsScore({ pointsLean, season, last5, last10, minutes, minutesC
   return round1(clamp(basePoints + seasonFloor + form + minuteScore + usage + trend + volumeTrend + starterBoost + confidenceBoost));
 }
 
-function buildRow(p, minutesMap, usageMap, backtest) {
+function buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest) {
   const minuteRow = minutesMap.get(String(p.playerId)) || minutesMap.get(String(p.player)) || {};
   const usageRow = usageMap.get(String(p.playerId)) || usageMap.get(String(p.player)) || {};
   const season = num(p.profile?.seasonPoints ?? p.history?.season?.points);
@@ -105,7 +115,12 @@ function buildRow(p, minutesMap, usageMap, backtest) {
     last10 * 0.22
   );
   const calibrated = applyNbaCalibration(rawPointsLean, "points", backtest);
-  const pointsLean = calibrated.value;
+  const calibratedPointsLean = calibrated.value;
+  const defense = defenseMap.get(String(p.opponentAbbr || p.opponent)) || null;
+  const pace = paceMap.get(String(p.opponentAbbr || p.opponent)) || null;
+  const matchupAdjustmentPct = pointsMatchupAdjustment(defense, pace);
+  const matchupAdjustment = round1(calibratedPointsLean * matchupAdjustmentPct);
+  const pointsLean = round1(calibratedPointsLean + matchupAdjustment);
 
   const trendDiff = round1(last5 - season);
   const fgaTrend = round1(last5FGA - seasonFGA);
@@ -165,7 +180,14 @@ function buildRow(p, minutesMap, usageMap, backtest) {
     last5Points: round1(last5),
     last10Points: round1(last10),
     rawPointsLean,
+    calibratedPointsLean,
     pointsLean,
+    matchupAdjustment,
+    matchupAdjustmentPct: round1(matchupAdjustmentPct * 100),
+    opponentPointsAllowed: round1(defense?.pointsAllowed),
+    opponentPointsDefenseRank: num(defense?.rankPointsAllowed) || null,
+    opponentPace: round1(pace?.pace),
+    opponentPaceRank: num(pace?.rankPace) || null,
     calibrationCorrection: calibrated.correction,
     calibrationApplied: calibrated.applied,
     trendDiff,
@@ -205,6 +227,8 @@ async function main() {
   const minutesPayload = readJSON(MINUTES_FILE, { players: [] });
   const usagePayload = readJSON(USAGE_FILE, { players: [] });
   const backtest = readJSON(BACKTEST_FILE, { markets: {} });
+  const defensePayload = readJSON(DEFENSE_FILE, { teams: [] });
+  const pacePayload = readJSON(PACE_FILE, { teams: [] });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minuteRows = Array.isArray(minutesPayload.players) ? minutesPayload.players : [];
@@ -221,9 +245,11 @@ async function main() {
     if (row.playerId) usageMap.set(String(row.playerId), row);
     if (row.player) usageMap.set(String(row.player), row);
   }
+  const defenseMap = new Map((defensePayload.teams || []).map(row => [String(row.teamAbbr), row]));
+  const paceMap = new Map((pacePayload.teams || []).map(row => [String(row.teamAbbr), row]));
 
   const rows = players
-    .map(p => buildRow(p, minutesMap, usageMap, backtest))
+    .map(p => buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||
@@ -239,8 +265,8 @@ async function main() {
   const out = {
     sport: "NBA",
     market: "Points",
-    version: "1.3",
-    source: "nba_core.json",
+    version: "1.4",
+    source: "nba_core plus nba_team_defense plus nba_pace_engine",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
     season: core.season || "",
@@ -248,7 +274,8 @@ async function main() {
     playerCount: rows.length,
     availability: Number(core.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
-      "Points Board 1.3 reads from nba_core.json, nba_minutes_engine.json, and nba_usage_engine.json.",
+      "Points Board 1.4 reads from core, minutes, usage, opponent team defense, and opponent pace data.",
+      "Opponent points defense and pace apply a transparent adjustment capped at plus or minus 6 percent.",
       "Score is normalized to 0-100.",
       "Foundation uses scoring average, last 5 form, last 10 form, enhanced expected minutes, minutes confidence, minutes trend, usage score, usage trend, volume acceleration, shot volume trend, free throw volume trend, and starter status.",
       "No odds or betting lines are used."
@@ -263,7 +290,7 @@ async function main() {
   console.log("Saved:", OUT);
 }
 
-main().catch(err => {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(err => {
   console.error("NBA POINTS BOARD FAILED");
   console.error(err);
   process.exit(1);
