@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
+import { buildTeamAbsenceContext, projectMarket } from "./projection_factors.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,6 +13,8 @@ const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const USAGE_FILE = path.join(ROOT, "website/data/nba_usage_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_threes.json");
 const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
+const DEFENSE_FILE = path.join(ROOT, "website/data/nba_team_defense.json");
+const PACE_FILE = path.join(ROOT, "website/data/nba_pace_engine.json");
 
 function readJSON(file, fallback) {
   try {
@@ -69,7 +72,7 @@ function threesRole(lean) {
   return "Thin Three Role";
 }
 
-function buildRow(p, minuteRow, usageRow, backtest) {
+function buildRow(p, minuteRow, usageRow, defense, pace, absenceContext, backtest) {
   const season = num(p.profile?.seasonThrees ?? p.history?.season?.threesMade);
   const last5 = num(p.profile?.last5Threes ?? p.history?.last5?.threesMade);
   const last10 = num(p.profile?.last10Threes ?? p.history?.last10?.threesMade);
@@ -87,7 +90,8 @@ function buildRow(p, minuteRow, usageRow, backtest) {
 
   const rawThreesLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
   const calibrated = applyNbaCalibration(rawThreesLean, "threes", backtest);
-  const threesLean = calibrated.value;
+  const projection = projectMarket({ market: "threes", base: calibrated.value, player: p, defense, pace, absenceContext, minutesConfidence });
+  const threesLean = projection.projection;
   const trendDiff = round1(last5 - season);
   const attemptTrend = round1(last53PA - season3PA);
 
@@ -136,6 +140,14 @@ function buildRow(p, minuteRow, usageRow, backtest) {
     last10Threes: round1(last10),
     rawThreesLean,
     threesLean,
+    projectionFloor: projection.floor,
+    projectionCeiling: projection.ceiling,
+    projectionVolatility: projection.volatility,
+    restDays: projection.restDays,
+    backToBack: projection.backToBack,
+    absenceBoostPct: projection.absenceBoostPct,
+    absentTeammates: projection.absentTeammates,
+    matchupAdjustment: projection.totalAdjustment,
     calibrationCorrection: calibrated.correction,
     calibrationApplied: calibrated.applied,
     trendDiff,
@@ -165,13 +177,18 @@ async function main() {
   const minutes = readJSON(MINUTES_FILE, { players: [] });
   const usage = readJSON(USAGE_FILE, { players: [] });
   const backtest = readJSON(BACKTEST_FILE, { markets: {} });
+  const defenses = readJSON(DEFENSE_FILE, { teams: [] });
+  const paces = readJSON(PACE_FILE, { teams: [] });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minutesMap = byId(minutes.players);
   const usageMap = byId(usage.players);
+  const defenseMap = new Map((defenses.teams || []).map(row => [String(row.teamAbbr), row]));
+  const paceMap = new Map((paces.teams || []).map(row => [String(row.teamAbbr), row]));
+  const absenceContext = buildTeamAbsenceContext(players);
 
   const rows = players
-    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, usageMap.get(String(p.playerId)) || {}, backtest))
+    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, usageMap.get(String(p.playerId)) || {}, defenseMap.get(String(p.opponentAbbr || p.opponent)), paceMap.get(String(p.opponentAbbr || p.opponent)), absenceContext, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.threesScore - a.threesScore ||
@@ -187,7 +204,7 @@ async function main() {
   const out = {
     sport: "NBA",
     market: "Threes",
-    version: "1.0",
+    version: "2.0",
     source: "nba_core plus nba_minutes_engine plus nba_usage_engine",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
@@ -197,6 +214,7 @@ async function main() {
     availability: Number(core.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "Threes Board 1.0 uses season threes, last 5 threes, last 10 threes, three point attempts, attempt trend, expected minutes, minutes confidence, and usage.",
+      "Threes Board 2.0 adds minutes scaling, opponent three rank, pace, rest, teammate absence redistribution, volatility, and floor/ceiling ranges.",
       "No odds or betting lines are used."
     ],
     players: rows

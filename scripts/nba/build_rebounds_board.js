@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
+import { buildTeamAbsenceContext, projectMarket } from "./projection_factors.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -11,6 +12,8 @@ const CORE_FILE = path.join(ROOT, "website/data/nba_core.json");
 const MINUTES_FILE = path.join(ROOT, "website/data/nba_minutes_engine.json");
 const OUT = path.join(ROOT, "website/data/nba_rebounds.json");
 const BACKTEST_FILE = path.join(ROOT, "website/data/nba_model_backtest.json");
+const DEFENSE_FILE = path.join(ROOT, "website/data/nba_team_defense.json");
+const PACE_FILE = path.join(ROOT, "website/data/nba_pace_engine.json");
 
 function readJSON(file, fallback) {
   try {
@@ -77,7 +80,7 @@ function positionBoost(position) {
   return 0;
 }
 
-function buildRow(p, minuteRow, backtest) {
+function buildRow(p, minuteRow, defense, pace, absenceContext, backtest) {
   const season = num(p.profile?.seasonRebounds ?? p.history?.season?.rebounds);
   const last5 = num(p.profile?.last5Rebounds ?? p.history?.last5?.rebounds);
   const last10 = num(p.profile?.last10Rebounds ?? p.history?.last10?.rebounds);
@@ -88,7 +91,8 @@ function buildRow(p, minuteRow, backtest) {
 
   const rawReboundsLean = round1(season * 0.42 + last5 * 0.36 + last10 * 0.22);
   const calibrated = applyNbaCalibration(rawReboundsLean, "rebounds", backtest);
-  const reboundsLean = calibrated.value;
+  const projection = projectMarket({ market: "rebounds", base: calibrated.value, player: p, defense, pace, absenceContext, minutesConfidence });
+  const reboundsLean = projection.projection;
   const trendDiff = round1(last5 - season);
 
   const base = clamp((reboundsLean / 13) * 48, 0, 48);
@@ -134,6 +138,14 @@ function buildRow(p, minuteRow, backtest) {
     last10Rebounds: round1(last10),
     rawReboundsLean,
     reboundsLean,
+    projectionFloor: projection.floor,
+    projectionCeiling: projection.ceiling,
+    projectionVolatility: projection.volatility,
+    restDays: projection.restDays,
+    backToBack: projection.backToBack,
+    absenceBoostPct: projection.absenceBoostPct,
+    absentTeammates: projection.absentTeammates,
+    matchupAdjustment: projection.totalAdjustment,
     calibrationCorrection: calibrated.correction,
     calibrationApplied: calibrated.applied,
     trendDiff,
@@ -154,12 +166,17 @@ async function main() {
   const core = readJSON(CORE_FILE, { players: [] });
   const minutes = readJSON(MINUTES_FILE, { players: [] });
   const backtest = readJSON(BACKTEST_FILE, { markets: {} });
+  const defenses = readJSON(DEFENSE_FILE, { teams: [] });
+  const paces = readJSON(PACE_FILE, { teams: [] });
 
   const players = Array.isArray(core.players) ? core.players : [];
   const minutesMap = byId(minutes.players);
+  const defenseMap = new Map((defenses.teams || []).map(row => [String(row.teamAbbr), row]));
+  const paceMap = new Map((paces.teams || []).map(row => [String(row.teamAbbr), row]));
+  const absenceContext = buildTeamAbsenceContext(players);
 
   const rows = players
-    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, backtest))
+    .map(p => buildRow(p, minutesMap.get(String(p.playerId)) || {}, defenseMap.get(String(p.opponentAbbr || p.opponent)), paceMap.get(String(p.opponentAbbr || p.opponent)), absenceContext, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.reboundsScore - a.reboundsScore ||
@@ -175,7 +192,7 @@ async function main() {
   const out = {
     sport: "NBA",
     market: "Rebounds",
-    version: "1.0",
+    version: "2.0",
     source: "nba_core plus nba_minutes_engine",
     fetchedAt: new Date().toISOString(),
     date: core.date || "",
@@ -185,6 +202,7 @@ async function main() {
     availability: Number(core.gameCount || 0) > 0 ? "games_scheduled" : "no_games_scheduled",
     modelNotes: [
       "Rebounds Board 1.0 uses season rebounds, last 5 rebounds, last 10 rebounds, expected minutes, minutes confidence, position role, and recent rebound trend.",
+      "Rebounds Board 2.0 adds minutes scaling, opponent rebound rank, pace, rest, teammate absence redistribution, volatility, and floor/ceiling ranges.",
       "No odds or betting lines are used."
     ],
     players: rows

@@ -85,6 +85,12 @@ export function validateNbaPublication(payloads) {
       for (const field of ["pointsScore", "reboundsScore", "assistsScore", "threesScore", "matchupScore"]) {
         if (row[field] !== undefined) assertFiniteRange(row[field], 0, 100, `${file} ${field} for ${key}`);
       }
+      const leanField = ["pointsLean", "reboundsLean", "assistsLean", "threesLean"].find(field => row[field] !== undefined);
+      if (leanField && row.projectionFloor !== undefined && row.projectionCeiling !== undefined) {
+        assert(Number(row.projectionFloor) <= Number(row[leanField]), `${file} floor exceeds projection for ${key}`);
+        assert(Number(row.projectionCeiling) >= Number(row[leanField]), `${file} ceiling is below projection for ${key}`);
+        assertFiniteRange(row.absenceBoostPct || 0, 0, 10, `${file} absence boost for ${key}`);
+      }
     }
 
     if (!referenceKeys) referenceKeys = keys;
@@ -107,7 +113,8 @@ export function validateNbaPublication(payloads) {
       "cross-board player consistency",
       "team and opponent consistency",
       "publication eligibility",
-      "projection numeric bounds"
+      "projection numeric bounds",
+      "projection range and opportunity adjustment bounds"
     ]
   };
 }

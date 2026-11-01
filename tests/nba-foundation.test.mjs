@@ -58,6 +58,17 @@ test("NBA team defense has a verified ESPN standings fallback", async () => {
   assert.deepEqual(teams.map(team => ({ team: team.teamAbbr, games: team.games, pointsAllowed: team.pointsAllowed })), [{ team: "BOS", games: 5, pointsAllowed: 105.4 }]);
 });
 
+test("NBA market projections apply opportunity factors and uncertainty ranges", async () => {
+  const { buildTeamAbsenceContext, projectMarket } = await import("../scripts/nba/projection_factors.mjs");
+  const players = [{ player: "Out Teammate", teamAbbr: "BOS", minutes: { availabilityStatus: "OUT" }, history: { season: { fieldGoalAttempts: 20, rebounds: 8, assists: 6, threesAttempted: 7 } } }];
+  const absences = buildTeamAbsenceContext(players);
+  const result = projectMarket({ market: "points", base: 20, player: { teamAbbr: "BOS", gameTimeUTC: "2026-11-01T20:00:00Z", minutes: { expected: 36 }, history: { season: { minutes: 32 }, recentGames: [{ gameDate: "2026-10-31T20:00:00Z", points: 18 }, { gameDate: "2026-10-29T20:00:00Z", points: 24 }] } }, defense: { rankPointsAllowed: 30 }, pace: { rankPace: 1 }, absenceContext: absences, minutesConfidence: 70 });
+  assert.ok(result.projection > 20);
+  assert.ok(result.floor < result.projection && result.ceiling > result.projection);
+  assert.equal(result.backToBack, true);
+  assert.deepEqual(result.absentTeammates, ["Out Teammate"]);
+});
+
 test("landing page opens the live NBA Decision Center", () => {
   const landing = fs.readFileSync("website/index.html", "utf8");
   assert.match(landing, /<a class="league(?: live)?" href="\.\/nba\.html"[^>]*><strong>NBA<\/strong>/);

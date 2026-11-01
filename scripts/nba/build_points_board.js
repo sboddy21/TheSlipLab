@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import { applyNbaCalibration } from "./build_nba_model_backtest.mjs";
+import { buildTeamAbsenceContext, projectMarket } from "./projection_factors.mjs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -93,7 +94,7 @@ function buildPointsScore({ pointsLean, season, last5, last10, minutes, minutesC
   return round1(clamp(basePoints + seasonFloor + form + minuteScore + usage + trend + volumeTrend + starterBoost + confidenceBoost));
 }
 
-function buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest) {
+function buildRow(p, minutesMap, usageMap, defenseMap, paceMap, absenceContext, backtest) {
   const minuteRow = minutesMap.get(String(p.playerId)) || minutesMap.get(String(p.player)) || {};
   const usageRow = usageMap.get(String(p.playerId)) || usageMap.get(String(p.player)) || {};
   const season = num(p.profile?.seasonPoints ?? p.history?.season?.points);
@@ -118,9 +119,10 @@ function buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest) {
   const calibratedPointsLean = calibrated.value;
   const defense = defenseMap.get(String(p.opponentAbbr || p.opponent)) || null;
   const pace = paceMap.get(String(p.opponentAbbr || p.opponent)) || null;
-  const matchupAdjustmentPct = pointsMatchupAdjustment(defense, pace);
-  const matchupAdjustment = round1(calibratedPointsLean * matchupAdjustmentPct);
-  const pointsLean = round1(calibratedPointsLean + matchupAdjustment);
+  const projection = projectMarket({ market: "points", base: calibratedPointsLean, player: p, defense, pace, absenceContext, minutesConfidence });
+  const matchupAdjustment = projection.totalAdjustment;
+  const matchupAdjustmentPct = calibratedPointsLean > 0 ? matchupAdjustment / calibratedPointsLean : 0;
+  const pointsLean = projection.projection;
 
   const trendDiff = round1(last5 - season);
   const fgaTrend = round1(last5FGA - seasonFGA);
@@ -188,6 +190,14 @@ function buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest) {
     opponentPointsDefenseRank: num(defense?.rankPointsAllowed) || null,
     opponentPace: round1(pace?.pace),
     opponentPaceRank: num(pace?.rankPace) || null,
+    projectionFloor: projection.floor,
+    projectionCeiling: projection.ceiling,
+    projectionVolatility: projection.volatility,
+    restDays: projection.restDays,
+    backToBack: projection.backToBack,
+    absenceBoostPct: projection.absenceBoostPct,
+    absentTeammates: projection.absentTeammates,
+    factorBreakdown: { minutes: projection.minutesFactor, defense: projection.defenseFactor, pace: projection.paceFactor, rest: projection.restFactor },
     calibrationCorrection: calibrated.correction,
     calibrationApplied: calibrated.applied,
     trendDiff,
@@ -247,9 +257,10 @@ async function main() {
   }
   const defenseMap = new Map((defensePayload.teams || []).map(row => [String(row.teamAbbr), row]));
   const paceMap = new Map((pacePayload.teams || []).map(row => [String(row.teamAbbr), row]));
+  const absenceContext = buildTeamAbsenceContext(players);
 
   const rows = players
-    .map(p => buildRow(p, minutesMap, usageMap, defenseMap, paceMap, backtest))
+    .map(p => buildRow(p, minutesMap, usageMap, defenseMap, paceMap, absenceContext, backtest))
     .filter(r => r.publicationEligible && r.expectedMinutes > 0 && !["OUT", "DOUBTFUL"].includes(r.availabilityStatus))
     .sort((a, b) =>
       b.pointsScore - a.pointsScore ||
@@ -276,6 +287,7 @@ async function main() {
     modelNotes: [
       "Points Board 1.4 reads from core, minutes, usage, opponent team defense, and opponent pace data.",
       "Opponent points defense and pace apply a transparent adjustment capped at plus or minus 6 percent.",
+      "Expected minutes, rest, verified teammate absences, and recent-game volatility produce opportunity adjustments and projection ranges.",
       "Score is normalized to 0-100.",
       "Foundation uses scoring average, last 5 form, last 10 form, enhanced expected minutes, minutes confidence, minutes trend, usage score, usage trend, volume acceleration, shot volume trend, free throw volume trend, and starter status.",
       "No odds or betting lines are used."
