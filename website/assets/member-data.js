@@ -47,7 +47,11 @@
   }
 
   async function fetchCurrentData(input, init) {
-    const response = await nativeFetch(input, { ...init, cache: "no-store" });
+    let response = await nativeFetch(input, { ...init, cache: "no-store" });
+    if (response.status === 503) {
+      await new Promise(resolve => window.setTimeout(resolve, 750));
+      response = await nativeFetch(input, { ...init, cache: "no-store" });
+    }
     if (response.status === 503) {
       const detail = await response.clone().json().catch(() => null);
       const landingPage = window.location.pathname === "/" || window.location.pathname === "/index.html";
@@ -66,6 +70,8 @@
         if (document.body) show();
         else document.addEventListener("DOMContentLoaded", show, { once: true });
       }
+    } else if (response.ok) {
+      document.getElementById("tslDataUnavailable")?.remove();
     }
     return response;
   }
