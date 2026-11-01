@@ -52,6 +52,12 @@ test("NBA points projections include capped transparent matchup context", async 
   assert.match(source, /Recent scoring evidence/);
 });
 
+test("NBA team defense has a verified ESPN standings fallback", async () => {
+  const { parseEspnStandingsDefense } = await import("../scripts/nba/build_team_defense.js");
+  const teams = parseEspnStandingsDefense({ children: [{ standings: { entries: [{ team: { id: "1", abbreviation: "BOS", displayName: "Boston Celtics" }, stats: [{ name: "wins", value: 4 }, { name: "losses", value: 1 }, { name: "avgPointsAgainst", value: 105.4 }] }] } }] });
+  assert.deepEqual(teams.map(team => ({ team: team.teamAbbr, games: team.games, pointsAllowed: team.pointsAllowed })), [{ team: "BOS", games: 5, pointsAllowed: 105.4 }]);
+});
+
 test("landing page opens the live NBA Decision Center", () => {
   const landing = fs.readFileSync("website/index.html", "utf8");
   assert.match(landing, /<a class="league(?: live)?" href="\.\/nba\.html"[^>]*><strong>NBA<\/strong>/);

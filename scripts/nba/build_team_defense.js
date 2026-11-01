@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -175,6 +175,30 @@ function parseTeamDefense(data) {
   }).filter(t => t.teamAbbr);
 }
 
+export function parseEspnStandingsDefense(data) {
+  const entries = (data?.children || []).flatMap(group => group?.standings?.entries || []);
+  return entries.map(entry => {
+    const stats = new Map((entry.stats || []).map(stat => [stat.name, stat.value]));
+    return {
+      teamId: String(entry.team?.id || ""),
+      team: entry.team?.displayName || entry.team?.name || "",
+      teamAbbr: entry.team?.abbreviation || "",
+      games: num(stats.get("wins")) + num(stats.get("losses")),
+      wins: num(stats.get("wins")),
+      losses: num(stats.get("losses")),
+      pointsAllowed: round1(stats.get("avgPointsAgainst")),
+      reboundsAllowed: null,
+      assistsAllowed: null,
+      threesAllowed: null,
+      opponentFGAPerGame: null,
+      opponentFTAPerGame: null,
+      opponentThreeAttempts: null,
+      opponentFieldGoalPct: null,
+      opponentThreePct: null
+    };
+  }).filter(team => team.teamAbbr && team.games > 0 && team.pointsAllowed > 0);
+}
+
 async function main() {
   const historyData = readJSON(HISTORY_FILE, {});
   const season = historyData.season || seasonYear();
@@ -242,43 +266,52 @@ async function main() {
 
   let teams = [];
   let error = "";
+  let provider = "NBA stats";
   try {
     teams = parseTeamDefense(await fetchJsonWithRetry(url));
     if (!teams.length) throw new Error("NBA team defense API returned 0 teams for a non-empty slate");
   } catch (fetchError) {
-    error = fetchError.message;
+    try {
+      teams = parseEspnStandingsDefense(await fetchJsonWithRetry("https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"));
+      if (!teams.length) throw new Error("ESPN standings returned 0 verified team-defense rows");
+      provider = "ESPN standings";
+    } catch (fallbackError) {
+      error = `${fetchError.message}; ${fallbackError.message}`;
+    }
   }
 
   if (teams.length) {
     rankRows(teams, "pointsAllowed", "rankPointsAllowed", true);
-    rankRows(teams, "reboundsAllowed", "rankReboundsAllowed", true);
-    rankRows(teams, "assistsAllowed", "rankAssistsAllowed", true);
-    rankRows(teams, "threesAllowed", "rankThreesAllowed", true);
-    rankRows(teams, "opponentFGAPerGame", "rankOpponentFGA", true);
-    rankRows(teams, "opponentThreeAttempts", "rankOpponentThreeAttempts", true);
+    if (provider === "NBA stats") {
+      rankRows(teams, "reboundsAllowed", "rankReboundsAllowed", true);
+      rankRows(teams, "assistsAllowed", "rankAssistsAllowed", true);
+      rankRows(teams, "threesAllowed", "rankThreesAllowed", true);
+      rankRows(teams, "opponentFGAPerGame", "rankOpponentFGA", true);
+      rankRows(teams, "opponentThreeAttempts", "rankOpponentThreeAttempts", true);
+    }
 
     for (const team of teams) {
-      const avgAllowedRank = (
+      const avgAllowedRank = provider === "NBA stats" ? (
         num(team.rankPointsAllowed) +
         num(team.rankReboundsAllowed) +
         num(team.rankAssistsAllowed) +
         num(team.rankThreesAllowed)
-      ) / 4;
+      ) / 4 : num(team.rankPointsAllowed);
 
       team.overallDefenseRank = Math.round(avgAllowedRank);
       team.defensiveTier = defensiveTier(team.overallDefenseRank);
 
       team.pointsAllowedTier = defensiveTier(team.rankPointsAllowed);
-      team.reboundsAllowedTier = defensiveTier(team.rankReboundsAllowed);
-      team.assistsAllowedTier = defensiveTier(team.rankAssistsAllowed);
-      team.threesAllowedTier = defensiveTier(team.rankThreesAllowed);
+      team.reboundsAllowedTier = provider === "NBA stats" ? defensiveTier(team.rankReboundsAllowed) : null;
+      team.assistsAllowedTier = provider === "NBA stats" ? defensiveTier(team.rankAssistsAllowed) : null;
+      team.threesAllowedTier = provider === "NBA stats" ? defensiveTier(team.rankThreesAllowed) : null;
     }
   }
 
   const out = {
     sport: "NBA",
-    version: "1.1",
-    source: "NBA stats leaguedashteamstats opponent per game",
+    version: "1.2",
+    source: provider === "NBA stats" ? "NBA stats leaguedashteamstats opponent per game" : "ESPN standings opponent points per game",
     fetchedAt: new Date().toISOString(),
     date: gamesData.date || "",
     season,
@@ -286,9 +319,9 @@ async function main() {
     availability: error ? "source_unavailable" : "games_scheduled",
     error,
     modelNotes: [
-      "Team Defense 1.1 uses NBA stats opponent per game team data when available.",
+      "Team Defense 1.2 uses NBA stats opponent data, with ESPN standings opponent points per game as a verified fallback.",
       "Lower allowed values rank as stronger defense.",
-      "If NBA stats is unavailable, the builder fails instead of reusing an earlier snapshot.",
+      "When only ESPN is available, non-points defensive categories remain unavailable rather than estimated.",
       "No odds or betting lines are used."
     ],
     teams
@@ -303,7 +336,7 @@ async function main() {
   console.log("Saved:", OUT);
 }
 
-main().catch(err => {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(err => {
   console.error("NBA TEAM DEFENSE FAILED");
   console.error(err);
   process.exit(1);
