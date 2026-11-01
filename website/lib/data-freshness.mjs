@@ -38,6 +38,7 @@ export function freshnessPolicy(file) {
   if (file === "nhl_board.json") return { maxAgeSeconds: 5400 };
   if (/odds|market_lines/.test(file)) return { maxAgeSeconds: 1200 };
   if (/live_game|games_live|live_hr_tracker|global_live_alerts/.test(file)) return { maxAgeSeconds: 120 };
+  if (file.startsWith("nfl_")) return { maxAgeSeconds: 21600 };
   if (/history|baselines|usage_baselines|power_profiles|pitch_type_damage/.test(file)) return { maxAgeSeconds: 93600 };
   return { maxAgeSeconds: 3600 };
 }

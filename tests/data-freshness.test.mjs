@@ -151,7 +151,11 @@ test("NHL refresh runs at least hourly in season and every 15 minutes overnight"
   assert.match(refresh, /liveRefreshCadenceMinutes: 15/);
 });
 
-test("NFL refresh stays safely inside its one-hour freshness contract", () => {
+test("NFL refresh targets thirty minutes and analytical feeds survive a missed scheduler window", () => {
   const workflow = fs.readFileSync(".github/workflows/nfl-refresh.yml", "utf8");
   assert.match(workflow, /cron:\s*"\*\/30 \* \* 1-2,8-12 \*"/);
+  const generatedAt = new Date(now - 5 * 60 * 60 * 1000).toISOString();
+  assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now }).available, true);
+  assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now: now + 60 * 60 * 1000 }).available, false);
+  assert.equal(checkDataFreshness("odds_nfl.json", { retrievedAt: new Date(now - 21 * 60 * 1000).toISOString() }, { now }).available, false);
 });
