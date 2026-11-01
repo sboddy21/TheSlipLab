@@ -24,3 +24,9 @@ test('exact announced dates override recurring defaults', () => {
   assert.equal(isSportInSeason('wnba', at('2027-05-14'), calendar), true);
   assert.equal(isSportInSeason('wnba', at('2027-10-21'), calendar), false);
 });
+
+test('MLB stays closed after the confirmed 2026 season end', () => {
+  assert.equal(isSportInSeason('mlb', at('2026-11-01')), false);
+  assert.equal(isSportInSeason('mlb', at('2026-11-07')), false);
+  assert.equal(isSportInSeason('mlb', at('2027-03-20')), true);
+});

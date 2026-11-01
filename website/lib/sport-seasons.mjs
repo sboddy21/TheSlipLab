@@ -1,7 +1,7 @@
 // Inclusive month/day windows in America/New_York. Include postseason buffers.
 // Exact season dates can override these recurring defaults when announced.
 export const sportSeasons = {
-  mlb: { start: '03-20', end: '11-07' },
+  mlb: { start: '03-20', end: '11-07', windows: [{ start: '2026-03-20', end: '2026-10-31' }] },
   nfl: { start: '09-01', end: '02-15' },
   cfb: { start: '08-20', end: '01-31' },
   wnba: { start: '05-01', end: '10-31' },
