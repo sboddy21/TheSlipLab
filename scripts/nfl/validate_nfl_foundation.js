@@ -6,7 +6,7 @@ import { auditSnapshotCoverage } from "./results_tracking_integrity.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_matchup_context.json", "nfl_practice_reports.json", "nfl_weather.json", "nfl_receiving_yards_board.json", "nfl_results_tracking.json", "nfl_td_decision_center.json", "nfl_launch_audit.json", "nfl_data_health.json", "nfl_public_status.json"];
+const files = ["nfl_teams.json", "nfl_schedule.json", "nfl_games_today.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json", "nfl_usage_baselines.json", "nfl_current_usage.json", "nfl_preseason_usage.json", "nfl_preseason_audit.json", "nfl_preseason_role_board.json", "nfl_role_engine.json", "nfl_matchup_context.json", "nfl_practice_reports.json", "nfl_weather.json", "nfl_receiving_yards_board.json", "nfl_results_tracking.json", "nfl_td_decision_center.json", "nfl_launch_audit.json", "nfl_data_health.json", "nfl_public_status.json"];
 
 function fail(message) {
   throw new Error(`NFL VALIDATION FAILED: ${message}`);
@@ -16,7 +16,7 @@ function read(filename) {
   const fullPath = path.join(DATA, filename);
   if (!fs.existsSync(fullPath)) fail(`${filename} is missing`);
   const payload = JSON.parse(fs.readFileSync(fullPath, "utf8"));
-  if (payload.sport !== "NFL" || payload.schemaVersion !== "1.0") fail(`${filename} has invalid identity metadata`);
+  if (payload.sport !== "NFL" || !["1.0", "2.0"].includes(payload.schemaVersion)) fail(`${filename} has invalid identity metadata`);
   if (!Number.isFinite(Date.parse(payload.generatedAt))) fail(`${filename} has invalid generatedAt`);
   return payload;
 }
@@ -28,6 +28,7 @@ const pool = payloads["nfl_player_pool.json"];
 const depth = payloads["nfl_depth_charts.json"];
 const injuries = payloads["nfl_injuries.json"];
 const usage = payloads["nfl_usage_baselines.json"];
+const currentUsage = payloads["nfl_current_usage.json"];
 const preseason = payloads["nfl_preseason_usage.json"];
 const preseasonAudit = payloads["nfl_preseason_audit.json"];
 const preseasonBoard = payloads["nfl_preseason_role_board.json"];
@@ -61,13 +62,14 @@ if (!["available", "partial"].includes(injuries.availability) || !Array.isArray(
 if (usage.profileCount < 400 || usage.sourcePlayCount < 100000 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
 if (usage.methodology?.routes !== "Unavailable from play-by-play and intentionally not estimated.") fail("usage contract must explicitly reject inferred routes");
 if (usage.profiles.some(profile => !profile.playerId || !profile.gsisId || !profile.weightedPerGame)) fail("usage contract contains an invalid profile");
+if (currentUsage.completedGames < 1 || currentUsage.profileCount !== currentUsage.profiles?.length || currentUsage.validation?.samples < 1) fail("current-season usage contract is incomplete");
 if (!preseason.finalGameGate || preseason.processedGameCount !== preseason.completedGameCount || preseason.failures?.length) fail("preseason usage must process every completed game behind the final-game gate");
 if (preseason.players.some(player => !player.playerId || !player.latestGame?.gameId || !["initial_sample", "rising", "stable", "falling"].includes(player.roleSignal))) fail("preseason usage contains an invalid player profile");
 if (preseasonAudit.status !== "passed" || preseasonAudit.criticalIssues?.length) fail("preseason audit did not pass");
 if (!preseasonBoard.finalGameGate || preseasonBoard.projectionStatus !== "disabled" || preseasonBoard.rows?.length !== preseasonBoard.counts?.rows) fail("private preseason role board is invalid");
 if (preseasonBoard.rows.some(row => ["rising", "falling", "stable"].includes(row.roleSignal) && row.games < 2)) fail("movement signal published without two samples");
-if (roles.status !== "role_estimation_only" || roles.playerCount !== pool.playerCount || roles.roles?.length !== roles.playerCount) fail("role engine is incomplete");
-if (roles.roles.some(role => role.projectionStatus !== "disabled_pending_preseason_usage_and_market_lines")) fail("role engine must keep projections disabled");
+if (roles.status !== "current_season_role_and_usage" || roles.playerCount !== pool.playerCount || roles.roles?.length !== roles.playerCount) fail("role engine is incomplete");
+if (roles.roles.some(role => !["current_season_usage_ready", "historical_fallback_only"].includes(role.projectionStatus))) fail("role engine contains an invalid usage status");
 if (roles.roles.some(role => role.confidence?.score > roles.methodology?.confidenceCeiling)) fail("role confidence exceeds the missing-preseason ceiling");
 if (matchup.status !== "private_week_matchup_context" || matchup.contextType !== "historical_baseline_without_live_weather") fail("matchup context identity is invalid");
 const expectedMatchupGames = schedule.games.filter(game => game.seasonType === 2 && game.week === matchup.week).length;
@@ -84,8 +86,8 @@ if (!Number.isFinite(Date.parse(matchup.historicalBuiltAt)) || matchup.freshness
 if (practice.players?.length !== pool.playerCount || practice.freshnessPolicy?.absenceMeansHealthy !== false) fail("practice-report contract is incomplete or unsafe");
 if (practice.players.some(row => row.regularSeasonRoleConfirmed && (!practice.weeklyAvailabilityActive || !row.roleEligible || !row.activeRosterGate || row.gameStatus === "uncertain"))) fail("role confirmation bypassed role or availability gates");
 if (weather.games?.length !== expectedMatchupGames || weather.freshnessPolicy?.staleForecastsAccepted !== false || weather.games.some(row => row.weatherGate && !["indoor_verified", "forecast_available"].includes(row.status))) fail("weather contract is incomplete or stale-open");
-if (!["member_signal_board", "gated_signal_board"].includes(receiving.status) || receiving.projectionStatus !== "signal_only_no_yardage_projection" || !receiving.rows?.length) fail("receiving-yards signal board is invalid");
-if (receiving.rows.some(row => !["member_signal", "withheld_by_integrity_gate"].includes(row.publicationStatus) || row.scoreType !== "member_signal_not_yardage_projection" || row.gates?.routeParticipation !== false)) fail("receiving-yards board published an unsupported projection");
+if (!["projection_board", "gated_projection_board"].includes(receiving.status) || receiving.projectionStatus !== "current_season_yardage_projection" || !receiving.rows?.length) fail("receiving-yards projection board is invalid");
+if (receiving.rows.some(row => !["projection_available", "withheld_by_integrity_gate"].includes(row.publicationStatus) || row.scoreType !== "receiving_yards_projection" || !Number.isFinite(row.receivingYardsProjection) || row.gates?.routeParticipation !== false)) fail("receiving-yards board contains an invalid projection");
 if (receiving.counts?.publishableRecommendations !== receiving.rows.filter(row => row.launchEligible).length) fail("receiving publishable count is invalid");
 if (results.methodology?.snapshotRequiredBeforeKickoff !== true || results.methodology?.retroactiveSelectionsForbidden !== true) fail("results tracking lacks anti-leakage rules");
 const snapshotCoverage = auditSnapshotCoverage(results, schedule);
@@ -94,10 +96,10 @@ if (JSON.stringify(results.snapshotCoverage) !== JSON.stringify(snapshotCoverage
 if (!Array.isArray(results.playerResults) || !Array.isArray(results.tdGrades) || !Array.isArray(results.receivingOutcomes) || results.counts?.providerFailures !== results.failures?.length) fail("live results contract is incomplete");
 if (!Array.isArray(results.touchdownEvents) || results.counts?.touchdowns !== results.touchdownEvents.length || new Set(results.touchdownEvents.map(row => row.eventId)).size !== results.touchdownEvents.length) fail("touchdown event feed is incomplete or contains duplicates");
 if (results.touchdownEvents.some(row => !row.eventId || !row.gameId || !row.scorerName || !row.team || !row.awayTeam || !row.homeTeam || row.opponent === "[object Object]" || row.awayTeam === "[object Object]" || row.homeTeam === "[object Object]" || !row.scoringLabel || !row.description || !Number.isFinite(row.awayScore) || !Number.isFinite(row.homeScore))) fail("touchdown event feed contains an invalid event");
-if (!["member_signal_board", "gated_signal_board"].includes(tdBoard.status) || tdBoard.market !== "anytime_touchdown" || tdBoard.projectionStatus !== "signal_only_not_probability") fail("TD Decision Center identity is invalid");
+if (!["probability_board", "gated_probability_board"].includes(tdBoard.status) || tdBoard.market !== "anytime_touchdown" || tdBoard.projectionStatus !== "empirical_touchdown_probability") fail("TD Decision Center identity is invalid");
 if (!tdBoard.rows?.length || tdBoard.rows.length !== tdBoard.counts?.rankedPlayers || tdBoard.counts?.publishableRecommendations !== tdBoard.rows.filter(row => row.launchEligible).length) fail("TD Decision Center counts are invalid");
 if (new Set(tdBoard.rows.map(row => row.playerId)).size !== tdBoard.rows.length || tdBoard.rows.some((row, index) => row.shadowRank !== index + 1)) fail("TD Decision Center identity or rank order is invalid");
-if (tdBoard.rows.some(row => row.scoreType !== "member_signal_not_probability" || row.tdSignalScore < 0 || row.tdSignalScore > 100 || !["member_signal", "withheld_by_integrity_gate"].includes(row.publicationStatus))) fail("TD Decision Center contains an invalid signal score");
+if (tdBoard.rows.some(row => row.scoreType !== "touchdown_probability" || row.touchdownProbability < 0 || row.touchdownProbability > 100 || !["member_signal", "withheld_by_integrity_gate"].includes(row.publicationStatus))) fail("TD Decision Center contains an invalid probability");
 if (tdBoard.rows.some(row => row.gates?.regularSeasonRoleConfirmed && !practice.weeklyAvailabilityActive)) fail("TD Decision Center bypassed an availability gate");
 if (tdBoard.rows.some(row => "routeParticipation" in (row.gates || {}))) fail("TD Decision Center incorrectly requires route participation");
 const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
@@ -106,7 +108,7 @@ if (health.status !== "nfl_member_signals_gated" || health.sources?.depthCharts?
 if (!["available", "partial"].includes(health.sources?.injuries?.status) || health.sources?.projections?.status !== "disabled") fail("health contract must keep availability and disabled projections explicit");
 if (health.sources?.usageBaselines?.status !== "available" || health.sources?.routes?.status !== "unavailable") fail("health contract must distinguish usage baselines from unavailable routes");
 if (health.sources?.roleEngine?.status !== "available" || !["available", "waiting"].includes(health.sources?.preseasonUsage?.status) || !health.sources?.preseasonUsage?.finalGameGate) fail("health contract must report final-gated preseason usage");
-if (!["member_signal_board", "gated_signal_board"].includes(health.sources?.tdDecisionCenter?.status)) fail("health contract must report the TD Decision Center state");
+if (!["probability_board", "gated_probability_board"].includes(health.sources?.tdDecisionCenter?.status)) fail("health contract must report the TD Decision Center state");
 if (health.sources?.matchupContext?.status !== "available_historical_baseline" || health.sources?.matchupContext?.teamContexts !== expectedMatchupTeams) fail("health contract must report complete matchup context");
 if (!health.sources?.practiceReports || !health.sources?.weather) fail("health contract is missing launch sources");
 if (launchAudit.publicLaunchAutomatic !== false || launchAudit.publicNavigationEnabled !== true || launchAudit.checks?.duplicatePlayerIds || launchAudit.checks?.roleTeamMismatches || launchAudit.checks?.matchupTeamMismatches || launchAudit.checks?.inactiveRowsLeaked || launchAudit.checks?.unresolvedDepthEntries) fail("launch audit failed identity, ownership, or navigation policy");

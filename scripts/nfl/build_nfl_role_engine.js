@@ -63,9 +63,11 @@ function main() {
   const depth = read("nfl_depth_charts.json");
   const injuries = read("nfl_injuries.json");
   const usage = read("nfl_usage_baselines.json");
+  const currentUsage = read("nfl_current_usage.json");
   const preseason = read("nfl_preseason_usage.json");
   const health = read("nfl_data_health.json");
   const usageByPlayer = new Map(usage.profiles.map(profile => [profile.playerId, profile]));
+  const currentUsageByPlayer = new Map(currentUsage.profiles.map(profile => [profile.playerId, profile]));
   const preseasonByPlayer = new Map(preseason.players.map(profile => [profile.playerId, profile]));
   const teamsWithFinalGames = new Set(preseason.teamsWithFinalGames || []);
   const injuryByPlayer = new Map(injuries.injuries.map(injury => [injury.playerId, injury]));
@@ -78,6 +80,7 @@ function main() {
   const roles = pool.players.map(player => {
     const depthEntry = depthByPlayer.get(player.playerId) || null;
     const history = usageByPlayer.get(player.playerId) || null;
+    const current = currentUsageByPlayer.get(player.playerId) || null;
     const injury = injuryByPlayer.get(player.playerId) || null;
     const preseasonUsage = preseasonByPlayer.get(player.playerId) || null;
     const readiness = injuryReadiness(injury);
@@ -85,8 +88,8 @@ function main() {
     const depthScore = rank ? ({ 1: 100, 2: 65, 3: 35, 4: 15 }[rank] ?? 5) : 0;
     const historyScore = historicalUsageScore(player.position, history?.weightedPerGame);
     const rawRoleScore = depthEntry && history ? depthScore * 0.6 + historyScore * 0.4 : depthEntry ? depthScore * 0.8 : historyScore * 0.5;
-    const weighted = history?.weightedPerGame || {};
-    const recent = history?.recentSixGamesPerGame || {};
+    const weighted = current?.season || history?.weightedPerGame || {};
+    const recent = current?.last3 || history?.recentSixGamesPerGame || {};
     const baselineOpportunity = opportunityValue(player.position, weighted);
     const recentOpportunity = opportunityValue(player.position, recent);
     const recentRatio = baselineOpportunity > 0 ? recentOpportunity / baselineOpportunity : null;
@@ -123,6 +126,13 @@ function main() {
         weightedPerGame: history.weightedPerGame,
         recentSixGamesPerGame: history.recentSixGamesPerGame
       } : null,
+      currentSeasonUsage: current ? {
+        games: current.gamesPlayed,
+        seasonPerGame: current.season,
+        last3PerGame: current.last3,
+        last5PerGame: current.last5,
+        gameLog: current.games
+      } : null,
       preseasonUsage: preseasonUsage ? {
         gameCount: preseasonUsage.gameCount,
         totals: preseasonUsage.totals,
@@ -136,15 +146,15 @@ function main() {
       } : null,
       preseasonParticipationStatus: participationStatus,
       confidence: confidenceResult,
-      modelEligibility: readiness.status !== "unavailable" && Boolean(depthEntry) && Boolean(history),
-      projectionStatus: "disabled_pending_preseason_usage_and_market_lines"
+      modelEligibility: readiness.status !== "unavailable" && Boolean(depthEntry) && Boolean(current || history),
+      projectionStatus: current ? "current_season_usage_ready" : "historical_fallback_only"
     };
   }).sort((a, b) => b.roleScore - a.roleScore || a.team.localeCompare(b.team) || a.playerName.localeCompare(b.playerName));
 
   const generatedAt = new Date().toISOString();
   write("nfl_role_engine.json", {
     sport: "NFL", schemaVersion: "1.0", season: pool.season, generatedAt,
-    status: "role_estimation_only",
+    status: "current_season_role_and_usage",
     disclaimer: "Role scores rank current opportunity certainty. They are not player-stat projections, probabilities, or betting recommendations.",
     methodology: {
       roleScore: "Depth-chart score blended with position-normalized historical opportunity, then availability-adjusted.",
@@ -155,6 +165,7 @@ function main() {
     playerCount: roles.length,
     playersWithDepth: roles.filter(role => role.depth).length,
     playersWithHistory: roles.filter(role => role.historicalOpportunity).length,
+    playersWithCurrentSeasonUsage: roles.filter(role => role.currentSeasonUsage).length,
     modelEligibleCount: roles.filter(role => role.modelEligibility).length,
     unavailableCount: roles.filter(role => role.readiness.status === "unavailable").length,
     preseasonParticipationCount: roles.filter(role => role.preseasonUsage).length,

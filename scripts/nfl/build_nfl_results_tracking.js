@@ -40,7 +40,7 @@ function lockSnapshots(existing, games, td, receiving) {
     const snapshotId = `week-${game.week}|game-${game.gameId}`; if (snapshots.some(row => row.snapshotId === snapshotId)) continue;
     snapshots.push({ snapshotId, snapshotAt: generatedAt, week: game.week, gameId: game.gameId, kickoffUTC: game.kickoffUTC, status: "locked_pre_kickoff_member_snapshot",
       anytimeTouchdown: td.rows.filter(row => row.gameId === game.gameId && row.launchEligible).map(row => ({ playerId: row.playerId, playerName: row.playerName, rank: row.shadowRank, score: row.tdSignalScore })),
-      receivingYards: receiving.rows.filter(row => row.gameId === game.gameId && row.launchEligible).map(row => ({ playerId: row.playerId, playerName: row.playerName, rank: row.shadowRank, score: row.receivingSignalScore })) });
+      receivingYards: receiving.rows.filter(row => row.gameId === game.gameId && row.launchEligible).map(row => ({ playerId: row.playerId, playerName: row.playerName, rank: row.shadowRank, projection: row.receivingYardsProjection })) });
   }
   return snapshots;
 }

@@ -83,41 +83,46 @@ async function weatherContract(games, week) {
   return { sport: "NFL", schemaVersion: "1.0", generatedAt, week, status: rows.every(row => row.weatherGate) ? "available" : "partial", provider: "Open-Meteo", freshnessPolicy: { maximumAgeHours: forecastMaxAgeHours, staleForecastsAccepted: false, forecastHorizonDays: 16 }, counts: { games: rows.length, gatedReady: rows.filter(row => row.weatherGate).length, pending: rows.filter(row => !row.weatherGate).length }, games: rows };
 }
 
-function receivingBoard(roles, matchup, practice, weather) {
+function quantile(values, probability) {
+  if (!values.length) return 0;
+  const sorted = values.slice().sort((a, b) => a - b);
+  return sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor((sorted.length - 1) * probability)))];
+}
+
+function receivingBoard(roles, matchup, practice, weather, currentUsage) {
   const assignment = new Map(matchup.playerAssignments.map(row => [row.playerId, row]));
   const context = new Map(matchup.teamContexts.map(row => [row.team, row]));
   const practiceByPlayer = new Map(practice.players.map(row => [row.playerId, row]));
-  const rows = roles.roles.filter(role => ["WR", "TE", "RB"].includes(role.position) && role.historicalOpportunity && role.modelEligibility && assignment.has(role.playerId)).map(role => {
+  const rows = roles.roles.filter(role => ["WR", "TE", "RB"].includes(role.position) && role.currentSeasonUsage && role.modelEligibility && assignment.has(role.playerId)).map(role => {
     const game = assignment.get(role.playerId); const team = context.get(role.team); const p = practiceByPlayer.get(role.playerId);
-    const baseline = role.historicalOpportunity.weightedPerGame; const recent = role.historicalOpportunity.recentSixGamesPerGame;
-    const targetScore = Math.min(100, Number(baseline.targets || 0) * 10); const yardScore = Math.min(100, Number(baseline.receivingYards || 0) * 1.25);
-    const recentScore = baseline.receivingYards ? Math.max(0, Math.min(100, 50 + ((Number(recent.receivingYards || 0) / baseline.receivingYards) - 1) * 45)) : 35;
-    const matchupScore = team?.opponentDefense?.vulnerabilityPercentileByPosition?.[role.position] ?? 50;
-    const signal = Math.round((targetScore * .38 + yardScore * .32 + role.roleScore * .18 + recentScore * .07 + matchupScore * .05) * 10) / 10;
-    const routeRoleSupported = Number(role.historicalOpportunity?.games || 0) >= 6 && Number(baseline.targets || 0) > 0 && role.depth?.rank === 1;
+    const baseline = role.currentSeasonUsage.seasonPerGame; const recent = role.currentSeasonUsage.last3PerGame;
+    const gameLog = role.currentSeasonUsage.gameLog || [];
+    const yards = gameLog.map(row => Number(row.receivingYards || 0));
+    const projection = Math.round(Number(baseline.receivingYards || 0) * 10) / 10;
+    const routeRoleSupported = Number(role.currentSeasonUsage.games || 0) >= 3 && Number(baseline.targets || 0) > 0 && role.depth?.rank === 1;
     const gates = { verifiedOpponent: Boolean(game), activeRoster: p?.activeRosterGate === true, regularSeasonRoleConfirmed: p?.regularSeasonRoleConfirmed === true, routeParticipation: false, routeRoleSupported, weather: weather.games.find(row => row.gameId === game?.gameId)?.weatherGate === true };
     const launchEligible = Object.values({ verifiedOpponent: gates.verifiedOpponent, activeRoster: gates.activeRoster, regularSeasonRoleConfirmed: gates.regularSeasonRoleConfirmed, routeRoleSupported, weather: gates.weather }).every(Boolean);
-    return { playerId: role.playerId, playerName: role.playerName, team: role.team, opponent: game?.opponent, gameId: game?.gameId, position: role.position, receivingSignalScore: signal, scoreType: "member_signal_not_yardage_projection", historicalPerGame: { targets: baseline.targets, receivingYards: baseline.receivingYards }, gates, launchEligible, publicationStatus: launchEligible ? "member_signal" : "withheld_by_integrity_gate" };
-  }).sort((a, b) => b.receivingSignalScore - a.receivingSignalScore).map((row, index) => ({ ...row, shadowRank: index + 1 }));
+    return { playerId: role.playerId, playerName: role.playerName, team: role.team, opponent: game?.opponent, gameId: game?.gameId, position: role.position, receivingYardsProjection: projection, receivingSignalScore: projection, projectionRange: { floor20: quantile(yards, .2), ceiling80: quantile(yards, .8) }, scoreType: "receiving_yards_projection", currentSeason: { games: role.currentSeasonUsage.games, targetsPerGame: baseline.targets, receptionsPerGame: baseline.receptions, receivingYardsPerGame: baseline.receivingYards, last3TargetsPerGame: recent.targets, last3ReceivingYardsPerGame: recent.receivingYards }, matchupContext: { opponent: game?.opponent, defensiveVulnerabilityPercentile: team?.opponentDefense?.vulnerabilityPercentileByPosition?.[role.position] ?? null, appliedToProjection: false, reason: "Matchup adjustment withheld until it beats the current-season baseline out of sample." }, gates, launchEligible, publicationStatus: launchEligible ? "projection_available" : "withheld_by_integrity_gate" };
+  }).sort((a, b) => b.receivingYardsProjection - a.receivingYardsProjection).map((row, index) => ({ ...row, shadowRank: index + 1 }));
   const publishable = rows.filter(row => row.launchEligible).length;
-  return { sport: "NFL", schemaVersion: "1.0", generatedAt, week: matchup.week, status: publishable ? "member_signal_board" : "gated_signal_board", market: "receiving_yards", projectionStatus: "signal_only_no_yardage_projection", recommendationStatus: "member_research_signal", counts: { rankedPlayers: rows.length, publishableRecommendations: publishable }, rows };
+  return { sport: "NFL", schemaVersion: "2.0", generatedAt, week: matchup.week, status: publishable ? "projection_board" : "gated_projection_board", market: "receiving_yards", projectionStatus: "current_season_yardage_projection", recommendationStatus: "projection_not_betting_recommendation", methodology: { estimator: "current-season per-game receiving yards", rejected: "recent-three blend", validation: currentUsage.validation, matchupAdjustment: "withheld_pending_out-of-sample-improvement" }, counts: { rankedPlayers: rows.length, publishableRecommendations: publishable }, rows };
 }
 
 function resultsContract(td, receiving, schedule, existing) {
   const completed = schedule.games.filter(game => game.completed && game.seasonType === 2);
   const snapshotDate = generatedAt.slice(0, 10);
   const snapshots = Array.isArray(existing?.snapshots) ? existing.snapshots.slice() : [];
-  if (!snapshots.some(row => row.snapshotDate === snapshotDate && row.week === td.week)) snapshots.push({ snapshotId: `${snapshotDate}|week-${td.week}`, snapshotDate, snapshotAt: generatedAt, week: td.week, status: "locked_pre_kickoff_shadow_snapshot", anytimeTouchdown: td.rows.slice(0, 30).map(row => ({ playerId: row.playerId, rank: row.shadowRank, score: row.tdSignalScore, gameId: row.gameId })), receivingYards: receiving.rows.slice(0, 30).map(row => ({ playerId: row.playerId, rank: row.shadowRank, score: row.receivingSignalScore, gameId: row.gameId })) });
+  if (!snapshots.some(row => row.snapshotDate === snapshotDate && row.week === td.week)) snapshots.push({ snapshotId: `${snapshotDate}|week-${td.week}`, snapshotDate, snapshotAt: generatedAt, week: td.week, status: "locked_pre_kickoff_shadow_snapshot", anytimeTouchdown: td.rows.slice(0, 30).map(row => ({ playerId: row.playerId, rank: row.shadowRank, score: row.tdSignalScore, gameId: row.gameId })), receivingYards: receiving.rows.slice(0, 30).map(row => ({ playerId: row.playerId, rank: row.shadowRank, projection: row.receivingYardsProjection, gameId: row.gameId })) });
   const touchdownEvents = existing?.touchdownEvents || [];
   return { sport: "NFL", schemaVersion: "1.0", generatedAt, week: td.week, status: completed.length ? "regular_season_results_available" : "waiting_for_completed_regular_season_games", methodology: { snapshotRequiredBeforeKickoff: true, retroactiveSelectionsForbidden: true, gradingProvider: "ESPN completed-game data" }, counts: { completedGames: completed.length, liveGames: existing?.counts?.liveGames || 0, touchdowns: touchdownEvents.length, uniqueScorers: new Set(touchdownEvents.map(row => row.scorerName)).size, snapshots: snapshots.length, tdSelectionsGraded: 0, receivingSelectionsGraded: 0, providerFailures: existing?.failures?.length || 0 }, trackedMarkets: [{ market: "anytime_touchdown", shadowRows: td.rows.length }, { market: "receiving_yards", shadowRows: receiving.rows.length }], snapshots, games: existing?.games || [], playerResults: existing?.playerResults || [], touchdownEvents, tdGrades: existing?.tdGrades || [], receivingOutcomes: existing?.receivingOutcomes || [], failures: existing?.failures || [] };
 }
 
 async function main() {
-  const schedule = read("nfl_schedule.json"), pool = read("nfl_player_pool.json"), injuries = read("nfl_injuries.json"), roles = read("nfl_role_engine.json"), matchup = read("nfl_matchup_context.json"), td = read("nfl_td_decision_center.json"), health = read("nfl_data_health.json");
+  const schedule = read("nfl_schedule.json"), pool = read("nfl_player_pool.json"), injuries = read("nfl_injuries.json"), roles = read("nfl_role_engine.json"), matchup = read("nfl_matchup_context.json"), td = read("nfl_td_decision_center.json"), health = read("nfl_data_health.json"), currentUsage = read("nfl_current_usage.json");
   const week = nextWeek(schedule); const games = selectWeekGames(schedule, week);
   const practice = practiceContract(pool, injuries, roles, week); write("nfl_practice_reports.json", practice);
   const weather = await weatherContract(games, week); write("nfl_weather.json", weather);
-  const receiving = receivingBoard(roles, matchup, practice, weather); write("nfl_receiving_yards_board.json", receiving);
+  const receiving = receivingBoard(roles, matchup, practice, weather, currentUsage); write("nfl_receiving_yards_board.json", receiving);
   const existingResultsPath = path.join(DATA, "nfl_results_tracking.json");
   const results = resultsContract(td, receiving, schedule, fs.existsSync(existingResultsPath) ? read("nfl_results_tracking.json") : null); write("nfl_results_tracking.json", results);
   health.generatedAt = generatedAt;

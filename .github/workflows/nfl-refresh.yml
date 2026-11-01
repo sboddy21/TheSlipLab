@@ -29,15 +29,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-      - name: Verify NFL results tracking safeguards
-        run: node --test tests/nfl-results-tracking.test.mjs
+      - name: Verify complete NFL data and model safeguards
+        run: node --test tests/nfl-*.test.mjs
       - name: Refresh NFL signals, live stats, and final results
         run: node scripts/run_nfl_refresh.js
       - name: Commit refreshed NFL data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add website/data/nfl_*.json
+          git add website/data/nfl_*.json data/nfl/current_usage_games.json
           git commit -m "Refresh NFL data" || echo "No changes to commit"
           git pull origin "$GITHUB_REF_NAME" --rebase
           git push origin "HEAD:$GITHUB_REF_NAME"

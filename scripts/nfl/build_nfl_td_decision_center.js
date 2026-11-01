@@ -46,7 +46,18 @@ function scoreRow(role, assignment, context, practice, weather) {
   const scoringEnvironmentScore = clamp(50 + ((context.scoringEnvironment.projectedTeamTouchdownsBaseline / context.scoringEnvironment.leagueTouchdownsPerGame) - 1) * 70);
   const defensiveVulnerabilityScore = clamp(context.opponentDefense.vulnerabilityPercentileByPosition[role.position]);
   const paceScore = clamp(50 + (context.scoringEnvironment.paceIndex - 100) * 2);
-  const tdSignalScore = round(baseTdSignalScore * 0.80 + scoringEnvironmentScore * 0.12 + defensiveVulnerabilityScore * 0.06 + paceScore * 0.02);
+  const opportunitySignalScore = round(baseTdSignalScore * 0.80 + scoringEnvironmentScore * 0.12 + defensiveVulnerabilityScore * 0.06 + paceScore * 0.02);
+  const currentGames = number(role.currentSeasonUsage?.games);
+  const currentMetrics = role.currentSeasonUsage?.seasonPerGame || {};
+  const currentTdRate = number(currentMetrics.rushingTds) + number(currentMetrics.receivingTds);
+  const historicalTdRate = baseline.touchdowns;
+  const shrunkTdRate = currentGames > 0 ? ((currentTdRate * currentGames) + (historicalTdRate * 3)) / (currentGames + 3) : historicalTdRate;
+  const environmentMultiplier = Math.max(0.75, Math.min(1.25, context.scoringEnvironment.projectedTeamTouchdownsBaseline / Math.max(0.1, context.scoringEnvironment.leagueTouchdownsPerGame)));
+  const defenseMultiplier = Math.max(0.85, Math.min(1.15, 0.85 + (defensiveVulnerabilityScore / 100) * 0.3));
+  const touchdownLambda = Math.max(0, shrunkTdRate * environmentMultiplier * defenseMultiplier);
+  const touchdownProbability = Math.max(0, Math.min(0.95, 1 - Math.exp(-touchdownLambda)));
+  const probabilityLow = Math.max(0, 1 - Math.exp(-(touchdownLambda * 0.75)));
+  const probabilityHigh = Math.min(0.98, 1 - Math.exp(-(touchdownLambda * 1.25)));
   const dataConfidence = clamp(
     Math.min(40, number(role.historicalOpportunity?.games) * 1.5) +
     (role.depth ? 25 : 0) +
@@ -77,10 +88,15 @@ function scoreRow(role, assignment, context, practice, weather) {
     roleLabel: role.roleLabel,
     readiness: role.readiness?.status || "unknown",
     historicalGames: number(role.historicalOpportunity?.games),
-    tdSignalScore,
+    tdSignalScore: round(touchdownProbability * 100, 1),
+    opportunitySignalScore,
     baseTdSignalScore,
     dataConfidence: round(dataConfidence),
-    scoreType: "member_signal_not_probability",
+    scoreType: "touchdown_probability",
+    touchdownProbability: round(touchdownProbability * 100, 1),
+    probabilityRange: { low: round(probabilityLow * 100, 1), high: round(probabilityHigh * 100, 1) },
+    fairAmericanOdds: touchdownProbability <= 0 ? null : touchdownProbability >= 0.5 ? Math.round(-100 * touchdownProbability / (1 - touchdownProbability)) : Math.round(100 * (1 - touchdownProbability) / touchdownProbability),
+    probabilityInputs: { currentSeasonGames: currentGames, currentSeasonTdPerGame: round(currentTdRate, 3), historicalTdPerGame: round(historicalTdRate, 3), shrunkTdRate: round(shrunkTdRate, 3), scoringEnvironmentMultiplier: round(environmentMultiplier, 3), defenseMultiplier: round(defenseMultiplier, 3) },
     trend,
     historicalPerGame: baseline,
     recentSixPerGame: recent,
@@ -144,7 +160,7 @@ function main() {
       return scoreRow(role, assignment, context, practiceByPlayer.get(role.playerId), weatherByGame.get(assignment.gameId));
     })
     .filter(row => row.position !== "QB" || row.historicalPerGame.redZoneCarries > 0)
-    .sort((a, b) => b.tdSignalScore - a.tdSignalScore || b.dataConfidence - a.dataConfidence || a.playerName.localeCompare(b.playerName))
+    .sort((a, b) => b.touchdownProbability - a.touchdownProbability || b.dataConfidence - a.dataConfidence || a.playerName.localeCompare(b.playerName))
     .map((row, index) => ({ ...row, shadowRank: index + 1 }));
 
   const top = count => eligible.slice(0, count);
@@ -156,15 +172,15 @@ function main() {
 
   const payload = {
     sport: "NFL",
-    schemaVersion: "1.0",
+    schemaVersion: "2.0",
     generatedAt,
     week: matchup.week,
-    status: publishable ? "member_signal_board" : "gated_signal_board",
+    status: publishable ? "probability_board" : "gated_probability_board",
     market: "anytime_touchdown",
     recommendationStatus: "member_research_signal",
-    projectionStatus: "signal_only_not_probability",
-    scoreLabel: "TD Signal Score",
-    scoreDisclaimer: "The TD Signal Score is a comparative opportunity-ranking signal. It is not a touchdown probability, betting recommendation, or guaranteed outcome.",
+    projectionStatus: "empirical_touchdown_probability",
+    scoreLabel: "Touchdown Probability",
+    scoreDisclaimer: "Probability is an empirical current-season/historical estimate with team and opponent adjustments. It is not a guarantee or betting recommendation.",
     launchGate: "Requires verified regular-season role, opponent, defensive matchup, and game environment before recommendations can be considered.",
     inputs: {
       available: ["Canonical player identity", "Current team", "Depth chart", `Verified Week ${matchup.week} opponent`, "Historical rush/receiving touchdowns", "Red-zone carries and targets", "Inside-the-10 carries and targets", "Recent-six-game opportunity", "Historical team scoring environment", "Defense-versus-position TD vulnerability", "Roster-reported availability"],
