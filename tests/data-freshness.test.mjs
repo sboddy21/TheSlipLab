@@ -150,3 +150,8 @@ test("NHL refresh runs at least hourly in season and every 15 minutes overnight"
   assert.match(refresh, /refreshCadenceMinutes: 60/);
   assert.match(refresh, /liveRefreshCadenceMinutes: 15/);
 });
+
+test("NFL refresh stays safely inside its one-hour freshness contract", () => {
+  const workflow = fs.readFileSync(".github/workflows/nfl-refresh.yml", "utf8");
+  assert.match(workflow, /cron:\s*"\*\/30 \* \* 1-2,8-12 \*"/);
+});
