@@ -44,11 +44,15 @@ test("odds expire after 20 minutes even on the current slate", () => {
   assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: "2026-10-24T15:40:00Z" }, { now }).available, false);
 });
 
-test("NHL boards expire when the hourly refresh misses its 90-minute guardrail", () => {
-  const board = { date: "2026-10-24", generatedAt: "2026-10-24T15:00:01Z" };
-  assert.equal(checkDataFreshness("nhl_board.json", board, { now }).available, true);
-  assert.equal(checkDataFreshness("nhl_board.json", board, { now: now + 31 * 60 * 1000 }).available, false);
-  assert.equal(checkDataFreshness("nhl_board.json", board, { now }).maxAgeSeconds, 5400);
+test("analytical boards survive delayed schedulers without relaxing slate dates or markets", () => {
+  const fiveHoursAgo = new Date(now - 5 * 60 * 60 * 1000).toISOString();
+  for (const file of ["nba_points.json", "nhl_board.json", "cfb_board.json"]) {
+    assert.equal(checkDataFreshness(file, { date: "2026-10-24", generatedAt: fiveHoursAgo }, { now }).available, true, file);
+  }
+  assert.equal(checkDataFreshness("nba_points.json", { date: "2026-10-23", generatedAt: fiveHoursAgo }, { now }).available, false);
+  assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: fiveHoursAgo }, { now }).available, false);
+  assert.equal(checkDataFreshness("nhl_board.json", { date: "2026-10-24", generatedAt: fiveHoursAgo }, { now: now + 60 * 60 * 1000 }).available, false);
+  assert.equal(checkDataFreshness("cfb_board.json", { generatedAt: fiveHoursAgo }, { now: now + 7 * 60 * 60 * 1000 }).available, false);
 });
 
 test("archives and park geometry remain readable as historical reference", () => {
@@ -146,9 +150,14 @@ test("NHL refresh runs at least hourly in season and every 15 minutes overnight"
   const refresh = fs.readFileSync("scripts/nhl/refresh.mjs", "utf8");
   assert.match(workflow, /17 7-21 \* 9-12,1-6 \*/);
   assert.match(workflow, /2,17,32,47 22-23,0-6 \* 9-12,1-6 \*/);
-  assert.match(refresh, /maxAgeHours: 1\.5/);
+  assert.match(refresh, /maxAgeHours: 6/);
   assert.match(refresh, /refreshCadenceMinutes: 60/);
   assert.match(refresh, /liveRefreshCadenceMinutes: 15/);
+});
+
+test("NBA refresh validates the newly generated slate instead of yesterday's checkout", () => {
+  const workflow = fs.readFileSync(".github/workflows/nba-refresh.yml", "utf8");
+  assert.ok(workflow.indexOf("Run NBA refresh only") < workflow.indexOf("Validate refreshed NBA foundation"));
 });
 
 test("NFL refresh targets thirty minutes and analytical feeds survive a missed scheduler window", () => {

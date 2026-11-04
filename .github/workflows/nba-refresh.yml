@@ -34,12 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Test NBA foundation
-        run: npm run nba:test
-
       - name: Run NBA refresh only
         timeout-minutes: 16
         run: node scripts/run_nba_refresh.js
+
+      - name: Validate refreshed NBA foundation
+        run: npm run nba:test
 
       - name: Commit refreshed NBA data
         run: |

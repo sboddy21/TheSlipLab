@@ -35,11 +35,11 @@ export async function verifyCurrentDataset(file, payload, { load, now = Date.now
 
 export function freshnessPolicy(file) {
   if (ARCHIVES.test(file) || REFERENCE.has(file) || MONITORS.has(file)) return null;
-  if (file === "nhl_board.json") return { maxAgeSeconds: 5400 };
   if (/odds|market_lines/.test(file)) return { maxAgeSeconds: 1200 };
   if (/live_game|games_live|live_hr_tracker|global_live_alerts/.test(file)) return { maxAgeSeconds: 120 };
-  if (file.startsWith("nfl_")) return { maxAgeSeconds: 21600 };
   if (/history|baselines|usage_baselines|power_profiles|pitch_type_damage/.test(file)) return { maxAgeSeconds: 93600 };
+  if (file.startsWith("nfl_") || file.startsWith("nba_") || file === "nhl_board.json") return { maxAgeSeconds: 21600 };
+  if (file === "cfb_board.json") return { maxAgeSeconds: 43200 };
   return { maxAgeSeconds: 3600 };
 }
 
