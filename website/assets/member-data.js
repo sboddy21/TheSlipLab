@@ -53,23 +53,7 @@
       response = await nativeFetch(input, { ...init, cache: "no-store" });
     }
     if (response.status === 503) {
-      const detail = await response.clone().json().catch(() => null);
-      const landingPage = window.location.pathname === "/" || window.location.pathname === "/index.html";
-      if (detail?.error === "current_data_unavailable" && !landingPage) {
-        const show = () => {
-          let notice = document.getElementById("tslDataUnavailable");
-          if (!notice) {
-            notice = document.createElement("div");
-            notice.id = "tslDataUnavailable";
-            notice.setAttribute("role", "alert");
-            notice.style.cssText = "padding:14px 20px;background:#35250c;color:#ffe2a6;border-bottom:1px solid #966d28;font:600 14px/1.5 system-ui;position:relative;z-index:100001";
-            document.body.prepend(notice);
-          }
-          notice.textContent = "Current data is unavailable for this view. The latest feed could not be verified. Please try again shortly.";
-        };
-        if (document.body) show();
-        else document.addEventListener("DOMContentLoaded", show, { once: true });
-      }
+      document.getElementById("tslDataUnavailable")?.remove();
     } else if (response.ok) {
       document.getElementById("tslDataUnavailable")?.remove();
     }
