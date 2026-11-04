@@ -37,6 +37,10 @@ function selectCandidates(pool, profiles) {
     return confirmed.length === 5 ? confirmed : rows.sort((a, b) => b.historicalStarts - a.historicalStarts).slice(0, 5).map(row => ({ ...row, lineupStatus: "PROJECTED" }));
   });
 }
+function lastFiveFirstBasket(historyGames, playerId) {
+  const games = historyGames.filter(game => (game.starters || []).some(starter => String(starter.playerId) === String(playerId))).slice(-5).reverse();
+  return { games: games.length, results: games.map(game => Number(String(game.firstBasketPlayerId) === String(playerId))), dates: games.map(game => game.date) };
+}
 async function main() {
   const slate = read(path.join(DATA_DIR, "nba_games_today.json"), { games: [], date: "" });
   const pool = read(path.join(DATA_DIR, "nba_player_pool.json"), { players: [] });
@@ -48,7 +52,7 @@ async function main() {
   const profiles = buildFirstBasketProfiles(historyGames); const candidates = selectCandidates(pool, profiles);
   const validation = backtestFirstBasketModel(historyGames);
   const games = (slate.games || []).map(game => {
-    const players = scoreFirstBasketGame({ game, candidates, profiles }) || [];
+    const players = (scoreFirstBasketGame({ game, candidates, profiles }) || []).map(player => ({ ...player, lastFive: lastFiveFirstBasket(historyGames, player.playerId) }));
     const confirmed = players.length === 10 && players.every(player => player.lineupStatus === "CONFIRMED");
     return { gameId: game.gameId, matchup: `${game.awayTeam?.abbreviation || ""} @ ${game.homeTeam?.abbreviation || ""}`, gameTimeUTC: game.gameTimeUTC, lineupStatus: confirmed ? "CONFIRMED" : "PROJECTED", publicationStatus: confirmed && players.some(player => player.publicationEligible) ? "PUBLISHED" : "WAITING_FOR_CONFIRMED_LINEUPS", players };
   });

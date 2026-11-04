@@ -71,15 +71,14 @@ test("current-season logs use completed games and expose actual early-season sam
   assert.throws(() => parseNbaPlayerLog(payload, 2026, now), /current season/);
 });
 
-test("NBA workspace exposes First Basket and dark table contrast", () => {
+test("NBA workspace exposes the unified props board and dark table contrast", () => {
   const html = fs.readFileSync("website/nba.html", "utf8");
   const script = fs.readFileSync("website/assets/nba-lab.js", "utf8");
   const styles = fs.readFileSync("website/assets/nba-lab.css", "utf8");
-  assert.match(html, /data-view="first-basket"/);
-  assert.match(html, /value="first-basket"/);
-  assert.match(script, /function firstBasketView\(\)/);
+  assert.match(html, /NBA Props/);
+  assert.match(script, /function firstBasketBoard\(\)/);
   assert.match(script, /nba_first_basket\.json/);
   assert.doesNotMatch(script, /firstBasketWeight|gameTotals/);
   assert.match(script, /CONTEXT ONLY/);
-  assert.match(styles, /data-theme="dark"[^}]+\.model-table tbody td/);
+  assert.match(styles, /\.props-table td/);
 });

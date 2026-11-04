@@ -1,187 +1,117 @@
+import { MARKETS, baselineFor, classifyLastFive, gameValue } from "./nba-prop-trends.mjs";
+
 const $ = selector => document.querySelector(selector);
-const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-const n = value => Number.isFinite(Number(value)) ? Number(value) : null;
-const fmt = value => n(value) === null ? "—" : Number(value).toFixed(1);
+const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+const number = value => Number.isFinite(Number(value)) ? Number(value) : null;
+const fmt = value => number(value) === null ? "—" : Number(value).toFixed(1);
 const et = value => new Date(value).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
 const image = id => `https://a.espncdn.com/i/headshots/nba/players/full/${encodeURIComponent(id)}.png`;
-const configs = {
-  points: { label: "Points", lean: "pointsLean", score: "pointsScore", season: "seasonPoints", last5: "last5Points", role: "scoringRole" },
-  rebounds: { label: "Rebounds", lean: "reboundsLean", score: "reboundsScore", season: "seasonRebounds", last5: "last5Rebounds", role: "reboundRole" },
-  assists: { label: "Assists", lean: "assistsLean", score: "assistsScore", season: "seasonAssists", last5: "last5Assists", role: "assistRole" },
-  threes: { label: "3-Pointers", lean: "threesLean", score: "threesScore", season: "seasonThrees", last5: "last5Threes", role: "threesRole" }
-};
-const descriptions = {
-  dashboard: ["NBA Slate Dashboard", "One command center for the schedule, strongest model signals, rotations, and verified market availability."],
-  games: ["Game Sheets", "Matchup-by-matchup context with game time, arena, player pool, model leaders, and availability."],
-  points: ["Points Model", "Scoring projections ranked by model strength, expected minutes, usage, matchup, and current availability."],
-  rebounds: ["Rebounds Model", "Rebound projections ranked by role, minutes, recent baseline, matchup, and model strength."],
-  assists: ["Assists Model", "Assist projections ranked by playmaking role, usage, minutes, matchup, and model strength."],
-  threes: ["3-Pointers Model", "Made-three projections ranked by shooting role, volume profile, minutes, and model strength."],
-  "first-basket": ["First Basket Model", "First made field goal probabilities from verified play-by-play, opening possessions, starter history, and lineup status."],
-  matchups: ["Best Matchups", "The slate’s strongest player environments, ranked by matchup score and contextual model signals."],
-  availability: ["Availability", "Reported injury information for today’s teams. Unlisted never means confirmed active."]
-};
-const savedStars = JSON.parse(localStorage.getItem("tsl-nba-stars") || "[]");
-const state = { data: null, view: "dashboard", query: "", team: "", game: "all", grade: "all", status: "all", sort: "score", direction: -1, starred: false, stars: new Set(savedStars) };
+const state = { data: null, market: "points", game: "all", tier: "all", query: "" };
 
 async function getJSON(file) {
   const response = await fetch(`./data/${file}?v=${Date.now()}`, { cache: "no-store", signal: AbortSignal.timeout(25000) });
   if (!response.ok) throw new Error(`${file} unavailable`);
   return response.json();
 }
-
 async function load() {
   try {
-    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_matchup_engine.json", "nba_decision_center.json", "nba_availability.json", "nba_first_basket.json"];
-    const [games, cards, points, rebounds, assists, threes, matchups, decisions, availability, firstBasket] = await Promise.all(files.map(getJSON));
+    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_first_basket.json"];
+    const [games, cards, points, rebounds, assists, threes, firstBasket] = await Promise.all(files.map(getJSON));
     const markets = { lines: [], status: "not_loaded" };
-    state.data = {
-      games: games.games, date: games.date, fetchedAt: points.fetchedAt, season: points.season, decisions, availability, firstBasket, markets,
-      cardMap: new Map(cards.players.map(row => [String(row.playerId), row])),
-      matchupMap: new Map(matchups.players.map(row => [String(row.playerId), row])),
-      models: { points: points.players, rebounds: rebounds.players, assists: assists.players, threes: threes.players }
-    };
-    $("#slateDate").textContent = games.date;
-    $("#slateState").textContent = `${games.games.length} games · ${points.players.length} players`;
-    $("#sideUpdated").textContent = `Checked ${et(points.fetchedAt)} ET`;
-    $("#headerState").textContent = `TODAY · ${games.games.length} GAMES`;
+    Object.assign(markets, await getJSON("nba_market_lines.json").catch(() => ({})));
+    state.data = { games: games.games || [], date: games.date, fetchedAt: points.fetchedAt, cards: cards.players || [], firstBasket, markets, models: { points: points.players || [], rebounds: rebounds.players || [], assists: assists.players || [], threes: threes.players || [] } };
+    state.data.cardMap = new Map(state.data.cards.map(card => [String(card.playerId), card]));
+    state.data.modelMaps = Object.fromEntries(Object.entries(state.data.models).map(([market, rows]) => [market, new Map(rows.map(row => [String(row.playerId), row]))]));
+    state.data.lineMap = new Map((markets.lines || []).map(line => [`${line.playerId}:${line.market}`, line]));
+    $("#headerState").textContent = `TODAY · ${state.data.games.length} GAMES`;
     $("#globalNotice").className = "notice good";
-    $("#globalNotice").innerHTML = `<strong>Model workspace live.</strong> ${points.players.length} players across ${games.games.length} games · market lines ${markets.lines.length ? "verified" : "withheld because no authorized matching quotes were found"}.`;
+    $("#globalNotice").innerHTML = `<strong>${state.data.cards.length} players loaded.</strong> ${(markets.lines || []).length ? `${markets.lines.length} verified paired sportsbook lines.` : "No authorized matching sportsbook lines are available, so no prices are being invented."}`;
     render();
   } catch (error) {
     $("#globalNotice").className = "notice warn";
-    $("#globalNotice").textContent = "The NBA model workspace could not load all required datasets.";
-    $("#viewRoot").innerHTML = `<div class="empty"><strong>NBA data unavailable.</strong><p>${esc(error.message)}</p><button class="nba-refresh" data-retry>Retry</button></div>`;
+    $("#globalNotice").textContent = `NBA data unavailable: ${error.message}`;
+    $("#viewRoot").innerHTML = '<div class="empty">The board will not substitute stale or fabricated player data.</div>';
   }
 }
 
 const gameLabel = game => `${game.awayTeam.abbreviation} @ ${game.homeTeam.abbreviation}`;
-const gameFor = id => state.data.games.find(game => String(game.gameId) === String(id));
-const grade = score => score >= 80 ? ["A+", "elite"] : score >= 72 ? ["A", "strong"] : score >= 64 ? ["B", "good"] : score >= 55 ? ["C", "watch"] : ["D", "low"];
-function trend(row, config) {
-  const delta = (n(row[config.last5]) || 0) - (n(row[config.season]) || 0);
-  return delta > .35 ? ["Rising", "up"] : delta < -.35 ? ["Cooling", "down"] : ["Stable", "flat"];
+const modelFor = (playerId, market) => state.data.modelMaps[market]?.get(String(playerId));
+function projectionFor(card, market) {
+  const points = number(modelFor(card.playerId, "points")?.pointsLean);
+  const rebounds = number(modelFor(card.playerId, "rebounds")?.reboundsLean);
+  const assists = number(modelFor(card.playerId, "assists")?.assistsLean);
+  const threes = number(modelFor(card.playerId, "threes")?.threesLean);
+  if (market === "points") return points;
+  if (market === "rebounds") return rebounds;
+  if (market === "assists") return assists;
+  if (market === "threes") return threes;
+  if (market === "pra" && [points, rebounds, assists].every(value => value !== null)) return points + rebounds + assists;
+  if (market === "pointsRebounds" && [points, rebounds].every(value => value !== null)) return points + rebounds;
+  if (market === "reboundsAssists" && [rebounds, assists].every(value => value !== null)) return rebounds + assists;
+  return null;
+}
+function tierFor(card, market) {
+  const values = (card.recentGames || []).slice(0, 5).map(game => gameValue(game, market));
+  return classifyLastFive(values, baselineFor(card, market), { binary: market === "doubleDouble" || market === "tripleDouble" });
+}
+function lineFor(card, market) {
+  const supported = { points: "points", rebounds: "rebounds", assists: "assists", threes: "threes" }[market];
+  return supported ? state.data.lineMap.get(`${card.playerId}:${supported}`) : null;
+}
+function playerRows() {
+  return state.data.cards.map(card => {
+    const tier = tierFor(card, state.market);
+    return { card, tier, values: (card.recentGames || []).slice(0, 5).map(game => gameValue(game, state.market)), projection: projectionFor(card, state.market), line: lineFor(card, state.market) };
+  }).filter(row => (state.game === "all" || String(row.card.gameId) === state.game) && (state.tier === "all" || row.tier.key === state.tier) && (!state.query || `${row.card.player} ${row.card.team} ${row.card.opponent}`.toLowerCase().includes(state.query.toLowerCase()))).sort((a, b) => {
+    const order = { hot: 4, good: 3, sleeper: 2, cold: 1, unrated: 0 };
+    return order[b.tier.key] - order[a.tier.key] || (b.tier.average || 0) - (a.tier.average || 0);
+  });
 }
 
-function slateChips() {
-  return `<div class="slate-chips"><button class="${state.game === "all" ? "active" : ""}" data-game="all">All ${state.data.games.length}</button>${state.data.games.map(game => `<button class="${state.game === String(game.gameId) ? "active" : ""}" data-game="${esc(game.gameId)}"><b>${esc(gameLabel(game))}</b><span>${et(game.gameTimeUTC)} ET</span></button>`).join("")}</div>`;
+function gameChips() {
+  return `<div class="props-games"><button class="${state.game === "all" ? "active" : ""}" data-game="all"><b>All games</b><span>${state.data.games.length} matchups</span></button>${state.data.games.map(game => `<button class="${state.game === String(game.gameId) ? "active" : ""}" data-game="${esc(game.gameId)}"><b>${esc(gameLabel(game))}</b><span>${et(game.gameTimeUTC)} ET</span></button>`).join("")}</div>`;
 }
-
-function filteredRows(market) {
-  const config = configs[market];
-  let rows = state.data.models[market].filter(row =>
-    (!state.query || `${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query.toLowerCase())) &&
-    (!state.team || row.team === state.team) && (state.game === "all" || String(row.gameId) === state.game) &&
-    (state.status === "all" || row.availabilityStatus === state.status) && (!state.starred || state.stars.has(String(row.playerId)))
-  );
-  if (state.grade !== "all") rows = rows.filter(row => grade(n(row[config.score]) || 0)[0].startsWith(state.grade));
-  const field = state.sort === "projection" ? config.lean : state.sort === "minutes" ? "expectedMinutes" : state.sort === "player" ? "player" : config.score;
-  return rows.sort((a, b) => typeof a[field] === "string" ? state.direction * a[field].localeCompare(b[field]) : state.direction * ((n(a[field]) || 0) - (n(b[field]) || 0)));
+function marketTabs() {
+  return `<div class="props-markets" role="tablist">${MARKETS.map(([key, label]) => `<button role="tab" aria-selected="${state.market === key}" class="${state.market === key ? "active" : ""}" data-market="${key}">${label}</button>`).join("")}</div>`;
 }
-
-function filters(market) {
-  const teams = [...new Set(state.data.models[market].map(row => row.team))].sort();
-  return `<div class="model-controls"><label>Player<input id="playerSearch" type="search" value="${esc(state.query)}" placeholder="Search player…"></label><label>Grade<select id="gradeFilter"><option value="all">All Grades</option>${["A","B","C","D"].map(value => `<option ${state.grade === value ? "selected" : ""}>${value}</option>`).join("")}</select></label><label>Status<select id="statusFilter"><option value="all">All Statuses</option><option value="ROSTER_ACTIVE" ${state.status === "ROSTER_ACTIVE" ? "selected" : ""}>Roster Active</option><option value="UNKNOWN" ${state.status === "UNKNOWN" ? "selected" : ""}>Unconfirmed</option></select></label><label>Team<select id="teamFilter"><option value="">All Teams</option>${teams.map(team => `<option ${state.team === team ? "selected" : ""}>${team}</option>`).join("")}</select></label><button class="star-filter ${state.starred ? "active" : ""}" data-star-filter>★ Starred</button></div>`;
+function controls() {
+  return `<div class="props-controls"><label>Find a player<input id="playerSearch" type="search" value="${esc(state.query)}" placeholder="Search player or team"></label><label>Trend tier<select id="tierFilter"><option value="all">All tiers</option>${[["hot","Hot look"],["good","Good chance"],["sleeper","Sleeper"],["cold","Cold"],["unrated","Needs 5 games"]].map(([key,label]) => `<option value="${key}" ${state.tier === key ? "selected" : ""}>${label}</option>`).join("")}</select></label></div>`;
 }
-
-function modelRow(row, config) {
-  const score = n(row[config.score]) || 0;
-  const [letter, tone] = grade(score), [movement, movementTone] = trend(row, config);
-  const matchup = state.data.matchupMap.get(String(row.playerId)) || {};
-  const adjustment = config === configs.points && n(row.matchupAdjustment) !== null ? `${n(row.matchupAdjustment) >= 0 ? "+" : ""}${fmt(row.matchupAdjustment)} matchup` : matchup.matchupTier || "Context pending";
-  const range = n(row.projectionFloor) !== null && n(row.projectionCeiling) !== null ? `${fmt(row.projectionFloor)}–${fmt(row.projectionCeiling)} range` : adjustment;
-  return `<tr><td><button class="star ${state.stars.has(String(row.playerId)) ? "active" : ""}" data-star="${esc(row.playerId)}" aria-label="Star ${esc(row.player)}">★</button></td><td><button class="player-cell" data-player="${esc(row.playerId)}"><img src="${image(row.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player)}</strong><small>${esc(row.team)} · ${esc(row.position || "—")}</small></span></button></td><td><b>${row.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.opponent)}</b><small>${esc(matchup.opponentContext || row.gameStatusText || "")}</small><small>${esc(matchup.paceContext || "")}</small></td><td class="projection">${fmt(row[config.lean])}<small>${esc(range)}</small><small>${esc(adjustment)}</small></td><td><span class="trend ${movementTone}">${movement}</span><small>L5 vs season</small></td><td>${fmt(row.expectedMinutes)}<small>${esc(row.minutesRole || "Role pending")}</small></td><td>${esc(row[config.role] || row.usageTier || "Profile")}</td><td><strong>${fmt(score)}</strong><div class="scorebar"><i style="width:${Math.min(100, score)}%"></i></div></td><td><span class="grade ${tone}">${letter}</span><small>${esc(row.confidence || "")}</small></td><td><span class="no-line">Not verified</span></td></tr>`;
+function recentCells(row) {
+  if (row.values.length < 5 || row.values.some(value => value === null)) return '<span class="sample-missing">Fewer than 5</span>';
+  const binary = state.market === "doubleDouble" || state.market === "tripleDouble";
+  return `<div class="last-five">${row.values.map(value => `<span>${binary ? (value ? "✓" : "—") : fmt(value)}</span>`).join("")}</div>`;
 }
-
-function modelTable(market) {
-  const config = configs[market], rows = filteredRows(market);
-  return `${slateChips()}${filters(market)}<div class="board-meta"><div><strong>${rows.length}</strong> players</div><div class="market-gate"><i></i>${state.data.markets.lines.length ? `${state.data.markets.lines.length} verified lines` : "Projection mode · no verified lines"}</div></div><div class="model-table-wrap"><table class="model-table"><thead><tr><th></th><th data-sort="player">Player</th><th>Matchup</th><th data-sort="projection">Projection</th><th>Trend</th><th data-sort="minutes">Minutes</th><th>Role</th><th data-sort="score">Model Score</th><th>Grade</th><th>Market Line</th></tr></thead><tbody>${rows.map(row => modelRow(row, config)).join("") || '<tr><td colspan="10" class="empty">No players match these filters.</td></tr>'}</tbody></table></div>`;
+function priceCell(row) {
+  if (!row.line) return '<span class="no-line">No verified line</span>';
+  return `<b>${fmt(row.line.line)}</b><small>${esc(row.line.book)} · O ${row.line.overOdds > 0 ? "+" : ""}${row.line.overOdds}</small>`;
 }
-
-function firstBasketRows() {
-  return (state.data.firstBasket.games || []).flatMap(game => game.players.map(player => ({ ...player, gameId: game.gameId, matchup: game.matchup, gameTimeUTC: game.gameTimeUTC, gamePublicationStatus: game.publicationStatus }))).filter(row =>
-    (!state.query || `${row.player} ${row.team} ${row.opponent}`.toLowerCase().includes(state.query.toLowerCase())) &&
-    (!state.team || row.team === state.team) && (state.game === "all" || String(row.gameId) === state.game) &&
-    (!state.starred || state.stars.has(String(row.playerId)))
-  ).sort((a, b) => b.probability - a.probability);
+function standardBoard() {
+  const rows = playerRows();
+  const binary = state.market === "doubleDouble" || state.market === "tripleDouble";
+  return `${controls()}<div class="board-summary"><strong>${rows.length} players</strong><span>${binary ? "Last-five occurrence rate" : "Form compared with season baseline"}</span></div><div class="props-table-wrap"><table class="props-table"><thead><tr><th>Player / matchup</th><th>Trend</th><th>Last 5</th><th>${binary ? "L5 rate" : "L5 avg"}</th><th>${binary ? "Season model" : "Model"}</th><th>Verified line</th></tr></thead><tbody>${rows.map(row => `<tr class="tier-row ${row.tier.key}"><td><button class="player-cell" data-player="${esc(row.card.playerId)}"><img src="${image(row.card.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.card.player)}</strong><small>${esc(row.card.team)} ${row.card.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.card.opponent)} · ${et(row.card.gameTimeUTC)} ET</small></span></button></td><td><span class="tier-badge ${row.tier.key}">${esc(row.tier.label)}</span><small>${row.tier.hitCount === null ? "Sample incomplete" : `${row.tier.hitCount}/5 at or above baseline`}</small></td><td>${recentCells(row)}</td><td><b>${binary && row.tier.average !== null ? `${Math.round(row.tier.average * 100)}%` : fmt(row.tier.average)}</b><small>${binary ? "verified outcomes" : `season ${fmt(baselineFor(row.card, state.market))}`}</small></td><td><b>${binary ? "—" : fmt(row.projection)}</b><small>${binary ? "No fabricated probability" : "projection"}</small></td><td>${priceCell(row)}</td></tr>`).join("") || '<tr><td colspan="6" class="empty">No players match these filters.</td></tr>'}</tbody></table></div>`;
 }
-
-function firstBasketView() {
-  const rows = firstBasketRows();
-  return `${slateChips()}<div class="first-basket-note"><strong>Verified evidence model.</strong> ${esc(state.data.firstBasket.methodology)} Market definition: first made field goal; free throws do not count. Projected lineups are context only.</div><div class="board-meta"><div><strong>${state.data.firstBasket.trainingGames}</strong> verified training games</div><div class="market-gate"><i></i>${state.data.firstBasket.publicationEligibleGames} games cleared after confirmed lineups</div></div><div class="model-table-wrap"><table class="model-table first-basket-table"><thead><tr><th></th><th>Player</th><th>Matchup</th><th>Probability</th><th>80% Range</th><th>Fair Odds</th><th>Historical Evidence</th><th>Lineup</th><th>Status</th></tr></thead><tbody>${rows.map(row => `<tr><td><button class="star ${state.stars.has(String(row.playerId)) ? "active" : ""}" data-star="${esc(row.playerId)}" aria-label="Star ${esc(row.player)}">★</button></td><td><span class="player-cell"><img src="${image(row.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player)}</strong><small>${esc(row.team)} · ${esc(row.position || "—")}</small></span></span></td><td><b>${esc(row.matchup)}</b><small>${et(row.gameTimeUTC)} ET</small></td><td class="first-basket-probability">${fmt(row.probabilityPct)}%<small>normalized across 10 starters</small></td><td>${fmt(row.rangeLowPct)}%–${fmt(row.rangeHighPct)}%</td><td>${row.fairAmericanOdds > 0 ? "+" : ""}${row.fairAmericanOdds}<small>model fair price</small></td><td>${row.evidence.firstBaskets}/${row.evidence.starterGames}<small>first baskets / starts · ${row.evidence.firstTeamShots} first team shots</small></td><td>${esc(row.lineupStatus)}</td><td><span class="${row.publicationEligible ? "grade good" : "no-line"}">${esc(row.publicationEligible ? row.confidence : "CONTEXT ONLY")}</span></td></tr>`).join("") || '<tr><td colspan="9" class="empty">No valid ten-player lineup is available. The model will not invent one.</td></tr>'}</tbody></table></div>`;
+function firstBasketBoard() {
+  const rows = (state.data.firstBasket.games || []).flatMap(game => game.players.map(player => ({ ...player, gameId: game.gameId, matchup: game.matchup, gameTimeUTC: game.gameTimeUTC }))).map(player => ({ player, tier: classifyLastFive(player.lastFive?.results || [], null, { binary: true }) })).filter(row => (state.game === "all" || String(row.player.gameId) === state.game) && (state.tier === "all" || row.tier.key === state.tier) && (!state.query || `${row.player.player} ${row.player.team}`.toLowerCase().includes(state.query.toLowerCase()))).sort((a,b) => b.player.probability - a.player.probability);
+  return `${controls()}<div class="first-basket-note"><strong>First made field goal only.</strong> Trend colors use each player’s last five verified starts; probability still uses the validated full-history model and confirmed-lineup gate.</div><div class="props-table-wrap"><table class="props-table"><thead><tr><th>Player / matchup</th><th>Trend</th><th>Last 5 starts</th><th>Model probability</th><th>Fair odds</th><th>Lineup status</th></tr></thead><tbody>${rows.map(row => `<tr class="tier-row ${row.tier.key}"><td><span class="player-cell"><img src="${image(row.player.playerId)}" alt="" loading="lazy"><span><strong>${esc(row.player.player)}</strong><small>${esc(row.player.team)} · ${esc(row.player.matchup)} · ${et(row.player.gameTimeUTC)} ET</small></span></span></td><td><span class="tier-badge ${row.tier.key}">${esc(row.tier.label)}</span></td><td><div class="last-five">${(row.player.lastFive?.results || []).map(value => `<span>${value ? "✓" : "—"}</span>`).join("") || '<span>—</span>'}</div></td><td><b>${fmt(row.player.probabilityPct)}%</b><small>${row.player.evidence.firstBaskets}/${row.player.evidence.starterGames} career evidence</small></td><td><b>${row.player.fairAmericanOdds > 0 ? "+" : ""}${row.player.fairAmericanOdds}</b><small>model fair price</small></td><td><span class="${row.player.publicationEligible ? "publish-ready" : "no-line"}">${esc(row.player.publicationEligible ? row.player.confidence : "CONTEXT ONLY")}</span></td></tr>`).join("") || '<tr><td colspan="6" class="empty">No verified first-basket candidates match these filters.</td></tr>'}</tbody></table></div>`;
 }
-
-function gameGrid() {
-  return `<div class="game-grid">${state.data.games.map(game => {
-    const rows = state.data.models.points.filter(row => String(row.gameId) === String(game.gameId));
-    const best = [...rows].sort((a, b) => b.pointsScore - a.pointsScore)[0];
-    return `<article class="game-card"><div class="game-top"><span>${esc(game.arena || "Arena pending")}</span><b>${et(game.gameTimeUTC)} ET</b></div><div class="matchup"><div class="team"><strong>${esc(game.awayTeam.abbreviation)}</strong><small>${esc(game.awayTeam.team)}</small></div><div class="score">@</div><div class="team home"><strong>${esc(game.homeTeam.abbreviation)}</strong><small>${esc(game.homeTeam.team)}</small></div></div><div class="game-insights"><span>Player pool <b>${rows.length}</b></span><span>Top signal <b>${best ? esc(best.player) : "Pending"}</b></span></div><button data-open-game="${esc(game.gameId)}">Open game sheet →</button></article>`;
-  }).join("")}</div>`;
-}
-
-function dashboard() {
-  const top = state.data.decisions.sections.topOverallPlays || [];
-  const strong = state.data.models.points.filter(row => row.pointsScore >= 72).length;
-  return `<section class="hero-grid"><article class="command-card"><div class="kicker">TODAY / NBA COMMAND CENTER</div><h2>${state.data.games.length} games.<br><em>Every signal in one place.</em></h2><p>Move from slate to matchup to player projection without losing context. No invented odds, no hidden stale lines.</p><div class="hero-actions"><button data-jump="points">Open model board</button><button data-jump="games">View game sheets</button></div></article><div class="pulse-grid"><article><span>Players modeled</span><strong>${state.data.models.points.length}</strong><small>Four projection markets</small></article><article><span>Publication eligible</span><strong>${state.data.models.points.filter(row => row.publicationEligible).length}</strong><small>Current availability rules</small></article><article><span>Strong signals</span><strong>${strong}</strong><small>Points score ≥ 72</small></article><article><span>Verified lines</span><strong>${state.data.markets.lines.length}</strong><small>${state.data.markets.lines.length ? "Authorized matches" : "Market gate closed"}</small></article></div></section>${slateChips()}<div class="section-bar"><h2>Top model signals</h2><p>Cross-market ranking · projections are not sportsbook lines</p></div><div class="signal-grid">${top.slice(0, 6).map((row, index) => `<article><span class="rank">0${index + 1}</span><img src="${image(row.playerId)}" alt=""><div><b>${esc(row.player)}</b><small>${esc(row.team)} ${row.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.opponent)}</small></div><strong>${fmt(row.bestMarketProjection)} <small>${esc(row.bestMarket)}</small></strong><span class="grade ${grade(row.bestMarketScore)[1]}">${grade(row.bestMarketScore)[0]}</span></article>`).join("")}</div><div class="section-bar"><h2>Game runway</h2><p>Eastern time · open any sheet for its player pool</p></div>${gameGrid()}`;
-}
-
-function gameDetail(id) {
-  const game = gameFor(id); if (!game) return "";
-  const all = state.data.models.points.filter(row => String(row.gameId) === String(id));
-  const rows = [...all].sort((a, b) => b.pointsScore - a.pointsScore).slice(0, 8);
-  return `<section class="game-detail"><div><span>GAME SHEET</span><h2>${esc(gameLabel(game))}</h2><p>${et(game.gameTimeUTC)} ET · ${esc(game.arena || "Arena pending")} · ${all.length} modeled players</p></div><div class="game-leaders">${rows.map(row => `<button data-player="${esc(row.playerId)}"><img src="${image(row.playerId)}" alt=""><span><b>${esc(row.player)}</b><small>${fmt(row.pointsLean)} PTS · ${fmt(row.expectedMinutes)} MIN</small></span><strong>${grade(row.pointsScore)[0]}</strong></button>`).join("")}</div></section>`;
-}
-function gamesView() { return `${slateChips()}<div class="section-bar"><h2>Today’s game sheets</h2><p>Schedule, model leaders, player count, and injury context</p></div>${gameGrid()}${state.game !== "all" ? gameDetail(state.game) : ""}`; }
-
-function matchupView() {
-  const rows = [...state.data.matchupMap.values()].filter(row => row.publicationEligible).sort((a, b) => (b.matchupScore || 0) - (a.matchupScore || 0));
-  return `${slateChips()}<div class="section-bar"><h2>Best player environments</h2><p>Opponent defense, pace, defender pressure, minutes, and role</p></div><div class="matchup-board">${rows.slice(0, 30).map(row => `<article><span class="grade ${grade(row.matchupScore)[1]}">${grade(row.matchupScore)[0]}</span><img src="${image(row.playerId)}" alt=""><div><b>${esc(row.player)}</b><small>${esc(row.team)} ${row.homeAway === "AWAY" ? "@" : "vs"} ${esc(row.opponent)} · ${esc(row.position)}</small><p>${esc(row.opponentContext)} · ${esc(row.paceContext)}</p><p>${esc(row.defenderContext)}</p></div><strong>${fmt(row.matchupScore)}<small>${esc(row.matchupTier)}</small></strong></article>`).join("")}</div>`;
-}
-function availabilityView() {
-  const rows = state.data.availability.players || [];
-  const flagged = rows.filter(row => row.injury || row.availabilityStatus !== "ROSTER_ACTIVE");
-  return `<div class="section-bar"><h2>Availability watch</h2><p>${state.data.availability.reportedInjuryCount || 0} reports · missing report never means active</p></div><div class="availability-grid">${flagged.map(row => `<article class="availability-card"><b>${esc(row.player)} · ${esc(row.team)}</b><span><strong>${esc(row.availabilityStatus)}</strong>${row.injury?.status ? ` · ${esc(row.injury.status)}` : " · game status unconfirmed"}</span></article>`).join("") || '<div class="empty">No matched injury reports. Game availability remains unconfirmed until official reporting.</div>'}</div>`;
-}
-
 function showPlayer(id) {
   const card = state.data.cardMap.get(String(id)); if (!card) return;
-  const adjustment = n(card.headline.matchupAdjustment) || 0;
-  const defenders = card.matchup.topDefenders?.length ? card.matchup.topDefenders.map(row => `<li><b>${esc(row.player)}</b><span>${esc(row.position || "—")} · ${esc(row.tier)} · ${fmt(row.pctPlusMinus)} FG% differential</span></li>`).join("") : "<li><span>No verified defender-tracking rows available.</span></li>";
-  const games = card.recentGames?.length ? card.recentGames.map(game => `<tr><td>${esc(new Date(game.date).toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" }))}</td><td>${esc(game.matchup)}</td><td>${fmt(game.minutes)}</td><td>${fmt(game.points)}</td><td>${fmt(game.fieldGoalAttempts)}</td><td>${fmt(game.freeThrowAttempts)}</td></tr>`).join("") : '<tr><td colspan="6">No verified recent games.</td></tr>';
-  const absent = card.headline.absentTeammates?.length ? card.headline.absentTeammates.join(", ") : "None confirmed";
-  $("#playerDetail").innerHTML = `<div class="nba-profile-head"><img src="${image(id)}" alt=""><div><div class="kicker">${esc(card.team)} · ${esc(card.position)} · ${esc(card.homeAway)}</div><h2 id="playerDialogTitle">${esc(card.player)}</h2><p>${esc(card.team)} ${card.homeAway === "AWAY" ? "@" : "vs"} ${esc(card.opponent)} · ${esc(card.gameStatusText)}</p></div><span class="matchup-pill">${esc(card.matchup.matchupTier)} · ${fmt(card.matchup.matchupScore)}</span></div><div class="profile-metrics">${[["Projected PTS", card.headline.pointsLean], ["Floor–Ceiling", `${fmt(card.headline.projectionFloor)}–${fmt(card.headline.projectionCeiling)}`], ["Matchup Δ", `${adjustment >= 0 ? "+" : ""}${fmt(adjustment)}`], ["Season PTS", card.production.seasonPoints], ["Last 5 PTS", card.production.last5Points], ["Expected MIN", card.minutes.expected]].map(([label, value]) => `<div><span>${label}</span><strong>${typeof value === "string" ? esc(value) : fmt(value)}</strong></div>`).join("")}</div><div class="profile-columns"><section><h3>Projection breakdown</h3><dl class="scout-list"><div><dt>Role</dt><dd>${esc(card.headline.scoringRole)} · ${esc(card.minutes.role)}</dd></div><div><dt>Usage</dt><dd>${esc(card.usage.tier)} (${fmt(card.usage.score)}) · ${esc(card.usage.trend)}</dd></div><div><dt>Rest</dt><dd>${card.headline.backToBack ? "Back-to-back" : card.headline.restDays === null ? "Unknown" : `${esc(card.headline.restDays)} rest days`}</dd></div><div><dt>Confirmed absences</dt><dd>${esc(absent)} · ${fmt(card.headline.absenceBoostPct)}% opportunity boost</dd></div><div><dt>Shot volume</dt><dd>${fmt(card.usage.last5FGA)} FGA L5 vs ${fmt(card.usage.seasonFGA)} season</dd></div><div><dt>Free throws</dt><dd>${fmt(card.usage.last5FTA)} FTA L5 vs ${fmt(card.usage.seasonFTA)} season</dd></div></dl><div class="tag-row">${card.tags.map(tag => `<span>${esc(tag)}</span>`).join("")}</div></section><section><h3>Opponent matchup</h3><p><b>${esc(card.matchup.opponentContext)}</b></p><p>${esc(card.matchup.paceContext)}</p><ul class="defender-list">${defenders}</ul><p class="context-note">Defenders are verified opponent tracking leaders, not a claimed direct assignment.</p></section></div><h3 class="recent-title">Recent scoring evidence</h3><div class="recent-table"><table><thead><tr><th>Date</th><th>Matchup</th><th>MIN</th><th>PTS</th><th>FGA</th><th>FTA</th></tr></thead><tbody>${games}</tbody></table></div>`;
+  const games = (card.recentGames || []).slice(0, 5).map(game => `<tr><td>${new Date(game.date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })}</td><td>${esc(game.matchup)}</td><td>${fmt(game.points)}</td><td>${fmt(game.rebounds)}</td><td>${fmt(game.assists)}</td><td>${fmt(game.threesMade)}</td></tr>`).join("");
+  $("#playerDetail").innerHTML = `<div class="nba-profile-head"><img src="${image(id)}" alt=""><div><div class="kicker">${esc(card.team)} · ${esc(card.position || "—")}</div><h2 id="playerDialogTitle">${esc(card.player)}</h2><p>${esc(card.team)} ${card.homeAway === "AWAY" ? "@" : "vs"} ${esc(card.opponent)} · ${esc(card.gameStatusText)}</p></div></div><h3 class="recent-title">Projection breakdown</h3><div class="profile-metrics"><div><span>Points</span><strong>${fmt(projectionFor(card, "points"))}</strong></div><div><span>Rebounds</span><strong>${fmt(projectionFor(card, "rebounds"))}</strong></div><div><span>Assists</span><strong>${fmt(projectionFor(card, "assists"))}</strong></div><div><span>Threes</span><strong>${fmt(projectionFor(card, "threes"))}</strong></div></div><h3 class="recent-title">Opponent matchup</h3><p class="nba-player-note">${esc(card.matchup?.opponentContext || "Opponent context pending")} · ${esc(card.matchup?.paceContext || "Pace context pending")}</p><h3 class="recent-title">Recent scoring evidence · verified last five games</h3><div class="recent-table"><table><thead><tr><th>Date</th><th>Matchup</th><th>PTS</th><th>REB</th><th>AST</th><th>3PM</th></tr></thead><tbody>${games || '<tr><td colspan="6">No verified recent games.</td></tr>'}</tbody></table></div>`;
   $("#playerDialog").showModal();
-}
-
-function bindControls() {
-  $("#playerSearch")?.addEventListener("input", event => { state.query = event.target.value; render(); const input = $("#playerSearch"); input.focus(); input.setSelectionRange(state.query.length, state.query.length); });
-  $("#teamFilter")?.addEventListener("change", event => { state.team = event.target.value; render(); });
-  $("#gradeFilter")?.addEventListener("change", event => { state.grade = event.target.value; render(); });
-  $("#statusFilter")?.addEventListener("change", event => { state.status = event.target.value; render(); });
 }
 function render() {
   if (!state.data) return;
-  const [title, description] = descriptions[state.view] || descriptions.dashboard;
-  $("#viewTitle").textContent = title; $("#viewDescription").textContent = description; $("#mobileView").value = state.view;
-  document.querySelectorAll("[data-view]").forEach(el => el.classList.toggle("active", el.dataset.view === state.view));
-  $("#viewRoot").innerHTML = state.view === "dashboard" ? dashboard() : state.view === "games" ? gamesView() : configs[state.view] ? modelTable(state.view) : state.view === "first-basket" ? firstBasketView() : state.view === "matchups" ? matchupView() : availabilityView();
-  bindControls();
+  $("#viewRoot").innerHTML = `<div class="slate-heading"><div><span>Today (ET)</span><strong>${esc(state.data.date)}</strong></div><small>Updated ${et(state.data.fetchedAt)} ET</small></div>${gameChips()}${marketTabs()}${state.market === "firstBasket" ? firstBasketBoard() : standardBoard()}`;
+  $("#playerSearch")?.addEventListener("input", event => { state.query = event.target.value; render(); const input = $("#playerSearch"); input.focus(); input.setSelectionRange(state.query.length, state.query.length); });
+  $("#tierFilter")?.addEventListener("change", event => { state.tier = event.target.value; render(); });
 }
-function changeView(view) { state.view = descriptions[view] ? view : "dashboard"; state.game = "all"; window.scrollTo({ top: 0, behavior: "smooth" }); render(); }
-function fromHash() { changeView(location.hash.slice(1) || "dashboard"); }
-
 document.addEventListener("click", event => {
-  const nav = event.target.closest("[data-view],[data-jump]"); if (nav) location.hash = nav.dataset.view || nav.dataset.jump;
   const game = event.target.closest("[data-game]"); if (game) { state.game = game.dataset.game; render(); }
-  const openGame = event.target.closest("[data-open-game]"); if (openGame) { state.game = openGame.dataset.openGame; state.view = "games"; render(); document.querySelector(".game-detail")?.scrollIntoView({ behavior: "smooth" }); }
-  const star = event.target.closest("[data-star]"); if (star) { const id = star.dataset.star; state.stars.has(id) ? state.stars.delete(id) : state.stars.add(id); localStorage.setItem("tsl-nba-stars", JSON.stringify([...state.stars])); render(); }
-  if (event.target.closest("[data-star-filter]")) { state.starred = !state.starred; render(); }
-  const sort = event.target.closest("[data-sort]"); if (sort) { if (state.sort === sort.dataset.sort) state.direction *= -1; else { state.sort = sort.dataset.sort; state.direction = state.sort === "player" ? 1 : -1; } render(); }
+  const market = event.target.closest("[data-market]"); if (market) { state.market = market.dataset.market; state.tier = "all"; render(); }
   const player = event.target.closest("[data-player]"); if (player) showPlayer(player.dataset.player);
   if (event.target.closest("[data-retry]")) load();
 });
-$("#mobileView").addEventListener("change", event => { location.hash = event.target.value; });
 $("#closePlayer").addEventListener("click", () => $("#playerDialog").close());
-window.addEventListener("hashchange", fromHash);
-fromHash();
 load();
