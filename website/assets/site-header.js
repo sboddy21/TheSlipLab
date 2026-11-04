@@ -1,27 +1,14 @@
 (function(){
   const THEME_KEY = "tsl-theme";
 
-  function preferredTheme(){
-    try {
-      const saved = localStorage.getItem(THEME_KEY);
-      if (saved === "light" || saved === "dark") return saved;
-    } catch {}
-    return document.body?.classList.contains("tsl-editorial") ? "light" : "dark";
+  function enforceLightTheme(){
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.style.colorScheme = "light";
+    try { localStorage.removeItem(THEME_KEY); } catch {}
+    document.querySelectorAll("[data-tsl-theme-toggle], .tsl-theme-toggle").forEach(button => button.remove());
   }
 
-  function applyTheme(theme){
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.colorScheme = theme;
-    document.querySelectorAll("[data-tsl-theme-toggle]").forEach(button => {
-      const next = theme === "dark" ? "light" : "dark";
-      button.setAttribute("aria-label", `Switch to ${next} mode`);
-      button.setAttribute("title", `Switch to ${next} mode`);
-      button.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
-      button.innerHTML = `<span aria-hidden="true">${theme === "dark" ? "☀" : "☾"}</span><span class="tsl-theme-label">${next === "dark" ? "Dark" : "Light"}</span>`;
-    });
-  }
-
-  applyTheme(preferredTheme());
+  enforceLightTheme();
 
   function initAnalytics(){
     if (document.querySelector('script[data-tsl-vercel-analytics]')) return;
@@ -313,17 +300,6 @@
     menu.appendChild(panel);
     nav.appendChild(menu);
 
-    const themeButton = document.createElement("button");
-    themeButton.type = "button";
-    themeButton.className = "tsl-theme-toggle";
-    themeButton.dataset.tslThemeToggle = "true";
-    themeButton.addEventListener("click", () => {
-      const theme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
-      try { localStorage.setItem(THEME_KEY, theme); } catch {}
-      applyTheme(theme);
-    });
-    nav.appendChild(themeButton);
-
     inner.appendChild(brand);
     inner.appendChild(nav);
     header.appendChild(inner);
@@ -386,7 +362,7 @@
     hideOldHeaders();
     const header = buildHeader();
     document.body.insertBefore(header, document.body.firstChild);
-    applyTheme(document.documentElement.dataset.theme || preferredTheme());
+    enforceLightTheme();
     header.insertAdjacentElement("afterend", buildLegalNotice());
     if (!document.querySelector(".tsl-site-footer")) {
       document.body.appendChild(buildFooter());
