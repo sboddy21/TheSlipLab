@@ -12,10 +12,20 @@ test("every primary sport hub loads the shared notebook workspace", () => {
   }
 });
 
-test("notebook navigation keeps every sport one click away", () => {
+test("notebook navigation links active sports and disables MLB and WNBA", () => {
   const script = fs.readFileSync("website/assets/sports-notebook.js", "utf8");
-  for (const sport of pages) assert.match(script, new RegExp(`${sport}\\.html`));
+  for (const sport of ["nfl", "cfb", "nba", "nhl"]) assert.match(script, new RegExp(`\\["${sport.toUpperCase() === "CFB" ? "CFB" : sport.toUpperCase()}", "${sport}\\.html", true\\]`));
+  assert.match(script, /\["MLB", "mlb\.html", false\]/);
+  assert.match(script, /\["WNBA", "wnba\.html", false\]/);
+  assert.match(script, /aria-disabled="true"/);
   assert.match(script, /aria-current="page"/);
+});
+
+test("NBA navigation omits retired workspace links", () => {
+  const header = fs.readFileSync("website/assets/site-header.js", "utf8");
+  const nbaBlock = header.slice(header.indexOf("const nbaItems"), header.indexOf("const nhlItems"));
+  assert.doesNotMatch(nbaBlock, /Game Lab|Availability|Player Board/);
+  assert.doesNotMatch(header, /\[\["NBA Home"[^\n]+Game Lab/);
 });
 
 test("notebook theme preserves readable data typography and responsive paper", () => {

@@ -78,14 +78,11 @@
   const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab"];
   const nbaItems = [
     ["NBA Home","./nba.html#dashboard",["/nba.html"]],
-    ["Game Lab","./nba.html#games",[]],
-    ["Player Board","./nba.html#players",[]],
-    ["Availability","./nba.html#availability",[]],
     ["Results","./nba-results.html",["/nba-results.html"]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nbaPrimaryOrder = ["NBA Home", "Game Lab", "Player Board", "Availability", "Results"];
+  const nbaPrimaryOrder = ["NBA Home", "Results"];
   const nhlItems = [
     ["NHL Home","./nhl.html#dashboard",["/nhl.html"]],
     ["Matchups","./nhl.html#games",[]],
@@ -99,8 +96,6 @@
   const generalItems = [
     ["Home","./index.html",["/index.html","/"]],
     ["Sponsor","./sponsor.html",["/sponsor.html"]],
-    ["MLB","./mlb.html",[]],
-    ["WNBA","./wnba.html",[]],
     ["NFL","./nfl.html",[]],
     ["College Football","./cfb.html",["/cfb.html"]],
     ["NBA","./nba.html",[]],
@@ -109,7 +104,7 @@
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "NHL", "My Account"];
+  const generalPrimaryOrder = ["Home", "NFL", "College Football", "NBA", "NHL", "My Account"];
   const generalPaths = new Set(["/", "/index.html", "/sponsor.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/cfb.html",
@@ -338,7 +333,7 @@
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
-          ? [["NBA Home","./nba.html#dashboard"],["Game Lab","./nba.html#games"],["Player Board","./nba.html#players"],["Results","./nba-results.html"]]
+          ? [["NBA Home","./nba.html#dashboard"],["Results","./nba-results.html"]]
           : section === "nhl"
             ? [["NHL Home","./nhl.html#dashboard"],["Matchups","./nhl.html#games"],["Goal Scorers","./nhl.html#goals"],["Shots","./nhl.html#shots"],["Live Ice","./nhl.html#live"]]
           : section === "mlb"
