@@ -86,6 +86,24 @@ function priceCell(row) {
   if (!row.line) return '<span class="no-line">No verified line</span>';
   return `<b>${fmt(row.line.line)}</b><small>${esc(row.line.book)} · O ${row.line.overOdds > 0 ? "+" : ""}${row.line.overOdds}</small>`;
 }
+function bestPlayerAngle(card) {
+  return MARKETS.filter(([market]) => !["firstBasket", "doubleDouble", "tripleDouble"].includes(market)).map(([market, label]) => {
+    const tier = tierFor(card, market), baseline = baselineFor(card, market);
+    const values = (card.recentGames || []).slice(0, 5).map(game => gameValue(game, market));
+    const average = values.length === 5 && values.every(value => value !== null) ? values.reduce((sum, value) => sum + value, 0) / 5 : null;
+    const score = ({ hot: 4, good: 3, sleeper: 2, cold: 1, unrated: 0 }[tier.key] || 0) * 100 + (average !== null && number(baseline) !== null ? average - Number(baseline) : 0);
+    return { label, tier, average, score };
+  }).sort((a, b) => b.score - a.score)[0];
+}
+function teamPickBoards() {
+  const cardsByGame = new Map();
+  state.data.cards.forEach(card => cardsByGame.set(String(card.gameId), [...(cardsByGame.get(String(card.gameId)) || []), card]));
+  return `<section class="team-picks"><div class="feature-heading"><div><span>Best picks by matchup</span><h2>Five to look at</h2></div><p>Each player appears once with his strongest last-five category. Form evidence, not a promise.</p></div><div class="team-pick-grid">${state.data.games.map(game => { const picks = (cardsByGame.get(String(game.gameId)) || []).map(card => ({ card, angle: bestPlayerAngle(card) })).filter(row => row.angle?.tier.key !== "unrated").sort((a, b) => b.angle.score - a.angle.score).slice(0, 5); return `<article class="team-pick-card"><header><div><span>Five to look at</span><h3>${esc(gameLabel(game))}</h3></div><small>${et(game.gameTimeUTC)} ET</small></header><ol>${picks.map((row, index) => `<li class="${row.angle.tier.key}"><b>${index + 1}</b><div><strong>${esc(row.card.player)}</strong><small>${esc(row.card.team)} · ${esc(row.angle.label)} · L5 avg ${fmt(row.angle.average)}</small></div><span>${esc(row.angle.tier.label)}</span></li>`).join("") || '<li class="empty-pick">Waiting for five verified games.</li>'}</ol></article>`; }).join("")}</div></section>`;
+}
+function vulnerableDefenses() {
+  const defenses = [...new Map(state.data.cards.map(card => [card.opponent, card.matchup?.defense]).filter(([, defense]) => defense && number(defense.pointsAllowed) !== null)).values()].sort((a, b) => Number(b.rankPointsAllowed || 0) - Number(a.rankPointsAllowed || 0)).slice(0, 5);
+  return `<section class="vulnerability-board"><div class="feature-heading"><div><span>Defense targets</span><h2>Most vulnerable defenses</h2></div><p>Ranked by verified points allowed on today’s slate.</p></div><div class="vulnerability-grid">${defenses.map((defense, index) => `<article><b>${String(index + 1).padStart(2, "0")}</b><div><strong>${esc(defense.opponent)}</strong><span>${fmt(defense.pointsAllowed)} points allowed</span><small>NBA rank ${esc(defense.rankPointsAllowed)} · ${esc(defense.defensiveTier)}</small></div></article>`).join("") || '<div class="empty">Defense context is not available for this slate.</div>'}</div></section>`;
+}
 function standardBoard() {
   const rows = playerRows();
   const binary = state.market === "doubleDouble" || state.market === "tripleDouble";
@@ -103,7 +121,7 @@ function showPlayer(id) {
 }
 function render() {
   if (!state.data) return;
-  $("#viewRoot").innerHTML = `<div class="slate-heading"><div><span>Today (ET)</span><strong>${esc(state.data.date)}</strong></div><small>Updated ${et(state.data.fetchedAt)} ET</small></div>${gameChips()}${marketTabs()}${state.market === "firstBasket" ? firstBasketBoard() : standardBoard()}`;
+  $("#viewRoot").innerHTML = `<div class="slate-heading"><div><span>Today (ET)</span><strong>${esc(state.data.date)}</strong></div><small>Updated ${et(state.data.fetchedAt)} ET</small></div>${teamPickBoards()}${vulnerableDefenses()}${gameChips()}${marketTabs()}${state.market === "firstBasket" ? firstBasketBoard() : standardBoard()}`;
   $("#playerSearch")?.addEventListener("input", event => { state.query = event.target.value; render(); const input = $("#playerSearch"); input.focus(); input.setSelectionRange(state.query.length, state.query.length); });
   $("#tierFilter")?.addEventListener("change", event => { state.tier = event.target.value; render(); });
 }
