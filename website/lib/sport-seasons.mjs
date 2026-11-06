@@ -5,6 +5,7 @@ export const sportSeasons = {
   nfl: { start: '09-01', end: '02-15' },
   cfb: { start: '08-20', end: '01-31' },
   wnba: { start: '05-01', end: '10-31' },
+  ncaam: { start: '11-01', end: '04-15' },
   nba: { start: '10-15', end: '06-30' },
   nhl: { start: '10-01', end: '06-30' },
 };

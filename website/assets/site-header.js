@@ -76,6 +76,15 @@
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
   const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab"];
+  const ncaamItems = [
+    ["NCAAM Home", "./ncaam.html", ["/ncaam.html"]],
+    ["Model Picks", "./ncaam.html#picks", []],
+    ["Matchups", "./ncaam.html#games", []],
+    ["Results", "./ncaam.html#results", []],
+    ["My Account", "./account.html", ["/account.html"]],
+    ["Disclaimer", "./disclaimer.html", ["/disclaimer.html"]]
+  ];
+  const ncaamPrimaryOrder = ["NCAAM Home", "Model Picks", "Matchups", "Results"];
   const nbaItems = [
     ["NBA Home","./nba.html#dashboard",["/nba.html"]],
     ["Results","./nba-results.html",["/nba-results.html"]],
@@ -100,11 +109,12 @@
     ["College Football","./cfb.html",["/cfb.html"]],
     ["NBA","./nba.html",[]],
     ["NHL","./nhl.html",[]],
+    ["NCAAM","./ncaam.html",[]],
     ["My Account","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const generalPrimaryOrder = ["Home", "NFL", "College Football", "NBA", "NHL", "My Account"];
+  const generalPrimaryOrder = ["Home", "NFL", "College Football", "NBA", "NHL", "NCAAM", "My Account"];
   const generalPaths = new Set(["/", "/index.html", "/sponsor.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/cfb.html",
@@ -152,7 +162,7 @@
   ]);
 
   function isProtectedPath(path){
-    return protectedPaths.has(path) || /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf)(?:-|\.|\/)/.test(path);
+    return protectedPaths.has(path) || /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf|ncaam)(?:-|\.|\/)/.test(path);
   }
 
   function itemIsActive(activePaths, path){
@@ -160,6 +170,7 @@
   }
 
   function sectionForPath(path){
+    if (path === "/ncaam.html") return "ncaam";
     if (path === "/cfb.html") return "cfb";
     if (path === "/nfl.html" || path.startsWith("/nfl-")) return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
@@ -202,8 +213,8 @@
     const path = window.location.pathname;
     const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : (document.body?.classList.contains("tsl-nhl-page") ? "nhl" : ""));
     const section = bodySection || sectionForPath(path);
-    const navItems = section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "nhl" ? nhlItems : section === "general" ? generalItems : mlbItems;
-    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "nhl" ? nhlPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
+    const navItems = section === "ncaam" ? ncaamItems : section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "nhl" ? nhlItems : section === "general" ? generalItems : mlbItems;
+    const navPrimaryOrder = section === "ncaam" ? ncaamPrimaryOrder : section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "nhl" ? nhlPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = `tsl-site-header tsl-${section}-header`;

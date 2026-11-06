@@ -62,7 +62,7 @@
 
   function isProtected(){
     const path = normalizedPath();
-    const sportPrefix = /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf)(?:-|\.|\/)/.test(path);
+    const sportPrefix = /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf|ncaam)(?:-|\.|\/)/.test(path);
     return (protectedPaths.has(path) || sportPrefix) && !openPaths.has(path);
   }
 

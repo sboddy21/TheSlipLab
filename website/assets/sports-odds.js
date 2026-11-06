@@ -42,7 +42,7 @@ async function mountCardPrice(element,identity){
  try{const [data,games]=await Promise.all([feed(identity.sport),canonicalFeed(identity.sport)]);const best=bestPlayerPrice(playerQuotes(data,games,identity),identity.sport);slot.innerHTML=best?priceSummary(best,identity.sport):'<span>No verified current player price</span>';}
  catch{slot.innerHTML='<span>Player odds unavailable</span>';}
 }
-function sportForPage(){const p=location.pathname;return p.includes('cfb')?'NCAAF':p.includes('wnba')?'WNBA':p.includes('nba')?'NBA':p.includes('nfl')?'NFL':/mlb|full-board|home-run|homer|hits|total-bases|pitcher|rbi|ai-2|quick-target|hr-decision|command-center|heat-check|matchup-lab|power-zones|platoon-edge|player-intelligence|streak-lab|bullpen-collapse|ai-says/.test(p)?'MLB':null;}
+function sportForPage(){const p=location.pathname;return p.includes('ncaam')?'NCAAM':p.includes('cfb')?'NCAAF':p.includes('wnba')?'WNBA':p.includes('nba')?'NBA':p.includes('nfl')?'NFL':/mlb|full-board|home-run|homer|hits|total-bases|pitcher|rbi|ai-2|quick-target|hr-decision|command-center|heat-check|matchup-lab|power-zones|platoon-edge|player-intelligence|streak-lab|bullpen-collapse|ai-says/.test(p)?'MLB':null;}
 async function init(){
  const style=document.createElement('link');style.rel='stylesheet';style.href='./assets/sports-odds.css?v=player-card-prices-20260904';document.head.append(style);
  window.TSLOdds={mountPlayer};window.dispatchEvent(new Event('tsl-odds-ready'));
