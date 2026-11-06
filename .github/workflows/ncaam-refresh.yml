@@ -16,12 +16,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
-          fetch-depth: 0
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /package.json
+            /package-lock.json
+            /scripts/
+            /tests/ncaam*.mjs
+            /website/assets/odds-core.mjs
+            /website/lib/data-freshness.mjs
+            /website/lib/current-season.mjs
+            /website/data/ncaam*.json
+            /website/data/odds_ncaam.json
+            /data/ncaam/current-history.json
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run ncaam:test
       - run: npm run ncaam:refresh
         env:
