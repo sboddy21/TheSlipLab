@@ -1,0 +1,28 @@
+name: Recover Stale Sports Data
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '11,26,41,56 * * * *'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: refresh-watchdog-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check recovery safeguards
+        run: node --test tests/refresh-watchdog.test.mjs
+      - name: Recover missing or expired in-season feeds
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/refresh-watchdog.mjs
