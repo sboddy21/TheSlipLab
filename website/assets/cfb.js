@@ -42,9 +42,9 @@ function aiPayload(g){const ml=moneylineProjection(g.projection,snapshot?.calibr
 async function loadGenuineAi(){
   const games=(snapshot?.games||[]).filter(upcoming).filter(g=>g.projection);if(!games.length)return;
   aiState='loading';renderGames();
-  try{const token=await accountToken(),version=snapshot.generatedAt||'current';for(let i=0;i<games.length;i+=8){const rows=games.slice(i,i+8),key=`tsl_cfb_ai_v2_${version}_${i}`;let result=JSON.parse(localStorage.getItem(key)||'null');if(!result?.games?.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({games:rows.map(aiPayload)})});result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'NCAAF AI analysis unavailable');localStorage.setItem(key,JSON.stringify(result))}for(const row of result.games)aiByGame.set(String(row.gameId),row);renderGames();renderIntelligenceBoard()}
+  try{const token=await accountToken(),version=snapshot.generatedAt||'current';for(let i=0;i<games.length;i+=8){const rows=games.slice(i,i+8),key=`tsl_cfb_ai_v2_${version}_${i}`;let result=JSON.parse(localStorage.getItem(key)||'null');if(!result?.games?.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',signal:AbortSignal.timeout(30000),headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({games:rows.map(aiPayload)})});result=await response.json().catch(()=>({}));if(!response.ok)throw Error(result.error||'NCAAF AI analysis unavailable');localStorage.setItem(key,JSON.stringify(result))}for(const row of result.games)aiByGame.set(String(row.gameId),row);renderGames();renderIntelligenceBoard()}
     const signal=boardRows(games,snapshot.calibration).sort((a,b)=>b.maxGap-a.maxGap).slice(0,6).map(row=>row.game),slateKey=`tsl_cfb_slate_ai_v1_${version}`;slateAi=JSON.parse(localStorage.getItem(slateKey)||'null');
-    if(!slateAi?.overview&&signal.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mode:'slate',games:signal.map(aiPayload)})});slateAi=await response.json().catch(()=>({}));if(!response.ok)throw Error(slateAi.error||'NCAAF weekly analysis unavailable');localStorage.setItem(slateKey,JSON.stringify(slateAi))}
+    if(!slateAi?.overview&&signal.length){const response=await fetch('/api/cfb-ai-analysis',{method:'POST',signal:AbortSignal.timeout(30000),headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({mode:'slate',games:signal.map(aiPayload)})});slateAi=await response.json().catch(()=>({}));if(!response.ok)throw Error(slateAi.error||'NCAAF weekly analysis unavailable');localStorage.setItem(slateKey,JSON.stringify(slateAi))}
     aiState='ready';renderGames();renderIntelligenceBoard();
   }catch(error){console.error('NCAAF OpenAI:',error);aiState='error';renderGames();renderIntelligenceBoard()}
 }
@@ -218,8 +218,8 @@ $('leans').addEventListener('click',event=>{
 });
 $('refresh-now').addEventListener('click',()=>refreshLive());
 await load();
-await loadGenuineAi();
 await refreshLive();
+void loadGenuineAi();
 setInterval(()=>{if(!document.hidden)refreshLive();},60000);
 setInterval(async()=>{if(!document.hidden){await load();await refreshLive();}},300000);
 setInterval(()=>{if(board){if(!fresh())renderGames();renderSummary();}},10000);
