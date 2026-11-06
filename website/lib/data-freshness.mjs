@@ -10,11 +10,8 @@ export function sourceDependencies(file) {
   if (/^(mlb_(?:home_runs|hits|total_bases|rbis|pitcher_strikeouts)|hr_(?:decision_center|ai_breakdowns))\.json$/.test(file)) {
     return ['mlb_games_today.json', 'mlb_player_pool.json', 'mlb_weather.json', ...(file === 'hr_decision_center.json' ? ['mlb_market_odds.json'] : [])];
   }
-  if (file === 'cfb_board.json') return ['odds_ncaaf.json'];
-  if (file === 'mlb_market_odds.json') return ['odds_mlb.json'];
   if (file === 'nfl_market_lines.json') return ['odds_nfl.json'];
   if (file === "nba_market_lines.json") return ["odds_nba.json"];
-  if (file === "wnba_market_lines.json") return ["odds_wnba.json"];
   if (file.startsWith("nba_") && !["nba_games_today.json", "nba_history.json", "nba_availability.json", "nba_player_pool.json"].includes(file)) {
     return ["nba_games_today.json", "nba_history.json", "nba_availability.json", "nba_player_pool.json", ...(file === "nba_verified_markets.json" ? ["nba_market_lines.json", "odds_nba.json"] : [])];
   }
@@ -22,7 +19,7 @@ export function sourceDependencies(file) {
     return ["wnba_games_today.json", "wnba_player_baselines.json", "wnba_team_baselines.json", ...(file === "wnba_verified_markets.json" ? ["wnba_market_lines.json", "odds_wnba.json"] : [])];
   }
   if (/^nfl_(?:foundation|markets|decision_center|td_decision_center|receiving_yards_board|matchup_context)\.json$/.test(file)) {
-    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_weather.json", "nfl_usage_baselines.json", "nfl_current_usage.json"];
+    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_usage_baselines.json", "nfl_current_usage.json"];
   }
   return [];
 }
@@ -34,12 +31,11 @@ export async function verifyCurrentDataset(file, payload, { load, now = Date.now
     if (memo.has(name)) return memo.get(name);
     const result = checkDataFreshness(name, data, { now, health });
     if (!result.available || !load) return result;
-    const dependencies = [];
     const next = new Set([...ancestors, name]);
-    for (const dependency of sourceDependencies(name)) {
-      try { dependencies.push({ file: dependency, ...await visit(dependency, await load(dependency), next) }); }
-      catch { dependencies.push({ file: dependency, available: false, reasons: ['missing_source_dependency'] }); }
-    }
+    const dependencies = await Promise.all(sourceDependencies(name).map(async dependency => {
+      try { return { file: dependency, ...await visit(dependency, await load(dependency), next) }; }
+      catch { return { file: dependency, available: false, reasons: ['missing_source_dependency'] }; }
+    }));
     const verified = dependencies.some(row => !row.available)
       ? { ...result, available: false, status: 'unavailable', reasons: ['upstream_data_unavailable'], dependencies }
       : { ...result, dependencies };
@@ -86,6 +82,7 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   function sourceTimes(value, prefix = '') {
     if (!value || typeof value !== 'object') return;
     for (const [key, child] of Object.entries(value)) {
+      if (['archive','history','snapshots','results','settled'].includes(key)) continue;
       const field = prefix ? `${prefix}.${key}` : key;
       if (prefix && nestedTimeFields.has(key) && child != null) timestamps.push({ field, value: child, ...(/quotedAt$/.test(field) ? { maxAgeSeconds: Math.min(policy.maxAgeSeconds, 1200) } : {}) });
       else if (child && typeof child === 'object') sourceTimes(child, field);

@@ -1,4 +1,4 @@
-import fs from 'node:fs/promises';
+import { createPublishedDataReader } from '../lib/published-data.mjs';
 import { attachCfbOdds } from '../../scripts/odds/cfb.mjs';
 import { normalize } from '../../scripts/cfb/core.mjs';
 import { fetchScoreboardRange } from '../../scripts/cfb/espn-scoreboard.mjs';
@@ -8,7 +8,7 @@ export async function fetchLive(fetcher=fetch,now=Date.now()) {
   const end=new Date(start);end.setUTCDate(end.getUTCDate()+6);
   const events=await fetchScoreboardRange(start,end,{fetchImpl:fetcher,retries:2,timeoutMs:4000,strict:true});
   let odds={events:[],quotes:[]};
-  try {odds=JSON.parse(await fs.readFile(new URL('../data/odds_ncaaf.json',import.meta.url),'utf8'));}catch{}
+  try {odds=await createPublishedDataReader()('odds_ncaaf.json');}catch{}
   const normalized=events.map(normalize);
   if(normalized.some(game=>!game))throw new Error('Incomplete scoreboard: invalid game');
   const games=normalized.map(g=>attachCfbOdds(g,odds,now));

@@ -168,6 +168,7 @@ async function refreshLive() {
     const live=await response.json();
     if(live.schemaVersion!==1||!Array.isArray(live.games)||!isFresh(live.retrievedAt))throw new Error('Stale or invalid live feed');
     liveAsOf=live.retrievedAt;liveError=false;
+    if(!snapshot){board={schemaVersion:1,generatedAt:live.retrievedAt,weekStart:live.weekStart,weekEnd:live.weekEnd,games:live.games,archive:[],calibration:{},edgeStatus:{}};$('edition-date').textContent=`${board.weekStart} — ${board.weekEnd}`;}
     if(snapshot){const liveById=new Map(live.games.map(game=>[String(game.id),game]));board={...snapshot,weekStart:live.weekStart,weekEnd:live.weekEnd,games:completeSlate(snapshot.weekStart===live.weekStart?snapshot.games:[],live.games).map(saved=>{
       const current=liveById.get(String(saved.id));if(!current)return saved;
       const merged=mergeLiveGame(current,snapshot.games.find(game=>String(game.id)===String(current.id)),liveAsOf);
@@ -192,7 +193,7 @@ async function load() {
     renderGames(); renderSummary();
   } catch (error) {
     $('health').classList.add('warning');
-    $('health').textContent = 'The college football snapshot could not be loaded. Please reload to try again.';
+    $('health').textContent = 'Checking the current scoreboard. Model projections are unavailable until refreshed.';
     $('games').innerHTML = '<p class="empty">The weekly board is temporarily unavailable.</p>';
     console.error('College football board:',error);
   }

@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     concurrency:
-      group: production-data-writers
+      group: refresh-mlb-${{ github.ref }}
       cancel-in-progress: false
 
     steps:

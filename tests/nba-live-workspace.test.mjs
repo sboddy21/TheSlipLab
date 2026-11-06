@@ -77,7 +77,7 @@ test("NBA workspace exposes the unified props board and dark table contrast", ()
   const styles = fs.readFileSync("website/assets/nba-lab.css", "utf8");
   assert.match(html, /NBA Props/);
   assert.match(script, /function firstBasketBoard\(\)/);
-  assert.match(script, /nba_first_basket\.json/);
+  assert.match(fs.readFileSync("website/assets/nba-board-data.mjs", "utf8"), /nba_first_basket\.json/);
   assert.doesNotMatch(script, /firstBasketWeight|gameTotals/);
   assert.match(script, /CONTEXT ONLY/);
   assert.match(styles, /\.props-table td/);

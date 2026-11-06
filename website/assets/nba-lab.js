@@ -1,8 +1,9 @@
+import { loadNbaBoardData } from './nba-board-data.mjs';
 import { MARKETS, baselineFor, classifyLastFive, gameValue } from "./nba-prop-trends.mjs";
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? "").replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-const number = value => Number.isFinite(Number(value)) ? Number(value) : null;
+const number = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
 const fmt = value => number(value) === null ? "—" : Number(value).toFixed(1);
 const et = value => new Date(value).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit" });
 const image = id => `https://a.espncdn.com/i/headshots/nba/players/full/${encodeURIComponent(id)}.png`;
@@ -13,25 +14,26 @@ async function getJSON(file) {
   if (!response.ok) throw new Error(`${file} unavailable`);
   return response.json();
 }
+let loading = false;
 async function load() {
+  if (loading) return;
+  loading = true;
   try {
-    const files = ["nba_games_today.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json", "nba_assists.json", "nba_threes.json", "nba_first_basket.json"];
-    const [games, cards, points, rebounds, assists, threes, firstBasket] = await Promise.all(files.map(getJSON));
-    const markets = { lines: [], status: "not_loaded" };
-    Object.assign(markets, await getJSON("nba_market_lines.json").catch(() => ({})));
-    state.data = { games: games.games || [], date: games.date, fetchedAt: points.fetchedAt, cards: cards.players || [], firstBasket, markets, models: { points: points.players || [], rebounds: rebounds.players || [], assists: assists.players || [], threes: threes.players || [] } };
+    state.data = await loadNbaBoardData(getJSON);
+    const markets = state.data.markets;
     state.data.cardMap = new Map(state.data.cards.map(card => [String(card.playerId), card]));
     state.data.modelMaps = Object.fromEntries(Object.entries(state.data.models).map(([market, rows]) => [market, new Map(rows.map(row => [String(row.playerId), row]))]));
     state.data.lineMap = new Map((markets.lines || []).map(line => [`${line.playerId}:${line.market}`, line]));
     $("#headerState").textContent = `TODAY · ${state.data.games.length} GAMES`;
-    $("#globalNotice").className = "notice good";
-    $("#globalNotice").innerHTML = `<strong>${state.data.cards.length} players loaded.</strong> ${(markets.lines || []).length ? `${markets.lines.length} verified paired sportsbook lines.` : "No authorized matching sportsbook lines are available, so no prices are being invented."}`;
+    $("#globalNotice").className = state.data.missing.length ? "notice warn" : "notice good";
+    $("#globalNotice").innerHTML = `<strong>${state.data.games.length} current games · ${state.data.cards.length} players loaded.</strong> ${state.data.missing.length ? "Some projection feeds are updating; available markets and current games remain usable." : ""} ${(markets.lines || []).length ? `${markets.lines.length} verified paired sportsbook lines.` : "No authorized matching sportsbook lines are available, so no prices are being invented."}`;
     render();
   } catch (error) {
     $("#globalNotice").className = "notice warn";
     $("#globalNotice").textContent = `NBA data unavailable: ${error.message}`;
-    $("#viewRoot").innerHTML = '<div class="empty">The board will not substitute stale or fabricated player data.</div>';
-  }
+    state.data = null;
+    $("#viewRoot").innerHTML = '<div class="empty">The current source could not be reached. This page retries automatically; you can also use Refresh.</div>';
+  } finally { loading = false; }
 }
 
 const gameLabel = game => `${game.awayTeam.abbreviation} @ ${game.homeTeam.abbreviation}`;
@@ -56,7 +58,9 @@ function tierFor(card, market) {
 }
 function lineFor(card, market) {
   const supported = { points: "points", rebounds: "rebounds", assists: "assists", threes: "threes" }[market];
-  return supported ? state.data.lineMap.get(`${card.playerId}:${supported}`) : null;
+  const line = supported ? state.data.lineMap.get(`${card.playerId}:${supported}`) : null;
+  const time = Date.parse(line?.quotedAt || line?.fetchedAt || "");
+  return Number.isFinite(time) && time <= Date.now() + 1000 && Date.now() - time < 1200000 ? line : null;
 }
 function playerRows() {
   return state.data.cards.map(card => {
@@ -133,3 +137,6 @@ document.addEventListener("click", event => {
 });
 $("#closePlayer").addEventListener("click", () => $("#playerDialog").close());
 load();
+
+setInterval(() => { if (!document.hidden) load(); }, 60000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });

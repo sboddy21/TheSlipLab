@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import handler from "../website/api/member-data.mjs";
+import { createMemberDataHandler } from "../website/api/member-data.mjs";
+import { createPublishedDataReader } from "../website/lib/published-data.mjs";
+const handler = createMemberDataHandler({ readerFactory: () => createPublishedDataReader({remote:false}) });
 
 test("public API withholds stale data, including HEAD, and serves current data without changing shape", async () => {
   const original = process.cwd();

@@ -4,11 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { NHL_API, NHL_STATS, easternDate, normalizeGame, projectionFor, projectGameTotal, isLive, isFinal } from './core.mjs';
 
 const OUT = new URL('../../website/data/nhl_board.json', import.meta.url);
-const dateArg = process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg));
-const date = dateArg || easternDate();
 
+export async function buildBoard({ date = easternDate(), fetcher = fetch } = {}) {
 async function json(url) {
-  const response = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': 'TheSlipLab/1.0' }, signal: AbortSignal.timeout(20000) });
+  const response = await fetcher(url, { headers: { Accept: 'application/json', 'User-Agent': 'TheSlipLab/1.0' }, signal: AbortSignal.timeout(20000) });
   if (!response.ok) throw new Error(`${new URL(url).hostname} HTTP ${response.status}`);
   return response.json();
 }
@@ -94,12 +93,12 @@ async function liveDetails(games) {
   return { goals: goals.sort((a, b) => b.eventId - a.eventId), leaders: leaders.sort((a, b) => b.shots - a.shots) };
 }
 
-export async function buildBoard() {
+
   const generatedAt = new Date().toISOString();
   const games = await schedule();
   const teams = [...new Set(games.flatMap(game => [game.away.abbreviation, game.home.abbreviation]).filter(Boolean))];
   const [history, rosters, live, totals] = await Promise.all([
-    currentSkaters(), Promise.all(teams.map(roster)), liveDetails(games), marketTotals()
+    games.length ? currentSkaters() : Promise.resolve({seasonId:Number(`${currentSeasonStart('nhl', `${date}T12:00:00Z`)}${currentSeasonStart('nhl', `${date}T12:00:00Z`)+1}`),rows:[]}), Promise.all(teams.map(roster)), liveDetails(games), games.length ? marketTotals() : Promise.resolve(new Map())
   ]);
   const current = new Map(rosters.flat().map(player => [String(player.playerId), player]));
   const players = history.rows.filter(player => Number(player.gamesPlayed) >= 1 && current.has(String(player.playerId))).map(player => {
@@ -126,7 +125,7 @@ export async function buildBoard() {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   try {
-    const board = await buildBoard();
+    const board = await buildBoard({date: process.argv.find(arg => /^\d{4}-\d{2}-\d{2}$/.test(arg)) || easternDate()});
     if (board.games.length && board.players.length < 20) throw new Error(`Roster/history join produced only ${board.players.length} players`);
     await fs.mkdir(new URL('../../website/data/', import.meta.url), { recursive: true });
     await fs.writeFile(new URL(`${OUT.href}.tmp`), `${JSON.stringify(board, null, 2)}\n`);

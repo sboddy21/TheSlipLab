@@ -1,4 +1,8 @@
-import fs from "node:fs/promises";
+import { buildMarketLines } from '../../scripts/nba/build_nba_market_lines.mjs';
+import { loadNflWorkspace } from '../lib/nfl-live.mjs';
+import { prepareCurrentMarkets } from '../lib/current-markets.mjs';
+import { loadNhlLiveBoard } from '../lib/nhl-live.mjs';
+import { createPublishedDataReader } from '../lib/published-data.mjs';
 import path from "node:path";
 import { verifyCurrentDataset } from "../lib/data-freshness.mjs";
 import { loadNbaLiveFile } from "../lib/nba-live.mjs";
@@ -116,7 +120,8 @@ async function authorize(request) {
   return { allowed: true };
 }
 
-export default async function handler(request, response) {
+export function createMemberDataHandler({ readerFactory = createPublishedDataReader } = {}) {
+return async function handler(request, response) {
   if (request.method !== "GET" && request.method !== "HEAD") {
     response.setHeader("Allow", "GET, HEAD");
     return json(response, 405, { error: "Method not allowed" });
@@ -141,40 +146,23 @@ export default async function handler(request, response) {
       return json(response, 200, await loadNbaLiveFile(file));
     }
 
-    const dataRoots = [
-      path.resolve(process.cwd(), "website", "data"),
-      path.resolve(process.cwd(), "data")
-    ];
-    let body = null;
-    for (const dataRoot of dataRoots) {
-      const filePath = path.resolve(dataRoot, file);
-      if (filePath !== dataRoot && !filePath.startsWith(`${dataRoot}${path.sep}`)) continue;
-      try {
-        body = await fs.readFile(filePath, "utf8");
-        break;
-      } catch (error) {
-        if (error?.code !== "ENOENT") throw error;
-      }
+    if (file === 'nfl_workspace.json') return json(response, 200, await loadNflWorkspace());
+
+    if (file === 'nhl_board.json') {
+      const board = await loadNhlLiveBoard();
+      return json(response, 200, board);
     }
-    if (body === null) return json(response, 404, { error: "Data file not found" });
-    const payload = JSON.parse(body);
+
+    const readPublished = readerFactory();
+    const load = async name => prepareCurrentMarkets(name, await readPublished(name));
+    let payload;
+    if (file === 'nba_market_lines.json') {
+      const [games, players, odds] = await Promise.all(['nba_games_today.json','nba_player_pool.json','odds_nba.json'].map(load));
+      payload = { ...buildMarketLines(games, players, odds), sourceFetchedAt: odds.retrievedAt };
+    } else payload = await load(file);
     let health = null;
-    {
-      for (const dataRoot of dataRoots) {
-        try { health = JSON.parse(await fs.readFile(path.join(dataRoot, "health_status.json"), "utf8")); break; }
-        catch { /* A missing receipt cannot certify current data. */ }
-      }
-    }
-    const freshness = await verifyCurrentDataset(file, payload, {
-      health,
-      load: async dependency => {
-        for (const dataRoot of dataRoots) {
-          try { return JSON.parse(await fs.readFile(path.join(dataRoot, dependency), "utf8")); }
-          catch (error) { if (error.code !== "ENOENT") throw error; }
-        }
-        throw new Error("Source dependency missing");
-      }
-    });
+    try { if (Array.isArray(payload)) health = await load('health_status.json'); } catch { /* Missing receipts cannot certify legacy arrays. */ }
+    const freshness = await verifyCurrentDataset(file, payload, { health, load });
     if (!freshness.available) {
       response.setHeader("Retry-After", "60");
       return json(response, 503, {
@@ -191,9 +179,12 @@ export default async function handler(request, response) {
     if (!PUBLIC_FILES.has(file)) response.setHeader("Vary", "Authorization");
     response.setHeader("Content-Type", "application/json; charset=utf-8");
     if (request.method === "HEAD") return response.status(200).end();
-    return response.status(200).send(body);
+    return response.status(200).send(JSON.stringify(payload));
   } catch (error) {
     if (error?.code === "ENOENT") return json(response, 404, { error: "Data file not found" });
     return json(response, 503, { error: error.message || "Member data unavailable" });
   }
 }
+
+}
+export default createMemberDataHandler();

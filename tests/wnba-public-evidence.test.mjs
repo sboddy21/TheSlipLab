@@ -24,8 +24,10 @@ test('landing page does not advertise MLB or WNBA as live before current data is
  const landing=fs.readFileSync('website/index.html','utf8');
  assert.doesNotMatch(landing,/<strong>WNBA<\/strong><span>Live now<\/span>/);
  assert.doesNotMatch(landing,/<strong>MLB<\/strong><span>Live now<\/span>/);
- assert.match(landing,/health_status\.json/);
- assert.match(landing,/Recommendations withheld/);
+ assert.match(landing,/landing-seasons\.js/);
+ const seasons=fs.readFileSync('website/assets/landing-seasons.js','utf8');
+ assert.match(seasons,/isSportInSeason/);
+ assert.match(seasons,/Offseason/);
 });
 test('scheduled refreshes cannot be blocked by presentation tests or hide attachment failures',()=>{
  const wnbaWorkflow=fs.readFileSync('.github/workflows/wnba-refresh.yml','utf8');

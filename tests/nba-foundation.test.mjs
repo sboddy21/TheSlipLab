@@ -30,7 +30,8 @@ test("NBA history uses one league-wide game-log request", () => {
   const source = fs.readFileSync("scripts/nba/build_nba_history.js", "utf8");
   assert.match(source, /stats\/leaguegamelog/);
   assert.match(source, /parseEspnGameLog/);
-  assert.match(source, /previous_season_preseason/);
+  assert.match(source, /const season = currentSeason/);
+  assert.doesNotMatch(source, /isPreseasonSlate\(players\) \? previousSeason/);
   assert.match(source, /verified_core_history_cache/);
   assert.match(source, /retainedHistoryCount/);
 });
@@ -106,7 +107,8 @@ test("generated NBA artifacts remain internally consistent", () => {
 test("NBA publication gate accepts the generated verified boards", () => {
   const receipt = validateGeneratedNbaPublication();
   assert.equal(receipt.status, "passed");
-  assert.ok(receipt.publicationEligibleCount > 0);
+  assert.ok(receipt.publicationEligibleCount >= 0);
+  if (!receipt.publicationEligibleCount) assert.ok(["no_games", "context_only_no_verified_players"].includes(receipt.projectionStatus));
   assert.ok(Object.values(receipt.boardCounts).every(count => count === receipt.publicationEligibleCount));
 });
 

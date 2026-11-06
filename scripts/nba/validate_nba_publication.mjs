@@ -47,7 +47,8 @@ export function validateNbaPublication(payloads) {
   if (games.length > 0) {
     assert(poolRows.length > 0, "scheduled slate has no players");
     assert(pool.teams?.length === games.length * 2, "scheduled slate does not have two resolved teams per game");
-    assert(eligibleKeys.size > 0, "scheduled slate has no publication-eligible players");
+    // No verified projections is a valid context-only slate, not a reason to
+    // stop publishing current games, rosters and availability.
   }
 
   for (const row of poolRows) {
@@ -105,6 +106,7 @@ export function validateNbaPublication(payloads) {
     rosterPlayerCount: poolRows.length,
     availabilityPlayerCount: availabilityRows.length,
     publicationEligibleCount: eligibleKeys.size,
+    projectionStatus: !games.length ? "no_games" : eligibleKeys.size ? "verified_players_available" : "context_only_no_verified_players",
     boardCounts,
     checks: [
       "current slate identities",
