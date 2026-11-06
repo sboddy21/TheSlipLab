@@ -31,5 +31,4 @@ jobs:
           git add website/data/cfb_board.json data/cfb/live-history.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh college football board"
-          git pull origin "$GITHUB_REF_NAME" --rebase
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          node scripts/publish-refresh.mjs

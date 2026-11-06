@@ -8,7 +8,8 @@ export async function loadNbaBoardData(get) {
   const live=await get('nba_workspace.json');
   if(!Array.isArray(live.games))throw Error('Current NBA schedule unavailable');
   slate={date:live.date,fetchedAt:live.fetchedAt,games:live.games.map(game=>({gameId:game.id,gameTimeUTC:game.date,gameStatusText:game.status,awayTeam:game.away,homeTeam:game.home}))};
-  cards={players:(live.players||[]).map(player=>({...player,playerId:player.id,team:player.team,gameStatusText:'Current roster · projections pending',recentGames:[]}))};
+  const byGame=new Map(slate.games.map(game=>[String(game.gameId),game]));
+  cards={players:(live.players||[]).map(player=>({...player,playerId:player.id,team:player.team,gameTimeUTC:byGame.get(String(player.gameId))?.gameTimeUTC,gameStatusText:'Current roster · projections pending',recentGames:[]}))};
  }
  const ids=new Set(slate.games.map(game=>String(game.gameId)));
  const currentRows=rows=>(rows||[]).filter(row=>ids.has(String(row.gameId)));

@@ -79,3 +79,17 @@ test('NFL direct scoreboard preserves postseason games without using a regular-s
  const result=await loadNflWorkspace({now:Date.parse('2027-01-17T16:00:00Z'),fetcher:async()=>({ok:true,json:async()=>({leagues:[{slug:'nfl',season:{year:2026}}],week:{number:2},events:[{id:'g1',date:'2027-01-17T20:00:00Z',season:{type:3},competitions:[{competitors:[{homeAway:'home',team:{id:'1',abbreviation:'KC'}},{homeAway:'away',team:{id:'2',abbreviation:'BUF'}}]}]}]})})});
  assert.equal(result.games.length,1);assert.equal(result.seasonType,3);assert.equal(result.week,2);
 });
+
+test('publisher resynchronizes a racing commit without overwriting another sport',async()=>{
+ const {publishRefresh}=await import('../scripts/publish-refresh.mjs');
+ const commands=[];let pushes=0;
+ await publishRefresh({branch:'main',wait:async()=>{},run:args=>{commands.push(args);return args[0]==='push'&&++pushes===1?1:0;}});
+ assert.equal(pushes,2);assert.equal(commands.filter(args=>args[0]==='pull').length,2);assert.ok(!commands.flat().some(arg=>arg.includes('force')));
+ await assert.rejects(publishRefresh({branch:'main',wait:async()=>{},run:args=>args[0]==='pull'?1:0}),/conflict review/);
+});
+test('a scheduled NBA slate with no eligible model rows still publishes verified current context',async()=>{
+ const {validateNbaPublication}=await import('../scripts/nba/validate_nba_publication.mjs');
+ const player={gameId:'1',playerId:'p',player:'Test',teamAbbr:'BOS',opponentAbbr:'ATL'};
+ const receipt=validateNbaPublication({slate:{date:'2026-11-06',games:[{gameId:'1'}]},pool:{players:[player],playerCount:1,errors:[],teams:[{},{}]},availability:{players:[{...player,team:'BOS',availabilityStatus:'UNKNOWN'}]},minutes:{players:[{...player,publicationEligible:false,expectedMinutes:0}]},boards:{'nba_points.json':{players:[]}}});
+ assert.equal(receipt.projectionStatus,'context_only_no_verified_players');assert.equal(receipt.publicationEligibleCount,0);assert.equal(receipt.status,'passed');
+});

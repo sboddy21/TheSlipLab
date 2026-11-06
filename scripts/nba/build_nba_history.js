@@ -417,9 +417,7 @@ async function main() {
     if (history.gamesPlayed === 0 && espnSummary) {
       history = historyFromSeasonSummary(espnSummary);
     }
-    if (history.gamesPlayed === 0 && cachedHistory.has(String(player.playerId))) {
-      history = cachedHistory.get(String(player.playerId));
-    }
+
     return {
       playerId: player.playerId,
       player: safeName(player.player),
@@ -435,6 +433,8 @@ async function main() {
     };
   });
   const retainedHistoryCount = rows.filter(player => /history_cache/.test(String(player.sourceKind))).length;
+  const hasCurrentData = rows.some(row => row.gamesPlayed > 0);
+  const failures = hasCurrentData ? [] : errors;
   const out = {
     sport: "NBA",
     version: "1.1",
@@ -445,13 +445,15 @@ async function main() {
     currentSeason,
     baselineMode: "current_season",
     playerCount: rows.length,
-    availability: !players.length ? "no_games_scheduled" : errors.length ? "history_unavailable" : "players_available",
-    errorCount: errors.length,
+    availability: !players.length ? "no_games_scheduled" : hasCurrentData ? "players_available" : "history_unavailable",
+    errorCount: failures.length,
+    warnings: hasCurrentData ? errors : [],
+    missingCurrentHistoryCount: rows.filter(row => !row.gamesPlayed).length,
     leagueGameLogCount: nbaLeagueGameLogCount,
     espnGameLogCount,
     espnSummaryCount: espnSummaryByPlayer.size,
     retainedHistoryCount,
-    errors,
+    errors: failures,
     players: rows
   };
 

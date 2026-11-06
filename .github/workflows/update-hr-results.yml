@@ -96,12 +96,4 @@ jobs:
           git add website/data/mlb_context_factors.json website/data/mlb_results.json website/data/mlb_results_previous.json website/data/hr_results_history.json website/data/mlb_ball_carry_index.json website/data/hr_calibration_report.json website/data/hr_ai_hof.json || true
           git commit -m "Update HR results" || echo "No changes to commit"
 
-          for i in 1 2 3; do
-            git pull origin "${GITHUB_REF_NAME}" --rebase || true
-            git push origin HEAD:"${GITHUB_REF_NAME}" && exit 0
-            echo "Push failed. Retrying..."
-            sleep 10
-          done
-
-          echo "Push failed after retries"
-          exit 1
+          node scripts/publish-refresh.mjs
