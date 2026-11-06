@@ -2,7 +2,7 @@ import { currentSeasonStart, seasonStart } from './current-season.mjs';
 // Shared by the data endpoint and the offline audit. Never use deployment time
 // or filesystem mtime as evidence that a provider's data is current.
 const ARCHIVES = /(?:^|_)(?:backtest|calibration|results|projection_history)(?:_|\.)|^hr_ai_(?:history|hof)\.|^cfb_daily_(?:evaluation|predictions)\./;
-const REFERENCE = new Set(["mlb_park_shapes.json", "mlb_park_factors.json"]);
+const REFERENCE = new Set(["ncaam_validation.json", "ncaam_model.json", "mlb_park_shapes.json", "mlb_park_factors.json"]);
 const MONITORS = new Set(["health_status.json", "nfl_data_health.json", "nfl_launch_audit.json", "nfl_public_status.json"]);
 
 export function sourceDependencies(file) {
