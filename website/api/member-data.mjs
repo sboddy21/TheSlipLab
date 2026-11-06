@@ -159,7 +159,7 @@ export default async function handler(request, response) {
     if (body === null) return json(response, 404, { error: "Data file not found" });
     const payload = JSON.parse(body);
     let health = null;
-    if (Array.isArray(payload)) {
+    {
       for (const dataRoot of dataRoots) {
         try { health = JSON.parse(await fs.readFile(path.join(dataRoot, "health_status.json"), "utf8")); break; }
         catch { /* A missing receipt cannot certify current data. */ }

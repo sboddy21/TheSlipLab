@@ -47,7 +47,14 @@ const byDate=Object.fromEntries([...new Set(test.map(r=>r.slateDate))].map(date=
 }));
 const wnba=read('wnba_calibration'),players=read('wnba_player_baselines'),lines=read('wnba_market_lines');
 const cfb=read('cfb_daily_evaluation');
+const nba=read('nba_calibration'), nbaBacktest=read('nba_model_backtest'), nfl=read('nfl_current_usage'), nhl=read('nhl_board');
 const out={generatedAt:new Date().toISOString(),status:'no_sport_has_demonstrated_a_reliable_betting_edge',
+ nba:{projectionMetrics:nba.markets,releaseStatus:nba.releaseStatus,pricedStrategyStatus:nba.pricedStrategyStatus,
+  diagnostic:nbaBacktest.markets,blockers:['The rate-baseline diagnostic does not validate the full live projection pipeline.','No validated priced betting strategy.']},
+ nfl:{sourceAsOf:nfl.generatedAt,projectionMetrics:nfl.validation,
+  blockers:['Current usage error is not touchdown-probability calibration or betting ROI.','No validated priced out-of-sample touchdown strategy.']},
+ nhl:{sourceAsOf:nhl.generatedAt,season:nhl.season,totalsRecommendationCount:nhl.games.filter(game=>game.totalRecommendationEligible).length,
+  blockers:['No out-of-sample totals calibration.','Starting-goalie, active-lineup and opponent-defense inputs remain unverified.']},
  mlb:{sourceUpdatedAt:history.updatedAt,exclusions,settledReceipts:rows.length,receiptsWithRecordedPrices:rows.filter(r=>r.marketQuotes?.length).length,
   raw:metrics(rows,r=>r.p),highProbability:metrics(rows.filter(r=>r.p>=.2),r=>r.p),
   chronologicalDiagnostic:{splitDate:split,trainDates:[dates[0],dates[dates.indexOf(split)-1]],testDates:[split,dates.at(-1)],trainingSamples:train.length,

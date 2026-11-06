@@ -7,6 +7,12 @@ const MONITORS = new Set(["health_status.json", "nfl_data_health.json", "nfl_lau
 
 export function sourceDependencies(file) {
   if (!freshnessPolicy(file)) return [];
+  if (/^(mlb_(?:home_runs|hits|total_bases|rbis|pitcher_strikeouts)|hr_(?:decision_center|ai_breakdowns))\.json$/.test(file)) {
+    return ['mlb_games_today.json', 'mlb_player_pool.json', 'mlb_weather.json', ...(file === 'hr_decision_center.json' ? ['mlb_market_odds.json'] : [])];
+  }
+  if (file === 'cfb_board.json') return ['odds_ncaaf.json'];
+  if (file === 'mlb_market_odds.json') return ['odds_mlb.json'];
+  if (file === 'nfl_market_lines.json') return ['odds_nfl.json'];
   if (file === "nba_market_lines.json") return ["odds_nba.json"];
   if (file === "wnba_market_lines.json") return ["odds_wnba.json"];
   if (file.startsWith("nba_") && !["nba_games_today.json", "nba_history.json", "nba_availability.json", "nba_player_pool.json"].includes(file)) {
@@ -16,22 +22,31 @@ export function sourceDependencies(file) {
     return ["wnba_games_today.json", "wnba_player_baselines.json", "wnba_team_baselines.json", ...(file === "wnba_verified_markets.json" ? ["wnba_market_lines.json", "odds_wnba.json"] : [])];
   }
   if (/^nfl_(?:foundation|markets|decision_center|td_decision_center|receiving_yards_board|matchup_context)\.json$/.test(file)) {
-    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_weather.json", "nfl_usage_baselines.json"];
+    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_weather.json", "nfl_usage_baselines.json", "nfl_current_usage.json"];
   }
   return [];
 }
 
 export async function verifyCurrentDataset(file, payload, { load, now = Date.now(), health = null } = {}) {
-  const result = checkDataFreshness(file, payload, { now, health });
-  if (!result.available || !load) return result;
-  const dependencies = [];
-  for (const dependency of sourceDependencies(file)) {
-    try { dependencies.push({ file: dependency, ...checkDataFreshness(dependency, await load(dependency), { now, health }) }); }
-    catch { dependencies.push({ file: dependency, available: false, reasons: ["missing_source_dependency"] }); }
+  const memo = new Map();
+  async function visit(name, data, ancestors = new Set()) {
+    if (ancestors.has(name)) return { available: false, status: 'unavailable', reasons: ['source_dependency_cycle'] };
+    if (memo.has(name)) return memo.get(name);
+    const result = checkDataFreshness(name, data, { now, health });
+    if (!result.available || !load) return result;
+    const dependencies = [];
+    const next = new Set([...ancestors, name]);
+    for (const dependency of sourceDependencies(name)) {
+      try { dependencies.push({ file: dependency, ...await visit(dependency, await load(dependency), next) }); }
+      catch { dependencies.push({ file: dependency, available: false, reasons: ['missing_source_dependency'] }); }
+    }
+    const verified = dependencies.some(row => !row.available)
+      ? { ...result, available: false, status: 'unavailable', reasons: ['upstream_data_unavailable'], dependencies }
+      : { ...result, dependencies };
+    memo.set(name, verified);
+    return verified;
   }
-  return dependencies.some(row => !row.available)
-    ? { ...result, available: false, status: "unavailable", reasons: ["upstream_data_unavailable"], dependencies }
-    : { ...result, dependencies };
+  return visit(file, payload);
 }
 
 export function freshnessPolicy(file) {
@@ -46,7 +61,8 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   const policy = freshnessPolicy(file);
   if (!policy) return { available: true, status: "reference_or_history" };
   const reasons = [];
-  const sport = String(payload?.sport || file.match(/^(mlb|nba|wnba|nfl|cfb|nhl)_/)?.[1] || '').toLowerCase();
+  const reportedSport = String(payload?.sport || '').toLowerCase();
+  const sport = file.match(/^(mlb|nba|wnba|nfl|cfb|nhl)_/)?.[1] || (reportedSport === 'ncaaf' ? 'cfb' : reportedSport);
   if (['mlb', 'nba', 'wnba', 'nfl', 'cfb', 'nhl'].includes(sport)) {
     const expected = currentSeasonStart(sport, now);
     const seasons = [payload?.season, payload?.historySeason, ...(payload?.seasons || []), ...(payload?.historicalSeasons || [])]
@@ -64,6 +80,18 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   const timestamps = ["dataAsOf", "sourceFetchedAt", "retrievedAt", "fetchedAt", "updatedAt", "updated_at", "generatedAt", "feedTimestamp"]
     .filter(key => payload?.[key] !== undefined && payload[key] !== null)
     .map(key => ({ field: key, value: payload[key] }));
+  // Preserve provider observation times carried inside sources and market rows.
+  // A newer board envelope must not conceal an old quote or upstream snapshot.
+  const nestedTimeFields = new Set(['dataAsOf', 'sourceFetchedAt', 'sourceUpdatedAt', 'providerUpdatedAt', 'quotedAt', 'retrievedAt']);
+  function sourceTimes(value, prefix = '') {
+    if (!value || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value)) {
+      const field = prefix ? `${prefix}.${key}` : key;
+      if (prefix && nestedTimeFields.has(key) && child != null) timestamps.push({ field, value: child, ...(/quotedAt$/.test(field) ? { maxAgeSeconds: Math.min(policy.maxAgeSeconds, 1200) } : {}) });
+      else if (child && typeof child === 'object') sourceTimes(child, field);
+    }
+  }
+  sourceTimes(payload);
   // Legacy MLB arrays have no envelope. The refresh validator records their
   // rebuild time in the health receipt; that receipt must itself still be valid.
   if (!timestamps.length && Array.isArray(payload)) {
@@ -74,11 +102,11 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
     }
   }
   if (!timestamps.length) reasons.push("missing_source_timestamp");
-  for (const { value } of timestamps) {
+  for (const { value, maxAgeSeconds = policy.maxAgeSeconds } of timestamps) {
     const time = typeof value === "string" ? Date.parse(value) : NaN;
     if (!Number.isFinite(time)) reasons.push("invalid_source_timestamp");
     else if (time > now + 1000) reasons.push("future_source_timestamp");
-    else if (now - time >= policy.maxAgeSeconds * 1000) reasons.push("expired_source_timestamp");
+    else if (now - time >= maxAgeSeconds * 1000) reasons.push("expired_source_timestamp");
   }
   return {
     available: !reasons.length,

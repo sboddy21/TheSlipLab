@@ -103,7 +103,13 @@ export function buildCalibration(history, date, now = Date.now(), backtest = { m
     const squared = signed.map(value => value * value);
     const mae = absolute.length ? absolute.reduce((sum, value) => sum + value, 0) / absolute.length : null;
     const walkForward = backtest?.markets?.[market] || {};
-    const walkForwardPassing = Number(walkForward.testSamples) >= 40 && Number(walkForward.calibratedTestMae) <= TARGET_MAE[market];
+    const evaluatedMae = walkForward.correctionApplied ? walkForward.calibratedTestMae : walkForward.rawTestMae;
+    const walkForwardPassing = walkForward.validatesLiveProjectionPipeline === true
+      && Number(walkForward.testSamples) >= 40
+      && evaluatedMae != null && Number.isFinite(Number(evaluatedMae))
+      && walkForward.baselineTestMae != null && Number.isFinite(Number(walkForward.baselineTestMae))
+      && Number(evaluatedMae) <= TARGET_MAE[market]
+      && Number(evaluatedMae) < Number(walkForward.baselineTestMae);
     markets[market] = {
       samples: rows.length,
       mae: mae == null ? null : round(mae),
