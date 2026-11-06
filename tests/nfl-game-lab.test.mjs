@@ -27,7 +27,7 @@ test('player market probability follows projection versus line', () => {
 
 test('NFL AI board ranks the strongest read in each game market', () => {
   const contexts = ['AAA','BBB','CCC','DDD'].map((team,index)=>({team,scoringEnvironment:{projectedTeamTouchdownsBaseline:2+index*.5,paceIndex:100}}));
-  const games = [{gameId:'1',awayTeam:'AAA',homeTeam:'BBB'},{gameId:'2',awayTeam:'CCC',homeTeam:'DDD'}];
+  const games = [{gameId:'1',awayTeam:'AAA',homeTeam:'BBB'},{gameId:'2',awayTeam:'CCC',homeTeam:'DDD'}].map(game=>({...game,kickoffUTC:new Date(Date.now()+3600000).toISOString(),state:'pre'}));
   const ranked = rankGameMarkets(games,contexts,()=>({homeSpread:-1.5,total:45.5}));
   assert.equal(ranked.moneyline.length,2);
   assert.ok(ranked.moneyline[0].edge>=ranked.moneyline[1].edge);
@@ -46,4 +46,11 @@ test('Game Lab renders expandable team and player intelligence', async () => {
   assert.match(js, /class="game-pick[^\"]*" data-player-id=/);
   assert.match(css, /\.game-market-grid/);
   assert.doesNotMatch(html, /data-disable-odds/);
+});
+
+test('rankings exclude final, live, past-kickoff and undated games', () => {
+  const now=Date.parse('2026-11-06T16:00:00Z');
+  const base={gameId:'1',awayTeam:'AAA',homeTeam:'BBB',kickoffUTC:'2026-11-07T16:00:00Z',state:'pre'};
+  const contexts=['AAA','BBB'].map(team=>({team,scoringEnvironment:{projectedTeamTouchdownsBaseline:2,paceIndex:100}}));
+  for(const game of [{...base,completed:true},{...base,state:'in'},{...base,kickoffUTC:'2026-11-05T16:00:00Z'},{...base,kickoffUTC:null}])assert.equal(rankGameMarkets([game],contexts,()=>({}),now).moneyline.length,0);
 });

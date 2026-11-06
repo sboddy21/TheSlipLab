@@ -35,10 +35,11 @@ export function americanPrice(probability) {
   return Math.round(p >= 0.5 ? -(p / (1 - p)) * 100 : ((1 - p) / p) * 100);
 }
 
-export function rankGameMarkets(games = [], contexts = [], marketForGame = () => ({})) {
+export function rankGameMarkets(games = [], contexts = [], marketForGame = () => ({}), now = Date.now()) {
   const context = new Map(contexts.map(row => [row.team, row]));
   const reads = { moneyline: [], spread: [], total: [] };
   for (const game of games) {
+    if (game.completed || ["post", "in"].includes(game.state) || !Number.isFinite(Date.parse(game.kickoffUTC)) || Date.parse(game.kickoffUTC) <= now) continue;
     const home = typeof game.homeTeam === "object" ? game.homeTeam.abbreviation : game.homeTeam;
     const away = typeof game.awayTeam === "object" ? game.awayTeam.abbreviation : game.awayTeam;
     const market = marketForGame(game) || {};
