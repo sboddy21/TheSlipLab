@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -59,7 +60,7 @@ if (depth.availability !== "available" || depth.teamCount !== 32 || !depth.entry
 if (depth.unmatchedPlayerCount !== 0 || !Array.isArray(depth.excludedSourceEntries)) fail("unmatched depth entries were not resolved");
 if (depth.entries.some(entry => !entry.playerId || !entry.team || !entry.position || !Number.isFinite(entry.rank))) fail("depth-chart contract contains an invalid entry");
 if (!["available", "partial"].includes(injuries.availability) || !Array.isArray(injuries.injuries)) fail("injury contract must report current availability coverage");
-if (usage.profileCount < 400 || usage.sourcePlayCount < 100000 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
+if (usage.seasons?.length !== 1 || usage.seasons[0] !== currentSeasonStart('nfl') || usage.profileCount < 1 || usage.sourcePlayCount < 1 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
 if (usage.methodology?.routes !== "Unavailable from play-by-play and intentionally not estimated.") fail("usage contract must explicitly reject inferred routes");
 if (usage.profiles.some(profile => !profile.playerId || !profile.gsisId || !profile.weightedPerGame)) fail("usage contract contains an invalid profile");
 if (currentUsage.completedGames < 1 || currentUsage.profileCount !== currentUsage.profiles?.length || currentUsage.validation?.samples < 1) fail("current-season usage contract is incomplete");

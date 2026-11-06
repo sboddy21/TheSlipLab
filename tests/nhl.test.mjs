@@ -16,15 +16,19 @@ test('NHL schedule normalization keeps canonical identity', () => {
   assert.equal(game.home.abbreviation, 'NYR');
 });
 
-test('NHL totals model ranks over, under and pass edges without inventing a line', () => {
+test('NHL totals baseline cannot publish unvalidated picks or confidence', () => {
   const game = { gameId: 12, neutralSite: false, awayProjectedShots: 33, homeProjectedShots: 32 };
   const players = Array.from({ length: 32 }, (_, index) => ({ gameId: 12, goalProbability: index < 16 ? 22 : 20 }));
   const over = projectGameTotal(players, game, { line: 5.5, overPrice: '-110', underPrice: '-110', provider: 'Test' });
   const under = projectGameTotal(players, game, { line: 8.5 });
   const unpriced = projectGameTotal(players, game);
-  assert.equal(over.totalLean, 'OVER');
-  assert.equal(under.totalLean, 'UNDER');
+  assert.equal(over.totalLean, 'PASS');
+  assert.equal(over.totalModelDirection, 'OVER');
+  assert.equal(over.totalRecommendationEligible, false);
+  assert.equal(under.totalLean, 'PASS');
+  assert.equal(under.totalModelDirection, 'UNDER');
   assert.equal(unpriced.totalLean, 'PASS');
   assert.equal(unpriced.marketTotal, null);
-  assert.ok(over.totalConfidence >= 50 && over.totalConfidence <= 84);
+  assert.equal(over.totalConfidence, null);
+  assert.ok(over.totalBlockers.length >= 3);
 });

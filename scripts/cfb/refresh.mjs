@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import { attachCfbOdds,preserveLastCfbOdds } from '../odds/cfb.mjs';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -27,7 +28,8 @@ const historyPath=new URL('../../data/cfb/live-history.json',import.meta.url);
 let cached;
 try {cached=JSON.parse(await fs.readFile(historyPath,'utf8'));}
 catch(error) {if(error.code!=='ENOENT')throw error;cached=JSON.parse(await fs.readFile(new URL('../../data/cfb/history.json',import.meta.url),'utf8'));}
-const horizon=now.getTime()-(config.windowDays+3)*86400000;
+const season = currentSeasonStart('cfb', now);
+const horizon=Date.parse(`${season}-03-01T00:00:00Z`);
 const history=cached.games.filter(g=>Date.parse(g.date)>=horizon);
 const latest=history.reduce((n,g)=>Math.max(n,Date.parse(g.date)),horizon);
 const recentStart=new Date(Math.max(horizon,Math.min(latest,now.getTime())-14*86400000));
@@ -66,7 +68,7 @@ for (const pick of archive) {
 }
 const prospective=archive.filter(p=>p.model===MODEL && p.marketPolicy===marketPolicy && p.configSha256===configSha256 && p.trainingCutoff && Date.parse(p.trainingCutoff)<=Date.parse(p.recordedAt) && Date.parse(p.recordedAt)>=Date.parse(frozenAt) && Date.parse(p.recordedAt)<Date.parse(p.kickoff)).map(p=>({...p,date:p.kickoff,fold:new Date(weekCutoff(p.kickoff)).toISOString()}));
 const edgeStatus=Object.fromEntries(["spread","total"].map(kind=>[kind,qualification(prospective.filter(p=>p.market===kind),protocol.promotion)]));
-const board = { schemaVersion:1, generatedAt:now.toISOString(), weekStart:iso(monday), weekEnd:iso(end),
+const board = { schemaVersion:1, season, baselineMode:'current_season', generatedAt:now.toISOString(), weekStart:iso(monday), weekEnd:iso(end),
   source:'ESPN scores · RapidAPI odds', marketPolicy, model:MODEL, configSha256, config, calibration, edgeStatus, ratingsGeneratedAt:now.toISOString(), games, archive };
 await fs.writeFile(historyPath,JSON.stringify({updatedAt:now.toISOString(),games:all})+"\n");
 await fs.writeFile(`${output}.tmp`,JSON.stringify(board,null,2)+'\n');

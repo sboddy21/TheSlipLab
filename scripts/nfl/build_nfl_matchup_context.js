@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 import { gunzipSync } from "zlib";
@@ -6,8 +7,8 @@ import { selectWeekGames } from "./week_schedule.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const SEASONS = String(process.env.NFL_CONTEXT_SEASONS || "2023,2024,2025").split(",").map(Number).filter(Number.isFinite);
-const WEIGHTS = new Map([[2023, 0.1], [2024, 0.3], [2025, 0.6]]);
+const SEASONS = [currentSeasonStart('nfl')];
+const WEIGHTS = new Map([[SEASONS[0], 1]]);
 const CACHE_HOURS = Number(process.env.NFL_CONTEXT_CACHE_HOURS || 18);
 const read = filename => JSON.parse(fs.readFileSync(path.join(DATA, filename), "utf8"));
 const write = (filename, payload) => fs.writeFileSync(path.join(DATA, filename), `${JSON.stringify(payload, null, 2)}\n`);
@@ -215,7 +216,7 @@ async function main() {
   const outputPath = path.join(DATA, "nfl_matchup_context.json");
   const existing = fs.existsSync(outputPath) ? JSON.parse(fs.readFileSync(outputPath, "utf8")) : null;
   const cacheAgeHours = existing?.historicalBuiltAt ? (Date.now() - Date.parse(existing.historicalBuiltAt)) / 36e5 : Infinity;
-  const history = existing?.historicalTeamBaselines?.length === 32 && cacheAgeHours <= CACHE_HOURS
+  const history = existing?.historicalTeamBaselines?.length === 32 && existing?.historicalSeasons?.length === 1 && existing.historicalSeasons[0] === SEASONS[0] && cacheAgeHours <= CACHE_HOURS
     ? { builtAt: existing.historicalBuiltAt, seasons: existing.historicalSeasons, weights: existing.historicalWeights, sources: existing.historicalSources, teamBaselines: existing.historicalTeamBaselines }
     : await buildHistoricalBaselines(depth);
   const week = mainWeek(schedule);

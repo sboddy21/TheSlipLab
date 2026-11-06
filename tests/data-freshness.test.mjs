@@ -8,7 +8,7 @@ import { buildRow as buildMinutesRow } from "../scripts/nba/build_minutes_engine
 import { validStabilizedPitcherRisk } from "../scripts/mlb/lib/pitcher-risk-validation.mjs";
 
 const now = Date.parse("2026-10-24T16:00:00Z");
-const current = { date: "2026-10-24", fetchedAt: "2026-10-24T15:55:00Z" };
+const current = { season: 2026, date: "2026-10-24", fetchedAt: "2026-10-24T15:55:00Z" };
 
 test("valid MLB scores at the model floor no longer abort publication", () => {
   // The previous distance-to-baseline test rejected this valid clamped score.
@@ -44,10 +44,10 @@ test("odds expire after 20 minutes even on the current slate", () => {
   assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: "2026-10-24T15:40:00Z" }, { now }).available, false);
 });
 
-test("analytical boards survive delayed schedulers without relaxing slate dates or markets", () => {
+test("analytical boards reject five-hour-old data even when the slate date matches", () => {
   const fiveHoursAgo = new Date(now - 5 * 60 * 60 * 1000).toISOString();
   for (const file of ["nba_points.json", "nhl_board.json", "cfb_board.json"]) {
-    assert.equal(checkDataFreshness(file, { date: "2026-10-24", generatedAt: fiveHoursAgo }, { now }).available, true, file);
+    assert.equal(checkDataFreshness(file, { date: "2026-10-24", generatedAt: fiveHoursAgo }, { now }).available, false, file);
   }
   assert.equal(checkDataFreshness("nba_points.json", { date: "2026-10-23", generatedAt: fiveHoursAgo }, { now }).available, false);
   assert.equal(checkDataFreshness("odds_nba.json", { retrievedAt: fiveHoursAgo }, { now }).available, false);
@@ -93,7 +93,7 @@ test("fresh board timestamps cannot conceal stale or missing upstream feeds", as
   assert.equal(fresh.available, true);
 });
 
-test("usable NBA history fallback does not block every generated board", async () => {
+test("unavailable NBA history cannot publish generated boards", async () => {
   const history = {
     ...current,
     availability: "history_unavailable",
@@ -108,8 +108,8 @@ test("usable NBA history fallback does not block every generated board", async (
     now,
     load: async file => file === "nba_history.json" ? history : current
   });
-  assert.equal(result.available, true);
-  assert.equal(result.dependencies.find(row => row.file === "nba_history.json").status, "current_degraded");
+  assert.equal(result.available, false);
+  assert.equal(result.dependencies.find(row => row.file === "nba_history.json").status, "unavailable");
   assert.equal(checkDataFreshness("nba_history.json", { ...history, players: [] }, { now }).available, false);
   assert.equal(checkDataFreshness("nba_history.json", { ...history, retainedHistoryCount: 0, players: [{ gamesPlayed: 0 }] }, { now }).available, false);
   assert.equal(checkDataFreshness("nba_history.json", { ...history, date: "2026-10-23" }, { now }).available, false);
@@ -150,7 +150,7 @@ test("NHL refresh runs at least hourly in season and every 15 minutes overnight"
   const refresh = fs.readFileSync("scripts/nhl/refresh.mjs", "utf8");
   assert.match(workflow, /17 7-21 \* 9-12,1-6 \*/);
   assert.match(workflow, /2,17,32,47 22-23,0-6 \* 9-12,1-6 \*/);
-  assert.match(refresh, /maxAgeHours: 6/);
+  assert.match(refresh, /maxAgeHours: 1/);
   assert.match(refresh, /refreshCadenceMinutes: 60/);
   assert.match(refresh, /liveRefreshCadenceMinutes: 15/);
 });
@@ -160,11 +160,11 @@ test("NBA refresh validates the newly generated slate instead of yesterday's che
   assert.ok(workflow.indexOf("Run NBA refresh only") < workflow.indexOf("Validate refreshed NBA foundation"));
 });
 
-test("NFL refresh targets thirty minutes and analytical feeds survive a missed scheduler window", () => {
+test("NFL refresh targets thirty minutes and expires delayed analytical feeds", () => {
   const workflow = fs.readFileSync(".github/workflows/nfl-refresh.yml", "utf8");
   assert.match(workflow, /cron:\s*"\*\/30 \* \* 1-2,8-12 \*"/);
   const generatedAt = new Date(now - 5 * 60 * 60 * 1000).toISOString();
-  assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now }).available, true);
+  assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now }).available, false);
   assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now: now + 60 * 60 * 1000 }).available, false);
   assert.equal(checkDataFreshness("odds_nfl.json", { retrievedAt: new Date(now - 21 * 60 * 1000).toISOString() }, { now }).available, false);
 });

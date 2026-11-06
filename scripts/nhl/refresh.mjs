@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { NHL_API, NHL_STATS, easternDate, normalizeGame, projectionFor, projectGameTotal, isLive, isFinal } from './core.mjs';
@@ -43,11 +44,10 @@ async function marketTotals() {
   }
 }
 
-async function priorSkaters() {
-  const season = Number(date.slice(0, 4)) - 1;
-  const seasonId = `${season}${season + 1}`;
+async function currentSkaters() {
+  const seasonId = `${currentSeasonStart('nhl', `${date}T12:00:00Z`)}${currentSeasonStart('nhl', `${date}T12:00:00Z`) + 1}`;
   const query = new URLSearchParams({
-    isAggregate: 'false', isGame: 'false', start: '0', limit: '-1',
+    isAggregate: 'true', isGame: 'false', start: '0', limit: '-1',
     sort: JSON.stringify([{ property: 'points', direction: 'DESC' }]),
     factCayenneExp: 'gamesPlayed>=1', cayenneExp: `seasonId=${seasonId} and gameTypeId=2`
   });
@@ -99,10 +99,10 @@ export async function buildBoard() {
   const games = await schedule();
   const teams = [...new Set(games.flatMap(game => [game.away.abbreviation, game.home.abbreviation]).filter(Boolean))];
   const [history, rosters, live, totals] = await Promise.all([
-    priorSkaters(), Promise.all(teams.map(roster)), liveDetails(games), marketTotals()
+    currentSkaters(), Promise.all(teams.map(roster)), liveDetails(games), marketTotals()
   ]);
   const current = new Map(rosters.flat().map(player => [String(player.playerId), player]));
-  const players = history.rows.filter(player => Number(player.gamesPlayed) >= 10 && current.has(String(player.playerId))).map(player => {
+  const players = history.rows.filter(player => Number(player.gamesPlayed) >= 1 && current.has(String(player.playerId))).map(player => {
     const assignment = current.get(String(player.playerId));
     const game = games.find(item => item.home.abbreviation === assignment.team || item.away.abbreviation === assignment.team);
     const opponent = game?.home.abbreviation === assignment.team ? game.away.abbreviation : game?.home.abbreviation;
@@ -117,15 +117,8 @@ export async function buildBoard() {
   live.goals = live.goals.map(goal => ({ ...goal, playerName: names.get(String(goal.playerId)) || goal.playerName }));
   return {
     schemaVersion: 2, sport: 'NHL', date, generatedAt, source: 'NHL public schedule, roster, gamecenter and stats feeds; ESPN market totals',
-    status: games.length ? 'available' : 'no_games', historySeason: history.seasonId,
-    freshness: {
-      maxAgeHours: 6,
-      refreshCadenceMinutes: 60,
-      liveRefreshCadenceMinutes: 15,
-      schedule: generatedAt,
-      projections: generatedAt,
-      live: generatedAt
-    },
+    status: games.length ? 'available' : 'no_games', historySeason: history.seasonId, season: history.seasonId, baselineMode: 'current_season',
+    freshness: { maxAgeHours: 1, refreshCadenceMinutes: 60, liveRefreshCadenceMinutes: 15, schedule: generatedAt, projections: generatedAt, live: generatedAt },
     counts: { games: games.length, players: players.length, liveGames: games.filter(game => isLive(game.state)).length },
     games: matchups, players, live, errors: []
   };

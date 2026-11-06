@@ -1,3 +1,4 @@
+import { currentSeasonStart, seasonStart } from './current-season.mjs';
 // Shared by the data endpoint and the offline audit. Never use deployment time
 // or filesystem mtime as evidence that a provider's data is current.
 const ARCHIVES = /(?:^|_)(?:backtest|calibration|results|projection_history)(?:_|\.)|^hr_ai_(?:history|hof)\.|^cfb_daily_(?:evaluation|predictions)\./;
@@ -15,7 +16,7 @@ export function sourceDependencies(file) {
     return ["wnba_games_today.json", "wnba_player_baselines.json", "wnba_team_baselines.json", ...(file === "wnba_verified_markets.json" ? ["wnba_market_lines.json", "odds_wnba.json"] : [])];
   }
   if (/^nfl_(?:foundation|markets|decision_center|td_decision_center|receiving_yards_board|matchup_context)\.json$/.test(file)) {
-    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_weather.json"];
+    return ["nfl_schedule.json", "nfl_injuries.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_weather.json", "nfl_usage_baselines.json"];
   }
   return [];
 }
@@ -38,8 +39,6 @@ export function freshnessPolicy(file) {
   if (/odds|market_lines/.test(file)) return { maxAgeSeconds: 1200 };
   if (/live_game|games_live|live_hr_tracker|global_live_alerts/.test(file)) return { maxAgeSeconds: 120 };
   if (/history|baselines|usage_baselines|power_profiles|pitch_type_damage/.test(file)) return { maxAgeSeconds: 93600 };
-  if (file.startsWith("nfl_") || file.startsWith("nba_") || file === "nhl_board.json") return { maxAgeSeconds: 21600 };
-  if (file === "cfb_board.json") return { maxAgeSeconds: 43200 };
   return { maxAgeSeconds: 3600 };
 }
 
@@ -47,21 +46,21 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   const policy = freshnessPolicy(file);
   if (!policy) return { available: true, status: "reference_or_history" };
   const reasons = [];
-  const usableNbaHistoryFallback = file === "nba_history.json"
-    && Array.isArray(payload?.players)
-    && payload.players.length > 0
-    && (
-      Number(payload?.espnSummaryCount) > 0
-      || Number(payload?.espnGameLogCount) > 0
-      || Number(payload?.retainedHistoryCount) > 0
-    )
-    && payload.players.some(player => Number(player?.gamesPlayed || player?.seasonSummary?.games) > 0);
+  const sport = String(payload?.sport || file.match(/^(mlb|nba|wnba|nfl|cfb|nhl)_/)?.[1] || '').toLowerCase();
+  if (['mlb', 'nba', 'wnba', 'nfl', 'cfb', 'nhl'].includes(sport)) {
+    const expected = currentSeasonStart(sport, now);
+    const seasons = [payload?.season, payload?.historySeason, ...(payload?.seasons || []), ...(payload?.historicalSeasons || [])]
+      .filter(value => value != null).map(seasonStart);
+    if (seasons.some(value => value === null || value !== expected)) reasons.push('non_current_season');
+    if (/previous|prior|historical/.test(String(payload?.baselineMode || ''))) reasons.push('historical_baseline_for_live_picks');
+    if (/^(nba_history|nfl_usage_baselines|wnba_(?:player|team)_baselines|nhl_board|cfb_board)\.json$/.test(file) && !seasons.length) reasons.push('missing_season_evidence');
+  }
   const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
   const slate = payload?.date || payload?.slateDate || payload?.pitcherDate;
   if (slate && /^\d{4}-\d{2}-\d{2}$/.test(slate) && slate !== today) reasons.push("wrong_slate_date");
   if (payload?.stale || payload?.preservedAt || payload?.preserveReason) reasons.push("preserved_or_stale_source");
-  if (!usableNbaHistoryFallback && /unavailable|failed|error/.test(String(payload?.availability || payload?.status || ""))) reasons.push("source_unavailable");
-  if (!usableNbaHistoryFallback && (payload?.error || Number(payload?.errorCount) > 0 || payload?.errors?.length)) reasons.push("source_errors");
+  if (/unavailable|failed|error/.test(String(payload?.availability || payload?.status || ""))) reasons.push("source_unavailable");
+  if (payload?.error || Number(payload?.errorCount) > 0 || payload?.errors?.length) reasons.push("source_errors");
   const timestamps = ["dataAsOf", "sourceFetchedAt", "retrievedAt", "fetchedAt", "updatedAt", "updated_at", "generatedAt", "feedTimestamp"]
     .filter(key => payload?.[key] !== undefined && payload[key] !== null)
     .map(key => ({ field: key, value: payload[key] }));
@@ -83,7 +82,7 @@ export function checkDataFreshness(file, payload, { now = Date.now(), health = n
   }
   return {
     available: !reasons.length,
-    status: reasons.length ? "unavailable" : usableNbaHistoryFallback ? "current_degraded" : "current",
+    status: reasons.length ? "unavailable" : "current",
     reasons: [...new Set(reasons)],
     timestamps,
     maxAgeSeconds: policy.maxAgeSeconds

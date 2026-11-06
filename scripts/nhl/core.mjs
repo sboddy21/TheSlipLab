@@ -49,10 +49,11 @@ export function projectGameTotal(players, game, market = null) {
   const line = market?.line === null || market?.line === undefined ? null : Number(market.line);
   const edge = Number.isFinite(line) ? projection - line : null;
   const absEdge = Math.abs(edge || 0);
-  const lean = edge === null || absEdge < 0.25 ? 'PASS' : edge > 0 ? 'OVER' : 'UNDER';
-  const strength = lean === 'PASS' ? 'No edge' : absEdge >= 0.75 ? 'Strong' : absEdge >= 0.45 ? 'Playable' : 'Lean';
-  const coverage = Math.min(1, gamePlayers.length / 32);
-  const confidence = clamp(50 + coverage * 22 + Math.min(absEdge, 1.25) * 8, 50, 84);
+  const direction = edge === null || absEdge < 0.25 ? 'PASS' : edge > 0 ? 'OVER' : 'UNDER';
+  // This roster baseline has no out-of-sample calibration, goalie or lineup inputs.
+  // A projection gap alone cannot qualify a wager.
+  const lean = 'PASS';
+  const strength = 'Unvalidated baseline';
   const pace = shotTotal >= 62 ? 'High shot environment' : shotTotal <= 56 ? 'Low shot environment' : 'Neutral shot environment';
   return {
     marketTotal: Number.isFinite(line) ? line : null,
@@ -63,7 +64,10 @@ export function projectGameTotal(players, game, market = null) {
     totalEdge: edge === null ? null : +edge.toFixed(2),
     totalLean: lean,
     totalStrength: strength,
-    totalConfidence: +confidence.toFixed(0),
+    totalConfidence: null,
+    totalModelDirection: direction,
+    totalRecommendationEligible: false,
+    totalBlockers: ['No out-of-sample totals validation', 'Starting goalies and active lineups unverified', 'Opponent defense and current-season form missing'],
     totalReasons: [pace, `${shotTotal.toFixed(1)} projected combined shots`, `${scoringBaseline.toFixed(2)} baseline expected goals`]
   };
 }

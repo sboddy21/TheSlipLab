@@ -353,9 +353,7 @@ async function main() {
   const players = Array.isArray(core.players) ? core.players : [];
   const currentSeason = seasonYear();
   const forceEspn = process.env.NBA_HISTORY_FORCE_ESPN === "true";
-  const season = process.env.NBA_HISTORY_SEASON || (
-    isPreseasonSlate(players) ? previousSeason(currentSeason) : currentSeason
-  );
+  const season = currentSeason;
 
   const errors = [];
   const cachedHistory = cachedHistoryByPlayer();
@@ -445,7 +443,7 @@ async function main() {
     date: core.date || "",
     season,
     currentSeason,
-    baselineMode: season === currentSeason ? "current_season" : "previous_season_preseason",
+    baselineMode: "current_season",
     playerCount: rows.length,
     availability: !players.length ? "no_games_scheduled" : errors.length ? "history_unavailable" : "players_available",
     errorCount: errors.length,
