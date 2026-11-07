@@ -28,7 +28,7 @@ function render() {
   const games=board.games, stale = Date.now()-Date.parse(board.generatedAt)>20*60_000 || dateKey(new Date())!==board.date;
   $('feedStatus').textContent = `${board.date} · ${games.length} games · Last successful update ${time(board.generatedAt)}${failed?' · Refresh failed; prices hidden.':stale?' · Feed is delayed; check status before using.':''}`;
   const counts = [['Games on slate',games.length],['Live now',stale||failed?'—':games.filter(g=>g.state==='in').length],['Pregame prices',games.reduce((n,g)=>n+currentQuotes(g).length,0)],['Final scores',games.filter(g=>g.completed).length]];
-  $('summary').innerHTML = counts.map(([label,value])=>`<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join('');
+  $('summary').innerHTML = counts.map(([label,value])=>`<div class="stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
   const watch=games.filter(g=>g.state==='pre'&&Date.parse(g.kickoff)>Date.now()&&(g.home.rank||g.away.rank)).sort((a,b)=>Math.min(a.home.rank||99,a.away.rank||99)-Math.min(b.home.rank||99,b.away.rank||99)).slice(0,6);
   $('watchlistRoot').innerHTML=watch.length?watch.map(g=>`<article class="game-card watch-card"><p>${esc(time(g.kickoff))}</p><h3>${g.away.rank?`#${g.away.rank} `:''}${esc(g.away.shortName)} at ${g.home.rank?`#${g.home.rank} `:''}${esc(g.home.shortName)}</h3><p>${g.neutral?'Neutral court':esc(g.venue)}</p><a href="#game-${esc(g.id)}">View matchup →</a></article>`).join(''):'<p class="empty">No upcoming ranked matchups on this slate. Explore the full Game Lab below.</p>';
   renderGames(); renderPicks();
@@ -39,8 +39,25 @@ function renderPicks() {
   const v=model?.validation;
   $('modelEvidence').innerHTML=validated?`Historical test: <strong>${(v.accuracy*100).toFixed(1)}% correct</strong> across ${v.picks.toLocaleString()} qualifying forecasts in 2025–26. Brier score ${v.brier.toFixed(3)} vs ${v.baselineBrier.toFixed(3)} baseline (lower is better). <a href="#validationRoot">Review evidence ↓</a>${board.forecastGeneratedAt ? ` · Forecasts published ${esc(time(board.forecastGeneratedAt))}` : ''}`:'Winner forecasts are temporarily unavailable because model integrity or current data could not be verified.';
   const upcoming=validated&&!failed&&Date.now()-Date.parse(board.generatedAt)<20*60_000&&dateKey(new Date())===board.date?board.games.filter(g=>g.state==='pre'&&Date.parse(g.kickoff)>Date.now()&&g.prediction?.eligible).sort((a,b)=>b.prediction.probability-a.prediction.probability):[];
-  $('picksRoot').innerHTML=upcoming.length?upcoming.map(g=>{const p=g.prediction;return `<article class="game-card watch-card"><p>${esc(time(g.kickoff))}</p><h3>${esc(g[p.side].name)}</h3><div class="forecast-probability">${(p.probability*100).toFixed(0)}% <small>win estimate</small></div><p>${esc(g.away.shortName)} at ${esc(g.home.shortName)} · ${p.earlySeason?'Early-season carryover ratings':'Current-season ratings'}</p><a href="#game-${esc(g.id)}">See matchup &amp; prices →</a></article>`;}).join(''):'<p class="empty">No qualifying pregame forecasts available right now.</p>';
-
+  if (!upcoming.length) {
+    $('picksRoot').innerHTML = '<p class="empty">No qualifying pregame forecasts available right now.</p>';
+    return;
+  }
+  const rows = upcoming.map(game => {
+    const prediction = game.prediction;
+    return `<tr>
+      <td><strong>${esc(game.away.shortName)} at ${esc(game.home.shortName)}</strong><small>${esc(time(game.kickoff))}</small></td>
+      <td>${esc(game[prediction.side].name)}</td>
+      <td><strong>${(prediction.probability * 100).toFixed(0)}%</strong></td>
+      <td>${prediction.earlySeason ? 'Early-season carryover' : 'Current season'}</td>
+      <td><a href="#game-${esc(game.id)}">View matchup</a></td>
+    </tr>`;
+  }).join('');
+  $('picksRoot').innerHTML = `<div class="props-table-wrap"><table class="props-table">
+    <caption class="sr-only">Men’s college basketball winner forecasts</caption>
+    <thead><tr><th>Matchup</th><th>Model pick</th><th>Win estimate</th><th>Ratings</th><th>Details</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
 }
 function renderValidation(report) {
   $('validationRoot').innerHTML=`<p>${esc(report.method)}</p><p>Training: ${report.training.toLocaleString()} games. Holdout: ${report.holdout.toLocaleString()} games. Qualifying forecasts: ${report.picks.toLocaleString()} (${report.wins.toLocaleString()} wins, ${report.losses.toLocaleString()} losses).</p><p>Accuracy: ${(report.accuracy*100).toFixed(1)}%; nominal 95% interval ${(report.accuracy95[0]*100).toFixed(1)}–${(report.accuracy95[1]*100).toFixed(1)}%. Average calibration error: ${(report.calibrationError*100).toFixed(1)} percentage points. The model was generally conservative in this test.</p><p>Predeclared pass criteria: at least ${report.config.acceptance.minimumHoldoutPicks} forecasts, calibration error ≤10 percentage points, and a positive lower 95% bound on Brier improvement over the training-derived home/neutral baseline.</p><p>${report.limitations.map(esc).join(' ')}</p><p>Model version: ${esc(report.modelVersion)} · Data fingerprint: ${esc(report.datasetHash.slice(0,16))}</p>`;

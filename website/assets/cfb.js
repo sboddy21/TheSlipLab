@@ -216,7 +216,7 @@ function renderSummary() {
   $('health').classList.toggle('warning',!fresh()||!modelReady);
   $('health').textContent=fresh()?`ESPN scores · Sportsbook prices · Checked ${dateLabel(liveAsOf)} ET${modelReady?"":" · Projections unavailable"}`:`Live updates unavailable. Leans paused. Last update: ${liveAsOf?dateLabel(liveAsOf)+' ET':'not yet available'}.`;
   const rankedReadCount=modelReady&&fresh()?['moneyline','spread','total'].reduce((sum,kind)=>sum+rankedMarketReads(kind).length,0):0;
-  $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[currentGames().filter(g=>g.market).length,'Games with odds'],[rankedReadCount,'Ranked AI reads']].map(([n,label])=>`<div class="metric"><strong>${n}</strong><span>${label}</span></div>`).join('');
+  $('metrics').innerHTML=[[board.games.length,'Games this week'],[board.games.filter(g=>g.home.rank||g.away.rank).length,'Games with ranked teams'],[currentGames().filter(g=>g.market).length,'Games with odds'],[rankedReadCount,'Ranked AI reads']].map(([n,label])=>`<div class="stat"><span>${label}</span><strong>${n}</strong></div>`).join('');
   renderIntelligenceBoard();
 }
 function updateBoard(){
@@ -269,7 +269,7 @@ async function refreshLive() {
   }finally{
     refreshing=false;
     $('refresh-now').disabled=false;
-    $('refresh-now').textContent='Refresh now ↻';
+    $('refresh-now').textContent='↻ Refresh';
   }
 }
 async function load(){

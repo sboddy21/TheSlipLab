@@ -5,25 +5,29 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>College Football | The Slip Lab</title>
   <meta name="description" content="The college football week at a glance: game odds, matchup scoring baselines, model projections, and AI analysis.">
-  <link rel="icon" href="./favicon.ico"><link rel="stylesheet" href="./assets/site-header.css"><link rel="stylesheet" href="./assets/cfb.css?v=20260925-board1"><link rel="stylesheet" href="./assets/sports-notebook.css?v=20261104-notebook1">
-  <script defer src="./assets/site-header.js?v=20260926-cfbnav1"></script><script defer src="./assets/sports-notebook.js?v=20261104-notebook1"></script><script type="module" src="./assets/cfb.js?v=20261107-current-board"></script>
+  <link rel="icon" href="./favicon.ico"><link rel="stylesheet" href="./assets/site-header.css"><link rel="stylesheet" href="./assets/nba-lab.css?v=20261104-targets1"><link rel="stylesheet" href="./assets/cfb.css?v=20260925-board1"><link rel="stylesheet" href="./assets/sports-notebook.css?v=20261104-notebook1">
+  <link rel="stylesheet" href="./assets/college-board.css?v=nba-layout1">
+  <script defer src="./assets/site-header.js?v=20260926-cfbnav1"></script><script defer src="./assets/sports-notebook.js?v=20261104-notebook1"></script><script type="module" src="./assets/cfb.js?v=nba-layout1"></script>
 </head>
-<body class="tsl-cfb-page">
-  <main class="cfb-wrap">
-    <div class="edition"><span>THE SLIP LAB / COLLEGE FOOTBALL</span><span id="edition-date">Weekly intelligence</span></div>
-    <section class="cfb-hero" aria-labelledby="pageTitle">
-      <div class="hero-copy"><p class="eyebrow">THE SATURDAY INTELLIGENCE DESK</p><h1 id="pageTitle">College football.<br><em>Read like a coach.</em></h1><p class="intro">Opponent-adjusted projections, live sportsbook prices, and a clear AI read for every matchup with enough evidence.</p><div class="hero-actions"><a class="hero-link" href="#leans">See what AI says <span aria-hidden="true">↗</span></a><a class="hero-link secondary" href="#slate">Open game lab</a></div></div>
-      <aside class="field"><div class="stadium-lights" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="field-top">NCAAF / WEEKLY BOARD <span>MODEL + MARKET</span></div><div class="field-art" aria-hidden="true"><span>10</span><span>20</span><b>50</b><span>20</span><span>10</span></div><div class="field-bottom"><strong>EVERY SNAP HAS CONTEXT.</strong><p>Win probability · Fair line · Market edge</p></div></aside>
-    </section>
-    <div class="freshness-row"><div id="health" class="health" role="status">Connecting to the latest schedule and odds…</div><button type="button" id="refresh-now">Refresh now ↻</button></div>
-    <section class="metrics" aria-label="Weekly overview" id="metrics"></section>
-    <nav class="section-nav" aria-label="College football sections"><a class="active" href="#leans">AI Says</a><a href="#slate">Game Lab</a></nav>
-    <section id="leans"><div class="section-heading board-heading"><div><p class="eyebrow">01 / THE MODEL ROOM</p><h2>NCAAF Intelligence Board.</h2><p class="section-copy">Every game, every major full-game market, and the model-versus-market gap in one sortable board.</p></div><div class="week-control"><small>Current slate</small><strong id="week-label">Loading week…</strong></div></div>
+<body class="tsl-editorial tsl-tool-page nba-props-page college-board-page sports-notebook">
+  <main class="props-shell">
+    <header class="props-hero" aria-labelledby="pageTitle">
+      <div>
+        <div class="eyebrow">THE SLIP LAB / NCAAF</div>
+        <h1 id="pageTitle">College Football</h1>
+        <p>Weekly projections, sportsbook lines, and AI matchup analysis.</p>
+      </div>
+      <button class="refresh-board" type="button" id="refresh-now">↻ Refresh</button>
+    </header>
+    <div id="health" class="notice health" role="status">Connecting to the latest schedule and odds…</div>
+    <section class="stat-strip" aria-label="Weekly overview" id="metrics"></section>
+    <nav class="section-nav" aria-label="College football sections"><a href="#leans">AI Says</a><a href="#slate">Game Lab</a></nav>
+    <section id="leans"><div class="section-heading board-heading"><div><p class="eyebrow">01 / THE MODEL ROOM</p><h2>NCAAF Intelligence Board.</h2><p class="section-copy">Every game, every major full-game market, and the model-versus-market gap in one sortable board.</p></div><div class="week-control"><small id="edition-date">Current slate</small><strong id="week-label">Loading week…</strong></div></div>
       <article class="week-ai"><div class="week-ai-label"><span>AI</span><div><small>SLIP LAB WEEK OVERVIEW</small><strong id="week-ai-status">Analyzing the full slate…</strong></div></div><p id="week-ai-copy">Building a grounded read from opponent-adjusted projections and verified sportsbook prices.</p><div id="week-ai-takeaways" class="week-ai-takeaways"></div></article>
       <div class="quick-select"><span>Quick select</span><div id="matchup-pills" class="matchup-pills"></div></div>
-      <form class="board-filters" id="board-filters" role="search"><label>Team<input type="search" id="board-search" placeholder="Search team"></label><label>Game status<select id="board-status"><option value="all">All games</option><option value="pre">Upcoming</option><option value="in">In progress</option><option value="post">Final</option></select></label><label>Edge tier<select id="board-tier"><option value="all">All tiers</option><option value="strong">Large gap (7+)</option><option value="watch">Watch (3+)</option></select></label><label>Conference<select id="board-conference"><option value="all">All conferences</option></select></label><label>Ranked<select id="board-ranked"><option value="all">All games</option><option value="ranked">Ranked teams</option></select></label><button type="reset">Reset</button></form>
+      <form class="board-filters props-controls" id="board-filters" role="search"><label>Team<input type="search" id="board-search" placeholder="Search team"></label><label>Game status<select id="board-status"><option value="all">All games</option><option value="pre">Upcoming</option><option value="in">In progress</option><option value="post">Final</option></select></label><label>Edge tier<select id="board-tier"><option value="all">All tiers</option><option value="strong">Large gap (7+)</option><option value="watch">Watch (3+)</option></select></label><label>Conference<select id="board-conference"><option value="all">All conferences</option></select></label><label>Ranked<select id="board-ranked"><option value="all">All games</option><option value="ranked">Ranked teams</option></select></label><button type="reset">Reset</button></form>
       <div id="board-kpis" class="board-kpis"></div>
-      <div class="model-board-wrap"><table class="model-board"><caption class="sr-only">NCAAF model and sportsbook comparison board</caption><thead><tr>
+      <div class="model-board-wrap props-table-wrap"><table class="model-board props-table"><caption class="sr-only">NCAAF model and sportsbook comparison board</caption><thead><tr>
         <th><button type="button" data-board-sort="matchup">Matchup</button></th><th><button type="button" data-board-sort="kickoff">Kickoff</button></th><th>Status</th><th>Score</th><th><button type="button" data-board-sort="modelSpread">Model spread</button></th><th><button type="button" data-board-sort="marketSpread">Best spread</button></th><th><button type="button" data-board-sort="spreadGap">Spread gap</button></th><th><button type="button" data-board-sort="modelTotal">Model total</button></th><th><button type="button" data-board-sort="marketTotal">Best total</button></th><th><button type="button" data-board-sort="totalGap">Total gap</button></th><th>Model win %</th><th>Market win %</th><th><button type="button" data-board-sort="winGap">Win gap</button></th><th>Best moneyline</th><th>AI read</th>
       </tr></thead><tbody id="model-board-body"><tr><td colspan="15">Loading the intelligence board…</td></tr></tbody></table></div>
     </section>
