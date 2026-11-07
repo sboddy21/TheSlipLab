@@ -1,3 +1,4 @@
+import { fresh as quoteFresh } from './odds-core.mjs';
 export const MAX_ODDS_AGE_MS=180000;
 export const MAX_MODEL_AGE_MS=36*3600000;
 export function isFresh(stamp,now=Date.now(),maxAge=MAX_ODDS_AGE_MS) {
@@ -35,4 +36,23 @@ export function mergeLiveGame(live,snapshot,asOf,now=Date.now()) {
 
 export function completeSlate(savedGames,liveGames){
   return [...new Map([...savedGames,...liveGames].map(game=>[String(game.id),game])).values()];
+}
+
+
+// A live scoreboard heartbeat does not renew an independent sportsbook quote.
+export function currentCfbMarket(game,now=Date.now()) {
+  if(!game.market||game.state!=='pre'||game.canceled||!game.timeValid||!(Date.parse(game.date)>now)||(game.statusName&&game.statusName!=='STATUS_SCHEDULED'))return null;
+  const market={...game.market,quoteDetails:{},qualifiedQuoteDetails:{}};
+  for(const [kind,fields] of Object.entries({
+    spread:['homeSpread','homePrice','awayPrice'],
+    total:['total','overPrice','underPrice'],
+    moneyline:['homeML','awayML']
+  })){
+    const pair=game.market.quoteDetails?.[kind];
+    if(pair&&Object.keys(pair).length===2&&Object.values(pair).every(q=>quoteFresh(q?.quotedAt,now))){
+      market.quoteDetails[kind]=pair;
+      market.qualifiedQuoteDetails[kind]=game.market.qualifiedQuoteDetails?.[kind];
+    }else for(const field of fields)market[field]=null;
+  }
+  return Object.keys(market.quoteDetails).length?market:null;
 }

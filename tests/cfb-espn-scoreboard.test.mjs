@@ -47,3 +47,35 @@ test('live slate includes new games without projections or odds and keeps saved 
   assert.equal(games[0].state,'post');
   assert.equal(games[2].projection,undefined);
 });
+
+test('live board recovers pregame prices independently of scheduled odds publication',async()=>{
+  const {fetchLive}=await import('../website/api/cfb-live.mjs');
+  const {currentCfbMarket}=await import('../website/assets/cfb-market.mjs');
+  const {valuePicks}=await import('../website/assets/cfb-edge.mjs');
+  const now=Date.parse('2026-11-07T12:00:00Z');
+  const side=(line,odds)=>({close:{line,odds}});
+  const odds={
+    provider:{name:'DraftKings'},
+    pointSpread:{home:side('-4.5','-105'),away:side('+4.5','-115')},
+    total:{over:side('o49.5','-110'),under:side('u49.5','-110')},
+    moneyline:{home:side(null,'-185'),away:side(null,'+154')}
+  };
+  const event={id:'1',date:'2026-11-07T17:00:00Z',status:{type:{state:'pre',name:'STATUS_SCHEDULED'}},competitions:[{
+    competitors:[{homeAway:'home',team:{id:'h',displayName:'Home'}},{homeAway:'away',team:{id:'a',displayName:'Away'}}],odds:[odds]
+  }]};
+  const response=(url,age)=>new Response(JSON.stringify({events:url.includes('20261107')?[event]:[]}),{headers:{age:String(age)}});
+  const unavailable=()=>{throw Error('Publication unavailable');};
+  const {games:[game]}=await fetchLive(async url=>response(url,0),now,unavailable);
+  assert.equal(game.market.homeSpread,-4.5);
+  assert.equal(game.market.total,49.5);
+  assert.equal(game.market.awayML,154);
+  assert.equal(game.market.source,'ESPN scoreboard');
+  assert.ok(game.sportsbookQuotes.every(quote=>quote.timestampKind==='market-observation'));
+  assert.deepEqual(valuePicks(game,{margin:20,total:70},{spread:{intercept:3,slope:0}},now),[]);
+  assert.equal(currentCfbMarket(game,now+21*60_000),null);
+  const {games:[expired]}=await fetchLive(async url=>response(url,21*60),now,unavailable);
+  assert.equal(expired.market,null);
+  event.status.type={state:'in',name:'STATUS_IN_PROGRESS'};
+  const {games:[started]}=await fetchLive(async url=>response(url,0),now,unavailable);
+  assert.equal(started.market,null);
+});

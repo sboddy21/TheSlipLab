@@ -9,7 +9,7 @@ const root=fileURLToPath(new URL('../../website/',import.meta.url));
 http.createServer(async(req,res)=>{
   const url=new URL(req.url,'http://localhost');
   res.status=code=>{res.statusCode=code;return res;};res.json=value=>res.end(JSON.stringify(value));
-  if(url.pathname==='/api/cfb-live')return live(req,res);
+  if(url.pathname==='/api/cfb-live'){req.query=Object.fromEntries(url.searchParams);return live(req,res);}
   try {
     const file=path.resolve(root,'.'+decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));
     if(!file.startsWith(root)||file.includes('/api/'))throw new Error('Not public');

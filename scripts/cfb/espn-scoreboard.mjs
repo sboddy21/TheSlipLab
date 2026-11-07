@@ -8,7 +8,7 @@ export function scoreboardUrl(date){
   return `https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?dates=${compact(date)}&groups=80&limit=200`;
 }
 
-export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeoutMs=30000,sleepImpl=sleep}={}){
+export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeoutMs=30000,sleepImpl=sleep,onEvents}={}){
   const url=scoreboardUrl(date);
   let lastError;
   for(let attempt=1;attempt<=retries;attempt++){
@@ -22,6 +22,7 @@ export async function fetchScoreboardDay(date,{fetchImpl=fetch,retries=3,timeout
       }else{
         const data=await response.json();
         if(!Array.isArray(data.events)||data.events.length>=200)throw new Error(`Missing or truncated ESPN events for ${compact(date)}`);
+        onEvents?.(data.events,response.headers);
         return data.events;
       }
     }catch(error){
