@@ -1,0 +1,53 @@
+{
+  "version": "ncaam-joint-residual-v1",
+  "draws": 2500,
+  "trainingWindow": [
+    "2024-11-04",
+    "2025-04-08"
+  ],
+  "holdoutWindow": [
+    "2025-11-03",
+    "2026-04-08"
+  ],
+  "datasetHash": "7b625f394c30de104f5ff566aa12c10d354035c73b01206c33cd2469012e04e2",
+  "scoreArtifactHash": "2949f3ba8867930775ac4f353398cadff09e7385f86f2fbfdb34843718e407a4",
+  "residualHash": "420a8bc690dafd22eb807e37e5b9beb3205a209a9a99de395ae23a2ba31fedfd",
+  "trainingGames": 4388,
+  "holdoutGames": 5772,
+  "markets": {
+    "moneyline": {
+      "currentBrier": 0.19817611578588185,
+      "simulationBrier": 0.19396956726264752,
+      "delta": -0.004206548523234321,
+      "approximateDayClustered95": [
+        -0.005938158290219117,
+        -0.002474938756249526
+      ]
+    },
+    "spread": {
+      "currentBrier": 0.2384495053862619,
+      "simulationBrier": 0.23888059902979922,
+      "delta": 0.00043109364353732804,
+      "approximateDayClustered95": [
+        -0.00007347353213244825,
+        0.0009356608192071043
+      ]
+    },
+    "total": {
+      "currentBrier": 0.24519840465665288,
+      "simulationBrier": 0.24540318277662326,
+      "delta": 0.00020477811997038353,
+      "approximateDayClustered95": [
+        -0.0001840163900662559,
+        0.000593572630007023
+      ]
+    }
+  },
+  "holdoutGatePassed": false,
+  "gate": "All three upper bounds on paired Brier change must be nonpositive; shadow mode remains manual regardless.",
+  "limitations": [
+    "Spread and total were tested on three synthetic lines per game, including one integer. No historical sportsbook prices or betting returns were evaluated.",
+    "Intervals are approximate and cluster by Eastern date. Teams recurring across dates can introduce dependence.",
+    "One season of held-out results does not establish future market calibration."
+  ]
+}
