@@ -1,6 +1,11 @@
 name: The Slip Lab NCAAM Refresh
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/ncaam/**"
+      - ".github/workflows/ncaam-refresh.yml"
   schedule:
     - cron: '8,23,38,53 * * 11,12,1,2,3,4 *'
 permissions:
@@ -23,6 +28,7 @@ jobs:
             /package-lock.json
             /scripts/
             /tests/ncaam*.mjs
+            /website/assets/ncaam-markets.mjs
             /website/assets/odds-core.mjs
             /website/lib/data-freshness.mjs
             /website/lib/ncaam-live.mjs

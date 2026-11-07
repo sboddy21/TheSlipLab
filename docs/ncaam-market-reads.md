@@ -1,0 +1,11 @@
+# Men’s college basketball market reads
+
+Moneyline shows the existing Elo probability for the projected winner. Estimates below the established 60% qualification threshold are labeled as leans and do not enter the straight-up forward record. Spread and Over/Under use the separate NCAAM score model. The AI winner write-up is optional; market cards and their explanations are computed directly from the models.
+
+The score model fits home scoring margin to the pregame Elo gap including court advantage. It fits game totals to both teams' prior points scored and allowed, shrunk toward a league prior. Team score history regresses at season rollover. Teams need at least eight completed games. Fit and held-out evaluation use different seasons and make predictions before incorporating any finals from that Eastern date.
+
+The fixed training period was 2024–25 (4,388 eligible games), with a sequential 2025–26 holdout (5,772 eligible games). Holdout mean absolute error: margin 10.42 points vs a home/neutral baseline of 11.87; total 14.16 vs a constant baseline of 15.63. One fitted residual standard deviation covered 67.7% of margins and 65.6% of totals. The artifact is reproducible with `node scripts/ncaam/train-score-model.mjs`. The refresh verifies the score artifact matches the fixed Elo configuration and historical dataset.
+
+Spread and total read probabilities are normal residual estimates against the displayed reference line. Whole-number lines reserve separate probability for a push. A line more than two residual standard deviations away from the projection is flagged and skipped to avoid extrapolating extreme probabilities. The reference uses the most widely quoted line with prices on both sides, breaking ties toward the market median. Historical sportsbook lines and prices were not part of training or validation; these checks do not establish probability calibration against those lines or betting returns.
+
+Each pregame game shows all three market slots. A missing, stale, or one-sided spread/total line leaves the pick and probability unavailable; the model's point projection can still be shown. Games with too little team history show why the model passed. Prices and picks disappear at tipoff.

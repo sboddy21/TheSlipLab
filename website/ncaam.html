@@ -9,11 +9,11 @@
   <link rel="stylesheet" href="./assets/site-header.css">
   <link rel="stylesheet" href="./assets/nba-lab.css?v=20261104-targets1"><link rel="stylesheet" href="./assets/cfb.css?v=20260925-board1">
   <link rel="stylesheet" href="./assets/sports-notebook.css?v=20261104-notebook1">
-  <link rel="stylesheet" href="./assets/college-board.css?v=ncaam-ai1">
+  <link rel="stylesheet" href="./assets/college-board.css?v=ncaam-markets1">
   <script src="./assets/member-data.js"></script>
   <script defer src="./assets/site-header.js?v=ncaam-ai1"></script>
   <script defer src="./assets/sports-notebook.js?v=ncaam-notebook1"></script>
-  <script type="module" src="./assets/ncaam-lab.js?v=ncaam-ai1"></script>
+  <script type="module" src="./assets/ncaam-lab.js?v=ncaam-markets1"></script>
 </head>
 <body class="tsl-editorial tsl-tool-page nba-props-page college-board-page sports-notebook">
   <main class="props-shell">
@@ -21,7 +21,7 @@
       <div>
         <div class="eyebrow">THE SLIP LAB / NCAAM</div>
         <h1 id="pageTitle">College Basketball</h1>
-        <p>Today’s winner forecasts, live scores, and sportsbook lines.</p>
+        <p>Today’s moneyline, spread, and total reads, plus live scores and sportsbook lines.</p>
       </div>
       <button class="refresh-board" id="refreshBoard" type="button">↻ Refresh</button>
     </header>
@@ -33,11 +33,11 @@
     <section id="ai-says" aria-labelledby="aiHeading">
       <div class="section-heading">
         <div><p class="eyebrow">THE MATCHUP READ</p><h2 id="aiHeading">AI Says</h2></div>
-        <p>Elo forecast, current moneyline, and matchup uncertainty.</p>
+        <p>Choose a matchup for the model pick, probability, and reason in each market.</p>
       </div>
       <form id="aiForm" class="props-controls">
         <label>Matchup<select id="aiGame" disabled><option>Loading today’s forecasts…</option></select></label>
-        <button id="aiGenerate" class="refresh-board" type="submit" disabled>Generate AI read</button>
+        <button id="aiGenerate" class="refresh-board" type="submit" disabled>Generate AI winner analysis</button>
       </form>
       <div id="aiMarket" class="notice"></div>
       <p id="aiStatus" class="section-copy" role="status"></p>
@@ -45,8 +45,8 @@
     </section>
     <section id="picks">
       <div class="section-heading">
-        <div><p class="eyebrow">01 / THE MODEL ROOM</p><h2>Winner forecasts</h2></div>
-        <p>College basketball win probabilities from the Elo model.</p>
+        <div><p class="eyebrow">01 / THE MODEL ROOM</p><h2>Model picks</h2></div>
+        <p>Pregame leans and model estimates for all three markets.</p>
       </div>
       <div id="modelEvidence" class="section-copy"></div>
       <div id="picksRoot" aria-live="polite"></div>
@@ -67,7 +67,7 @@
       </div>
       <div id="gamesRoot" class="game-grid" aria-live="polite"><p class="empty">Loading matchups…</p></div>
     </section>
-    <aside class="method-note"><strong>About the data</strong><p>ESPN supplies team records, rankings, and scoring averages. Prices expire after 20 minutes and disappear at tipoff. Early-season forecasts use some prior-season ratings.</p></aside>
+    <aside class="method-note"><strong>About the data</strong><p>ESPN supplies team records, rankings, and scoring averages. Prices expire after 20 minutes and disappear at tipoff. Early-season forecasts use some prior-season history. Spread and total percentages estimate outcomes at the displayed sportsbook line, with pushes counted separately. These estimates have been tested against historical scores; betting performance has not been established.</p></aside>
     <footer class="ncaam-footer"><a href="./disclaimer.html">Responsible gaming &amp; disclaimer</a></footer>
   </main>
 </body>
