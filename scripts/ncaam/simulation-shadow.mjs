@@ -51,13 +51,36 @@ export function buildSimulationShadow(board, model, scoreArtifact, now = Date.no
   };
 }
 
+const easternHour = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'America/New_York', hour: '2-digit', hourCycle: 'h23'
+});
+
+export function dailySimulationDue(previous, now = Date.now()) {
+  const time = new Date(now);
+  const hour = Number(easternHour.formatToParts(time).find(part => part.type === 'hour').value);
+  return hour >= 9 && previous?.date !== easternDate(time);
+}
+
 async function run() {
   const read = async relative => JSON.parse(await fs.readFile(new URL(relative, import.meta.url), 'utf8'));
+  const target = new URL('../../data/ncaam/simulation-shadow.json', import.meta.url);
+  const now = Date.now();
+  const previous = await read(target).catch(error => {
+    if (error.code !== 'ENOENT') throw error;
+    return null;
+  });
+  if (!dailySimulationDue(previous, now)) {
+    console.log(JSON.stringify({ date: easternDate(new Date(now)), status: 'not_due' }));
+    return;
+  }
   const [board, model, score] = await Promise.all([
     read('../../website/data/ncaam_board.json'), read('./simulation-model.json'), read('./score-model.json')
   ]);
-  const result = buildSimulationShadow(board, model, score);
-  const target = new URL('../../data/ncaam/simulation-shadow.json', import.meta.url);
+  const result = buildSimulationShadow(board, model, score, now);
+  if (!result.games.length) {
+    console.log(JSON.stringify({ date: result.date, status: 'no_eligible_games', skipped: result.skipped }));
+    return;
+  }
   const temp = new URL(target.href + '.' + process.pid + '.tmp');
   await fs.writeFile(temp, JSON.stringify(result) + '\n');
   await fs.rename(temp, target);
