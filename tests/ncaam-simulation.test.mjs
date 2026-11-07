@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import test from 'node:test';
 import { simulateMatchup, outcomes, simulationConfig } from '../scripts/ncaam/simulation.mjs';
-import { buildSimulationShadow } from '../scripts/ncaam/simulation-shadow.mjs';
+import { buildSimulationShadow, dailySimulationDue } from '../scripts/ncaam/simulation-shadow.mjs';
 import { hash } from '../scripts/ncaam/model.mjs';
 
 const score = { version:'ncaam-score-v1', margin:{mean:10,sd:10}, total:{mean:150,sd:15} };
@@ -66,4 +66,15 @@ test('recorded holdout decision is tied to the versioned simulation and score ar
   assert.equal(model.scoreArtifactHash,hash(score));
   assert.equal(report.holdoutGames,score.evaluation.holdout);
   assert.equal(report.holdoutGatePassed,Object.values(report.markets).every(row=>row.approximateDayClustered95[1]<=0));
+});
+
+test('daily simulation starts at 9 a.m. Eastern and a published slate skips all later refreshes', () => {
+  const at = value => Date.parse(value);
+  const november = { date:'2026-11-07' };
+  assert.equal(dailySimulationDue(null,at('2026-11-07T13:59:59Z')),false);
+  assert.equal(dailySimulationDue(null,at('2026-11-07T14:00:00Z')),true);
+  assert.equal(dailySimulationDue(november,at('2026-11-08T04:59:00Z')),false);
+  assert.equal(dailySimulationDue(november,at('2026-11-08T14:00:00Z')),true);
+  assert.equal(dailySimulationDue(null,at('2027-03-15T12:59:00Z')),false);
+  assert.equal(dailySimulationDue(null,at('2027-03-15T13:00:00Z')),true);
 });
