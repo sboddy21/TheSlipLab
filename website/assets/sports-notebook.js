@@ -1,6 +1,6 @@
 const SPORTS = [
   ["MLB", "mlb.html", false], ["WNBA", "wnba.html", false], ["NFL", "nfl.html", true],
-  ["CFB", "cfb.html", true], ["NBA", "nba.html", true], ["NHL", "nhl.html", true]
+  ["CFB", "cfb.html", true], ["NBA", "nba.html", true], ["NHL", "nhl.html", true], ["NCAAM", "ncaam.html", true]
 ];
 
 const currentFile = location.pathname.split("/").pop() || "index.html";
