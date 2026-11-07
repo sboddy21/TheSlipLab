@@ -80,11 +80,10 @@
     ["NCAAM Home", "./ncaam.html", ["/ncaam.html"]],
     ["Model Picks", "./ncaam.html#picks", []],
     ["Matchups", "./ncaam.html#games", []],
-    ["Results", "./ncaam.html#results", []],
     ["My Account", "./account.html", ["/account.html"]],
     ["Disclaimer", "./disclaimer.html", ["/disclaimer.html"]]
   ];
-  const ncaamPrimaryOrder = ["NCAAM Home", "Model Picks", "Matchups", "Results"];
+  const ncaamPrimaryOrder = ["NCAAM Home", "Model Picks", "Matchups"];
   const nbaItems = [
     ["NBA Home","./nba.html#dashboard",["/nba.html"]],
     ["Results","./nba-results.html",["/nba-results.html"]],
