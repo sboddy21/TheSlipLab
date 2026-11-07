@@ -36,6 +36,8 @@ jobs:
             /website/data/ncaam*.json
             /website/data/odds_ncaam.json
             /data/ncaam/current-history.json
+            /data/ncaam/simulation-shadow.json
+            /data/ncaam/simulation-validation.json
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -46,11 +48,15 @@ jobs:
         env:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           RAPIDAPI_HOST: sportsbook-api2.p.rapidapi.com
+      - name: Run NCAAM simulation in shadow mode
+        continue-on-error: true
+        run: npm run ncaam:simulation:test && npm run ncaam:simulation:shadow
       - name: Commit NCAAM data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add website/data/ncaam_board.json website/data/ncaam_results.json website/data/odds_ncaam.json website/data/ncaam_picks.json data/ncaam/current-history.json
+          if test -f data/ncaam/simulation-shadow.json; then git add data/ncaam/simulation-shadow.json; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh NCAAM data"
           git pull origin "$GITHUB_REF_NAME" --rebase

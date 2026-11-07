@@ -14,7 +14,7 @@ function bestPrice(quotes, side) {
     || Date.parse(b.quotedAt)-Date.parse(a.quotedAt) || a.book.localeCompare(b.book))[0] || null;
 }
 
-function referenceLine(quotes, market) {
+export function ncaamReferenceLine(quotes, market) {
   const byLine = new Map(), sides = market === 'spread' ? ['home','away'] : ['over','under'];
   for (const q of quotes) {
     if (q.market !== market || !sides.includes(q.side) || !Number.isFinite(q.line) || !q.book
@@ -65,7 +65,7 @@ export function ncaamMarketReads(game, now = Date.now()) {
     if (!Number.isFinite(score?.mean) || !Number.isFinite(score?.sd) || score.sd <= 0) {
       return unavailable(market,'No current score projection with enough team history.');
     }
-    const reference = referenceLine(quotes,market);
+    const reference = ncaamReferenceLine(quotes,market);
     const home = game.home.shortName || game.home.name, away = game.away.shortName || game.away.name;
     const projected = market === 'total' ? `Projected total: ${score.mean.toFixed(1)} points.`
       : `Projected margin: ${score.mean < 0 ? away : home} by ${Math.abs(score.mean).toFixed(1)}.`;
