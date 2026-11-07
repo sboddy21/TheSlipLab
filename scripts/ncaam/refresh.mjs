@@ -6,13 +6,7 @@ import { modelForSlate, archivePicks } from './live-model.mjs';
 const directory = new URL('../../website/data/', import.meta.url);
 async function read(name, fallback) { try { return JSON.parse(await fs.readFile(new URL(name, directory), 'utf8')); } catch { return fallback; } }
 async function write(name, data) { const target = new URL(name, directory); await fs.writeFile(new URL(target.href + '.tmp'), JSON.stringify(data, null, 2) + '\n'); await fs.rename(new URL(target.href + '.tmp'), target); }
-export async function fetchScoreboard(date, fetcher = fetch) {
-  const response = await fetcher(`https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${date.replaceAll('-', '')}&groups=50&limit=1000`, { signal: AbortSignal.timeout(20000), headers: { Accept: 'application/json' } });
-  if (!response.ok) throw new Error(`NCAAM scoreboard HTTP ${response.status}`);
-  const payload = await response.json();
-  if (!Array.isArray(payload.events)) throw new Error('Invalid NCAAM scoreboard');
-  return payload.events;
-}
+import { fetchScoreboard } from './scoreboard.mjs';
 export async function refresh(date = easternDate()) {
   const now = Date.now(), generatedAt = new Date(now).toISOString();
   const previous = await read('ncaam_results.json', { games: [] });

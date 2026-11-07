@@ -16,3 +16,38 @@ test('canonicalizes cross-provider event IDs and deduplicates the same book and 
  const merged=mergeGameQuotes(game,[{...quotes[0],providerEventId:'rapid-1',home:'Home',away:'Away'},quotes[0],{...quotes[0],book:'Another book'}]);
  assert.equal(merged.length,2); assert.ok(merged.every(q=>q.providerEventId===game.id)); assert.ok(merged.every(q=>q.home===game.home.name));
 });
+
+test('live scoreboard restores an expired slate and keeps only fresh prices and matched forecasts', async () => {
+  const { loadNcaamLiveBoard } = await import('../website/lib/ncaam-live.mjs');
+  const { checkDataFreshness } = await import('../website/lib/data-freshness.mjs');
+  const generatedAt = new Date(now - 7 * 3600_000).toISOString();
+  const snapshot = {
+    sport: 'NCAAM', date: '2026-11-06', generatedAt,
+    model: { status: 'validated_winner_forecasts' },
+    games: [{ ...game, prediction: { eligible: true }, quotes: [{ ...quotes[0], book: 'Expired book', quotedAt: generatedAt }] }]
+  };
+  const readLive = async () => ({ events: [event, { ...event, id: '456' }], observedAt: new Date(now).toISOString() });
+  assert.equal(checkDataFreshness('ncaam_board.json', snapshot, { now }).available, false);
+  const board = await loadNcaamLiveBoard(async () => snapshot, { now, readLive });
+  assert.equal(checkDataFreshness('ncaam_board.json', board, { now }).available, true);
+  assert.equal(board.games.length, 2);
+  assert.equal(board.forecastGeneratedAt, generatedAt);
+  assert.equal(board.games[0].prediction.eligible, true);
+  assert.equal(board.games[1].prediction, undefined);
+  assert.equal(board.games[0].quotes.length, 3);
+  assert.ok(board.games[0].quotes.every(quote => quote.book !== 'Expired book'));
+});
+
+test('live games remain available when the published slate is missing or belongs to yesterday', async () => {
+  const { loadNcaamLiveBoard } = await import('../website/lib/ncaam-live.mjs');
+  const readLive = async () => ({ events: [event], observedAt: new Date(now).toISOString() });
+  for (const readPublished of [
+    async () => { throw new Error('snapshot unavailable'); },
+    async () => ({ sport: 'NCAAM', date: '2026-11-05', games: [game] })
+  ]) {
+    const board = await loadNcaamLiveBoard(readPublished, { now, readLive });
+    assert.equal(board.date, '2026-11-06');
+    assert.equal(board.games.length, 1);
+    assert.equal(board.games[0].prediction, undefined);
+  }
+});

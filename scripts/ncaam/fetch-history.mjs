@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 import { createHash } from 'node:crypto';
-import { fetchScoreboard } from './refresh.mjs';
+import { fetchScoreboard } from './scoreboard.mjs';
 import { normalizeGame } from './core.mjs';
 const config=JSON.parse(await fs.readFile(new URL('./model-config.json',import.meta.url),'utf8'));
 const root=new URL('../../data/ncaam/',import.meta.url);

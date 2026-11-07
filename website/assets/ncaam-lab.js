@@ -37,7 +37,7 @@ function renderPicks() {
   const model=board?.model;
   const validated=model?.status==='validated_winner_forecasts';
   const v=model?.validation;
-  $('modelEvidence').innerHTML=validated?`Historical test: <strong>${(v.accuracy*100).toFixed(1)}% correct</strong> across ${v.picks.toLocaleString()} qualifying forecasts in 2025–26. Brier score ${v.brier.toFixed(3)} vs ${v.baselineBrier.toFixed(3)} baseline (lower is better). <a href="#validationRoot">Review evidence ↓</a>`:'Winner forecasts are temporarily unavailable because model integrity or current data could not be verified.';
+  $('modelEvidence').innerHTML=validated?`Historical test: <strong>${(v.accuracy*100).toFixed(1)}% correct</strong> across ${v.picks.toLocaleString()} qualifying forecasts in 2025–26. Brier score ${v.brier.toFixed(3)} vs ${v.baselineBrier.toFixed(3)} baseline (lower is better). <a href="#validationRoot">Review evidence ↓</a>${board.forecastGeneratedAt ? ` · Forecasts published ${esc(time(board.forecastGeneratedAt))}` : ''}`:'Winner forecasts are temporarily unavailable because model integrity or current data could not be verified.';
   const upcoming=validated&&!failed&&Date.now()-Date.parse(board.generatedAt)<20*60_000&&dateKey(new Date())===board.date?board.games.filter(g=>g.state==='pre'&&Date.parse(g.kickoff)>Date.now()&&g.prediction?.eligible).sort((a,b)=>b.prediction.probability-a.prediction.probability):[];
   $('picksRoot').innerHTML=upcoming.length?upcoming.map(g=>{const p=g.prediction;return `<article class="watch-card"><p>${esc(time(g.kickoff))}</p><h3>${esc(g[p.side].name)}</h3><div class="forecast-probability">${(p.probability*100).toFixed(0)}% <small>win estimate</small></div><p>${esc(g.away.shortName)} at ${esc(g.home.shortName)} · ${p.earlySeason?'Early-season carryover ratings':'Current-season ratings'}</p><a href="#game-${esc(g.id)}">See matchup &amp; prices →</a></article>`;}).join(''):'<p class="empty">No qualifying pregame forecasts available right now.</p>';
   const settled=forwardPicks.picks.filter(p=>['win','loss'].includes(p.result)),wins=settled.filter(p=>p.result==='win').length;
@@ -59,9 +59,15 @@ async function load() {
     const data=await json('ncaam_board.json');
     if(data.sport!=='NCAAM'||!Array.isArray(data.games)||!Number.isFinite(Date.parse(data.generatedAt)))throw new Error('Invalid board');
     board=data;failed=false;
-    try { forwardPicks=await json('ncaam_picks.json'); } catch { forwardPicks={picks:[]}; }
-    try { renderValidation(await json('ncaam_validation.json')); } catch { $('validationRoot').textContent='Validation report unavailable.'; }
-    try { const result=await json('ncaam_results.json'); if(!Array.isArray(result.games)) throw new Error('Invalid archive'); archive=result; archiveFailed=false; } catch { archiveFailed=true; }
+    render();
+    const [picks, validation, results] = await Promise.allSettled([
+      json('ncaam_picks.json'), json('ncaam_validation.json'), json('ncaam_results.json')
+    ]);
+    if (picks.status === 'fulfilled' && Array.isArray(picks.value.picks)) forwardPicks = picks.value;
+    if (validation.status === 'fulfilled') renderValidation(validation.value);
+    else $('validationRoot').textContent = 'Validation report unavailable.';
+    archiveFailed = results.status !== 'fulfilled' || !Array.isArray(results.value.games);
+    if (!archiveFailed) archive = results.value;
     const selected=$('resultsDate').value, dates=[...new Set(archive.games.filter(g=>g.capturedQuotes?.length).map(g=>dateKey(g.kickoff)))].sort().reverse();
     $('resultsDate').innerHTML='<option value="">All captured dates</option>'+dates.map(d=>`<option value="${d}">${d}</option>`).join(''); $('resultsDate').value=dates.includes(selected)?selected:'';
     render();

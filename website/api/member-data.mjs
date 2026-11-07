@@ -1,3 +1,4 @@
+import { loadNcaamLiveBoard } from '../lib/ncaam-live.mjs';
 import { buildMarketLines } from '../../scripts/nba/build_nba_market_lines.mjs';
 import { loadNflWorkspace } from '../lib/nfl-live.mjs';
 import { prepareCurrentMarkets } from '../lib/current-markets.mjs';
@@ -159,6 +160,8 @@ return async function handler(request, response) {
     if (file === 'nba_market_lines.json') {
       const [games, players, odds] = await Promise.all(['nba_games_today.json','nba_player_pool.json','odds_nba.json'].map(load));
       payload = { ...buildMarketLines(games, players, odds), sourceFetchedAt: odds.retrievedAt };
+    } else if (file === 'ncaam_board.json') {
+      payload = await loadNcaamLiveBoard(() => load(file));
     } else payload = await load(file);
     let health = null;
     try { if (Array.isArray(payload)) health = await load('health_status.json'); } catch { /* Missing receipts cannot certify legacy arrays. */ }
