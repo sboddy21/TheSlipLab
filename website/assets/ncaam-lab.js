@@ -1,11 +1,37 @@
-import { fresh, bestComparable, decimal } from './odds-core.mjs';
+import { bestComparable } from './odds-core.mjs';
+import { currentNcaamQuotes, ncaamMarketReads } from './ncaam-markets.mjs';
 const $ = id => document.getElementById(id);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const signed = n => n > 0 ? `+${n}` : String(n);
 const dateKey = date => new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(date));
 const time = date => new Date(date).toLocaleString('en-US', {timeZone:'America/New_York',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
 let board = null, loading = false, failed = false;
-const currentQuotes = game => !failed && game.state === 'pre' && Date.parse(game.kickoff) > Date.now() ? (game.quotes || []).filter(q => fresh(q.quotedAt) && decimal(q.price) && q.decimalOdds > 1) : [];
+const currentQuotes = game => failed ? [] : currentNcaamQuotes(game);
+const upcoming = (game, now) => game.state === 'pre' && Date.parse(game.kickoff) > now;
+function isCurrentBoard(now) {
+  const age = now - Date.parse(board?.generatedAt);
+  return !failed && age >= -1000 && age < 20 * 60_000 && dateKey(now) === board?.date;
+}
+const percent = probability => probability == null ? '—' : probability > .999 ? '>99.9%' : `${(100 * probability).toFixed(1)}%`;
+function marketReads(game, now) {
+  return ncaamMarketReads(isCurrentBoard(now) && board.model?.status === 'validated_winner_forecasts'
+    ? game : { ...game, prediction: null }, now);
+}
+function marketCards(game, now = Date.now()) {
+  if (!upcoming(game,now)) return '';
+  return `<div class="ncaam-market-grid" aria-label="Pregame model reads">${marketReads(game,now).map(row => {
+    const detail = row.market === 'moneyline' ? 'to win' : row.market === 'spread' ? 'to cover' : 'to hit';
+    return `<section class="method-note ncaam-market-card">
+      <h3>${esc(row.label)}</h3>
+      <strong>${esc(row.selection)}</strong>
+      <p class="ncaam-market-prob"><b>${esc(percent(row.probability))}</b> ${row.probability == null ? 'Model estimate unavailable' : `model ${detail}${row.lean ? ' · lean' : ''}`}</p>
+      <p>${esc(row.why)}</p>
+      ${row.push > 0 ? `<small>${esc(percent(row.push))} push chance</small>` : ''}
+      ${row.quote ? `<small>${esc(row.quote.book)} · ${esc(signed(row.quote.price))} · ${esc(time(row.quote.quotedAt))}</small>`
+        : row.market === 'moneyline' && row.probability != null ? '<small>No fresh moneyline price.</small>' : ''}
+    </section>`;
+  }).join('')}</div>`;
+}
 const selection = q => `${q.market === 'moneyline' ? 'Moneyline' : q.market === 'spread' ? 'Spread' : 'Total'} · ${q.side === 'home' ? q.home : q.side === 'away' ? q.away : q.side}${q.line == null ? '' : ` ${q.market === 'total' ? q.line : signed(q.line)}`}`;
 function prices(quotes) {
   const best = new Set(bestComparable(quotes).map(q => q.quoteId));
@@ -15,7 +41,7 @@ function teamRow(team, showScore) { return `<div class="team-row">${team.rank?`<
 function stats(team) { const s = team.stats || {}; return `<div><strong>${esc(team.shortName || team.abbreviation)}</strong>${s.avgPoints == null?'Scoring average unavailable':`${esc(s.avgPoints)} PPG`}${s.fieldGoalPct == null?'':` · ${esc(s.fieldGoalPct)}% FG`}</div>`; }
 function gameCard(g) {
   const quotes = currentQuotes(g), pastTip = g.state === 'pre' && Date.parse(g.kickoff) <= Date.now();
-  return `<article class="game-card" id="game-${esc(g.id)}"><div class="game-meta"><span class="${g.state==='in'?'live-tag':''}">${esc(pastTip?'Awaiting status update':g.state==='pre'?time(g.kickoff):g.status)}</span><span>${g.neutral?'NEUTRAL COURT':g.conferenceGame?'CONFERENCE':'NON-CONFERENCE'}</span></div>${teamRow(g.away,g.state==='in'||g.completed)}${teamRow(g.home,g.state==='in'||g.completed)}<div class="stats-row">${stats(g.away)}${stats(g.home)}</div><div class="market-note">${esc(g.venue)}${g.broadcast?` · ${esc(g.broadcast)}`:''}${g.neutral?' · No home-court designation':''}</div>${quotes.length?`<details><summary>Compare game lines · ${quotes.length} prices</summary>${prices(quotes)}</details>`:`<p class="muted">${g.state==='pre'?'No fresh pregame prices available.':'Pregame markets closed.'}</p>`}</article>`;
+  return `<article class="game-card" id="game-${esc(g.id)}"><div class="game-meta"><span class="${g.state==='in'?'live-tag':''}">${esc(pastTip?'Awaiting status update':g.state==='pre'?time(g.kickoff):g.status)}</span><span>${g.neutral?'NEUTRAL COURT':g.conferenceGame?'CONFERENCE':'NON-CONFERENCE'}</span></div>${teamRow(g.away,g.state==='in'||g.completed)}${teamRow(g.home,g.state==='in'||g.completed)}<div class="stats-row">${stats(g.away)}${stats(g.home)}</div><div class="market-note">${esc(g.venue)}${g.broadcast?` · ${esc(g.broadcast)}`:''}${g.neutral?' · No home-court designation':''}</div>${marketCards(g)}${quotes.length?`<details><summary>Compare game lines · ${quotes.length} prices</summary>${prices(quotes)}</details>`:`<p class="muted">${g.state==='pre'?'No fresh pregame prices available.':'Pregame markets closed.'}</p>`}</article>`;
 }
 function renderGames() {
   if (!board) return;
@@ -35,10 +61,8 @@ function render() {
 }
 function upcomingForecasts() {
   const now = Date.now();
-  if (failed || board?.model?.status !== 'validated_winner_forecasts'
-    || now - Date.parse(board.generatedAt) >= 20 * 60_000 || dateKey(now) !== board.date) return [];
-  return board.games.filter(game => game.state === 'pre' && Date.parse(game.kickoff) > now && game.prediction?.eligible)
-    .sort((a, b) => b.prediction.probability - a.prediction.probability);
+  if (!isCurrentBoard(now)) return [];
+  return board.games.filter(game => upcoming(game,now));
 }
 
 let aiContextKey = '', aiPending = false;
@@ -51,7 +75,7 @@ function renderAiChoices() {
     const selected = select.value;
     select.innerHTML = games.length ? games.map(game =>
       `<option value="${esc(game.id)}">${esc(game.away.name)} at ${esc(game.home.name)}</option>`
-    ).join('') : '<option value="">No qualifying pregame forecasts</option>';
+    ).join('') : '<option value="">No upcoming games</option>';
     if (ids.includes(selected)) select.value = selected;
     select.dataset.ids = ids.join(',');
   }
@@ -64,17 +88,12 @@ function renderAiChoices() {
     $('aiRead').replaceChildren();
     $('aiStatus').textContent = '';
   }
-  $('aiGenerate').disabled = !game || aiPending;
+  $('aiGenerate').disabled = !game?.prediction?.eligible || aiPending;
   if (!game) {
-    $('aiMarket').textContent = 'AI reads open when today’s pregame winner forecasts are available.';
+    $('aiMarket').textContent = 'Market reads appear for upcoming games on the current slate.';
     return;
   }
-  const quote = currentQuotes(game).filter(row => row.market === 'moneyline' && row.side === pick.side)
-    .sort((a, b) => decimal(b.price) - decimal(a.price))[0];
-  const probability = (100 * pick.probability).toFixed(1);
-  const market = quote ? `${signed(quote.price)} at ${quote.book} · ${(100 / decimal(quote.price)).toFixed(1)}% break-even · Observed ${time(quote.quotedAt)}`
-    : 'No current moneyline for this selection.';
-  $('aiMarket').textContent = `Model pick: ${game[pick.side].name} · ${probability}% win estimate. ${market}`;
+  $('aiMarket').innerHTML = marketCards(game);
 }
 
 $('aiGame').addEventListener('change', renderAiChoices);
@@ -82,7 +101,7 @@ $('aiForm').addEventListener('submit', async event => {
   event.preventDefault();
   const gameId = $('aiGame').value;
   const game = upcomingForecasts().find(row => String(row.id) === gameId);
-  if (aiPending || !game) return;
+  if (aiPending || !game?.prediction?.eligible) return;
   const contextKey = aiContextKey;
   aiPending = true;
   $('aiGenerate').disabled = true;
@@ -128,24 +147,20 @@ function renderPicks() {
   const validated=model?.status==='validated_winner_forecasts';
   const v=model?.validation;
   $('modelEvidence').innerHTML=validated?`Historical test: <strong>${(v.accuracy*100).toFixed(1)}% correct</strong> across ${v.picks.toLocaleString()} qualifying forecasts in 2025–26. Brier score ${v.brier.toFixed(3)} vs ${v.baselineBrier.toFixed(3)} baseline (lower is better). <a href="#validationRoot">Review evidence ↓</a>${board.forecastGeneratedAt ? ` · Forecasts published ${esc(time(board.forecastGeneratedAt))}` : ''}`:'Winner forecasts are temporarily unavailable because model integrity or current data could not be verified.';
-  const upcoming = upcomingForecasts();
-  if (!upcoming.length) {
-    $('picksRoot').innerHTML = '<p class="empty">No qualifying pregame forecasts available right now.</p>';
+  const games = upcomingForecasts();
+  if (!games.length) {
+    $('picksRoot').innerHTML = '<p class="empty">No upcoming games on the current slate.</p>';
     return;
   }
-  const rows = upcoming.map(game => {
-    const prediction = game.prediction;
-    return `<tr>
+  const now = Date.now();
+  const rows = games.map(game => `<tr>
       <td><strong>${esc(game.away.shortName)} at ${esc(game.home.shortName)}</strong><small>${esc(time(game.kickoff))}</small></td>
-      <td>${esc(game[prediction.side].name)}</td>
-      <td><strong>${(prediction.probability * 100).toFixed(0)}%</strong></td>
-      <td>${prediction.earlySeason ? 'Early-season carryover' : 'Current season'}</td>
+      ${marketReads(game,now).map(row => `<td><strong>${esc(row.selection)}</strong><small>${esc(percent(row.probability))}${row.lean ? ' · lean' : ''}</small></td>`).join('')}
       <td><a href="#game-${esc(game.id)}">View matchup</a></td>
-    </tr>`;
-  }).join('');
+    </tr>`).join('');
   $('picksRoot').innerHTML = `<div class="props-table-wrap"><table class="props-table">
-    <caption class="sr-only">Men’s college basketball winner forecasts</caption>
-    <thead><tr><th>Matchup</th><th>Model pick</th><th>Win estimate</th><th>Ratings</th><th>Details</th></tr></thead>
+    <caption class="sr-only">Men’s college basketball model picks by market</caption>
+    <thead><tr><th>Matchup</th><th>Moneyline</th><th>Spread</th><th>Over / Under</th><th>Details</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }

@@ -13,8 +13,9 @@ export function forecast(game,state,config) {
   const away=state.teams[game.away.id] || {rating:config.initialRating,games:0,seasonGames:0};
   const homeProbability=1/(1+10**((away.rating-home.rating-(game.neutral?0:config.homeAdvantage))/config.ratingScale));
   const side=homeProbability>=.5?'home':'away', probability=side==='home'?homeProbability:1-homeProbability;
-  const eligible=home.games>=config.minimumTeamGames&&away.games>=config.minimumTeamGames&&probability>=config.minimumConfidence;
-  return { modelVersion:config.version, homeProbability, awayProbability:1-homeProbability, side, probability, eligible, homeRating:home.rating, awayRating:away.rating, earlySeason:Math.min(home.seasonGames,away.seasonGames)<8, reason:eligible?'Historical win-probability forecast':Math.min(home.games,away.games)<config.minimumTeamGames?'Insufficient team history':'Below confidence threshold' };
+  const hasTeamHistory=Math.min(home.games,away.games)>=config.minimumTeamGames;
+  const eligible=hasTeamHistory&&probability>=config.minimumConfidence;
+  return { modelVersion:config.version, homeProbability, awayProbability:1-homeProbability, side, probability, eligible, hasTeamHistory, homeRating:home.rating, awayRating:away.rating, earlySeason:Math.min(home.seasonGames,away.seasonGames)<8, reason:eligible?'Historical win-probability forecast':Math.min(home.games,away.games)<config.minimumTeamGames?'Insufficient team history':'Below confidence threshold' };
 }
 export function update(game,state,config) {
   if(!game.completed||!Number.isFinite(game.home.score)||!Number.isFinite(game.away.score)||game.home.score===game.away.score)return;

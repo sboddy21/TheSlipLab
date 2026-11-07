@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import { forecast, update, enterSeason, hash } from './model.mjs';
-import { normalizeGame, easternDate } from './core.mjs';
+import { normalizeGame } from './core.mjs';
+import { enterScoreSeason, updateScore, projectScore, scoreDay, scoreConfig } from './score-model.mjs';
+const scoreArtifact = JSON.parse(await fs.readFile(new URL('./score-model.json', import.meta.url), 'utf8'));
 const config=JSON.parse(await fs.readFile(new URL('./model-config.json',import.meta.url),'utf8'));
 const dir=new URL('../../website/data/',import.meta.url),historyFile=new URL('../../data/ncaam/current-history.json',import.meta.url);
 export async function modelForSlate(games, date, fetchScoreboard, now=Date.now()) {
@@ -16,9 +18,20 @@ export async function modelForSlate(games, date, fetchScoreboard, now=Date.now()
  const history=[...new Map([...cached.games,...gathered,...games].filter(g=>g.season===season).map(g=>[g.id,g])).values()].filter(g=>g.completed&&Date.parse(g.kickoff)<now).sort((a,b)=>a.kickoff.localeCompare(b.kickoff)||a.id.localeCompare(b.id));
  // Rebuild from the fixed historical artifact each time; never double-count completed games.
  enterSeason(state,season,config);for(const game of history)update(game,state,config);
+ const scoring = scoreArtifact.evaluation.passed && scoreArtifact.configHash === hash(scoreConfig)
+   && scoreArtifact.eloConfigHash === hash(config) && scoreArtifact.datasetHash === report.datasetHash;
+ const scores = structuredClone(scoreArtifact.state);
+ if (scoring) {
+   enterScoreSeason(scores,season);
+   for (const game of history) if (scoreDay(game) < date) updateScore(game,scores);
+ }
+ const forecasts = new Map(games.map(game => {
+   const prediction = forecast(game,state,config);
+   return [game.id,{ ...prediction, score:scoring ? projectScore(game,scores,prediction,config,scoreArtifact) : null }];
+ }));
  await fs.mkdir(new URL('../../data/ncaam/',import.meta.url),{recursive:true});
  await fs.writeFile(historyFile,JSON.stringify({season,days:[...new Set([...cached.days,...days])],games:history})+'\n');
- return {report,model:{version:config.version,status:'validated_winner_forecasts',validatedThrough:report.config.holdoutWindow[1],scope:report.scope,validation:{picks:report.picks,accuracy:report.accuracy,brier:report.brier,baselineBrier:report.baselineBrier,calibrationError:report.calibrationError}},forecasts:new Map(games.map(g=>[g.id,forecast(g,state,config)]))};
+ return {report,model:{version:config.version,status:'validated_winner_forecasts',validatedThrough:report.config.holdoutWindow[1],scope:report.scope,scoreValidation:scoring ? scoreArtifact.evaluation : null,validation:{picks:report.picks,accuracy:report.accuracy,brier:report.brier,baselineBrier:report.baselineBrier,calibrationError:report.calibrationError}},forecasts};
 }
 export function archivePicks(previous, games, now=Date.now()) {
  const rows=new Map((previous?.picks||[]).map(p=>[p.gameId,p]));
