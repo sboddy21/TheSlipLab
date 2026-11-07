@@ -9,11 +9,11 @@
   <link rel="stylesheet" href="./assets/site-header.css">
   <link rel="stylesheet" href="./assets/nba-lab.css?v=20261104-targets1"><link rel="stylesheet" href="./assets/cfb.css?v=20260925-board1">
   <link rel="stylesheet" href="./assets/sports-notebook.css?v=20261104-notebook1">
-  <link rel="stylesheet" href="./assets/college-board.css?v=nba-layout2">
+  <link rel="stylesheet" href="./assets/college-board.css?v=ncaam-ai1">
   <script src="./assets/member-data.js"></script>
-  <script defer src="./assets/site-header.js?v=ncaam-notebook1"></script>
+  <script defer src="./assets/site-header.js?v=ncaam-ai1"></script>
   <script defer src="./assets/sports-notebook.js?v=ncaam-notebook1"></script>
-  <script type="module" src="./assets/ncaam-lab.js?v=nba-layout1"></script>
+  <script type="module" src="./assets/ncaam-lab.js?v=ncaam-ai1"></script>
 </head>
 <body class="tsl-editorial tsl-tool-page nba-props-page college-board-page sports-notebook">
   <main class="props-shell">
@@ -28,8 +28,21 @@
     <div id="feedStatus" class="notice" role="status">Loading the college basketball slate…</div>
     <section id="summary" class="stat-strip" aria-label="Slate overview"></section>
     <nav class="section-nav" aria-label="College basketball sections">
-      <a href="#picks">Model Picks</a><a href="#watchlist">Watchlist</a><a href="#games">Game Lab</a>
+      <a href="#ai-says">AI Says</a><a href="#picks">Model Picks</a><a href="#watchlist">Watchlist</a><a href="#games">Game Lab</a>
     </nav>
+    <section id="ai-says" aria-labelledby="aiHeading">
+      <div class="section-heading">
+        <div><p class="eyebrow">THE MATCHUP READ</p><h2 id="aiHeading">AI Says</h2></div>
+        <p>Elo forecast, current moneyline, and matchup uncertainty.</p>
+      </div>
+      <form id="aiForm" class="props-controls">
+        <label>Matchup<select id="aiGame" disabled><option>Loading today’s forecasts…</option></select></label>
+        <button id="aiGenerate" class="refresh-board" type="submit" disabled>Generate AI read</button>
+      </form>
+      <div id="aiMarket" class="notice"></div>
+      <p id="aiStatus" class="section-copy" role="status"></p>
+      <div id="aiRead"></div>
+    </section>
     <section id="picks">
       <div class="section-heading">
         <div><p class="eyebrow">01 / THE MODEL ROOM</p><h2>Winner forecasts</h2></div>

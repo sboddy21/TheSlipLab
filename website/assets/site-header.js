@@ -78,12 +78,13 @@
   const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab"];
   const ncaamItems = [
     ["NCAAM Home", "./ncaam.html", ["/ncaam.html"]],
+    ["AI Says", "./ncaam.html#ai-says", []],
     ["Model Picks", "./ncaam.html#picks", []],
     ["Matchups", "./ncaam.html#games", []],
     ["My Account", "./account.html", ["/account.html"]],
     ["Disclaimer", "./disclaimer.html", ["/disclaimer.html"]]
   ];
-  const ncaamPrimaryOrder = ["NCAAM Home", "Model Picks", "Matchups"];
+  const ncaamPrimaryOrder = ["NCAAM Home", "AI Says", "Model Picks", "Matchups"];
   const nbaItems = [
     ["NBA Home","./nba.html#dashboard",["/nba.html"]],
     ["Results","./nba-results.html",["/nba-results.html"]],

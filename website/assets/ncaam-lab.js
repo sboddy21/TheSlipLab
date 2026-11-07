@@ -31,14 +31,104 @@ function render() {
   $('summary').innerHTML = counts.map(([label,value])=>`<div class="stat"><span>${label}</span><strong>${value}</strong></div>`).join('');
   const watch=games.filter(g=>g.state==='pre'&&Date.parse(g.kickoff)>Date.now()&&(g.home.rank||g.away.rank)).sort((a,b)=>Math.min(a.home.rank||99,a.away.rank||99)-Math.min(b.home.rank||99,b.away.rank||99)).slice(0,6);
   $('watchlistRoot').innerHTML=watch.length?watch.map(g=>`<article class="game-card watch-card"><p>${esc(time(g.kickoff))}</p><h3>${g.away.rank?`#${g.away.rank} `:''}${esc(g.away.shortName)} at ${g.home.rank?`#${g.home.rank} `:''}${esc(g.home.shortName)}</h3><p>${g.neutral?'Neutral court':esc(g.venue)}</p><a href="#game-${esc(g.id)}">View matchup →</a></article>`).join(''):'<p class="empty">No upcoming ranked matchups on this slate. Explore the full Game Lab below.</p>';
-  renderGames(); renderPicks();
+  renderGames(); renderPicks(); renderAiChoices();
 }
+function upcomingForecasts() {
+  const now = Date.now();
+  if (failed || board?.model?.status !== 'validated_winner_forecasts'
+    || now - Date.parse(board.generatedAt) >= 20 * 60_000 || dateKey(now) !== board.date) return [];
+  return board.games.filter(game => game.state === 'pre' && Date.parse(game.kickoff) > now && game.prediction?.eligible)
+    .sort((a, b) => b.prediction.probability - a.prediction.probability);
+}
+
+let aiContextKey = '', aiPending = false;
+
+function renderAiChoices() {
+  const games = upcomingForecasts();
+  const select = $('aiGame');
+  const ids = games.map(game => String(game.id));
+  if (select.dataset.ids !== ids.join(',')) {
+    const selected = select.value;
+    select.innerHTML = games.length ? games.map(game =>
+      `<option value="${esc(game.id)}">${esc(game.away.name)} at ${esc(game.home.name)}</option>`
+    ).join('') : '<option value="">No qualifying pregame forecasts</option>';
+    if (ids.includes(selected)) select.value = selected;
+    select.dataset.ids = ids.join(',');
+  }
+  select.disabled = games.length === 0;
+  const game = games.find(row => String(row.id) === select.value);
+  const pick = game?.prediction;
+  const contextKey = game ? JSON.stringify([game.id, game.kickoff, pick]) : '';
+  if (contextKey !== aiContextKey) {
+    aiContextKey = contextKey;
+    $('aiRead').replaceChildren();
+    $('aiStatus').textContent = '';
+  }
+  $('aiGenerate').disabled = !game || aiPending;
+  if (!game) {
+    $('aiMarket').textContent = 'AI reads open when today’s pregame winner forecasts are available.';
+    return;
+  }
+  const quote = currentQuotes(game).filter(row => row.market === 'moneyline' && row.side === pick.side)
+    .sort((a, b) => decimal(b.price) - decimal(a.price))[0];
+  const probability = (100 * pick.probability).toFixed(1);
+  const market = quote ? `${signed(quote.price)} at ${quote.book} · ${(100 / decimal(quote.price)).toFixed(1)}% break-even · Observed ${time(quote.quotedAt)}`
+    : 'No current moneyline for this selection.';
+  $('aiMarket').textContent = `Model pick: ${game[pick.side].name} · ${probability}% win estimate. ${market}`;
+}
+
+$('aiGame').addEventListener('change', renderAiChoices);
+$('aiForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  const gameId = $('aiGame').value;
+  const game = upcomingForecasts().find(row => String(row.id) === gameId);
+  if (aiPending || !game) return;
+  const contextKey = aiContextKey;
+  aiPending = true;
+  $('aiGenerate').disabled = true;
+  $('aiRead').replaceChildren();
+  $('aiStatus').textContent = 'Writing the matchup read…';
+  try {
+    await window.TSLAccount?.ready;
+    const token = await window.TSLAccount?.accessToken();
+    if (!token) throw new Error('Sign in to use AI Says.');
+    const response = await fetch('./api/ncaam-ai-analysis', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ gameId }),
+      signal: AbortSignal.timeout(45_000)
+    });
+    const analysis = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(analysis.error || 'The AI read is temporarily unavailable.');
+    if (contextKey !== aiContextKey || Date.parse(game.kickoff) <= Date.now()) return;
+    if (analysis.probability !== game.prediction.probability || analysis.selection !== game[game.prediction.side].name) {
+      throw new Error('The forecast has changed. Refresh the slate to see the latest read.');
+    }
+    for (const [label, copy] of [['Why the model favors this team', analysis.rationale], ['What could change the outcome', analysis.uncertainty]]) {
+      const card = document.createElement('article');
+      card.className = 'method-note';
+      const title = document.createElement('strong');
+      title.textContent = label;
+      const paragraph = document.createElement('p');
+      paragraph.textContent = copy;
+      card.append(title, paragraph);
+      $('aiRead').append(card);
+    }
+    $('aiStatus').textContent = '';
+  } catch (error) {
+    if (contextKey === aiContextKey) $('aiStatus').textContent = error.message;
+  } finally {
+    aiPending = false;
+    renderAiChoices();
+  }
+});
+
 function renderPicks() {
   const model=board?.model;
   const validated=model?.status==='validated_winner_forecasts';
   const v=model?.validation;
   $('modelEvidence').innerHTML=validated?`Historical test: <strong>${(v.accuracy*100).toFixed(1)}% correct</strong> across ${v.picks.toLocaleString()} qualifying forecasts in 2025–26. Brier score ${v.brier.toFixed(3)} vs ${v.baselineBrier.toFixed(3)} baseline (lower is better). <a href="#validationRoot">Review evidence ↓</a>${board.forecastGeneratedAt ? ` · Forecasts published ${esc(time(board.forecastGeneratedAt))}` : ''}`:'Winner forecasts are temporarily unavailable because model integrity or current data could not be verified.';
-  const upcoming=validated&&!failed&&Date.now()-Date.parse(board.generatedAt)<20*60_000&&dateKey(new Date())===board.date?board.games.filter(g=>g.state==='pre'&&Date.parse(g.kickoff)>Date.now()&&g.prediction?.eligible).sort((a,b)=>b.prediction.probability-a.prediction.probability):[];
+  const upcoming = upcomingForecasts();
   if (!upcoming.length) {
     $('picksRoot').innerHTML = '<p class="empty">No qualifying pregame forecasts available right now.</p>';
     return;
@@ -75,7 +165,7 @@ async function load() {
     } catch {
       $('validationRoot').textContent = 'Validation report unavailable.';
     }
-  } catch { failed=true; if(board)render();else{$('feedStatus').textContent='College basketball feed unavailable. Try refreshing shortly.';$('gamesRoot').innerHTML='<p class="empty">The slate could not be loaded.</p>';} }
+  } catch { failed=true; if(board)render();else{renderAiChoices();$('feedStatus').textContent='College basketball feed unavailable. Try refreshing shortly.';$('gamesRoot').innerHTML='<p class="empty">The slate could not be loaded.</p>';} }
   finally {loading=false;$('refreshBoard').disabled=false;}
 }
 $('teamSearch').addEventListener('input',renderGames);$('statusFilter').addEventListener('change',renderGames);$('refreshBoard').addEventListener('click',load);

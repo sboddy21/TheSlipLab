@@ -110,7 +110,7 @@ async function activeSubscription(userId) {
   return ACTIVE_STATUSES.has(rows?.[0]?.status || "inactive");
 }
 
-async function authorize(request) {
+export async function authorize(request) {
   if (trustedService(request)) return { allowed: true };
   const user = await authenticatedUser(request);
   if (!user?.id) return { allowed: false, status: 401, reason: "signed_out" };
