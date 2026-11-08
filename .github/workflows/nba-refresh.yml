@@ -31,15 +31,12 @@ jobs:
         with:
           node-version: 22
 
-      - name: Install dependencies
-        run: npm install
-
       - name: Run NBA refresh only
         timeout-minutes: 16
         run: node scripts/run_nba_refresh.js
 
       - name: Validate refreshed NBA foundation
-        run: npm run nba:test
+        run: node --test tests/nba-foundation.test.mjs tests/nba-first-basket.test.mjs tests/nba-market-gate.test.mjs tests/nba-results-calibration.test.mjs tests/nba-results-page.test.mjs tests/nba-live-workspace.test.mjs tests/nba-prop-trends.test.mjs
 
       - name: Commit refreshed NBA data
         run: |

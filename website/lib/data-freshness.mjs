@@ -10,6 +10,12 @@ const DELAY_TOLERANT_NFL = new Set([
   "nfl_practice_reports.json", "nfl_weather.json", "nfl_td_decision_center.json",
   "nfl_receiving_yards_board.json", "nfl_launch_audit.json", "nfl_results_tracking.json"
 ]);
+const DELAY_TOLERANT_NBA = new Set([
+  "nba_games_today.json", "nba_player_pool.json", "nba_history.json", "nba_availability.json",
+  "nba_core.json", "nba_minutes_engine.json", "nba_usage_engine.json", "nba_matchup_engine.json",
+  "nba_team_defense.json", "nba_player_cards.json", "nba_points.json", "nba_rebounds.json",
+  "nba_assists.json", "nba_threes.json", "nba_first_basket.json", "nba_decision_center.json"
+]);
 
 export function sourceDependencies(file) {
   if (!freshnessPolicy(file)) return [];
@@ -75,6 +81,15 @@ function hasUsableNflShape(file, payload) {
   return Boolean(payload.generatedAt);
 }
 
+function hasUsableNbaShape(file, payload) {
+  if (payload?.sport !== "NBA") return false;
+  if (file === "nba_games_today.json") return Array.isArray(payload.games) && payload.games.length > 0;
+  if (file === "nba_first_basket.json") return Array.isArray(payload.games) && payload.games.length > 0;
+  if (file === "nba_team_defense.json") return Array.isArray(payload.teams) && payload.teams.length > 0;
+  if (file === "nba_decision_center.json") return payload.sections && Object.values(payload.sections).some(rows => Array.isArray(rows) && rows.length > 0);
+  return Array.isArray(payload.players) && payload.players.length > 0;
+}
+
 function delayedReasonsOnly(result) {
   const permitted = new Set(["expired_source_timestamp", "upstream_data_unavailable"]);
   if ((result.reasons || []).some(reason => !permitted.has(reason))) return false;
@@ -82,9 +97,12 @@ function delayedReasonsOnly(result) {
 }
 
 export function canServeDelayedDataset(file, payload, freshness, { now = Date.now(), maximumAgeSeconds = 7 * 86400 } = {}) {
-  if (!DELAY_TOLERANT_NFL.has(file) || freshness.available || !hasUsableNflShape(file, payload) || !delayedReasonsOnly(freshness)) return false;
+  const nfl = DELAY_TOLERANT_NFL.has(file) && hasUsableNflShape(file, payload);
+  const nba = DELAY_TOLERANT_NBA.has(file) && hasUsableNbaShape(file, payload);
+  if ((!nfl && !nba) || freshness.available || !delayedReasonsOnly(freshness)) return false;
   const generatedAt = Date.parse(payload.generatedAt || payload.fetchedAt || payload.updatedAt || "");
-  return Number.isFinite(generatedAt) && generatedAt <= now + 1000 && now - generatedAt < maximumAgeSeconds * 1000;
+  const ageLimit = nba ? Math.min(maximumAgeSeconds, 24 * 60 * 60) : maximumAgeSeconds;
+  return Number.isFinite(generatedAt) && generatedAt <= now + 1000 && now - generatedAt < ageLimit * 1000;
 }
 
 export function checkDataFreshness(file, payload, { now = Date.now(), health = null } = {}) {

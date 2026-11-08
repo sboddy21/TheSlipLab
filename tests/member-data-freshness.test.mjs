@@ -65,3 +65,23 @@ test("member API serves a delayed but usable NFL board instead of returning a si
     else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
   }
 });
+
+test("member API serves a delayed but usable same-day NBA board", async () => {
+  const previousKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const now = new Date();
+  const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(now);
+  const payload = { sport: "NBA", season: now.getUTCFullYear(), date, generatedAt: new Date(now.valueOf() - 5 * 60 * 60 * 1000).toISOString(), players: [{ playerId: "1", player: "Verified Player" }] };
+  const delayedHandler = createMemberDataHandler({ readerFactory: () => async () => payload });
+  const delayed = { headers: {}, setHeader(key, value) { this.headers[key] = value; }, status(code) { this.code = code; return this; }, json(value) { this.body = value; return this; }, send(value) { this.body = value; return this; }, end() { return this; } };
+  try {
+    await delayedHandler({ method: "GET", query: { file: "nba_points.json" }, headers: { "x-member-data-service-key": "test-service-key" } }, delayed);
+    assert.equal(delayed.code, 200);
+    assert.equal(delayed.headers["X-Data-Freshness"], "delayed");
+    assert.match(delayed.headers.Warning, /last verified NBA data/);
+    assert.deepEqual(JSON.parse(delayed.body), payload);
+  } finally {
+    if (previousKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
+  }
+});

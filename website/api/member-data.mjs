@@ -177,7 +177,10 @@ return async function handler(request, response) {
       });
     }
     response.setHeader("X-Data-Freshness", delayed ? "delayed" : "current");
-    if (delayed) response.setHeader("Warning", '110 - "Using last verified NFL data while sources refresh"');
+    if (delayed) {
+      const sport = file.startsWith("nba_") ? "NBA" : "NFL";
+      response.setHeader("Warning", `110 - "Using last verified ${sport} data while sources refresh"`);
+    }
     response.setHeader(
       "Cache-Control",
       PUBLIC_FILES.has(file) ? "public, max-age=0, must-revalidate" : "private, no-store, max-age=0"

@@ -151,6 +151,8 @@ test("NHL refresh runs at least hourly in season and every 15 minutes overnight"
 test("NBA refresh validates the newly generated slate instead of yesterday's checkout", () => {
   const workflow = fs.readFileSync(".github/workflows/nba-refresh.yml", "utf8");
   assert.ok(workflow.indexOf("Run NBA refresh only") < workflow.indexOf("Validate refreshed NBA foundation"));
+  assert.doesNotMatch(workflow, /npm (?:install|ci)/, "NBA publication must not depend on unrelated site packages");
+  assert.match(workflow, /node --test tests\/nba-foundation\.test\.mjs/);
 });
 
 test("NFL refresh targets thirty minutes and expires delayed analytical feeds", () => {
@@ -171,4 +173,19 @@ test("NFL keeps a usable same-week board readable during a provider delay withou
   assert.equal(canServeDelayedDataset("nfl_td_decision_center.json", { ...payload, rows: [] }, freshness, { now }), false);
   assert.equal(canServeDelayedDataset("nba_points.json", payload, freshness, { now }), false);
   assert.equal(canServeDelayedDataset("nfl_td_decision_center.json", { ...payload, generatedAt: new Date(now - 8 * 86400 * 1000).toISOString() }, freshness, { now }), false);
+});
+
+test("NBA keeps only usable same-day boards readable during a refresh delay", () => {
+  const generatedAt = new Date(now - 5 * 60 * 60 * 1000).toISOString();
+  const payload = { sport: "NBA", season: 2026, date: "2026-10-24", generatedAt, players: [{ playerId: "1", player: "Verified Player" }] };
+  const freshness = checkDataFreshness("nba_points.json", payload, { now });
+  assert.equal(freshness.available, false);
+  assert.equal(canServeDelayedDataset("nba_points.json", payload, freshness, { now }), true);
+  assert.equal(canServeDelayedDataset("nba_points.json", { ...payload, players: [] }, freshness, { now }), false);
+  const wrongDay = { ...payload, date: "2026-10-23" };
+  assert.equal(canServeDelayedDataset("nba_points.json", wrongDay, checkDataFreshness("nba_points.json", wrongDay, { now }), { now }), false);
+  const unavailable = { ...payload, availability: "source_unavailable", error: "provider failed" };
+  assert.equal(canServeDelayedDataset("nba_points.json", unavailable, checkDataFreshness("nba_points.json", unavailable, { now }), { now }), false);
+  const tooOld = { ...payload, generatedAt: new Date(now - 25 * 60 * 60 * 1000).toISOString() };
+  assert.equal(canServeDelayedDataset("nba_points.json", tooOld, checkDataFreshness("nba_points.json", tooOld, { now }), { now }), false);
 });
