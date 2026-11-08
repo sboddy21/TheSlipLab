@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
-import { checkDataFreshness, verifyCurrentDataset } from "../website/lib/data-freshness.mjs";
+import { canServeDelayedDataset, checkDataFreshness, verifyCurrentDataset } from "../website/lib/data-freshness.mjs";
 import { historyFromSeasonSummary } from "../scripts/nba/build_nba_history.js";
 import { buildRow as buildMinutesRow } from "../scripts/nba/build_minutes_engine.js";
 import { validStabilizedPitcherRisk } from "../scripts/mlb/lib/pitcher-risk-validation.mjs";
@@ -160,4 +160,15 @@ test("NFL refresh targets thirty minutes and expires delayed analytical feeds", 
   assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now }).available, false);
   assert.equal(checkDataFreshness("nfl_td_decision_center.json", { generatedAt }, { now: now + 60 * 60 * 1000 }).available, false);
   assert.equal(checkDataFreshness("odds_nfl.json", { retrievedAt: new Date(now - 21 * 60 * 1000).toISOString() }, { now }).available, false);
+});
+
+test("NFL keeps a usable same-week board readable during a provider delay without declaring it fresh", () => {
+  const generatedAt = new Date(now - 5 * 60 * 60 * 1000).toISOString();
+  const payload = { sport: "NFL", season: 2026, week: 8, generatedAt, rows: [{ playerId: "1", playerName: "Verified Player" }] };
+  const freshness = checkDataFreshness("nfl_td_decision_center.json", payload, { now });
+  assert.equal(freshness.available, false);
+  assert.equal(canServeDelayedDataset("nfl_td_decision_center.json", payload, freshness, { now }), true);
+  assert.equal(canServeDelayedDataset("nfl_td_decision_center.json", { ...payload, rows: [] }, freshness, { now }), false);
+  assert.equal(canServeDelayedDataset("nba_points.json", payload, freshness, { now }), false);
+  assert.equal(canServeDelayedDataset("nfl_td_decision_center.json", { ...payload, generatedAt: new Date(now - 8 * 86400 * 1000).toISOString() }, freshness, { now }), false);
 });

@@ -105,8 +105,8 @@ if (tdBoard.rows.some(row => row.gates?.regularSeasonRoleConfirmed && !practice.
 if (tdBoard.rows.some(row => "routeParticipation" in (row.gates || {}))) fail("TD Decision Center incorrectly requires route participation");
 const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
 if (tdBoard.rows.some(row => !row.opponent || !row.gameId || !row.gates?.verifiedOpponent || !row.gates?.defensiveMatchup || row.gates?.gameEnvironment !== (weatherByGame.get(row.gameId)?.weatherGate === true) || row.matchup?.status !== "verified_historical_baseline")) fail("TD Decision Center is missing verified matchup or weather context");
-if (health.status !== "nfl_member_signals_gated" || health.sources?.depthCharts?.status !== "available") fail("health contract must report member-signal readiness");
-if (!["available", "partial"].includes(health.sources?.injuries?.status) || health.sources?.projections?.status !== "disabled") fail("health contract must keep availability and disabled projections explicit");
+if (health.status !== "nfl_member_signals_gated" || !["available", "available_cached"].includes(health.sources?.depthCharts?.status)) fail("health contract must report member-signal readiness");
+if (!["available", "available_cached", "partial"].includes(health.sources?.injuries?.status) || health.sources?.projections?.status !== "disabled") fail("health contract must keep availability and disabled projections explicit");
 if (health.sources?.usageBaselines?.status !== "available" || health.sources?.routes?.status !== "unavailable") fail("health contract must distinguish usage baselines from unavailable routes");
 if (health.sources?.roleEngine?.status !== "available" || !["available", "waiting"].includes(health.sources?.preseasonUsage?.status) || !health.sources?.preseasonUsage?.finalGameGate) fail("health contract must report final-gated preseason usage");
 if (!["probability_board", "gated_probability_board"].includes(health.sources?.tdDecisionCenter?.status)) fail("health contract must report the TD Decision Center state");
@@ -119,6 +119,6 @@ if (publicStatus.week !== matchup.week || publicStatus.currentWeekGames?.length 
 if ("roles" in publicStatus || "players" in publicStatus || "injuries" in publicStatus) fail("public NFL status contains protected detail arrays");
 if (foundation.currentPhase?.id === "foundation" && foundation.date >= "2026-08-21") fail("roadmap regressed to the completed foundation phase");
 if (foundation.phases?.filter(phase => phase.status === "active").length > 1) fail("roadmap contains multiple active phases");
-if (health.sources?.depthCharts?.status === "available" && foundation.nextBuildSteps?.some(step => /select.*depth-chart/i.test(step))) fail("roadmap contains a completed depth-chart task");
+if (["available", "available_cached"].includes(health.sources?.depthCharts?.status) && foundation.nextBuildSteps?.some(step => /select.*depth-chart/i.test(step))) fail("roadmap contains a completed depth-chart task");
 
 console.log(`NFL VALIDATION PASSED: ${teams.teamCount} teams, ${schedule.gameCount} games, ${pool.playerCount} eligible players, ${depth.entryCount} depth entries, ${injuries.injuryCount} injuries, ${usage.profileCount} usage profiles, ${roles.modelEligibleCount} role-eligible players`);

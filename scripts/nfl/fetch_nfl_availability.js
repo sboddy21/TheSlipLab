@@ -1,7 +1,7 @@
 import fs from "fs";
 import { depthMatchesPlayer } from "./launch_safety.js";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
@@ -13,6 +13,13 @@ const TARGET_POSITIONS = new Set(["QB", "RB", "WR", "TE"]);
 
 function read(filename) {
   return JSON.parse(fs.readFileSync(path.join(DATA, filename), "utf8"));
+}
+
+function readOptional(filename) {
+  try { return read(filename); } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
 }
 
 function write(filename, payload) {
@@ -44,29 +51,70 @@ function parseCsvLine(line) {
   return fields;
 }
 
-async function fetchText(url, attempts = 3) {
+export async function fetchText(url, attempts = 5, fetcher = fetch, wait = delay => new Promise(resolve => setTimeout(resolve, delay))) {
+  let lastError = null;
   for (let attempt = 1; attempt <= attempts; attempt++) {
-    const response = await fetch(url);
-    if (response.ok) return response.text();
-    if (attempt === attempts) throw new Error(`NFL availability fetch failed (${response.status}): ${url}`);
-    await new Promise(resolve => setTimeout(resolve, attempt * 750));
+    try {
+      const response = await fetcher(url, { signal: AbortSignal.timeout(20000) });
+      if (response.ok) return response.text();
+      lastError = new Error(`NFL availability fetch failed (${response.status}): ${url}`);
+    } catch (error) {
+      lastError = error;
+    }
+    if (attempt < attempts) await wait(Math.min(16000, 1000 * 2 ** (attempt - 1)));
   }
-  throw new Error(`NFL availability fetch failed after retries: ${url}`);
+  throw lastError || new Error(`NFL availability fetch failed after retries: ${url}`);
 }
 
-async function fetchJson(url, attempts = 3) {
+async function fetchJson(url, attempts = 5) {
   return JSON.parse(await fetchText(url, attempts));
 }
 
-async function main() {
+function usableCachedDepth(payload, playersById) {
+  const entries = (payload?.entries || []).filter(entry => depthMatchesPlayer(entry, playersById.get(String(entry.playerId))));
+  return entries.length && new Set(entries.map(entry => entry.team)).size === 32 ? { ...payload, entries } : null;
+}
+
+function usableCachedInjuries(payload) {
+  return payload && ["available", "partial"].includes(payload.availability) && Array.isArray(payload.injuries) ? payload : null;
+}
+
+export async function main() {
   const generatedAt = new Date().toISOString();
   const pool = read("nfl_player_pool.json");
   const health = read("nfl_data_health.json");
   const playersById = new Map(pool.players.map(player => [String(player.playerId), player]));
-  const csv = await fetchText(DEPTH_URL);
-  const leagueInjuries = await fetchJson(INJURY_URL);
-  const lines = csv.split(/\r?\n/).filter(Boolean);
-  const headers = parseCsvLine(lines.shift());
+  let csv = null;
+  let leagueInjuries = null;
+  let depthError = null;
+  let injuryError = null;
+  try { csv = await fetchText(DEPTH_URL); } catch (error) { depthError = error; }
+  try { leagueInjuries = await fetchJson(INJURY_URL); } catch (error) { injuryError = error; }
+  const cachedDepth = depthError ? usableCachedDepth(readOptional("nfl_depth_charts.json"), playersById) : null;
+  const cachedInjuries = injuryError ? usableCachedInjuries(readOptional("nfl_injuries.json")) : null;
+  if (depthError && !cachedDepth) throw depthError;
+  if (injuryError && !cachedInjuries) throw injuryError;
+  if (depthError) console.warn(`NFL depth charts delayed; preserving last verified snapshot: ${depthError.message}`);
+  if (injuryError) console.warn(`NFL injuries delayed; preserving last verified snapshot: ${injuryError.message}`);
+  if (cachedDepth && cachedInjuries) {
+    health.generatedAt = generatedAt;
+    health.sources.depthCharts = { ...health.sources.depthCharts, status: "available_cached", delayed: true, reason: depthError.message };
+    health.sources.injuries = { ...health.sources.injuries, status: "available_cached", delayed: true, reason: injuryError.message };
+    write("nfl_data_health.json", health);
+    return;
+  }
+  if (cachedDepth) csv = null;
+  if (cachedInjuries) leagueInjuries = null;
+  const cachedDepthEntries = cachedDepth?.entries || [];
+  const cachedInjuryEntries = cachedInjuries?.injuries || [];
+  const cachedLeagueTimestamp = cachedInjuries?.leagueTimestamp || cachedInjuries?.generatedAt || generatedAt;
+  const cachedCurrentLeagueFeed = Boolean(cachedInjuries?.currentLeagueFeed);
+  const cachedDepthSnapshots = cachedDepthEntries.map(entry => entry.snapshotAt).filter(Boolean);
+  const cachedDepthNewest = cachedDepth?.newestSnapshotAt || cachedDepthSnapshots.sort().at(-1) || null;
+  const cachedDepthOldest = cachedDepth?.oldestSnapshotAt || cachedDepthSnapshots.sort().at(0) || null;
+  const csvText = csv || "";
+  const lines = csvText.split(/\r?\n/).filter(Boolean);
+  const headers = lines.length ? parseCsvLine(lines.shift()) : [];
   const rows = lines.map(line => {
     const values = parseCsvLine(line);
     return Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]));
@@ -110,7 +158,7 @@ async function main() {
     reportedAt: injury.date || "",
     sourceCoverage: "team_roster_feed"
   })));
-  const currentLeagueEntries = (leagueInjuries.injuries || []).map(item => {
+  const currentLeagueEntries = (leagueInjuries?.injuries || []).map(item => {
     const athlete = item.athlete || {};
     const player = playersById.get(String(athlete.id || ""));
     if (!player) return null;
@@ -122,24 +170,24 @@ async function main() {
       status: item.status || "reported",
       type: item.type?.description || item.type?.name || "",
       detail: item.details?.detail || item.details?.type || "",
-      reportedAt: item.date || leagueInjuries.timestamp || "",
+      reportedAt: item.date || leagueInjuries?.timestamp || "",
       sourceCoverage: "current_league_injury_designation"
     };
   }).filter(Boolean);
-  const injuryByPlayer = new Map(rosterEntries.map(entry => [String(entry.playerId), entry]));
+  const injuryByPlayer = new Map((cachedInjuries ? cachedInjuryEntries : rosterEntries).map(entry => [String(entry.playerId), entry]));
   for (const entry of currentLeagueEntries) injuryByPlayer.set(String(entry.playerId), entry);
   const injuryEntries = [...injuryByPlayer.values()].sort((a, b) => a.team.localeCompare(b.team) || a.playerName.localeCompare(b.playerName));
-  const leagueTimestamp = leagueInjuries.timestamp || generatedAt;
+  const leagueTimestamp = leagueInjuries?.timestamp || cachedLeagueTimestamp;
   const leagueAgeHours = (Date.now() - Date.parse(leagueTimestamp)) / 36e5;
-  const currentLeagueFeed = Number.isFinite(leagueAgeHours) && leagueAgeHours >= 0 && leagueAgeHours <= 24;
+  const currentLeagueFeed = leagueInjuries ? Number.isFinite(leagueAgeHours) && leagueAgeHours >= 0 && leagueAgeHours <= 24 : cachedCurrentLeagueFeed;
 
   const unmatched = depthEntries.filter(entry => !entry.canonicalPlayerMatch);
-  const resolvedDepthEntries = depthEntries.filter(entry => entry.canonicalPlayerMatch);
+  const resolvedDepthEntries = cachedDepth ? cachedDepthEntries : depthEntries.filter(entry => entry.canonicalPlayerMatch);
   const snapshots = [...latestByTeam.values()].map(Date.parse).filter(Number.isFinite);
-  const newestSnapshotAt = snapshots.length ? new Date(Math.max(...snapshots)).toISOString() : null;
-  const oldestSnapshotAt = snapshots.length ? new Date(Math.min(...snapshots)).toISOString() : null;
+  const newestSnapshotAt = cachedDepth ? cachedDepthNewest : snapshots.length ? new Date(Math.max(...snapshots)).toISOString() : null;
+  const oldestSnapshotAt = cachedDepth ? cachedDepthOldest : snapshots.length ? new Date(Math.min(...snapshots)).toISOString() : null;
 
-  write("nfl_depth_charts.json", {
+  if (!cachedDepth) write("nfl_depth_charts.json", {
     sport: "NFL", schemaVersion: "1.0", season: SEASON, generatedAt,
     source: "nflverse depth charts (ESPN-derived)", sourceUrl: DEPTH_URL,
     attribution: "nflverse; depth-chart source data derived from ESPN",
@@ -156,7 +204,7 @@ async function main() {
     entries: resolvedDepthEntries
   });
 
-  write("nfl_injuries.json", {
+  if (!cachedInjuries) write("nfl_injuries.json", {
     sport: "NFL", schemaVersion: "1.0", season: SEASON, generatedAt,
     source: "ESPN NFL league injury designations with team-roster fallback",
     sourceUrl: INJURY_URL,
@@ -175,20 +223,23 @@ async function main() {
 
   health.generatedAt = generatedAt;
   health.sources.depthCharts = {
-    status: resolvedDepthEntries.length ? "available" : "unavailable",
+    status: cachedDepth ? "available_cached" : resolvedDepthEntries.length ? "available" : "unavailable",
     provider: "nflverse (ESPN-derived)",
     newestSnapshotAt,
     matchedPlayers: resolvedDepthEntries.length,
     unmatchedPlayers: 0,
-    sourceUnmatchedExcluded: unmatched.length
+    sourceUnmatchedExcluded: unmatched.length,
+    delayed: Boolean(cachedDepth),
+    ...(depthError ? { reason: depthError.message } : {})
   };
   health.sources.injuries = {
-    status: currentLeagueFeed ? "available" : "partial",
+    status: cachedInjuries ? "available_cached" : currentLeagueFeed ? "available" : "partial",
     provider: "ESPN league injury designations",
     reportedPlayers: new Set(injuryEntries.map(entry => entry.playerId)).size,
     currentLeagueFeed,
     leagueTimestamp,
-    reason: currentLeagueFeed ? "Current player designations available; practice participation remains separate." : "Current league injury feed is stale or unavailable."
+    delayed: Boolean(cachedInjuries),
+    reason: injuryError?.message || (currentLeagueFeed ? "Current player designations available; practice participation remains separate." : "Current league injury feed is stale or unavailable.")
   };
   const usageFile = path.join(DATA, "nfl_usage_baselines.json");
   if (fs.existsSync(usageFile)) {
@@ -206,8 +257,10 @@ async function main() {
   write("nfl_data_health.json", health);
 }
 
-main().catch(error => {
-  console.error("NFL AVAILABILITY FETCH FAILED");
-  console.error(error);
-  process.exit(1);
-});
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch(error => {
+    console.error("NFL AVAILABILITY FETCH FAILED");
+    console.error(error);
+    process.exit(1);
+  });
+}

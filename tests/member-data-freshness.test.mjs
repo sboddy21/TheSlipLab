@@ -46,3 +46,22 @@ test("public API withholds stale data, including HEAD, and serves current data w
     await fs.rm(directory, { recursive: true, force: true });
   }
 });
+
+test("member API serves a delayed but usable NFL board instead of returning a site-wide outage", async () => {
+  const previousKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+  const generatedAt = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
+  const payload = { sport: "NFL", schemaVersion: "1.0", season: 2026, week: 9, generatedAt, rows: [{ playerId: "1", playerName: "Verified Player" }] };
+  const delayedHandler = createMemberDataHandler({ readerFactory: () => async () => payload });
+  const delayed = { headers: {}, setHeader(key, value) { this.headers[key] = value; }, status(code) { this.code = code; return this; }, json(value) { this.body = value; return this; }, send(value) { this.body = value; return this; }, end() { return this; } };
+  try {
+    await delayedHandler({ method: "GET", query: { file: "nfl_td_decision_center.json" }, headers: { "x-member-data-service-key": "test-service-key" } }, delayed);
+    assert.equal(delayed.code, 200);
+    assert.equal(delayed.headers["X-Data-Freshness"], "delayed");
+    assert.match(delayed.headers.Warning, /last verified NFL data/);
+    assert.deepEqual(JSON.parse(delayed.body), payload);
+  } finally {
+    if (previousKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = previousKey;
+  }
+});

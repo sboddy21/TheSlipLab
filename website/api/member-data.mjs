@@ -5,7 +5,7 @@ import { prepareCurrentMarkets } from '../lib/current-markets.mjs';
 import { loadNhlLiveBoard } from '../lib/nhl-live.mjs';
 import { createPublishedDataReader } from '../lib/published-data.mjs';
 import path from "node:path";
-import { verifyCurrentDataset } from "../lib/data-freshness.mjs";
+import { canServeDelayedDataset, verifyCurrentDataset } from "../lib/data-freshness.mjs";
 import { loadNbaLiveFile } from "../lib/nba-live.mjs";
 
 const ACTIVE_STATUSES = new Set(["active", "trialing"]);
@@ -166,7 +166,8 @@ return async function handler(request, response) {
     let health = null;
     try { if (Array.isArray(payload)) health = await load('health_status.json'); } catch { /* Missing receipts cannot certify legacy arrays. */ }
     const freshness = await verifyCurrentDataset(file, payload, { health, load });
-    if (!freshness.available) {
+    const delayed = canServeDelayedDataset(file, payload, freshness);
+    if (!freshness.available && !delayed) {
       response.setHeader("Retry-After", "60");
       return json(response, 503, {
         error: "current_data_unavailable",
@@ -175,6 +176,8 @@ return async function handler(request, response) {
         freshness
       });
     }
+    response.setHeader("X-Data-Freshness", delayed ? "delayed" : "current");
+    if (delayed) response.setHeader("Warning", '110 - "Using last verified NFL data while sources refresh"');
     response.setHeader(
       "Cache-Control",
       PUBLIC_FILES.has(file) ? "public, max-age=0, must-revalidate" : "private, no-store, max-age=0"

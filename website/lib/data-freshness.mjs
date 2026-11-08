@@ -4,6 +4,12 @@ import { currentSeasonStart, seasonStart } from './current-season.mjs';
 const ARCHIVES = /(?:^|_)(?:backtest|calibration|results|projection_history)(?:_|\.)|^hr_ai_(?:history|hof)\.|^cfb_daily_(?:evaluation|predictions)\./;
 const REFERENCE = new Set(["ncaam_validation.json", "ncaam_model.json", "mlb_park_shapes.json", "mlb_park_factors.json"]);
 const MONITORS = new Set(["health_status.json", "nfl_data_health.json", "nfl_launch_audit.json", "nfl_public_status.json"]);
+const DELAY_TOLERANT_NFL = new Set([
+  "nfl_schedule.json", "nfl_player_pool.json", "nfl_depth_charts.json", "nfl_injuries.json",
+  "nfl_current_usage.json", "nfl_role_engine.json", "nfl_matchup_context.json",
+  "nfl_practice_reports.json", "nfl_weather.json", "nfl_td_decision_center.json",
+  "nfl_receiving_yards_board.json", "nfl_launch_audit.json", "nfl_results_tracking.json"
+]);
 
 export function sourceDependencies(file) {
   if (!freshnessPolicy(file)) return [];
@@ -51,6 +57,34 @@ export function freshnessPolicy(file) {
   if (/live_game|games_live|live_hr_tracker|global_live_alerts/.test(file)) return { maxAgeSeconds: 120 };
   if (/history|baselines|usage_baselines|power_profiles|pitch_type_damage/.test(file)) return { maxAgeSeconds: 93600 };
   return { maxAgeSeconds: 3600 };
+}
+
+function hasUsableNflShape(file, payload) {
+  if (payload?.sport !== "NFL") return false;
+  if (file === "nfl_schedule.json") return Array.isArray(payload.games) && payload.games.length > 0;
+  if (file === "nfl_player_pool.json") return Array.isArray(payload.players) && payload.players.length > 0;
+  if (file === "nfl_depth_charts.json") return Array.isArray(payload.entries) && payload.entries.length > 0;
+  if (file === "nfl_injuries.json") return Array.isArray(payload.injuries);
+  if (file === "nfl_current_usage.json") return Array.isArray(payload.players) && payload.players.length > 0;
+  if (file === "nfl_role_engine.json") return Array.isArray(payload.roles) && payload.roles.length > 0;
+  if (file === "nfl_matchup_context.json") return Array.isArray(payload.playerAssignments) && payload.playerAssignments.length > 0;
+  if (file === "nfl_practice_reports.json") return Array.isArray(payload.players);
+  if (file === "nfl_weather.json") return Array.isArray(payload.games);
+  if (["nfl_td_decision_center.json", "nfl_receiving_yards_board.json"].includes(file)) return Array.isArray(payload.rows) && payload.rows.length > 0;
+  if (file === "nfl_results_tracking.json") return Array.isArray(payload.touchdownEvents);
+  return Boolean(payload.generatedAt);
+}
+
+function delayedReasonsOnly(result) {
+  const permitted = new Set(["expired_source_timestamp", "upstream_data_unavailable"]);
+  if ((result.reasons || []).some(reason => !permitted.has(reason))) return false;
+  return (result.dependencies || []).every(dependency => delayedReasonsOnly(dependency));
+}
+
+export function canServeDelayedDataset(file, payload, freshness, { now = Date.now(), maximumAgeSeconds = 7 * 86400 } = {}) {
+  if (!DELAY_TOLERANT_NFL.has(file) || freshness.available || !hasUsableNflShape(file, payload) || !delayedReasonsOnly(freshness)) return false;
+  const generatedAt = Date.parse(payload.generatedAt || payload.fetchedAt || payload.updatedAt || "");
+  return Number.isFinite(generatedAt) && generatedAt <= now + 1000 && now - generatedAt < maximumAgeSeconds * 1000;
 }
 
 export function checkDataFreshness(file, payload, { now = Date.now(), health = null } = {}) {
