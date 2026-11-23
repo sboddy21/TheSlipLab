@@ -3,6 +3,8 @@ name: The Slip Lab NFL Refresh
 on:
   workflow_dispatch:
   schedule:
+    # Daily baseline runs year-round, including offseason and no-game days.
+    - cron: "19 11 * * *"
     # Keep every current NFL feed inside the one-hour freshness contract, including deployment time.
     - cron: "*/30 * * 1-2,8-12 *"
 

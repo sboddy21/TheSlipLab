@@ -2,6 +2,8 @@ name: The Slip Lab NBA Refresh
 
 on:
   schedule:
+    # Daily baseline runs year-round, including offseason and no-game days.
+    - cron: "9 11 * * *"
     # Every 30 minutes during the NBA preseason and regular/postseason months.
     - cron: "*/30 * * 10-12,1-6 *"
   workflow_dispatch:

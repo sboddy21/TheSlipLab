@@ -22,7 +22,7 @@ jobs:
           node-version: 22
       - name: Check recovery safeguards
         run: node --test tests/refresh-watchdog.test.mjs
-      - name: Recover missing or expired in-season feeds
+      - name: Recover missing or expired feeds year-round
         env:
           GH_TOKEN: ${{ github.token }}
         run: node scripts/refresh-watchdog.mjs

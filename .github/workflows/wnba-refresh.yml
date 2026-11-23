@@ -3,6 +3,8 @@ name: The Slip Lab WNBA Refresh
 on:
   workflow_dispatch:
   schedule:
+    # Daily baseline runs year-round, including offseason and no-game days.
+    - cron: "49 11 * * *"
     # Every 15 minutes during the WNBA season (May through October).
     - cron: "*/15 * * 5-10 *"
 

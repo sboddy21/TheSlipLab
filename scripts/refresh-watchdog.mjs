@@ -10,6 +10,7 @@ export const targets = [
  ['cfb','cfb-refresh.yml','cfb_board.json',30],
  ['mlb','mlb-refresh.yml','mlb_games_today.json',30],
  ['wnba','wnba-refresh.yml','wnba_projection_board.json',30],
+ ['ncaam','ncaam-refresh.yml','ncaam_board.json',45],
  ['odds','sports-odds-refresh.yml','odds_nba.json',15]
 ];
 export function needsRecovery(payload, run, {now=Date.now(),maxAgeMinutes=45}={}) {
@@ -21,15 +22,17 @@ export function needsRecovery(payload, run, {now=Date.now(),maxAgeMinutes=45}={}
  const today=new Intl.DateTimeFormat('en-CA',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(now));
  return !Number.isFinite(timestamp)||timestamp>now+1000||now-timestamp>=maxAgeMinutes*60000||(payload.date&&payload.date!==today)||payload.stale===true||['unavailable','failed'].includes(payload.status);
 }
+export function recoveryAgeMinutes(sport, inSeasonMinutes, now = new Date()) {
+ return sport === 'odds' || isSportInSeason(sport, now) ? inSeasonMinutes : 24 * 60;
+}
 async function main() {
  const repository=process.env.GITHUB_REPOSITORY,branch=process.env.GITHUB_REF_NAME||'main';
  if(repository!=='sboddy21/TheSlipLab')throw Error('Unexpected watchdog repository');
  for(const [sport,workflow,file,maxAgeMinutes] of targets) {
-  if(sport!=='odds'&&!isSportInSeason(sport))continue;
   let payload=null;
   try{payload=JSON.parse(await fs.readFile(`website/data/${file}`,'utf8'));}catch{}
   const result=JSON.parse(execFileSync('gh',['api',`repos/${repository}/actions/workflows/${workflow}/runs?branch=${encodeURIComponent(branch)}&per_page=1`],{encoding:'utf8'}));
-  if(!needsRecovery(payload,result.workflow_runs?.[0],{maxAgeMinutes}))continue;
+  if(!needsRecovery(payload,result.workflow_runs?.[0],{maxAgeMinutes:recoveryAgeMinutes(sport,maxAgeMinutes)}))continue;
   execFileSync('gh',['workflow','run',workflow,'--repo',repository,'--ref',branch],{stdio:'inherit'});
   console.log(`Requested current ${sport} refresh`);
  }

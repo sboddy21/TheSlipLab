@@ -2,6 +2,8 @@ name: The Slip Lab College Football Refresh
 on:
   workflow_dispatch:
   schedule:
+    # Daily baseline runs year-round, including offseason and no-game days.
+    - cron: "39 11 * * *"
     - cron: '7,22,37,52 * * 1,8-12 *'
 permissions:
   contents: write

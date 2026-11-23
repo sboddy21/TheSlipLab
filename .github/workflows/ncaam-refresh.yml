@@ -7,6 +7,8 @@ on:
       - "scripts/ncaam/**"
       - ".github/workflows/ncaam-refresh.yml"
   schedule:
+    # Daily baseline runs year-round, including offseason and no-game days.
+    - cron: "59 11 * * *"
     - cron: '8,23,38,53 * * 11,12,1,2,3,4 *'
 permissions:
   contents: write
