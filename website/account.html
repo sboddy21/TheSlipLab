@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="./assets/account.css" />
   <link rel="stylesheet" href="./assets/account-center.css" />
   <script src="./assets/member-data.js"></script>
+  <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
+  <script defer src="/_vercel/insights/script.js" data-tsl-vercel-analytics="true"></script>
   <script defer src="./assets/site-header.js?v=20260830-premium4"></script>
   <link rel="stylesheet" href="./assets/energy.css?v=20260830-premium">
   <link rel="stylesheet" href="./assets/account-readability.css?v=20260823a">
@@ -17,8 +19,8 @@
 <body class="account-page tsl-editorial">
   <main class="account-shell">
     <div class="account-eyebrow">Slip Lab member access</div>
-    <h1 class="account-title">Sign in to unlock the board.<em>Follow your players.</em></h1>
-    <p class="account-intro">The premium MLB tools now require a Slip Lab account. Create an account or sign in to open the slate, AI boards, matchup tools, and live edge pages.</p>
+    <h1 class="account-title">Your Slip Lab account</h1>
+    <p class="account-intro">Create a free account or sign in to manage your Slip Lab membership. Paid plans unlock ranked boards, matchup tools, and model analysis across active sports.</p>
 
     <section class="account-panel" aria-labelledby="accountHeading">
       <div class="account-panel-head">
@@ -27,6 +29,7 @@
       </div>
       <div class="account-panel-body">
         <div id="signedOutPanel">
+          <p class="account-email-note" id="accountPlanIntent" hidden></p>
           <div class="account-auth-tabs" role="tablist" aria-label="Account access options">
             <button class="account-auth-tab active" id="signInTab" type="button" role="tab" aria-selected="true" aria-controls="signInForm">Sign in</button>
             <button class="account-auth-tab" id="signUpTab" type="button" role="tab" aria-selected="false" aria-controls="signUpForm">Create account</button>
@@ -88,7 +91,7 @@
           <section class="account-membership" aria-labelledby="accountMembershipHeading">
             <div class="account-membership-summary">
               <span class="account-membership-kicker">Membership</span>
-              <h3 id="accountMembershipHeading">Turn your account into a daily edge desk.</h3>
+              <h3 id="accountMembershipHeading">Choose your Slip Lab membership</h3>
               <p id="accountMembershipStatus">Checking your membership status…</p>
             </div>
             <div class="account-billing" id="accountBillingPanel" hidden>
@@ -101,6 +104,30 @@
               <p class="account-billing-message" id="accountBillingMessage" aria-live="polite"></p>
             </div>
             <div class="account-conversion" id="accountConversionPanel" hidden>
+              <div class="account-membership-actions" id="accountSubscribeOptions" hidden>
+                <article class="account-plan account-plan-weekly" data-account-plan="weekly">
+                  <span class="account-plan-name">Weekly</span>
+                  <div class="account-plan-price"><strong>$5</strong><span>/ week</span></div>
+                  <p>Full access with the shortest commitment.</p>
+                  <button class="account-button secondary" type="button" data-account-checkout="weekly">Choose weekly</button>
+                </article>
+                <article class="account-plan featured" data-account-plan="monthly">
+                  <span class="account-plan-badge">Recommended</span>
+                  <span class="account-plan-name">Monthly</span>
+                  <div class="account-plan-price"><strong>$15</strong><span>/ month</span></div>
+                  <p>The simplest way to stay current through the season.</p>
+                  <button class="account-button" type="button" data-account-checkout="monthly">Choose monthly</button>
+                </article>
+                <article class="account-plan" data-account-plan="annual">
+                  <span class="account-plan-badge savings">Save $81</span>
+                  <span class="account-plan-name">Annual</span>
+                  <div class="account-plan-price"><strong>$99</strong><span>/ year</span></div>
+                  <p>Every active sport and future live league for one year.</p>
+                  <button class="account-button secondary" type="button" data-account-checkout="annual">Choose annual</button>
+                </article>
+              </div>
+              <p class="account-checkout-note">Every plan unlocks the same tools · Plans renew automatically · Cancel in My Account</p>
+              <p class="account-message" id="accountCheckoutMessage" aria-live="polite"></p>
               <div class="account-proof-row" aria-label="What a membership unlocks">
                 <div><strong>Live</strong><span>lineups, weather and pitcher changes</span></div>
                 <div><strong>Ranked</strong><span>AI Says and matchup boards</span></div>
@@ -121,29 +148,6 @@
                 </div>
               </div>
 
-              <div class="account-membership-actions" id="accountSubscribeOptions" hidden>
-                <article class="account-plan account-plan-weekly" data-account-plan="weekly">
-                  <span class="account-plan-name">Weekly</span>
-                  <div class="account-plan-price"><strong>$5</strong><span>/ week</span></div>
-                  <p>Full access with the shortest commitment.</p>
-                  <button class="account-button secondary" type="button" data-account-checkout="weekly">Try one week</button>
-                </article>
-                <article class="account-plan featured" data-account-plan="monthly">
-                  <span class="account-plan-badge">Most popular</span>
-                  <span class="account-plan-name">Monthly</span>
-                  <div class="account-plan-price"><strong>$15</strong><span>/ month</span></div>
-                  <p>The simplest way to stay current through the season.</p>
-                  <button class="account-button" type="button" data-account-checkout="monthly">Choose monthly</button>
-                </article>
-                <article class="account-plan" data-account-plan="annual">
-                  <span class="account-plan-badge savings">Save $81</span>
-                  <span class="account-plan-name">Annual</span>
-                  <div class="account-plan-price"><strong>$99</strong><span>/ year</span></div>
-                  <p>Every active sport and future live league for one year.</p>
-                  <button class="account-button secondary" type="button" data-account-checkout="annual">Choose annual</button>
-                </article>
-              </div>
-              <p class="account-checkout-note">Every plan unlocks the same tools · Secure Stripe checkout · Cancel from My Account</p>
             </div>
           </section>
 
@@ -329,7 +333,7 @@
     </div>
     <div class="favorite-detail-body" id="favoriteDetailBody"></div>
   </dialog>
-  <script type="module" src="./assets/account-page.js"></script>
+  <script type="module" src="./assets/account-page.js?v=20261127-membership></script>
   <script type="module" src="./assets/account-center.js"></script>
   <script defer src="./assets/nfl-coming-soon.js?v=20260830-private"></script>
 </body>

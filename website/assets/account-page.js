@@ -85,9 +85,13 @@ function trackConversion(name, properties = {}) {
   window.dispatchEvent(new CustomEvent("tsl:conversion", { detail: { name, properties: safeProperties } }));
 }
 
+const planLabels = { weekly: "Weekly ($5/week)", monthly: "Monthly ($15/month)", annual: "Annual ($99/year)" };
+const accountParams = new URLSearchParams(window.location.search);
+const requestedPlan = accountParams.get("plan");
+const checkoutReturn = accountParams.get("checkout");
+
 function selectedPlan() {
-  const plan = new URLSearchParams(window.location.search).get("plan");
-  return ["weekly", "monthly", "annual"].includes(plan) ? plan : "monthly";
+  return Object.hasOwn(planLabels, requestedPlan) ? requestedPlan : "monthly";
 }
 
 function highlightSelectedPlan() {
@@ -122,7 +126,7 @@ function redirectTarget() {
 
 function redirectAfterAuth(session) {
   const target = redirectTarget();
-  if (!session?.user || !target || recoveryMode) return false;
+  if (!session?.user || !target || recoveryMode || checkoutReturn) return false;
   window.location.replace(target);
   return true;
 }
@@ -754,7 +758,7 @@ async function renderMembership() {
       const periodEnd = status.currentPeriodEnd ? new Date(status.currentPeriodEnd).toLocaleDateString() : "";
       elements.membershipStatus.textContent = status.cancelAtPeriodEnd && periodEnd
         ? `Active through ${periodEnd}. Your subscription is set to cancel after this period.`
-        : "Active subscription. Premium MLB boards and tools are unlocked.";
+        : "Active subscription. Your premium boards and tools are unlocked.";
       if (elements.billingPanel) elements.billingPanel.hidden = false;
       if (elements.billingDetails) {
         const amount = Number.isFinite(status.unitAmount) ? new Intl.NumberFormat("en-US", { style: "currency", currency: String(status.currency || "usd").toUpperCase() }).format(status.unitAmount / 100) : "Current price";
@@ -765,11 +769,15 @@ async function renderMembership() {
       return;
     }
     elements.membership.classList.add("pending");
-    if (elements.membershipHeading) elements.membershipHeading.textContent = "Turn your account into a daily edge desk.";
+    if (elements.membershipHeading) elements.membershipHeading.textContent = "Choose your Slip Lab membership";
     elements.membershipStatus.textContent = "Your free account is ready. Choose a plan to unlock the ranked boards, pitcher vulnerability, AI analysis, saved-player alerts, and every active sport.";
     if (elements.conversionPanel) elements.conversionPanel.hidden = false;
     elements.subscribeOptions.hidden = false;
     highlightSelectedPlan();
+    const checkoutMessage = document.getElementById("accountCheckoutMessage");
+    if (checkoutReturn === "cancelled" && checkoutMessage && !checkoutMessage.textContent) {
+      checkoutMessage.textContent = "Checkout was canceled. Choose a plan when you’re ready to continue.";
+    }
     if (!membershipViewTracked) {
       trackConversion("pricing_viewed", { source: "account", selected_plan: selectedPlan() });
       membershipViewTracked = true;
@@ -852,7 +860,7 @@ elements.signUpForm.addEventListener("submit", async event => {
   setMessage("Creating your private Slip Lab account…");
   try {
     const data = await window.TSLAccount.signUpWithPassword(email, password);
-    trackConversion("account_created", { confirmation_required: !data.session });
+    trackConversion("account_created", { confirmation_required: !data.session, plan: hasRequestedPlan ? requestedPlan : "none" });
     elements.signUpForm.reset();
     if (data.session) {
       setMessage("Account created. You are signed in.");
@@ -913,18 +921,22 @@ elements.signOut.addEventListener("click", async () => {
 elements.subscribeOptions?.addEventListener("click", async event => {
   const button = event.target.closest("[data-account-checkout]");
   if (!button) return;
+  const message = document.getElementById("accountCheckoutMessage");
+  if (message) message.textContent = "";
   const plan = button.dataset.accountCheckout || "monthly";
   const originalLabel = button.textContent;
   trackConversion("checkout_clicked", { plan, source: "account" });
-  button.disabled = true;
+  const checkoutButtons = elements.subscribeOptions.querySelectorAll("[data-account-checkout]");
+  checkoutButtons.forEach(option => { option.disabled = true; });
   button.textContent = "Opening checkout…";
   try {
     const checkout = await window.TSLAccount.createCheckoutSession(plan);
     trackConversion("checkout_opened", { plan, source: "account" });
     window.location.href = checkout.url;
   } catch (error) {
-    setMessage(error.message || "Checkout is temporarily unavailable.", true);
-    button.disabled = false;
+    trackConversion("checkout_error", { plan, source: "account" });
+    if (message) message.textContent = error.message || "Checkout is temporarily unavailable. Please try again.";
+    checkoutButtons.forEach(option => { option.disabled = false; });
     button.textContent = originalLabel;
   }
 });
@@ -1020,5 +1032,16 @@ window.addEventListener("tsl-account-error", event => {
   setMessage(event.detail.message, true);
 });
 
-if (redirectTarget()) setMessage("Sign in or create an account to continue to the member page you requested.");
+const planIntent = document.getElementById("accountPlanIntent");
+const hasRequestedPlan = Object.hasOwn(planLabels, requestedPlan);
+if (hasRequestedPlan && planIntent) {
+  planIntent.textContent = `${planLabels[requestedPlan]} selected. Create an account or sign in to continue to secure checkout.`;
+  planIntent.hidden = false;
+}
+if (accountParams.get("mode") === "signup" || hasRequestedPlan) {
+  showAuthView("signup");
+  setMessage("We’ll email a verification link to confirm your account.");
+} else if (redirectTarget()) {
+  setMessage("Sign in or create an account to continue to the member page you requested.");
+}
 if (window.TSLAccount) showSession(window.TSLAccount.session);

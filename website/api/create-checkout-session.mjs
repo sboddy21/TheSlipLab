@@ -93,7 +93,7 @@ async function createStripeCheckoutSession({ user, request, returnTo, plan }) {
     client_reference_id: user.id,
     customer_email: user.email || "",
     success_url: `${origin}/account.html?checkout=success&redirect=${successReturn}`,
-    cancel_url: `${origin}/account.html?checkout=cancelled&redirect=${successReturn}`,
+    cancel_url: `${origin}/account.html?checkout=cancelled&plan=${encodeURIComponent(plan)}&redirect=${successReturn}`,
     "line_items[0][price]": priceId,
     "line_items[0][quantity]": "1",
     "metadata[user_id]": user.id,
