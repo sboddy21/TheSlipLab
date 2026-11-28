@@ -68,40 +68,70 @@
   ];
   const wnbaPrimaryOrder = ["Slate", "Decision Center", "Results", "AI Says"];
   const nflItems = [
-    ["NFL Home","#pageTitle",["/nfl.html"]],
-    ["Anytime TD","#anytime-td",[]],
-    ["Rec Yds","#receiving-yards",[]],
-    ["Rush Yds","#market-rushing-yards",[]],
-    ["Pass Yds","#market-passing-yards",[]],
-    ["Status","#nfl-status",[]],
+    ["NFL Home","./nfl.html#dashboard",["/nfl.html"]],
+    ["Touchdown AI","./nfl-touchdown-ai.html",["/nfl-touchdown-ai.html"]],
+    ["Anytime TD","./nfl.html#touchdowns",[]],
+    ["Rec Yds","./nfl.html#receiving",[]],
+    ["Rush Yds","./nfl.html#rushing",[]],
+    ["Pass Yds","./nfl.html#passing",[]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nflPrimaryOrder = ["NFL Home", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds", "Status"];
+  const nflPrimaryOrder = ["NFL Home", "Touchdown AI", "Anytime TD", "Rec Yds", "Rush Yds", "Pass Yds"];
+  const cfbItems = [
+    ["NCAAF Home","./cfb.html",["/cfb.html"]],
+    ["AI Says","./cfb.html#leans",[]],
+    ["Game Lab","./cfb.html#slate",[]],
+    ["Results","./cfb.html#results",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const cfbPrimaryOrder = ["NCAAF Home", "AI Says", "Game Lab", "Results"];
+  const ncaamItems = [
+    ["NCAAM Home", "./ncaam.html", ["/ncaam.html"]],
+    ["Matchups", "./ncaam.html#games", []],
+    ["Watchlist", "./ncaam.html#watchlist", []],
+    ["Results", "./ncaam.html#results", []],
+    ["My Account", "./account.html", ["/account.html"]],
+    ["Disclaimer", "./disclaimer.html", ["/disclaimer.html"]]
+  ];
+  const ncaamPrimaryOrder = ["NCAAM Home", "Matchups", "Watchlist", "Results"];
   const nbaItems = [
-    ["NBA Home","./nba.html",["/nba.html"]],
-    ["Points","./nba-points.html",["/nba-points.html"]],
-    ["Rebounds","./nba-rebounds.html",["/nba-rebounds.html"]],
-    ["Assists","./nba-assists.html",["/nba-assists.html"]],
-    ["Threes","./nba-threes.html",["/nba-threes.html"]],
-    ["Matchups","./nba-matchups.html",["/nba-matchups.html"]],
+    ["NBA Home","./nba.html#dashboard",["/nba.html"]],
+    ["Game Lab","./nba.html#games",[]],
+    ["Player Board","./nba.html#players",[]],
+    ["Availability","./nba.html#availability",[]],
+    ["Results","./nba-results.html",["/nba-results.html"]],
     ["My Account","./account.html",["/account.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const nbaPrimaryOrder = ["NBA Home", "Points", "Rebounds", "Assists", "Threes", "Matchups"];
+  const nbaPrimaryOrder = ["NBA Home", "Game Lab", "Player Board", "Availability", "Results"];
+  const nhlItems = [
+    ["NHL Home","./nhl.html#dashboard",["/nhl.html"]],
+    ["Matchups","./nhl.html#games",[]],
+    ["Goal Scorers","./nhl.html#goals",[]],
+    ["Shots","./nhl.html#shots",[]],
+    ["Live Ice","./nhl.html#live",[]],
+    ["My Account","./account.html",["/account.html"]],
+    ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
+  ];
+  const nhlPrimaryOrder = ["NHL Home", "Matchups", "Goal Scorers", "Shots", "Live Ice"];
   const generalItems = [
     ["Home","./index.html",["/index.html","/"]],
+    ["Sponsor","./sponsor.html",["/sponsor.html"]],
     ["MLB","./mlb.html",[]],
     ["WNBA","./wnba.html",[]],
     ["NFL","./nfl.html",[]],
     ["College Football","./cfb.html",["/cfb.html"]],
     ["NBA","./nba.html",[]],
+    ["NHL","./nhl.html",[]],
+    ["NCAAM","./ncaam.html",[]],
     ["My Account","./account.html",["/account.html"]],
     ["How to Use","./how-to-use.html",["/how-to-use.html"]],
     ["Disclaimer","./disclaimer.html",["/disclaimer.html"]]
   ];
-  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "My Account"];
-  const generalPaths = new Set(["/", "/index.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
+  const generalPrimaryOrder = ["Home", "MLB", "WNBA", "NFL", "College Football", "NBA", "NHL", "NCAAM", "My Account"];
+  const generalPaths = new Set(["/", "/index.html", "/sponsor.html", "/account.html", "/disclaimer.html", "/how-to-use.html", "/blog.html", "/blog-hr-shortlist.html", "/blog-pitcher-vulnerability.html", "/blog-signal-stack.html"]);
   const protectedPaths = new Set([
     "/cfb.html",
     "/ai-hall-of-fame.html",
@@ -109,10 +139,15 @@
     "/bullpen-collapse.html",
     "/command-center.html",
     "/full-board.html",
+    "/heat-check.html",
     "/hr-decision-center.html",
     "/decision-center.html",
     "/live-game-center.html",
+    "/live-extra-bases.html",
+    "/live-hard-hit.html",
     "/live-heatmap.html",
+    "/live-home-runs.html",
+    "/live-near-home-runs.html",
     "/live-platform.html",
     "/matchup-lab.html",
     "/mlb.html",
@@ -130,22 +165,33 @@
     "/wnba-full-board.html",
     "/wnba-quick-target.html",
     "/nfl.html",
+    "/nfl-touchdown-ai.html",
     "/pitcher-vulnerability.html",
     "/platoon-edge.html",
     "/player-intelligence.html",
     "/power-zones.html",
+    "/quick-target.html",
+    "/results.html",
+    "/streak-lab.html",
+    "/weather.html",
     "/tags.html"
   ]);
+
+  function isProtectedPath(path){
+    return protectedPaths.has(path) || /^\/(?:wnba|nfl|nba|nhl|cfb|ncaaf|ncaam)(?:-|\.|\/)/.test(path);
+  }
 
   function itemIsActive(activePaths, path){
     return activePaths.includes(path);
   }
 
   function sectionForPath(path){
-    if (path === "/cfb.html") return "general";
-    if (path === "/nfl.html") return "nfl";
+    if (path === "/ncaam.html") return "ncaam";
+    if (path === "/cfb.html") return "cfb";
+    if (path === "/nfl.html" || path.startsWith("/nfl-")) return "nfl";
     if (path === "/wnba.html" || path.startsWith("/wnba-")) return "wnba";
     if (path === "/nba.html" || path.startsWith("/nba-")) return "nba";
+    if (path === "/nhl.html" || path.startsWith("/nhl-")) return "nhl";
     if (generalPaths.has(path)) return "general";
     return "mlb";
   }
@@ -181,10 +227,10 @@
 
   function buildHeader(){
     const path = window.location.pathname;
-    const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : "");
+    const bodySection = document.body?.classList.contains("tsl-nfl-page") ? "nfl" : (document.body?.classList.contains("tsl-wnba-page") ? "wnba" : (document.body?.classList.contains("tsl-nhl-page") ? "nhl" : ""));
     const section = bodySection || sectionForPath(path);
-    const navItems = section === "nfl" ? nflItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "general" ? generalItems : mlbItems;
-    const navPrimaryOrder = section === "nfl" ? nflPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
+    const navItems = section === "ncaam" ? ncaamItems : section === "nfl" ? nflItems : section === "cfb" ? cfbItems : section === "wnba" ? wnbaItems : section === "nba" ? nbaItems : section === "nhl" ? nhlItems : section === "general" ? generalItems : mlbItems;
+    const navPrimaryOrder = section === "ncaam" ? ncaamPrimaryOrder : section === "nfl" ? nflPrimaryOrder : section === "cfb" ? cfbPrimaryOrder : section === "wnba" ? wnbaPrimaryOrder : section === "nba" ? nbaPrimaryOrder : section === "nhl" ? nhlPrimaryOrder : section === "general" ? generalPrimaryOrder : mlbPrimaryOrder;
     const navPrimaryLabels = new Set(navPrimaryOrder);
     const header = document.createElement("header");
     header.className = `tsl-site-header tsl-${section}-header`;
@@ -309,14 +355,16 @@
   function buildFooter(){
     const section = document.documentElement.dataset.sport || sectionForPath(window.location.pathname);
     const links = section === "nfl"
-      ? [["NFL Home","./nfl.html"],["Anytime TD","./nfl.html#anytime-td"],["Rec Yds","./nfl.html#receiving-yards"],["Status","./nfl.html#nfl-status"]]
+      ? [["NFL Home","./nfl.html#dashboard"],["Touchdown AI","./nfl-touchdown-ai.html"],["Anytime TD","./nfl.html#touchdowns"],["Rec Yds","./nfl.html#receiving"],["Rush Yds","./nfl.html#rushing"],["Pass Yds","./nfl.html#passing"]]
       : section === "wnba"
         ? [["WNBA Slate","./wnba.html"],["Decision Center","./wnba-decision-center.html"],["Results","./wnba-results.html"],["AI Says","./wnba-ai-says.html"]]
         : section === "nba"
-          ? [["NBA Home","./nba.html"],["Points","./nba-points.html"],["Rebounds","./nba-rebounds.html"],["Matchups","./nba-matchups.html"]]
+          ? [["NBA Home","./nba.html#dashboard"],["Game Lab","./nba.html#games"],["Player Board","./nba.html#players"],["Results","./nba-results.html"]]
+          : section === "nhl"
+            ? [["NHL Home","./nhl.html#dashboard"],["Matchups","./nhl.html#games"],["Goal Scorers","./nhl.html#goals"],["Shots","./nhl.html#shots"],["Live Ice","./nhl.html#live"]]
           : section === "mlb"
             ? [["MLB Slate","./mlb.html"],["Decision Center","./hr-decision-center.html"],["Results","./results.html"],["AI Says","./ai-says.html"]]
-            : [["Home","./index.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
+            : [["Home","./index.html"],["Sponsor","./sponsor.html"],["How to Use","./how-to-use.html"],["Account","./account.html"],["Disclaimer","./disclaimer.html"]];
     const footer = document.createElement("footer");
     footer.className = "tsl-site-footer";
     footer.innerHTML = `
@@ -329,11 +377,8 @@
   }
 
   function init(){
-    if (!document.querySelector('script[data-tsl-odds]')) {
-      const oddsScript = document.createElement('script');
-      oddsScript.type = 'module'; oddsScript.src = './assets/sports-odds.js';
-      oddsScript.dataset.tslOdds = 'true'; document.head.appendChild(oddsScript);
-    }
+    // Sportsbook prices remain available to the data and ranking pipelines, but
+    // the public odds-comparison UI is intentionally not mounted.
     if (document.querySelector(".tsl-site-header")) return;
     hideOldHeaders();
     const header = buildHeader();
@@ -350,9 +395,9 @@
       accountScript.dataset.tslAccountClient = "true";
       document.head.appendChild(accountScript);
     }
-    if (protectedPaths.has(window.location.pathname) && !document.querySelector('script[data-tsl-access-gate]')) {
+    if (isProtectedPath(window.location.pathname) && !document.querySelector('script[data-tsl-access-gate]')) {
       const gateScript = document.createElement("script");
-      gateScript.src = "./assets/access-gate.js";
+      gateScript.src = "./assets/access-gate.js?v=20260921-localverify1";
       gateScript.dataset.tslAccessGate = "true";
       document.head.appendChild(gateScript);
     }

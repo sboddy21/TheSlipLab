@@ -27,7 +27,7 @@ export async function mountPlayer(element,identity){
  element.innerHTML=`${quotes.length?`<details><summary>Player odds · ${quotes.length} prices</summary>${[...new Set(quotes.map(q=>q.providerEventId))].map(id=>{const group=quotes.filter(q=>q.providerEventId===id);return `<p>${esc(group[0].away)} at ${esc(group[0].home)} · ${esc(when(group[0].kickoff))}</p>${table(group)}`;}).join('')}<p class="tsl-odds-note">Break-even is the win rate needed at this price, not a player prediction. Confirm the line at your sportsbook.</p></details>`:'<h3>Player odds</h3><p>No fresh, matched sportsbook props available for this player.</p>'}`;
  }catch{element.innerHTML='<h3>Player odds</h3><p>Current player prices are unavailable.</p>';}
 }
-function sportForPage(){const p=location.pathname;return p.includes('cfb')?'NCAAF':p.includes('wnba')?'WNBA':p.includes('nba')?'NBA':p.includes('nfl')?'NFL':/mlb|full-board|home-run|homer|hits|total-bases|pitcher|rbi|ai-2|quick-target|hr-decision|command-center|heat-check|matchup-lab|power-zones|platoon-edge|player-intelligence|streak-lab|bullpen-collapse|ai-says/.test(p)?'MLB':null;}
+function sportForPage(){const p=location.pathname;return p.includes('ncaam')?'NCAAM':p.includes('cfb')?'NCAAF':p.includes('wnba')?'WNBA':p.includes('nba')?'NBA':p.includes('nfl')?'NFL':/mlb|full-board|home-run|homer|hits|total-bases|pitcher|rbi|ai-2|quick-target|hr-decision|command-center|heat-check|matchup-lab|power-zones|platoon-edge|player-intelligence|streak-lab|bullpen-collapse|ai-says/.test(p)?'MLB':null;}
 async function init(){
  const style=document.createElement('link');style.rel='stylesheet';style.href='./assets/sports-odds.css';document.head.append(style);
  window.TSLOdds={mountPlayer};window.dispatchEvent(new Event('tsl-odds-ready'));

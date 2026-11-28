@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: 22
       - name: Check college football data guards
-        run: node --test tests/cfb.test.mjs
+        run: node --test tests/cfb.test.mjs tests/cfb-scoreboard.test.mjs
       - name: Refresh college football board and settle recorded leans
         run: node scripts/cfb/refresh.mjs
       - name: Commit board

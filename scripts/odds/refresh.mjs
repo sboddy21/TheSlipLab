@@ -3,14 +3,14 @@ import {fileURLToPath} from 'node:url';
 import {request} from '../providers/sportsbook-rapidapi.mjs';
 import {proplineRequest,proplineSettings,normalizePropLineBooks} from '../providers/propline.mjs';
 import {rapidQuotes,mainMarkets,decimal,fresh} from './core.mjs';
-const SPORTS={MLB:'baseball_mlb',WNBA:'basketball_wnba',NBA:'basketball_nba',NFL:'americanfootball_nfl',NCAAF:'americanfootball_ncaaf'};
+const SPORTS={MLB:'baseball_mlb',WNBA:'basketball_wnba',NBA:'basketball_nba',NFL:'americanfootball_nfl',NCAAF:'americanfootball_ncaaf',NCAAM:'basketball_ncaab'};
 const MARKETS={MLB:'batter_home_runs,batter_hits,batter_total_bases,batter_rbis,pitcher_strikeouts',WNBA:'player_points,player_rebounds,player_assists,player_threes',NBA:'player_points,player_rebounds,player_assists,player_threes',NFL:'player_pass_yds,player_rush_yds,player_reception_yds,player_anytime_td',NCAAF:'player_pass_yds,player_rush_yds,player_reception_yds,player_anytime_td'};
 export async function refreshSport(sport,{rapid=request,props=proplineRequest,now=Date.now(),includeProps=true}={}){
  if(!SPORTS[sport])throw new Error('Unsupported sport');
  const out={schemaVersion:1,sport,retrievedAt:new Date(now).toISOString(),events:[],quotes:[],errors:[],coverage:{},maxQuoteAgeMinutes:20};
  try{
   const query=new URLSearchParams({startTimeFrom:new Date(now).toISOString(),startTimeTo:new Date(now+7*86400000).toISOString()});
-  const r=await rapid(`/v1/competitions/${sport}/events?${query}`);
+  const r=await rapid(`/v1/competitions/${sport==='NCAAM'?'NCAAB':sport}/events?${query}`);
   if(!Array.isArray(r.data.events))throw new Error('Invalid event list');
   out.rapidQuota=r.quota;
   const events=r.data.events.filter(e=>e.type==='MATCH'&&Date.parse(e.startTime)>now&&e.participants?.length===2).sort((a,b)=>Date.parse(a.startTime)-Date.parse(b.startTime));
@@ -28,7 +28,7 @@ export async function refreshSport(sport,{rapid=request,props=proplineRequest,no
    }catch(error){out.errors.push({provider:'RapidAPI',message:error.message});if(/401|403|429/.test(error.message)){verifiedRequests=3;break;}}
   }
  }catch(error){out.errors.push({provider:'RapidAPI',message:error.message});}
- if(includeProps && (out.errors.length || out.events.some(e=>Date.parse(e.kickoff)<now+12*3600000))){try{
+ if(includeProps && MARKETS[sport] && (out.errors.length || out.events.some(e=>Date.parse(e.kickoff)<now+12*3600000))){try{
   let previous;
   try{previous=JSON.parse(await fs.readFile(new URL(`../../website/data/odds_${sport.toLowerCase()}.json`,import.meta.url),'utf8'));}catch{}
   const existing=(previous?.quotes||[]).filter(q=>q.provider==='PropLine'&&fresh(q.quotedAt,now)&&now-Date.parse(q.quotedAt)<5*60_000&&Date.parse(q.kickoff)>now);
