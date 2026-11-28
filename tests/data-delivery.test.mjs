@@ -93,3 +93,14 @@ test('a scheduled NBA slate with no eligible model rows still publishes verified
  const receipt=validateNbaPublication({slate:{date:'2026-11-06',games:[{gameId:'1'}]},pool:{players:[player],playerCount:1,errors:[],teams:[{},{}]},availability:{players:[{...player,team:'BOS',availabilityStatus:'UNKNOWN'}]},minutes:{players:[{...player,publicationEligible:false,expectedMinutes:0}]},boards:{'nba_points.json':{players:[]}}});
  assert.equal(receipt.projectionStatus,'context_only_no_verified_players');assert.equal(receipt.publicationEligibleCount,0);assert.equal(receipt.status,'passed');
 });
+
+ test('a recent rebuild cannot make old source data outrank current published evidence',async()=>{
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'slip-source-order-'));
+ try {
+ const local={dataAsOf:'2026-11-05T12:00:00Z',generatedAt:'2026-11-06T16:00:00Z'};
+ const published={dataAsOf:'2026-11-06T15:58:00Z',generatedAt:'2026-11-06T15:59:00Z'};
+ await fs.writeFile(path.join(dir,'source_order.json'),JSON.stringify(local));
+ const load=createPublishedDataReader({roots:[dir],now:()=>now,fetcher:async()=>({ok:true,json:async()=>published})});
+ assert.deepEqual(await load('source_order.json'),published);
+ }finally{await fs.rm(dir,{recursive:true,force:true});}
+ });

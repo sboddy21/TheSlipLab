@@ -3,7 +3,12 @@ import path from 'node:path';
 
 const ORIGIN = 'https://raw.githubusercontent.com/sboddy21/TheSlipLab/main/website/data/';
 const cache = new Map();
-const observed = payload => Math.max(...['dataAsOf','sourceFetchedAt','fetchedAt','retrievedAt','updatedAt','updated_at','generatedAt'].map(key=>Date.parse(payload?.[key] || '')).filter(Number.isFinite), 0);
+// Rebuilding an output must not make older source evidence outrank a newer feed.
+const observed = (payload, now) => {
+  const times = ['dataAsOf','sourceFetchedAt','fetchedAt','retrievedAt','updatedAt','updated_at','generatedAt'].map(key=>Date.parse(payload?.[key] || '')).filter(Number.isFinite);
+  if (!times.length || times.some(time => time > now)) return 0;
+  return Math.min(...times);
+};
 
 // Read current published data independently of the last website build. Keep
 // original source timestamps; the caller still enforces source freshness.
@@ -37,7 +42,7 @@ export function createPublishedDataReader({fetcher=fetch, now=Date.now, roots=[p
       }
       try {
         const published=await entry.promise;
-        return local!==undefined && observed(local)>observed(published) ? local : published;
+        return local!==undefined && observed(local,time)>observed(published,time) ? local : published;
       } catch {if(local!==undefined)return local;throw Error('Current published data unavailable');}
     })();
     request.set(file,pending);return pending;
