@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "sport": "NCAAM",
+  "generatedAt": "2026-11-06T20:21:59.144Z",
+  "modelVersion": "ncaam-elo-v1",
+  "config": {
+    "version": "ncaam-elo-v1",
+    "initialRating": 1500,
+    "kFactor": 32,
+    "homeAdvantage": 65,
+    "ratingScale": 400,
+    "seasonRetention": 0.5,
+    "minimumTeamGames": 8,
+    "minimumConfidence": 0.6,
+    "trainingWindow": [
+      "2024-11-04",
+      "2025-04-08"
+    ],
+    "holdoutWindow": [
+      "2025-11-03",
+      "2026-04-08"
+    ],
+    "acceptance": {
+      "minimumHoldoutPicks": 300,
+      "maximumCalibrationError": 0.1,
+      "requirePositiveBrierSkillLower95": true
+    }
+  },
+  "configHash": "8c2b3a10ad69ec13895e2dded11716dcd5ac6d7aac6e6836b95081c286246a5a",
+  "datasetHash": "7b625f394c30de104f5ff566aa12c10d354035c73b01206c33cd2469012e04e2",
+  "modelStateHash": "6aa931e226f5cc9e4671afeb01c50e915aa50871f038d3cb7f58f5369e79fa03",
+  "training": 6292,
+  "holdout": 6300,
+  "trainingHomeWinRate": 0.6797114517583408,
+  "method": "Fixed-parameter Elo; train 2024–25, sequential out-of-season evaluation 2025–26. Each forecast is saved before that game updates ratings. No parameters fitted or selected using holdout outcomes.",
+  "passed": true,
+  "reasons": [],
+  "games": 6300,
+  "picks": 3517,
+  "wins": 2754,
+  "losses": 763,
+  "accuracy": 0.783053738982087,
+  "accuracy95": [
+    0.7691268017082272,
+    0.7963629948222387
+  ],
+  "brier": 0.1698062711873222,
+  "baselineBrier": 0.21112638353026675,
+  "brierImprovement": 0.041320112342943915,
+  "brierImprovementLower95": 0.03657170110839836,
+  "calibrationError": 0.07978368442149397,
+  "bins": [
+    {
+      "lower": 0.6,
+      "upper": 0.7,
+      "count": 1907,
+      "meanProbability": 0.6483843673973451,
+      "winRate": 0.7241740954378605
+    },
+    {
+      "lower": 0.7,
+      "upper": 0.7999999999999999,
+      "count": 1203,
+      "meanProbability": 0.7443937403136389,
+      "winRate": 0.828761429758936
+    },
+    {
+      "lower": 0.8,
+      "upper": 0.9,
+      "count": 385,
+      "meanProbability": 0.8344187148059261,
+      "winRate": 0.9194805194805195
+    },
+    {
+      "lower": 0.9,
+      "upper": 1,
+      "count": 22,
+      "meanProbability": 0.9170417484217913,
+      "winRate": 1
+    }
+  ],
+  "scope": "Straight-up winners only; no validated betting ROI, spread or total edge",
+  "limitations": [
+    "ESPN public-score coverage, not an independently audited official results database.",
+    "Nominal 95% intervals treat games as independent; shared teams can create dependence.",
+    "No historical executable sportsbook prices were validated, so accuracy does not establish profitability.",
+    "Transfers and roster turnover are represented only by preseason rating regression.",
+    "Early-season forecasts carry extra uncertainty."
+  ]
+}
