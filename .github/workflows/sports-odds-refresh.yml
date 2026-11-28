@@ -27,7 +27,7 @@ jobs:
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           RAPIDAPI_HOST: sportsbook-api2.p.rapidapi.com
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
-        run: node scripts/odds/refresh.mjs
+        run: node scripts/odds/refresh.mjs MLB WNBA NBA NFL NCAAF
       - name: Attach refreshed NBA prices
         run: |
           node scripts/nba/build_nba_market_lines.mjs
