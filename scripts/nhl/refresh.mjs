@@ -1,3 +1,4 @@
+import { fetchNhlSeasonSkaters } from './stats.mjs';
 import { updateNhlResults, collectNhlFinals } from './results.mjs';
 import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from 'node:fs/promises';
@@ -46,13 +47,7 @@ async function marketTotals() {
 
 async function currentSkaters() {
   const seasonId = `${currentSeasonStart('nhl', `${date}T12:00:00Z`)}${currentSeasonStart('nhl', `${date}T12:00:00Z`) + 1}`;
-  const query = new URLSearchParams({
-    isAggregate: 'true', isGame: 'false', start: '0', limit: '-1',
-    sort: JSON.stringify([{ property: 'points', direction: 'DESC' }]),
-    factCayenneExp: 'gamesPlayed>=1', cayenneExp: `seasonId=${seasonId} and gameTypeId=2`
-  });
-  const data = await json(`${NHL_STATS}/skater/summary?${query}`);
-  return { seasonId: Number(seasonId), rows: Array.isArray(data.data) ? data.data : [] };
+  return fetchNhlSeasonSkaters(seasonId, json);
 }
 
 async function roster(abbreviation) {
@@ -119,7 +114,7 @@ async function liveDetails(games) {
     schemaVersion: 2, sport: 'NHL', date, generatedAt, source: 'NHL public schedule, roster, gamecenter and stats feeds; ESPN market totals',
     status: games.length ? 'available' : 'no_games', historySeason: history.seasonId, season: history.seasonId, baselineMode: 'current_season',
     freshness: { maxAgeHours: 1, refreshCadenceMinutes: 60, liveRefreshCadenceMinutes: 15, schedule: generatedAt, projections: generatedAt, live: generatedAt },
-    counts: { games: games.length, players: players.length, liveGames: games.filter(game => isLive(game.state)).length },
+    counts: { sourceSkaters: history.rows.length, rosterSkaters: current.size, games: games.length, players: players.length, liveGames: games.filter(game => isLive(game.state)).length },
     games: matchups, players, live, errors: []
   };
 }
