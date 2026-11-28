@@ -16,8 +16,11 @@ const read = name => JSON.parse(fs.readFileSync(path.join(DATA, `${name}.json`),
 const norm = value => String(value || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
   .toLowerCase().replace(/[^a-z0-9]/g, "");
 
+const NBA_CITIES = { ATL:"Atlanta", BOS:"Boston", BKN:"Brooklyn", CHA:"Charlotte", CHI:"Chicago", CLE:"Cleveland", DAL:"Dallas", DEN:"Denver", DET:"Detroit", GSW:"Golden State", HOU:"Houston", IND:"Indiana", LAC:"Los Angeles", LAL:"Los Angeles", MEM:"Memphis", MIA:"Miami", MIL:"Milwaukee", MIN:"Minnesota", NOP:"New Orleans", NYK:"New York", OKC:"Oklahoma City", ORL:"Orlando", PHI:"Philadelphia", PHX:"Phoenix", POR:"Portland", SAC:"Sacramento", SAS:"San Antonio", TOR:"Toronto", UTA:"Utah", WSH:"Washington", WAS:"Washington" };
+
 function teamNames(team = {}) {
-  return [team.abbreviation, team.team, team.city, `${team.city || ""} ${team.team || ""}`.trim()].map(norm).filter(Boolean);
+  const city = team.city || NBA_CITIES[team.abbreviation] || "";
+  return [team.abbreviation, team.team, team.city, `${city} ${team.team || ""}`.trim()].map(norm).filter(Boolean);
 }
 
 function teamMatches(team, value) {

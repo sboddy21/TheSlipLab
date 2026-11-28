@@ -42,3 +42,12 @@ test("unconfirmed players cannot create priced comparisons", () => {
   assert.equal(result.comparisons.length, 0);
   assert.ok(result.rejectedLines[0].reasons.includes("availability_or_role_unconfirmed"));
 });
+
+test("ESPN nickname-only teams match canonical sportsbook city names", () => {
+ const slate = structuredClone(games);
+ slate.games[0].homeTeam.city = ""; slate.games[0].awayTeam.city = "";
+ const result = buildMarketLines(slate, players, {quotes:[quote("over"),quote("under")]}, now);
+ assert.equal(result.lines.length, 1);
+ slate.games[0].homeTeam.abbreviation = "LAL";
+ assert.equal(buildMarketLines(slate, players, {quotes:[quote("over"),quote("under")]}, now).lines.length, 0);
+});
