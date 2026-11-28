@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: refresh-mlb-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   check_live_games:
     runs-on: ubuntu-latest

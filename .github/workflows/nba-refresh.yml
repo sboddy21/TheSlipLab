@@ -46,7 +46,8 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add website/data/nba_*.json data/nba/first_basket_history.json
+          # Sportsbook workflow alone publishes nba_market_lines and nba_verified_markets.
+          git add website/data/nba_*.json ':!website/data/nba_market_lines.json' ':!website/data/nba_verified_markets.json' data/nba/first_basket_history.json
           git commit -m "Refresh NBA data" || echo "No changes to commit"
 
           node scripts/publish-refresh.mjs

@@ -11,7 +11,6 @@ const steps = [
   ["NBA History", "scripts/nba/build_nba_history.js"],
   ["NBA Model Backtest", "scripts/nba/build_nba_model_backtest.mjs"],
   ["NBA Availability", "scripts/nba/build_nba_availability.js"],
-  ["NBA Market Lines", "scripts/nba/build_nba_market_lines.mjs"],
   ["NBA Minutes Engine", "scripts/nba/build_minutes_engine.js"],
   ["NBA Usage Engine", "scripts/nba/build_usage_engine.js"],
   ["NBA Core", "scripts/nba/build_nba_core.js"],
@@ -26,8 +25,7 @@ const steps = [
   ["NBA Player Cards", "scripts/nba/build_nba_player_cards.js"],
   ["NBA First Basket", "scripts/nba/build_first_basket_model.mjs"],
   ["NBA Decision Center", "scripts/nba/build_nba_decision_center.js"],
-  ["NBA Results and Calibration", "scripts/nba/build_nba_results_calibration.mjs"],
-  ["NBA Verified Markets", "scripts/nba/build_nba_verified_markets.mjs"]
+  ["NBA Results and Calibration", "scripts/nba/build_nba_results_calibration.mjs"]
 ];
 
 const expectedOutputs = [
@@ -36,7 +34,6 @@ const expectedOutputs = [
   ["NBA History", "website/data/nba_history.json", true],
   ["NBA Model Backtest", "website/data/nba_model_backtest.json", true],
   ["NBA Availability", "website/data/nba_availability.json", true],
-  ["NBA Market Lines", "website/data/nba_market_lines.json", true],
   ["NBA Minutes Engine", "website/data/nba_minutes_engine.json", true],
   ["NBA Usage Engine", "website/data/nba_usage_engine.json", true],
   ["NBA Core", "website/data/nba_core.json", true],
@@ -53,8 +50,7 @@ const expectedOutputs = [
   ["NBA Decision Center", "website/data/nba_decision_center.json", true],
   ["NBA Projection History", "website/data/nba_projection_history.json", true],
   ["NBA Calibration", "website/data/nba_calibration.json", true],
-  ["NBA Results", "website/data/nba_results.json", true],
-  ["NBA Verified Markets", "website/data/nba_verified_markets.json", true]
+  ["NBA Results", "website/data/nba_results.json", true]
 ];
 
 const degradableOutputs = new Set([
