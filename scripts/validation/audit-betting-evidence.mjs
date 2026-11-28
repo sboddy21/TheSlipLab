@@ -47,6 +47,7 @@ const byDate=Object.fromEntries([...new Set(test.map(r=>r.slateDate))].map(date=
 }));
 const wnba=read('wnba_calibration'),players=read('wnba_player_baselines'),lines=read('wnba_market_lines');
 const cfb=read('cfb_daily_evaluation');
+const ncaam=read('ncaam_validation');
 const nba=read('nba_calibration'), nbaBacktest=read('nba_model_backtest'), nfl=read('nfl_current_usage'), nhl=read('nhl_board');
 const out={generatedAt:new Date().toISOString(),status:'no_sport_has_demonstrated_a_reliable_betting_edge',
  nba:{projectionMetrics:nba.markets,releaseStatus:nba.releaseStatus,pricedStrategyStatus:nba.pricedStrategyStatus,
@@ -59,10 +60,11 @@ const out={generatedAt:new Date().toISOString(),status:'no_sport_has_demonstrate
   raw:metrics(rows,r=>r.p),highProbability:metrics(rows.filter(r=>r.p>=.2),r=>r.p),
   chronologicalDiagnostic:{splitDate:split,trainDates:[dates[0],dates[dates.indexOf(split)-1]],testDates:[split,dates.at(-1)],trainingSamples:train.length,
    parameters:params,raw:metrics(test,r=>r.p),candidate:params?metrics(test,predict):null,byDate,
-   status:'research_only_not_promoted',limitations:['This archive was previously inspected in aggregate; the split is chronological but not a pristine unseen holdout.','No archived sportsbook prices: betting ROI cannot be established.','A non-HR receipt is a prediction outcome, not proof the wager would settle; participation and book void rules need separate settlement.','Rows sharing a game are correlated. Prediction counts are not independent betting samples.']},
+   status:'research_only_not_promoted',limitations:['This archive was previously inspected in aggregate; the split is chronological but not a pristine unseen holdout.','Archived price coverage is incomplete; this report does not calculate settled, priced betting ROI.','A non-HR receipt is a prediction outcome, not proof the wager would settle; participation and book void rules need separate settlement.','Rows sharing a game are correlated. Prediction counts are not independent betting samples.']},
   marketFix:'Only explicit over 0.5 HR prices can be compared with the one-or-more-HR model. Alternate thresholds rejected.'},
  wnba:{gradedProjections:wnba.gradedProjections,markets:wnba.markets,baselinesAsOf:players.dataAsOf||players.generatedAt,stale:Boolean(players.stale),authorizedLineSources:lines.authorizedSources,
   blockers:['No validated probability model or priced out-of-sample betting strategy.','MAE is projection accuracy, not betting ROI.',...(lines.authorizedSources.length?[]:['No authorized player prop feed configured.']),...(players.stale?['Upstream baseline refresh failed; fallback is stale.']:[])]},
+ ncaam:{reportGeneratedAt:ncaam.generatedAt,modelVersion:ncaam.modelVersion,historicalValidationPassed:ncaam.passed,holdoutGames:ncaam.holdout,picks:ncaam.picks,accuracy:ncaam.accuracy,accuracy95:ncaam.accuracy95,brier:ncaam.brier,baselineBrier:ncaam.baselineBrier,blockers:['Historical winner accuracy does not validate current player props, live model variants, or betting ROI.','Prospective priced strategy evaluation remains separate.']},
  ncaaf:{reportGeneratedAt:cfb.generatedAt,conclusion:cfb.conclusion,prospective:cfb.prospective},
  policy:'Do not label research estimates high-confidence bets. Promotion requires a prespecified strategy, immutable pregame prices and probabilities, actual settlement, independent future evaluation, and uncertainty accounting for correlated bets.'};
 fs.mkdirSync('docs',{recursive:true});fs.writeFileSync('docs/betting-evidence-audit.json',JSON.stringify(out,null,2)+'\n');

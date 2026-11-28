@@ -80,3 +80,20 @@ test("NBA walk-forward backtest uses prior games and applies only validated corr
   const calibrated = applyNbaCalibration(10, "points", result);
   assert.equal(calibrated.applied, result.markets.points.correctionApplied);
 });
+
+test('historical completed game logs settle frozen receipts after the slate rolls over', () => {
+  const captured = updateTracking({ games: pregame, pool: { players: [] }, ...boards, lines: { lines: [] }, history: { snapshots: [] } }, now);
+  const later = now + 48 * 3600_000;
+  const playerHistory = { players: [{ playerId: 'p1', recentGames: [{ gameId: 'g1', gameDate: basePlayer.gameTimeUTC, points: 24, rebounds: 8, assists: 6, threesMade: 3, minutes: 34 }] }] };
+  const result = updateTracking({ games: { games: [] }, pool: { players: [] }, ...boards, lines: { lines: [] }, history: captured, playerHistory }, later);
+  assert.equal(result.snapshots[0].status, 'graded');
+  assert.equal(result.snapshots[0].actual.points, 24);
+  assert.equal(captured.snapshots[0].status, 'pending');
+  playerHistory.players[0].recentGames[0].assists = null;
+  assert.equal(updateTracking({ games: { games: [] }, pool: { players: [] }, ...boards, lines: { lines: [] }, history: captured, playerHistory }, later).snapshots[0].status, 'pending');
+});
+test('a missing final box-score row cannot become a DNP', () => {
+  const captured = updateTracking({ games: pregame, pool: { players: [] }, ...boards, lines: { lines: [] }, history: { snapshots: [] } }, now);
+  const games = { games: [{ ...pregame.games[0], gameStatus: 3 }] };
+  assert.equal(updateTracking({ games, pool: { players: [] }, ...boards, lines: { lines: [] }, history: captured }, now + 4 * 3600_000).snapshots[0].status, 'pending');
+});

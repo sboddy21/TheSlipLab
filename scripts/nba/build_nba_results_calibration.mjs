@@ -33,7 +33,7 @@ function projectionRows(payloads) {
   })).filter(row => MARKETS.every(market => finite(row.projections[market])));
 }
 
-export function updateTracking({ games, pool, points, rebounds, assists, threes, lines, history }, now = Date.now()) {
+export function updateTracking({ games, pool, points, rebounds, assists, threes, lines, history, playerHistory = { players: [] } }, now = Date.now()) {
   const output = structuredClone(history || { sport: "NBA", version: "1.0", snapshots: [] });
   if (!Array.isArray(output.snapshots)) output.snapshots = [];
   const projections = projectionRows({ points, rebounds, assists, threes });
@@ -57,17 +57,31 @@ export function updateTracking({ games, pool, points, rebounds, assists, threes,
     existing.add(key);
   }
 
+  // Completed historical logs let receipts settle after their game leaves today's slate.
+  const historical = new Map();
+  for (const row of playerHistory.players || []) for (const log of row.recentGames || []) {
+    if (!log.gameId || Date.parse(log.gameDate) >= now - 6 * 3600_000) continue;
+    const values = [log.points, log.rebounds, log.assists, log.threesMade, log.minutes];
+    if (values.some(value => value == null || value === "" || !Number.isFinite(Number(value)))) continue;
+    historical.set(`${log.gameId}:${row.playerId}`, { gameId: log.gameId, playerId: row.playerId, played: Number(log.minutes) > 0, boxScore: log });
+  }
   const poolByKey = new Map((pool.players || []).map(player => [`${player.gameId}:${player.playerId}`, player]));
   for (const snapshot of output.snapshots) {
     if (snapshot.status === "graded" || snapshot.status === "dnp") continue;
     const game = gamesById.get(String(snapshot.gameId));
-    if (!game || Number(game.gameStatus) !== 3) continue;
-    const player = poolByKey.get(`${snapshot.gameId}:${snapshot.playerId}`);
-    if (!player || !player.played) {
+    const key = `${snapshot.gameId}:${snapshot.playerId}`;
+    const historicalPlayer = historical.get(key);
+    if ((!game || Number(game.gameStatus) !== 3) && !historicalPlayer) continue;
+    if (!snapshot.frozenPregame || !Number.isFinite(Date.parse(snapshot.capturedAt)) || Date.parse(snapshot.capturedAt) >= Date.parse(snapshot.gameTimeUTC)) continue;
+    const player = historicalPlayer || poolByKey.get(key);
+    // A missing provider row is not evidence that the player did not participate.
+    if (!player) continue;
+    if (!player.played) {
       snapshot.status = "dnp";
       snapshot.settledAt = new Date(now).toISOString();
       continue;
     }
+    if (["points", "rebounds", "assists", "threesMade"].some(key => player.boxScore?.[key] == null || !Number.isFinite(Number(player.boxScore[key])))) continue;
     const actual = {
       points: Number(player.boxScore?.points || 0),
       rebounds: Number(player.boxScore?.rebounds || 0),
@@ -187,6 +201,7 @@ function main() {
   const games = read("nba_games_today");
   const history = updateTracking({
     games,
+    playerHistory: readOr("nba_history", { players: [] }),
     pool: read("nba_player_pool"),
     points: read("nba_points"),
     rebounds: read("nba_rebounds"),
