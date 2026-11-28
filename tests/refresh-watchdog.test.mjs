@@ -21,3 +21,13 @@ test('every sport stays covered during the offseason, including college basketba
  assert.equal(recoveryAgeMinutes('nba',45,new Date('2026-11-15T16:00:00Z')),45);
  assert.equal(recoveryAgeMinutes('odds',15,new Date('2026-07-15T16:00:00Z')),15);
 });
+
+test('a fresh primary file cannot hide a stale sibling board or source timestamp',async()=>{
+ const {needsBoardRecovery,recoveryFiles}=await import('../scripts/refresh-watchdog.mjs');
+ const fresh={date:'2026-11-06',generatedAt:'2026-11-06T15:59:00Z'};
+ const payloads=Object.fromEntries(recoveryFiles.nba.map(file=>[file,fresh]));
+ assert.equal(needsBoardRecovery('nba',payloads,null,{now}),false);
+ payloads['nba_assists.json']=old;assert.equal(needsBoardRecovery('nba',payloads,null,{now}),true);
+ assert.equal(needsBoardRecovery('nba',payloads,{status:'in_progress'},{now}),false);
+ assert.equal(needsRecovery({...fresh,dataAsOf:'2026-11-05T15:00:00Z'},null,{now}),true);
+});

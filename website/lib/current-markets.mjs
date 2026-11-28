@@ -8,6 +8,9 @@ export function prepareCurrentMarkets(file, payload, now=Date.now()) {
   if(/market_lines\.json$/.test(file) && Array.isArray(payload.lines)) {
     return {...payload,lines:payload.lines.filter(row=>current(row.quotedAt||row.fetchedAt,now))};
   }
+  if(file==='ncaam_board.json' && Array.isArray(payload.games)) {
+    return {...payload,games:payload.games.map(game=>({...game,quotes:(game.quotes||[]).filter(quote=>current(quote.quotedAt,now))}))};
+  }
   if(file==='cfb_board.json' && Array.isArray(payload.games)) {
     return {...payload,games:payload.games.map(game=>{
       const sportsbookQuotes=(game.sportsbookQuotes||[]).filter(row=>current(row.quotedAt,now));
