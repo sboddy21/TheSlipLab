@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { normalizeGame, scoreboardQuotes, quotesForGame, gradeQuote, updateArchive, mergeGameQuotes } from '../scripts/ncaam/core.mjs';
+import { refreshSport } from '../scripts/odds/refresh.mjs';
+const now=Date.parse('2026-11-06T12:00:00Z');
+const event={id:'123',date:'2026-11-06T22:00:00Z',season:{year:2027},status:{type:{state:'pre',name:'STATUS_SCHEDULED'}},competitions:[{neutralSite:true,competitors:[{homeAway:'home',team:{id:'1',displayName:'Home University',shortDisplayName:'Home'},score:'0',curatedRank:{current:4},records:[{type:'total',summary:'1-0'}]},{homeAway:'away',team:{id:'2',displayName:'Away University',shortDisplayName:'Away'},score:'0',curatedRank:{current:99}}],odds:[{provider:{name:'Book'},moneyline:{home:{close:{odds:'-150'}}},pointSpread:{home:{close:{line:'-3.5',odds:'-110'}}},total:{over:{close:{line:'o140.5',odds:'-110'}}}}]}]};
+const game=normalizeGame(event),quotes=scoreboardQuotes(event,new Date(now).toISOString(),now);
+const catalog={events:[{id:'123',home:game.home.name,away:game.away.name,kickoff:game.kickoff}],quotes};
+test('normalizes neutral court, ranks and current season without treating pregame zeroes as finals',()=>{assert.equal(game.neutral,true);assert.equal(game.home.rank,4);assert.equal(game.away.rank,null);assert.equal(game.completed,false);assert.equal(game.season,2027);assert.equal(normalizeGame({}),null);});
+test('only valid pregame lines with explicit prices enter the catalog',()=>{assert.equal(quotes.length,3);assert.equal(quotes[1].line,-3.5);assert.equal(quotes[2].line,140.5);assert.equal(scoreboardQuotes(event,new Date(now).toISOString(),Date.parse(event.date)).length,0);assert.equal(quotesForGame(game,catalog,now+21*60_000).length,0);assert.equal(quotesForGame({...game,home:{...game.home,names:['Other']}},catalog,now).length,0);});
+test('grades spread, total, moneyline, pushes and pending finals',()=>{const final={...game,completed:true,home:{...game.home,score:74},away:{...game.away,score:70}};assert.equal(gradeQuote(quotes[0],final),'win');assert.equal(gradeQuote(quotes[1],final),'win');assert.equal(gradeQuote(quotes[2],final),'win');assert.equal(gradeQuote({...quotes[1],line:-4},final),'push');assert.equal(gradeQuote({...quotes[0],side:'away'},final),'loss');assert.equal(gradeQuote(quotes[0],game),'pending');});
+test('freezes the last pre-tip observation and grades it without hindsight',()=>{const before=updateArchive(null,[game],catalog,now);const final={...game,state:'post',completed:true,home:{...game.home,score:70},away:{...game.away,score:74}};const after=updateArchive(before,[final],catalog,Date.parse(event.date)+3*3600_000);assert.equal(after.games[0].capturedAt,before.games[0].capturedAt);assert.equal(after.games[0].capturedQuotes[0].result,'loss');assert.equal(updateArchive(null,[final],catalog,Date.parse(event.date)+3*3600_000).games[0].capturedQuotes.length,0);});
+test('NCAAM provider integration never requests player props',async()=>{let props=0;const result=await refreshSport('NCAAM',{now,rapid:async()=>({data:{events:[]}}),props:async()=>{props++;throw new Error('Unexpected props');}});assert.equal(props,0);assert.equal(result.sport,'NCAAM');assert.equal(result.status,'no_upcoming_markets');});
+
+test('canonicalizes cross-provider event IDs and deduplicates the same book and line',()=>{
+ const merged=mergeGameQuotes(game,[{...quotes[0],providerEventId:'rapid-1',home:'Home',away:'Away'},quotes[0],{...quotes[0],book:'Another book'}]);
+ assert.equal(merged.length,2); assert.ok(merged.every(q=>q.providerEventId===game.id)); assert.ok(merged.every(q=>q.home===game.home.name));
+});

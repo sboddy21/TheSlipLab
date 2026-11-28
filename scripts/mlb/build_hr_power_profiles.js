@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 
@@ -39,7 +40,7 @@ function scale(value, min, max) {
 }
 
 async function getHitterStats(playerId) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting&season=${currentSeasonStart('mlb')}`;
   const data = await getJson(url);
   const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
 

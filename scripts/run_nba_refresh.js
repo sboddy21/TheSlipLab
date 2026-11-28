@@ -98,6 +98,9 @@ function validateRefresh() {
     if (data.preservedAt || data.preserveReason) {
       failures.push(`${label} reused a preserved output instead of current data`);
     }
+    if (data.stale || /unavailable|failed|error/.test(String(data.availability || "")) || data.error || Number(data.errorCount) > 0) {
+      failures.push(`${label} could not verify its current upstream source`);
+    }
 
     const timestamp = outputTimestamp(data);
     const timestampMs = Date.parse(timestamp);
@@ -160,6 +163,9 @@ const [todayStep, ...remainingSteps] = steps;
 runBuilder(todayStep);
 
 const todayData = readOutput("NBA Today", "website/data/nba_games_today.json");
+if (todayData.stale || todayData.availability === "schedule_unavailable" || todayData.date !== todayET()) {
+  throw new Error("NBA schedule is not current; refusing to publish a false no-games slate");
+}
 const hasGames = Array.isArray(todayData.games) && todayData.games.length > 0;
 
 console.log("NBA slate mode:", hasGames ? "games scheduled" : "no games scheduled");

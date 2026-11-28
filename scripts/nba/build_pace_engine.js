@@ -234,14 +234,15 @@ async function main() {
 
   const url = `https://stats.nba.com/stats/leaguedashteamstats?${params.toString()}`;
 
-  const data = await fetchJsonWithRetry(url);
-  const teams = parseRows(data);
-
-  if (!teams.length) {
-    throw new Error("NBA pace API returned 0 teams for a non-empty slate");
+  let teams = [];
+  let error = "";
+  try {
+    teams = parseRows(await fetchJsonWithRetry(url));
+    if (!teams.length) throw new Error("NBA pace API returned 0 teams for a non-empty slate");
+    applyPaceRanks(teams);
+  } catch (fetchError) {
+    error = fetchError.message;
   }
-
-  applyPaceRanks(teams);
 
   const out = {
     sport: "NBA",
@@ -251,8 +252,8 @@ async function main() {
     date: gamesData.date || "",
     season,
     teamCount: teams.length,
-    availability: "games_scheduled",
-    error: "",
+    availability: error ? "source_unavailable" : "games_scheduled",
+    error,
     modelNotes: [
       "Pace Engine 1.1 uses NBA stats advanced team pace when available.",
       "Higher pace ranks as faster game environment.",
@@ -267,7 +268,7 @@ async function main() {
   console.log("NBA PACE ENGINE COMPLETE");
   console.log("Season:", season);
   console.log("Teams:", teams.length);
-  console.log("Error: none");
+  console.log("Error:", error || "none");
   console.log("Saved:", OUT);
 }
 

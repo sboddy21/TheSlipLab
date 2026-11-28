@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 import { gunzipSync } from "zlib";
@@ -6,8 +7,8 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../..");
 const DATA = path.join(ROOT, "website", "data");
-const SEASONS = String(process.env.NFL_HISTORY_SEASONS || "2023,2024,2025").split(",").map(Number).filter(Number.isFinite);
-const WEIGHTS = new Map([[2023, 0.1], [2024, 0.3], [2025, 0.6]]);
+const SEASONS = [currentSeasonStart('nfl')];
+const WEIGHTS = new Map([[SEASONS[0], 1]]);
 
 function read(filename) {
   return JSON.parse(fs.readFileSync(path.join(DATA, filename), "utf8"));
@@ -197,7 +198,7 @@ async function main() {
     sport: "NFL", schemaVersion: "1.0", generatedAt,
     seasons: SEASONS, source: "nflverse play-by-play", attribution: "nflverse / nflfastR", license: "CC-BY-4.0",
     methodology: {
-      population: "Current 2026 QB/RB/WR/TE players joined to historical GSIS IDs through the validated depth chart.",
+      population: `Current ${SEASONS[0]} QB/RB/WR/TE players joined to current-season GSIS IDs through the validated depth chart.`,
       seasonWeights: Object.fromEntries(WEIGHTS),
       exclusions: ["Postseason plays", "QB kneels", "Sacks from pass-attempt totals"],
       routes: "Unavailable from play-by-play and intentionally not estimated."

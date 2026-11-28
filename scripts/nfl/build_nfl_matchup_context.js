@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 import { gunzipSync } from "zlib";
@@ -5,8 +6,8 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA = path.resolve(__dirname, "../../website/data");
-const SEASONS = String(process.env.NFL_CONTEXT_SEASONS || "2023,2024,2025").split(",").map(Number).filter(Number.isFinite);
-const WEIGHTS = new Map([[2023, 0.1], [2024, 0.3], [2025, 0.6]]);
+const SEASONS = [currentSeasonStart('nfl')];
+const WEIGHTS = new Map([[SEASONS[0], 1]]);
 const CACHE_HOURS = Number(process.env.NFL_CONTEXT_CACHE_HOURS || 18);
 const read = filename => JSON.parse(fs.readFileSync(path.join(DATA, filename), "utf8"));
 const write = (filename, payload) => fs.writeFileSync(path.join(DATA, filename), `${JSON.stringify(payload, null, 2)}\n`);
@@ -214,7 +215,7 @@ async function main() {
   const outputPath = path.join(DATA, "nfl_matchup_context.json");
   const existing = fs.existsSync(outputPath) ? JSON.parse(fs.readFileSync(outputPath, "utf8")) : null;
   const cacheAgeHours = existing?.historicalBuiltAt ? (Date.now() - Date.parse(existing.historicalBuiltAt)) / 36e5 : Infinity;
-  const history = existing?.historicalTeamBaselines?.length === 32 && cacheAgeHours <= CACHE_HOURS
+  const history = existing?.historicalTeamBaselines?.length === 32 && existing?.historicalSeasons?.length === 1 && existing.historicalSeasons[0] === SEASONS[0] && cacheAgeHours <= CACHE_HOURS
     ? { builtAt: existing.historicalBuiltAt, seasons: existing.historicalSeasons, weights: existing.historicalWeights, sources: existing.historicalSources, teamBaselines: existing.historicalTeamBaselines }
     : await buildHistoricalBaselines(depth);
   const week = mainWeek(schedule);
@@ -226,7 +227,7 @@ async function main() {
       gameByTeam.set(team, { gameId: game.gameId, opponent, homeAway, kickoffUTC: game.kickoffUTC, venue: game.venue, indoor: game.indoor, neutralSite: game.neutralSite });
     }
   }
-  if (gameByTeam.size !== 32) throw new Error(`Expected 32 Week ${week} team assignments, received ${gameByTeam.size}`);
+  if (!games.length || gameByTeam.size !== games.length * 2) throw new Error(`Incomplete Week ${week} team assignments`);
   const baselineByTeam = new Map(history.teamBaselines.map(row => [row.team, row]));
   const leagueTdAverage = round(history.teamBaselines.reduce((sum, row) => sum + row.offense.touchdownsPerGame, 0) / history.teamBaselines.length);
   const leaguePaceAverage = round(history.teamBaselines.reduce((sum, row) => sum + row.offense.playsPerGame, 0) / history.teamBaselines.length);
@@ -262,7 +263,7 @@ async function main() {
     };
   }).sort((a, b) => Date.parse(a.kickoffUTC) - Date.parse(b.kickoffUTC) || a.team.localeCompare(b.team));
   const teamContextByTeam = new Map(teamContexts.map(row => [row.team, row]));
-  const playerAssignments = pool.players.map(player => {
+  const playerAssignments = pool.players.filter(player => teamContextByTeam.has(player.team)).map(player => {
     const context = teamContextByTeam.get(player.team);
     if (!context) throw new Error(`No Week ${week} game assignment for ${player.fullName} (${player.team})`);
     return { playerId: player.playerId, playerName: player.fullName, team: player.team, position: player.position, gameId: context.gameId, opponent: context.opponent, homeAway: context.homeAway };

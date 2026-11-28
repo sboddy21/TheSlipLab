@@ -135,7 +135,7 @@ function main() {
   const practiceByPlayer = new Map(practice.players.map(row => [row.playerId, row]));
   const weatherByGame = new Map(weather.games.map(row => [row.gameId, row]));
   const eligible = roles.roles
-    .filter(role => role.modelEligibility && role.historicalOpportunity && role.readiness?.status !== "unavailable")
+    .filter(role => assignmentByPlayer.has(role.playerId) && role.modelEligibility && role.historicalOpportunity && role.readiness?.status !== "unavailable")
     .map(role => {
       const assignment = assignmentByPlayer.get(role.playerId);
       const context = contextByTeam.get(role.team);

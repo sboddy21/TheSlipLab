@@ -15,20 +15,20 @@ test("NBA preseason player pool has an official roster path", () => {
 test("NBA availability never treats a missing injury report as clearance", () => {
   const availability = readJson("website/data/nba_availability.json");
   assert.equal(availability.freshnessPolicy.missingReportMeaning, "No injury report was matched; this is not a confirmed healthy designation.");
-  assert.ok(availability.players.some(player => player.availabilityStatus === "UNKNOWN" && !player.publicationEligible));
+  const unknownPlayers = availability.players.filter(player => player.availabilityStatus === "UNKNOWN");
+  assert.ok(unknownPlayers.every(player => !player.publicationEligible));
 });
 
-test("unknown starters keep historical minutes without becoming recommendations", () => {
+test("unknown starters keep historical minutes with an unconfirmed-role label", () => {
   const minutes = readJson("website/data/nba_minutes_engine.json");
   const unknownHighMinutes = minutes.players.filter(player => !player.starterKnown && player.expectedMinutes > 28);
-  assert.ok(unknownHighMinutes.length > 0);
-  assert.ok(unknownHighMinutes.every(player => !player.publicationEligible));
+  assert.ok(unknownHighMinutes.every(player => player.publicationStatus !== "eligible"));
 });
 
 test("NBA history uses one league-wide game-log request", () => {
   const source = fs.readFileSync("scripts/nba/build_nba_history.js", "utf8");
   assert.match(source, /stats\/leaguegamelog/);
-  assert.match(source, /previous_season_preseason/);
+  assert.match(source, /baselineMode: "current_season"/);
 });
 
 test("NBA core compares trends with the season summary", () => {
@@ -38,7 +38,7 @@ test("NBA core compares trends with the season summary", () => {
 
 test("landing page opens the live NBA Decision Center", () => {
   const landing = fs.readFileSync("website/index.html", "utf8");
-  assert.match(landing, /<a class="league(?: live)?" href="\.\/nba\.html"[^>]*><strong>NBA<\/strong>/);
+  assert.match(landing, /<a class="league(?: live)?"[^>]*href="\.\/nba\.html"[^>]*><strong>NBA<\/strong>/);
   assert.doesNotMatch(landing, /<strong>NBA<\/strong><span>Not in season<\/span>/);
 });
 

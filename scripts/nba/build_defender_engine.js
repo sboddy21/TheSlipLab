@@ -46,20 +46,27 @@ function round1(v) {
 }
 
 async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json,text/plain,*/*",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Origin": "https://www.nba.com",
-      "Referer": "https://www.nba.com/",
-      "x-nba-stats-origin": "stats",
-      "x-nba-stats-token": "true"
-    }
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  try {
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json,text/plain,*/*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Origin": "https://www.nba.com",
+        "Referer": "https://www.nba.com/",
+        "x-nba-stats-origin": "stats",
+        "x-nba-stats-token": "true"
+      }
+    });
 
-  if (!res.ok) throw new Error(`Fetch failed ${res.status}`);
-  return await res.json();
+    if (!res.ok) throw new Error(`Fetch failed ${res.status}`);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function tier(row) {
@@ -142,7 +149,13 @@ async function main() {
   });
 
   const url = `https://stats.nba.com/stats/leaguedashptdefend?${params.toString()}`;
-  const data = await fetchJson(url);
+  let data = {};
+  let error = "";
+  try {
+    data = await fetchJson(url);
+  } catch (fetchError) {
+    error = fetchError.message;
+  }
 
   const defenders = parseRows(data)
     .filter(d => d.player && d.team)
@@ -178,7 +191,8 @@ async function main() {
     defenderCount: defenders.length,
     minimumDefendedFGA: 6,
     teamCount: Object.keys(byTeam).length,
-    availability: "games_scheduled",
+    availability: error ? "source_unavailable" : "games_scheduled",
+    error,
     modelNotes: [
       "Defender Engine 1.0 uses NBA tracking defended field goal data.",
       "Leaderboard requires at least 6 defended field goal attempts per game to reduce low-volume noise.",

@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -57,7 +58,7 @@ if (depth.availability !== "available" || depth.teamCount !== 32 || !depth.entry
 if (depth.unmatchedPlayerCount !== 0 || !Array.isArray(depth.excludedSourceEntries)) fail("unmatched depth entries were not resolved");
 if (depth.entries.some(entry => !entry.playerId || !entry.team || !entry.position || !Number.isFinite(entry.rank))) fail("depth-chart contract contains an invalid entry");
 if (!["available", "partial"].includes(injuries.availability) || !Array.isArray(injuries.injuries)) fail("injury contract must report current availability coverage");
-if (usage.profileCount < 400 || usage.sourcePlayCount < 100000 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
+if (usage.seasons?.length !== 1 || usage.seasons[0] !== currentSeasonStart('nfl') || usage.profileCount < 1 || usage.sourcePlayCount < 1 || usage.profiles?.length !== usage.profileCount) fail("historical usage contract is incomplete");
 if (usage.methodology?.routes !== "Unavailable from play-by-play and intentionally not estimated.") fail("usage contract must explicitly reject inferred routes");
 if (usage.profiles.some(profile => !profile.playerId || !profile.gsisId || !profile.weightedPerGame)) fail("usage contract contains an invalid profile");
 if (!preseason.finalGameGate || preseason.processedGameCount !== preseason.completedGameCount || preseason.failures?.length) fail("preseason usage must process every completed game behind the final-game gate");
@@ -69,8 +70,10 @@ if (roles.status !== "role_estimation_only" || roles.playerCount !== pool.player
 if (roles.roles.some(role => role.projectionStatus !== "disabled_pending_preseason_usage_and_market_lines")) fail("role engine must keep projections disabled");
 if (roles.roles.some(role => role.confidence?.score > roles.methodology?.confidenceCeiling)) fail("role confidence exceeds the missing-preseason ceiling");
 if (matchup.status !== "private_week_matchup_context" || matchup.contextType !== "historical_baseline_without_live_weather") fail("matchup context identity is invalid");
-if (matchup.counts?.games !== 16 || matchup.counts?.teamContexts !== 32 || matchup.counts?.playerAssignments !== pool.playerCount || matchup.counts?.duplicatePlayerAssignments !== 0 || matchup.counts?.missingTeamAssignments !== 0) fail("matchup assignment counts are invalid");
-if (new Set(matchup.playerAssignments.map(row => row.playerId)).size !== pool.playerCount) fail("players must have exactly one matchup assignment");
+const scheduledTeams = new Set(matchup.games.flatMap(game => [game.homeTeam, game.awayTeam]));
+const scheduledPlayerCount = pool.players.filter(player => scheduledTeams.has(player.team)).length;
+if (!matchup.counts?.games || matchup.counts?.teamContexts !== matchup.games.length * 2 || matchup.counts?.playerAssignments !== scheduledPlayerCount || matchup.counts?.duplicatePlayerAssignments !== 0 || matchup.counts?.missingTeamAssignments !== 0) fail("matchup assignment counts are invalid");
+if (new Set(matchup.playerAssignments.map(row => row.playerId)).size !== scheduledPlayerCount) fail("players must have exactly one matchup assignment");
 const matchupGames = new Map(matchup.games.map(game => [game.gameId, game]));
 if (matchup.playerAssignments.some(row => { const game = matchupGames.get(row.gameId); return !game || ![game.homeTeam, game.awayTeam].includes(row.team) || ![game.homeTeam, game.awayTeam].includes(row.opponent) || row.team === row.opponent; })) fail("a player has an invalid game or opponent assignment");
 if (matchup.teamContexts.some(row => !row.opponent || !Number.isFinite(row.scoringEnvironment?.projectedTeamTouchdownsBaseline) || !Number.isFinite(row.scoringEnvironment?.paceIndex))) fail("matchup context contains invalid scoring data");

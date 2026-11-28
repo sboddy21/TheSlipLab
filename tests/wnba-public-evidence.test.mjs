@@ -24,8 +24,8 @@ test('landing page does not advertise MLB or WNBA as live before current data is
  const landing=fs.readFileSync('website/index.html','utf8');
  assert.doesNotMatch(landing,/<strong>WNBA<\/strong><span>Live now<\/span>/);
  assert.doesNotMatch(landing,/<strong>MLB<\/strong><span>Live now<\/span>/);
- assert.match(landing,/health_status\.json/);
- assert.match(landing,/Recommendations withheld/);
+ assert.match(landing,/landing-seasons\.js/);
+ assert.doesNotMatch(landing,/<span>Live<\/span>/);
 });
 test('role heuristic is a score, not a win probability',async()=>{
  const result=await render();assert.match(result.html,/85\/100/);assert.doesNotMatch(result.html,/85%/);

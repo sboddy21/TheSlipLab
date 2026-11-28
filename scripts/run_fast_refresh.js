@@ -1,6 +1,8 @@
 import { spawnSync } from "child_process";
 import fs from "fs";
 import { dataQualityPenaltyIssue } from "./mlb/lib/data_quality_confidence.js";
+import { validHealthFreshnessWindow } from "./mlb/refresh_freshness.mjs";
+import { validStabilizedPitcherRisk } from "./mlb/lib/pitcher-risk-validation.mjs";
 
 const requestedStart = Number(process.env.MLB_REFRESH_STARTED_AT);
 const REFRESH_STARTED_AT = Number.isFinite(requestedStart) && requestedStart > 0 ? requestedStart : Date.now();
@@ -291,7 +293,15 @@ function validateHealthStatus(expectedDate) {
   if (!Number.isFinite(generatedAt) || checkedAt !== generatedAt || lastSuccessfulAt !== generatedAt) {
     throw new Error("health_status.json monitoring timestamps do not identify the completed refresh");
   }
-  if (monitoring.refreshWindowSeconds !== 900 || freshUntil - generatedAt !== 15 * 60 * 1000) {
+  const artifactDeadlines = Object.values(health.artifacts || {})
+    .filter(artifact => artifact?.required === true)
+    .map(artifact => Date.parse(artifact.timestamp) + Number(artifact.maxAgeSeconds) * 1000);
+  if (monitoring.refreshWindowSeconds !== 900 || !validHealthFreshnessWindow({
+    generatedAt,
+    freshUntil,
+    refreshWindowMs: 15 * 60 * 1000,
+    artifactDeadlines
+  })) {
     throw new Error("health_status.json monitoring freshness window is invalid");
   }
 
@@ -354,7 +364,7 @@ function validatePitcherVulnerability(expectedDate) {
     if (!Number.isFinite(weight) || weight <= 0 || weight > 1) throw new Error(`Invalid sample weight for ${row.pitcher || id}`);
     if (!Number.isFinite(innings) || innings <= 0) throw new Error(`Invalid true innings for ${row.pitcher || id}`);
     if (Math.abs(weight - Math.min(1, innings / 60)) > 0.001) throw new Error(`Sample weight does not match live innings for ${row.pitcher || id}`);
-    if (Math.abs(score - baseline) > Math.abs(raw - baseline) + 1) throw new Error(`Short-sample stabilization moved ${row.pitcher || id} away from the live baseline`);
+    if (!validStabilizedPitcherRisk(score, raw, baseline, weight)) throw new Error(`Short-sample stabilization does not match the live baseline for ${row.pitcher || id}`);
     byId.set(id, score);
   }
 

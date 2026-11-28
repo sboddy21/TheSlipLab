@@ -1,3 +1,4 @@
+import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from "fs";
 import path from "path";
 
@@ -84,7 +85,7 @@ async function getPlayerBio(playerId) {
 }
 
 async function getHitterStats(playerId) {
-  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=hitting&season=${currentSeasonStart('mlb')}`;
   const data = await getJson(url);
   const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
 
@@ -107,7 +108,7 @@ async function getHitterStats(playerId) {
 async function getPitcherStats(playerId) {
   if (!playerId) return null;
 
-  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching`;
+  const url = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=season&group=pitching&season=${currentSeasonStart('mlb')}`;
   const data = await getJson(url);
   const stat = data?.stats?.[0]?.splits?.[0]?.stat || {};
 

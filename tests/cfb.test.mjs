@@ -5,7 +5,7 @@ import { fitRatings,predictRatings,weekCutoff,trainingGames } from '../scripts/c
 import { closingMarket } from '../scripts/cfb/historical-odds.mjs';
 import { walkForward,summarizePicks } from '../scripts/cfb/evaluation.mjs';
 import { isFresh,mergeLiveGame } from '../website/assets/cfb-market.mjs';
-import { valuePicks,implied } from '../website/assets/cfb-edge.mjs';
+import { valuePicks,implied,moneylineProjection,americanFromProbability } from '../website/assets/cfb-edge.mjs';
 import { qualification,fitCalibration } from '../scripts/cfb/calibration.mjs';
 import { createLiveHandler } from '../website/api/cfb-live.mjs';
 const now = Date.parse('2026-09-04T12:00Z');
@@ -16,7 +16,7 @@ test('missing market values remain absent; side-specific spreads win over ambigu
   const result = normalize({id:'1',competitions:[{competitors:[{homeAway:'home',team:{id:'h'}},{homeAway:'away',team:{id:'a'}}],odds:[{spread:7,pointSpread:{home:{close:{line:'+7'}},away:{close:{line:'-7'}}}}]}]});
   assert.equal(result.market.homeSpread,7); assert.equal(result.market.total,null); assert.equal(result.market.homeML,null);
 });
-test('projection excludes future games, incomplete games and own result; requires four games per team',()=>{
+test('baseline projection excludes future games, incomplete games and own result; requires four games per team',()=>{
   const history = Array.from({length:4},(_,i)=>({id:String(i),date:`2026-08-${10+i}T16:00Z`,completed:true,home:{id:'h',score:30},away:{id:'a',score:20}}));
   const expected = project(game,history,now);
   assert.ok(expected); assert.equal(expected.home.games,4);
@@ -25,6 +25,11 @@ test('projection excludes future games, incomplete games and own result; require
   assert.deepEqual(project(game,[...history,...contaminants],now),expected);
   const neutral = project({...game,neutral:true},history,now);
   assert.equal(Number((expected.margin-neutral.margin).toFixed(2)),2.5);
+});
+test('unseen teams receive national-prior projections with explicit prior-only quality',()=>{
+  const fit=fitRatings(schedule(),Date.parse('2024-10-14T00:00Z'));
+  const p=predictRatings({date:'2024-10-19T12:00Z',neutral:false,home:{id:'new-home'},away:{id:'new-away'}},fit);
+  assert.ok(p);assert.equal(p.dataQuality,'prior-only');assert.equal(p.coverage,0);assert.ok(p.homeScore>p.awayScore);
 });
 test('spread direction, total threshold, and price gates',()=>{
   const picks = candidates(game,{margin:10,total:60},now);
@@ -116,6 +121,14 @@ test('price-aware picks require positive estimated return, valid price and sched
   assert.equal(valuePicks({...game,statusName:'STATUS_POSTPONED'},{margin:10,total:50},calibration,now).length,0);
   assert.equal(valuePicks({...game,market:{...game.market,homePrice:null}},{margin:10,total:50},calibration,now).length,0);
 });
+test('moneyline projection derives calibrated win probability and internally consistent fair prices',()=>{
+  const read=moneylineProjection({margin:10},{spread:{intercept:0,slope:1}});
+  assert.ok(read.homeProbability>.5);
+  assert.equal(Number((read.homeProbability+read.awayProbability).toFixed(10)),1);
+  assert.equal(read.homeFairPrice,americanFromProbability(read.homeProbability));
+  assert.equal(implied(read.homeFairPrice).toFixed(2),read.homeProbability.toFixed(2));
+  assert.equal(moneylineProjection(null,{spread:{intercept:0,slope:1}}),null);
+});
 test('qualification cannot turn a tiny winning sample or a losing strategy into a proven edge',()=>{
   const rules={minimumFreshBetsPerMarket:200,minimumFreshWeeks:8};
   const tiny=[{date:'2026-09-05',fold:'week1',result:'win',units:1}];
@@ -134,7 +147,7 @@ test('daily walk-forward fit is before its target and calibration needs adequate
 });
 test('live endpoint fails closed after source failure rather than retimestamping its old cache',async()=>{
   let time=now,fail=false;
-  const handler=createLiveHandler(async()=>{if(fail)throw new Error('upstream failed');return {ok:true,json:async()=>({events:[]})};},()=>time);
+  const handler=createLiveHandler(async()=>{if(fail)throw new Error('upstream failed');return new Response(JSON.stringify({events:[]}));},()=>time);
   const response=()=>({headers:{},setHeader(k,v){this.headers[k]=v;},status(c){this.code=c;return this;},json(v){this.body=v;return this;}});
   const first=response();await handler({method:'GET'},first);assert.equal(first.code,200);
   fail=true;time+=31000;

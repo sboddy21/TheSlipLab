@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -98,7 +98,7 @@ function buildConfidence(player, history, availability, expectedMinutes) {
   return round1(clamp(score));
 }
 
-function buildRow(player, history, availability) {
+export function buildRow(player, history, availability) {
   const seasonMinutes = num(history?.seasonSummary?.minutes);
   const last5Minutes = num(history?.last5?.minutes);
   const last10Minutes = num(history?.last10?.minutes);
@@ -132,8 +132,8 @@ function buildRow(player, history, availability) {
     availabilityStatus: availability?.availabilityStatus || "UNKNOWN",
     availabilityKnown: Boolean(availability?.availabilityKnown),
     injury: availability?.injury || null,
-    publicationEligible: Boolean(availability?.publicationEligible),
-    publicationStatus: availability?.publicationStatus || "context_only_unconfirmed_role",
+    publicationEligible: Boolean(availability?.publicationEligible && history?.recentGames?.length > 0),
+    publicationStatus: !history?.recentGames?.length ? "context_only_missing_game_logs" : availability?.publicationStatus || "context_only_unconfirmed_role",
     oncourt: Boolean(player.oncourt),
     homeAway: player.homeAway,
     gameId: player.gameId,
@@ -191,7 +191,7 @@ async function main() {
   console.log("Saved:", OUT);
 }
 
-main().catch(err => {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main().catch(err => {
   console.error("NBA MINUTES ENGINE FAILED");
   console.error(err);
   process.exit(1);
