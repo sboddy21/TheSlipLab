@@ -46,9 +46,33 @@
     return window.TSLAccount || null;
   }
 
+  async function fetchCurrentData(input, init) {
+    const response = await nativeFetch(input, { ...init, cache: "no-store" });
+    if (response.status === 503) {
+      const detail = await response.clone().json().catch(() => null);
+      if (detail?.error === "current_data_unavailable") {
+        const show = () => {
+          let notice = document.getElementById("tslDataUnavailable");
+          if (!notice) {
+            notice = document.createElement("div");
+            notice.id = "tslDataUnavailable";
+            notice.setAttribute("role", "alert");
+            notice.style.cssText = "padding:14px 20px;background:#35250c;color:#ffe2a6;border-bottom:1px solid #966d28;font:600 14px/1.5 system-ui;position:relative;z-index:100001";
+            document.body.prepend(notice);
+          }
+          notice.textContent = "Current data is unavailable for this view. The latest feed could not be verified. Please try again shortly.";
+        };
+        if (document.body) show();
+        else document.addEventListener("DOMContentLoaded", show, { once: true });
+      }
+    }
+    return response;
+  }
+
   window.fetch = async function authorizedMemberFetch(input, init = {}) {
     const file = dataFile(input);
-    if (!file || publicFiles.has(file)) return nativeFetch(input, init);
+    if (!file) return nativeFetch(input, init);
+    if (publicFiles.has(file)) return fetchCurrentData(input, init);
 
     const account = await accountClient();
     const token = await account?.accessToken?.().catch(() => "") || "";
@@ -57,6 +81,6 @@
     );
     if (token) headers.set("Authorization", `Bearer ${token}`);
 
-    return nativeFetch(input, { ...init, headers });
+    return fetchCurrentData(input, { ...init, headers });
   };
 })();
