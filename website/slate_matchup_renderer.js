@@ -276,7 +276,7 @@
 
   async function json(path, fallback) {
     try {
-      const response = await fetch(path + "?v=" + Date.now());
+      const response = await fetch(path + "?v=" + Date.now(), { cache: "no-store", signal: AbortSignal.timeout(15000) });
       if (!response.ok) return fallback;
       return await response.json();
     } catch {
@@ -1844,7 +1844,10 @@ function renderBat(row, index) {
 
   function isVerifiedClosedSlate() {
     const scheduledGames = state.schedule?.games;
-    return state.games.length === 0 &&
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const observed = Date.parse(state.schedule?.fetchedAt || state.schedule?.updatedAt || state.schedule?.generatedAt || "");
+    return state.games.length === 0 && state.schedule?.date === today &&
+      Number.isFinite(observed) && observed <= Date.now() + 1000 && Date.now() - observed < 3600000 &&
       state.health?.status === "healthy" &&
       state.health?.availability === "no_games_scheduled" &&
       Array.isArray(scheduledGames) &&
@@ -2374,30 +2377,37 @@ function injectGuidedPickerStyles(){
     injectGuidedPickerStyles();
     injectShell();
     restoreGameComparison();
-    indexPlayerCards(await json("./data/player_card_data.json", { players: [] }));
-    state.schedule = await json("./data/mlb_games_today.json", null);
-    state.health = await json("./data/health_status.json", null);
-    state.games = sortGamesByFirstPitch(await json("./data/game_pitcher_matchups.json", null));
+    [state.schedule, state.health] = await Promise.all([
+      json("./data/mlb_games_today.json", null), json("./data/health_status.json", null)
+    ]);
+    // A verified empty slate must not wait for unrelated player research feeds.
+    if (isVerifiedClosedSlate()) { render(); return; }
+    const [cards, matchups, hits, totalBases, rbis, pitcherKs, bullpen, decisionPayload, probabilityPayload, weatherPayload, spray] = await Promise.all([
+      json("./data/player_card_data.json", { players: [] }), json("./data/game_pitcher_matchups.json", null),
+      json("./data/mlb_hits.json", []), json("./data/mlb_total_bases.json", []), json("./data/mlb_rbis.json", []),
+      json("./data/mlb_pitcher_strikeouts.json", []), json("./data/bullpen_relievers.json", []),
+      json("./data/hr_decision_center.json", { allPlayers: [] }), json("./data/hr_probability_tracking.json", { players: [] }),
+      json("./data/mlb_weather.json", []), json("./data/player_spray_charts.json", {})
+    ]);
+    indexPlayerCards(cards);
+    state.games = sortGamesByFirstPitch(matchups);
     const currentGameKeys = new Set(state.games.map(gameKey));
     state.selectedGameKeys = new Set([...state.selectedGameKeys].filter(key => currentGameKeys.has(key)));
     saveGameComparison();
-    state.marketRows.hits = rows(await json("./data/mlb_hits.json", []));
-    state.marketRows.tb = rows(await json("./data/mlb_total_bases.json", []));
-    state.marketRows.rbis = rows(await json("./data/mlb_rbis.json", []));
-    state.marketRows.pitcherKs = rows(await json("./data/mlb_pitcher_strikeouts.json", []));
-    state.bullpen = rows(await json("./data/bullpen_relievers.json", []));
-    const decisionPayload = await json("./data/hr_decision_center.json", { allPlayers: [] });
+    state.marketRows = { hits: rows(hits), tb: rows(totalBases), rbis: rows(rbis), pitcherKs: rows(pitcherKs) };
+    state.bullpen = rows(bullpen);
     for (const row of rows(decisionPayload)) {
       if (row.playerId) state.statcastById.set(String(row.playerId), row);
       if (row.player) state.statcastByName.set(playerNameKey(row.player), row);
     }
-    const probabilityPayload = await json("./data/hr_probability_tracking.json", { players: [] });
     state.probabilitiesByName = new Map(rows(probabilityPayload).map(row => [playerNameKey(row.player), Number(row.realHrProbability)]));
-    const weatherPayload = await json("./data/mlb_weather.json", []);
     state.weather = Array.isArray(weatherPayload) ? weatherPayload : weatherPayload.weather || weatherPayload.rows || weatherPayload.data || [];
-    state.spray = await json("./data/player_spray_charts.json", {});
+    state.spray = spray;
     render();
   }
 
-  load();
+  load().catch(() => {
+    const hero = document.getElementById("hero");
+    if (hero) hero.textContent = "The current MLB board could not be loaded. Refresh to retry.";
+  });
 })();
