@@ -44,6 +44,8 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: npm run mlb:refresh
 
+      - name: Validate MLB publication contract
+        run: node scripts/validate-sport-pipeline.mjs mlb
       - name: Commit refreshed MLB data
         if: success()
         run: |

@@ -33,6 +33,8 @@ jobs:
         run: node --test tests/nfl-*.test.mjs
       - name: Refresh NFL signals, live stats, and final results
         run: node scripts/run_nfl_refresh.js
+      - name: Validate NFL publication contract
+        run: node scripts/validate-sport-pipeline.mjs nfl
       - name: Commit refreshed NFL data
         run: |
           git config user.name "github-actions[bot]"

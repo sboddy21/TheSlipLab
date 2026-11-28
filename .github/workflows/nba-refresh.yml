@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
-          fetch-depth: 20
+          fetch-depth: 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -40,6 +40,8 @@ jobs:
       - name: Validate refreshed NBA foundation
         run: node --test tests/nba-foundation.test.mjs tests/nba-first-basket.test.mjs tests/nba-market-gate.test.mjs tests/nba-results-calibration.test.mjs tests/nba-results-page.test.mjs tests/nba-live-workspace.test.mjs tests/nba-prop-trends.test.mjs
 
+      - name: Validate NBA publication contract
+        run: node scripts/validate-sport-pipeline.mjs nba
       - name: Commit refreshed NBA data
         run: |
           git config user.name "github-actions[bot]"

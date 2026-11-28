@@ -26,6 +26,8 @@ jobs:
         run: node --test tests/cfb.test.mjs tests/cfb-espn-scoreboard.test.mjs
       - name: Refresh college football board and settle recorded leans
         run: node scripts/cfb/refresh.mjs
+      - name: Validate CFB publication contract
+        run: node scripts/validate-sport-pipeline.mjs cfb
       - name: Commit board
         run: |
           git config user.name "github-actions[bot]"

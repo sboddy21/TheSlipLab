@@ -13,7 +13,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: production-data-writers
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   refresh:
@@ -52,6 +52,8 @@ jobs:
       - name: Run daily NCAAM shadow simulation if due
         continue-on-error: true
         run: npm run ncaam:simulation:shadow
+      - name: Validate NCAAM publication contract
+        run: node scripts/validate-sport-pipeline.mjs ncaam
       - name: Commit NCAAM data
         run: |
           git config user.name "github-actions[bot]"
@@ -60,5 +62,4 @@ jobs:
           if test -f data/ncaam/simulation-shadow.json; then git add data/ncaam/simulation-shadow.json; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh NCAAM data"
-          git pull origin "$GITHUB_REF_NAME" --rebase
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          node scripts/publish-refresh.mjs

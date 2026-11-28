@@ -1,3 +1,4 @@
+import { updateNhlResults, collectNhlFinals } from './results.mjs';
 import { currentSeasonStart } from '../../website/lib/current-season.mjs';
 import fs from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -130,6 +131,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     await fs.mkdir(new URL('../../website/data/', import.meta.url), { recursive: true });
     await fs.writeFile(new URL(`${OUT.href}.tmp`), `${JSON.stringify(board, null, 2)}\n`);
     await fs.rename(new URL(`${OUT.href}.tmp`), OUT);
+    const resultsUrl = new URL('../../website/data/nhl_results.json', import.meta.url);
+    let previous = { sport: 'NHL', schemaVersion: 1, snapshots: [] };
+    try { previous = JSON.parse(await fs.readFile(resultsUrl, 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+    const { boxes, errors } = await collectNhlFinals(previous);
+    const results = { ...updateNhlResults(previous, board, boxes), errors };
+    await fs.writeFile(new URL(resultsUrl.href + '.tmp'), JSON.stringify(results, null, 2) + '\n');
+    await fs.rename(new URL(resultsUrl.href + '.tmp'), resultsUrl);
+    console.log(JSON.stringify({ results: results.counts, settlementErrors: errors.length }));
     console.log(JSON.stringify({ date: board.date, status: board.status, ...board.counts }));
   } catch (error) {
     console.error(`NHL refresh failed: ${error.message}`);
